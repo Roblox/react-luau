@@ -1,4 +1,6 @@
 # Deviations
+**This is a work in progress! Most of these notes are old!**
+
 The Roact alignment effort aims to map as closely to React's API as possible, but there are a few places where language deviations require us to omit functionality or deviate our approach.
 
 ## Class Components
