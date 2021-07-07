@@ -79,7 +79,7 @@ local function defineKeyPropWarningGetter(props, displayName)
 			end
 		end
 
-	-- ROBLOX deviation: clear key to ensure metamethod is called, 
+	-- ROBLOX deviation: clear key to ensure metamethod is called,
 	-- then set key getter to call warnAboutAccessingKey
 	props.key = nil
 	setmetatable(props, {
@@ -112,7 +112,7 @@ local function defineRefPropWarningGetter(props, displayName)
 			end
 		end
 
-	-- ROBLOX deviation: clear key to ensure metamethod is called, 
+	-- ROBLOX deviation: clear key to ensure metamethod is called,
 	-- then set key getter to call warnAboutAccessingKey
 	props.ref = nil
 	setmetatable(props, {

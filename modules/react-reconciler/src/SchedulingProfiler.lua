@@ -84,8 +84,12 @@ exports.markComponentSuspended =  function(fiber: Fiber, wakeable: Wakeable): ()
       -- TODO Add component stack id
       performance.mark("--suspense-suspend-" .. tostring(id) .. "-" .. componentName)
       wakeable:andThen(
-        function() performance.mark("--suspense-resolved-" .. tostring(id) .. "-" .. componentName) end,
-        function() performance.mark("--suspense-rejected-" .. tostring(id) .. "-" .. componentName) end
+        function()
+          performance.mark("--suspense-resolved-" .. tostring(id) .. "-" .. componentName)
+        end,
+        function()
+          performance.mark("--suspense-rejected-" .. tostring(id) .. "-" .. componentName)
+        end
       )
     end
   end

@@ -40,7 +40,7 @@ return function()
         --         return fakeImport(Add)
         --     end)
 
-        --     expect(function()
+        --     jestExpect(function()
         --         LazyAdd.propTypes = {}
         --     end).toErrorDev('React.lazy(...): It is not supported to assign `propTypes` to ' + 'a lazy component import. Either specify them where the component ' + 'is defined, or create a wrapping component around it.', {withoutStack = true})
 
@@ -53,19 +53,19 @@ return function()
         --         outer = '2',
         --     })), {unstable_isConcurrent = true})
 
-        --     expect(Scheduler).toFlushAndYield({
+        --     jestExpect(Scheduler).toFlushAndYield({
         --         'Loading...',
         --     })
-        --     expect(root).not.toMatchRenderedOutput('22')
+        --     jestExpect(root).not.toMatchRenderedOutput('22')
 
         --     return _await(Promise.resolve(), function()
-        --         expect(function()
+        --         jestExpect(function()
         --             Scheduler.unstable_flushAll()
         --         end).toErrorDev({
         --             'Invalid prop `inner` of type `string` supplied to `Add`, expected `number`.',
         --         })
-        --         expect(root).toMatchRenderedOutput('22')
-        --         expect(function()
+        --         jestExpect(root).toMatchRenderedOutput('22')
+        --         jestExpect(function()
         --             root.update(React.createElement(Suspense, {
         --                 fallback = React.createElement(Text, {
         --                     text = 'Loading...',
@@ -74,9 +74,9 @@ return function()
         --                 inner = false,
         --                 outer = false,
         --             })))
-        --             expect(Scheduler).toFlushWithoutYielding()
+        --             jestExpect(Scheduler).toFlushWithoutYielding()
         --         end).toErrorDev('Invalid prop `inner` of type `boolean` supplied to `Add`, expected `number`.')
-        --         expect(root).toMatchRenderedOutput('0')
+        --         jestExpect(root).toMatchRenderedOutput('0')
         --     end)
         -- end)
 
@@ -265,18 +265,18 @@ return function()
         --         text = 'Hi',
         --     })), {unstable_isConcurrent = true})
 
-        --     expect(Scheduler).toFlushAndYield({
+        --     jestExpect(Scheduler).toFlushAndYield({
         --         'Loading...',
         --     })
-        --     expect(root).not.toMatchRenderedOutput('Hi')
+        --     jestExpect(root).not.toMatchRenderedOutput('Hi')
 
         --     return _await(Promise.resolve(), function()
         --         if __DEV__ then
-        --             expect(console.error).toHaveBeenCalledTimes(1)
-        --             expect(console.error.calls.argsFor(0)[0]).toContain('Expected the result of a dynamic import() call')
+        --             jestExpect(console.error).toHaveBeenCalledTimes(1)
+        --             jestExpect(console.error.calls.argsFor(0)[0]).toContain('Expected the result of a dynamic import() call')
         --         end
 
-        --         expect(Scheduler).toFlushAndThrow('Element type is invalid')
+        --         jestExpect(Scheduler).toFlushAndThrow('Element type is invalid')
         --     end)
         -- end))
         it('throws if promise rejects', function()
@@ -311,8 +311,7 @@ return function()
 
         end)
 
-        -- ROBLOX TODO:  Error: Element type is invalid. Received a promise that resolves to: Child.
-        xit('mount and reorder', function()
+        it('mount and reorder', function()
             local Child = React.Component:extend("Child")
 
             function Child:componentDidMount()
@@ -417,16 +416,16 @@ return function()
         --         }),
         --     }, React.createElement(LazyText, nil)), {unstable_isConcurrent = true})
 
-        --     expect(Scheduler).toFlushAndYield({
+        --     jestExpect(Scheduler).toFlushAndYield({
         --         'Loading...',
         --     })
-        --     expect(root).not.toMatchRenderedOutput('Hi')
+        --     jestExpect(root).not.toMatchRenderedOutput('Hi')
 
         --     return _await(Promise.resolve(), function()
-        --         expect(Scheduler).toFlushAndYield({
+        --         jestExpect(Scheduler).toFlushAndYield({
         --             'Hi',
         --         })
-        --         expect(root).toMatchRenderedOutput('Hi')
+        --         jestExpect(root).toMatchRenderedOutput('Hi')
 
         --         T.defaultProps = {
         --             text = 'Hi again',
@@ -437,10 +436,10 @@ return function()
         --                 text = 'Loading...',
         --             }),
         --         }, React.createElement(LazyText, nil)))
-        --         expect(Scheduler).toFlushAndYield({
+        --         jestExpect(Scheduler).toFlushAndYield({
         --             'Hi again',
         --         })
-        --         expect(root).toMatchRenderedOutput('Hi again')
+        --         jestExpect(root).toMatchRenderedOutput('Hi again')
         --     end)
         -- end))
         -- it('resolves defaultProps without breaking memoization', _async(function()
@@ -481,25 +480,25 @@ return function()
         --         }),
         --     }, React.createElement(Lazy, nil, React.createElement(Stateful, {ref = stateful}))), {unstable_isConcurrent = true})
 
-        --     expect(Scheduler).toFlushAndYield({
+        --     jestExpect(Scheduler).toFlushAndYield({
         --         'Loading...',
         --     })
-        --     expect(root).not.toMatchRenderedOutput('SiblingA')
+        --     jestExpect(root).not.toMatchRenderedOutput('SiblingA')
 
         --     return _await(Promise.resolve(), function()
-        --         expect(Scheduler).toFlushAndYield({
+        --         jestExpect(Scheduler).toFlushAndYield({
         --             'Lazy',
         --             'Sibling',
         --             'A',
         --         })
-        --         expect(root).toMatchRenderedOutput('SiblingA')
+        --         jestExpect(root).toMatchRenderedOutput('SiblingA')
         --         stateful.current.setState({
         --             text = 'B',
         --         })
-        --         expect(Scheduler).toFlushAndYield({
+        --         jestExpect(Scheduler).toFlushAndYield({
         --             'B',
         --         })
-        --         expect(root).toMatchRenderedOutput('SiblingB')
+        --         jestExpect(root).toMatchRenderedOutput('SiblingB')
         --     end)
         -- end))
         -- it('resolves defaultProps without breaking bailout due to unchanged props and state, #17151', _async(function()
@@ -531,23 +530,23 @@ return function()
         --         label = 'Lazy',
         --     }))), {unstable_isConcurrent = true})
 
-        --     expect(Scheduler).toFlushAndYield({
+        --     jestExpect(Scheduler).toFlushAndYield({
         --         'Not lazy: 0',
         --         'Loading...',
         --     })
-        --     expect(root).not.toMatchRenderedOutput('Not lazy: 0Lazy: 0')
+        --     jestExpect(root).not.toMatchRenderedOutput('Not lazy: 0Lazy: 0')
 
         --     return _await(Promise.resolve(), function()
-        --         expect(Scheduler).toFlushAndYield({
+        --         jestExpect(Scheduler).toFlushAndYield({
         --             'Lazy: 0',
         --         })
-        --         expect(root).toMatchRenderedOutput('Not lazy: 0Lazy: 0')
+        --         jestExpect(root).toMatchRenderedOutput('Not lazy: 0Lazy: 0')
         --         instance1.current.setState(nil)
-        --         expect(Scheduler).toFlushAndYield({})
-        --         expect(root).toMatchRenderedOutput('Not lazy: 0Lazy: 0')
+        --         jestExpect(Scheduler).toFlushAndYield({})
+        --         jestExpect(root).toMatchRenderedOutput('Not lazy: 0Lazy: 0')
         --         instance2.current.setState(nil)
-        --         expect(Scheduler).toFlushAndYield({})
-        --         expect(root).toMatchRenderedOutput('Not lazy: 0Lazy: 0')
+        --         jestExpect(Scheduler).toFlushAndYield({})
+        --         jestExpect(root).toMatchRenderedOutput('Not lazy: 0Lazy: 0')
         --     end)
         -- end))
         -- it('resolves defaultProps without breaking bailout in PureComponent, #17151', _async(function()
@@ -585,23 +584,23 @@ return function()
         --         label = 'Lazy',
         --     }))), {unstable_isConcurrent = true})
 
-        --     expect(Scheduler).toFlushAndYield({
+        --     jestExpect(Scheduler).toFlushAndYield({
         --         'Not lazy: 0',
         --         'Loading...',
         --     })
-        --     expect(root).not.toMatchRenderedOutput('Not lazy: 0Lazy: 0')
+        --     jestExpect(root).not.toMatchRenderedOutput('Not lazy: 0Lazy: 0')
 
         --     return _await(Promise.resolve(), function()
-        --         expect(Scheduler).toFlushAndYield({
+        --         jestExpect(Scheduler).toFlushAndYield({
         --             'Lazy: 0',
         --         })
-        --         expect(root).toMatchRenderedOutput('Not lazy: 0Lazy: 0')
+        --         jestExpect(root).toMatchRenderedOutput('Not lazy: 0Lazy: 0')
         --         instance1.current.setState({})
-        --         expect(Scheduler).toFlushAndYield({})
-        --         expect(root).toMatchRenderedOutput('Not lazy: 0Lazy: 0')
+        --         jestExpect(Scheduler).toFlushAndYield({})
+        --         jestExpect(root).toMatchRenderedOutput('Not lazy: 0Lazy: 0')
         --         instance2.current.setState({})
-        --         expect(Scheduler).toFlushAndYield({})
-        --         expect(root).toMatchRenderedOutput('Not lazy: 0Lazy: 0')
+        --         jestExpect(Scheduler).toFlushAndYield({})
+        --         jestExpect(root).toMatchRenderedOutput('Not lazy: 0Lazy: 0')
         --     end)
         -- end))
         -- it('sets defaultProps for modern lifecycles', _async(function()
@@ -658,13 +657,13 @@ return function()
         --         }),
         --     }, React.createElement(LazyClass, {num = 1})), {unstable_isConcurrent = true})
 
-        --     expect(Scheduler).toFlushAndYield({
+        --     jestExpect(Scheduler).toFlushAndYield({
         --         'Loading...',
         --     })
-        --     expect(root).not.toMatchRenderedOutput('A1')
+        --     jestExpect(root).not.toMatchRenderedOutput('A1')
 
         --     return _await(Promise.resolve(), function()
-        --         expect(Scheduler).toFlushAndYield({
+        --         jestExpect(Scheduler).toFlushAndYield({
         --             'constructor: A',
         --             'getDerivedStateFromProps: A',
         --             'A1',
@@ -675,27 +674,27 @@ return function()
         --                 text = 'Loading...',
         --             }),
         --         }, React.createElement(LazyClass, {num = 2})))
-        --         expect(Scheduler).toFlushAndYield({
+        --         jestExpect(Scheduler).toFlushAndYield({
         --             'getDerivedStateFromProps: A',
         --             'shouldComponentUpdate: A -> A',
         --             'A2',
         --             'getSnapshotBeforeUpdate: A -> A',
         --             'componentDidUpdate: A -> A',
         --         })
-        --         expect(root).toMatchRenderedOutput('A2')
+        --         jestExpect(root).toMatchRenderedOutput('A2')
         --         root.update(React.createElement(Suspense, {
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
         --             }),
         --         }, React.createElement(LazyClass, {num = 3})))
-        --         expect(Scheduler).toFlushAndYield({
+        --         jestExpect(Scheduler).toFlushAndYield({
         --             'getDerivedStateFromProps: A',
         --             'shouldComponentUpdate: A -> A',
         --             'A3',
         --             'getSnapshotBeforeUpdate: A -> A',
         --             'componentDidUpdate: A -> A',
         --         })
-        --         expect(root).toMatchRenderedOutput('A3')
+        --         jestExpect(root).toMatchRenderedOutput('A3')
         --     end)
         -- end))
         -- it('sets defaultProps for legacy lifecycles', _async(function()
@@ -736,36 +735,36 @@ return function()
         --         }),
         --     }, React.createElement(LazyClass, {num = 1})))
 
-        --     expect(Scheduler).toHaveYielded({
+        --     jestExpect(Scheduler).toHaveYielded({
         --         'Loading...',
         --     })
-        --     expect(Scheduler).toFlushAndYield({})
-        --     expect(root).toMatchRenderedOutput('Loading...')
+        --     jestExpect(Scheduler).toFlushAndYield({})
+        --     jestExpect(root).toMatchRenderedOutput('Loading...')
 
         --     return _await(Promise.resolve(), function()
-        --         expect(Scheduler).toHaveYielded({})
+        --         jestExpect(Scheduler).toHaveYielded({})
         --         root.update(React.createElement(Suspense, {
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
         --             }),
         --         }, React.createElement(LazyClass, {num = 2})))
-        --         expect(Scheduler).toHaveYielded({
+        --         jestExpect(Scheduler).toHaveYielded({
         --             'UNSAFE_componentWillMount: A',
         --             'A2',
         --         })
-        --         expect(root).toMatchRenderedOutput('A2')
+        --         jestExpect(root).toMatchRenderedOutput('A2')
         --         root.update(React.createElement(Suspense, {
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
         --             }),
         --         }, React.createElement(LazyClass, {num = 3})))
-        --         expect(Scheduler).toHaveYielded({
+        --         jestExpect(Scheduler).toHaveYielded({
         --             'UNSAFE_componentWillReceiveProps: A -> A',
         --             'UNSAFE_componentWillUpdate: A -> A',
         --             'A3',
         --         })
-        --         expect(Scheduler).toFlushAndYield({})
-        --         expect(root).toMatchRenderedOutput('A3')
+        --         jestExpect(Scheduler).toFlushAndYield({})
+        --         jestExpect(root).toMatchRenderedOutput('A3')
         --     end)
         -- end))
         -- it('resolves defaultProps on the outer wrapper but warns', _async(function()
@@ -783,7 +782,7 @@ return function()
         --         return fakeImport(T)
         --     end)
 
-        --     expect(function()
+        --     jestExpect(function()
         --         LazyText.defaultProps = {
         --             outer = 'Bye',
         --         }
@@ -795,16 +794,16 @@ return function()
         --         }),
         --     }, React.createElement(LazyText, nil)), {unstable_isConcurrent = true})
 
-        --     expect(Scheduler).toFlushAndYield({
+        --     jestExpect(Scheduler).toFlushAndYield({
         --         'Loading...',
         --     })
-        --     expect(root).not.toMatchRenderedOutput('Hi Bye')
+        --     jestExpect(root).not.toMatchRenderedOutput('Hi Bye')
 
         --     return _await(Promise.resolve(), function()
-        --         expect(Scheduler).toFlushAndYield({
+        --         jestExpect(Scheduler).toFlushAndYield({
         --             'Hi Bye',
         --         })
-        --         expect(root).toMatchRenderedOutput('Hi Bye')
+        --         jestExpect(root).toMatchRenderedOutput('Hi Bye')
         --         root.update(React.createElement(Suspense, {
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
@@ -812,10 +811,10 @@ return function()
         --         }, React.createElement(LazyText, {
         --             outer = 'World',
         --         })))
-        --         expect(Scheduler).toFlushAndYield({
+        --         jestExpect(Scheduler).toFlushAndYield({
         --             'Hi World',
         --         })
-        --         expect(root).toMatchRenderedOutput('Hi World')
+        --         jestExpect(root).toMatchRenderedOutput('Hi World')
         --         root.update(React.createElement(Suspense, {
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
@@ -823,10 +822,10 @@ return function()
         --         }, React.createElement(LazyText, {
         --             inner = 'Friends',
         --         })))
-        --         expect(Scheduler).toFlushAndYield({
+        --         jestExpect(Scheduler).toFlushAndYield({
         --             'Friends Bye',
         --         })
-        --         expect(root).toMatchRenderedOutput('Friends Bye')
+        --         jestExpect(root).toMatchRenderedOutput('Friends Bye')
         --     end)
         -- end))
         it('throws with a useful error when wrapping invalid type with lazy()', function()
@@ -907,7 +906,7 @@ return function()
         end)
         -- it('respects propTypes on function component with defaultProps', _async(function()
         --     local function Add(props)
-        --         expect(props.innerWithDefault).toBe(42)
+        --         jestExpect(props.innerWithDefault).toBe(42)
 
         --         return props.inner + props.outer
         --     end
@@ -936,7 +935,7 @@ return function()
         --     local AddMetatable = {__index = Add}
 
         --     function Add:render()
-        --         expect(self.props.innerWithDefault).toBe(42)
+        --         jestExpect(self.props.innerWithDefault).toBe(42)
 
         --         return self.props.inner + self.props.outer
         --     end
@@ -965,7 +964,7 @@ return function()
         -- end))
         -- it('respects propTypes on forwardRef component with defaultProps', _async(function()
         --     local Add = React.forwardRef(function(props, ref)
-        --         expect(props.innerWithDefault).toBe(42)
+        --         jestExpect(props.innerWithDefault).toBe(42)
 
         --         return props.inner + props.outer
         --     end)
@@ -993,7 +992,7 @@ return function()
         -- end))
         -- it('respects propTypes on outer memo component with defaultProps', _async(function()
         --     local Add = function(props)
-        --         expect(props.innerWithDefault).toBe(42)
+        --         jestExpect(props.innerWithDefault).toBe(42)
 
         --         return props.inner + props.outer
         --     end
@@ -1021,7 +1020,7 @@ return function()
         -- end))
         -- it('respects propTypes on inner memo component with defaultProps', _async(function()
         --     local Add = function(props)
-        --         expect(props.innerWithDefault).toBe(42)
+        --         jestExpect(props.innerWithDefault).toBe(42)
 
         --         return props.inner + props.outer
         --     end
@@ -1071,27 +1070,27 @@ return function()
         --         }),
         --     }, React.createElement(LazyText, nil)), {unstable_isConcurrent = true})
 
-        --     expect(Scheduler).toFlushAndYield({
+        --     jestExpect(Scheduler).toFlushAndYield({
         --         'Loading...',
         --     })
-        --     expect(root).not.toMatchRenderedOutput('Inner default text')
+        --     jestExpect(root).not.toMatchRenderedOutput('Inner default text')
 
         --     return _await(Promise.resolve(), function()
-        --         expect(function()
-        --             expect(Scheduler).toFlushAndYield({
+        --         jestExpect(function()
+        --             jestExpect(Scheduler).toFlushAndYield({
         --                 'Inner default text',
         --             })
         --         end).toErrorDev('The prop `text` is marked as required in `T`, but its value is `undefined`')
-        --         expect(root).toMatchRenderedOutput('Inner default text')
-        --         expect(function()
+        --         jestExpect(root).toMatchRenderedOutput('Inner default text')
+        --         jestExpect(function()
         --             root.update(React.createElement(Suspense, {
         --                 fallback = React.createElement(Text, {
         --                     text = 'Loading...',
         --                 }),
         --             }, React.createElement(LazyText, {text = nil})))
-        --             expect(Scheduler).toFlushAndYield({nil})
+        --             jestExpect(Scheduler).toFlushAndYield({nil})
         --         end).toErrorDev('The prop `text` is marked as required in `T`, but its value is `null`')
-        --         expect(root).toMatchRenderedOutput(nil)
+        --         jestExpect(root).toMatchRenderedOutput(nil)
         --     end)
         -- end))
 
@@ -1138,8 +1137,8 @@ return function()
             end).toErrorDev('    in Text (at **)\n' .. '    in Foo (at **)')
             jestExpect(root).toMatchRenderedOutput(React.createElement('div', nil, 'AB'))
         end)
-        -- ROBLOX TODO: Error: Element type is invalid. Received a promise that resolves to: Foo.
-        xit('supports class and forwardRef components', function()
+
+        it('supports class and forwardRef components', function()
             local LazyClass = lazy(function()
                 local Foo = React.Component:extend("Foo")
 
@@ -1208,35 +1207,35 @@ return function()
         --         }),
         --     }, React.createElement(LazyAdd, {outer = 2})), {unstable_isConcurrent = true})
 
-        --     expect(Scheduler).toFlushAndYield({
+        --     jestExpect(Scheduler).toFlushAndYield({
         --         'Loading...',
         --     })
-        --     expect(root).not.toMatchRenderedOutput('4')
+        --     jestExpect(root).not.toMatchRenderedOutput('4')
 
         --     return _await(Promise.resolve(), function()
-        --         expect(Scheduler).toFlushWithoutYielding()
-        --         expect(root).toMatchRenderedOutput('4')
+        --         jestExpect(Scheduler).toFlushWithoutYielding()
+        --         jestExpect(root).toMatchRenderedOutput('4')
         --         root.update(React.createElement(Suspense, {
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
         --             }),
         --         }, React.createElement(LazyAdd, {outer = 2})))
-        --         expect(Scheduler).toFlushWithoutYielding()
-        --         expect(root).toMatchRenderedOutput('4')
+        --         jestExpect(Scheduler).toFlushWithoutYielding()
+        --         jestExpect(root).toMatchRenderedOutput('4')
         --         root.update(React.createElement(Suspense, {
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
         --             }),
         --         }, React.createElement(LazyAdd, {outer = 3})))
-        --         expect(Scheduler).toFlushWithoutYielding()
-        --         expect(root).toMatchRenderedOutput('5')
+        --         jestExpect(Scheduler).toFlushWithoutYielding()
+        --         jestExpect(root).toMatchRenderedOutput('5')
         --         root.update(React.createElement(Suspense, {
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
         --             }),
         --         }, React.createElement(LazyAdd, {outer = 3})))
-        --         expect(Scheduler).toFlushWithoutYielding()
-        --         expect(root).toMatchRenderedOutput('5')
+        --         jestExpect(Scheduler).toFlushWithoutYielding()
+        --         jestExpect(root).toMatchRenderedOutput('5')
         --         root.update(React.createElement(Suspense, {
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
@@ -1245,8 +1244,8 @@ return function()
         --             outer = 1,
         --             inner = 1,
         --         })))
-        --         expect(Scheduler).toFlushWithoutYielding()
-        --         expect(root).toMatchRenderedOutput('2')
+        --         jestExpect(Scheduler).toFlushWithoutYielding()
+        --         jestExpect(root).toMatchRenderedOutput('2')
         --         root.update(React.createElement(Suspense, {
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
@@ -1255,15 +1254,15 @@ return function()
         --             outer = 1,
         --             inner = 1,
         --         })))
-        --         expect(Scheduler).toFlushWithoutYielding()
-        --         expect(root).toMatchRenderedOutput('2')
+        --         jestExpect(Scheduler).toFlushWithoutYielding()
+        --         jestExpect(root).toMatchRenderedOutput('2')
         --         root.update(React.createElement(Suspense, {
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
         --             }),
         --         }, React.createElement(LazyAdd, {outer = 1})))
-        --         expect(Scheduler).toFlushWithoutYielding()
-        --         expect(root).toMatchRenderedOutput('3')
+        --         jestExpect(Scheduler).toFlushWithoutYielding()
+        --         jestExpect(root).toMatchRenderedOutput('3')
         --     end)
         -- end))
         -- it('merges defaultProps in the correct order', _async(function()
@@ -1287,28 +1286,28 @@ return function()
         --         }),
         --     }, React.createElement(LazyAdd, {outer = 2})), {unstable_isConcurrent = true})
 
-        --     expect(Scheduler).toFlushAndYield({
+        --     jestExpect(Scheduler).toFlushAndYield({
         --         'Loading...',
         --     })
-        --     expect(root).not.toMatchRenderedOutput('4')
+        --     jestExpect(root).not.toMatchRenderedOutput('4')
 
         --     return _await(Promise.resolve(), function()
-        --         expect(Scheduler).toFlushWithoutYielding()
-        --         expect(root).toMatchRenderedOutput('4')
+        --         jestExpect(Scheduler).toFlushWithoutYielding()
+        --         jestExpect(root).toMatchRenderedOutput('4')
         --         root.update(React.createElement(Suspense, {
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
         --             }),
         --         }, React.createElement(LazyAdd, {outer = 3})))
-        --         expect(Scheduler).toFlushWithoutYielding()
-        --         expect(root).toMatchRenderedOutput('5')
+        --         jestExpect(Scheduler).toFlushWithoutYielding()
+        --         jestExpect(root).toMatchRenderedOutput('5')
         --         root.update(React.createElement(Suspense, {
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
         --             }),
         --         }, React.createElement(LazyAdd, nil)))
-        --         expect(Scheduler).toFlushWithoutYielding()
-        --         expect(root).toMatchRenderedOutput('2')
+        --         jestExpect(Scheduler).toFlushWithoutYielding()
+        --         jestExpect(root).toMatchRenderedOutput('2')
         --     end)
         -- end))
         it('warns about ref on functions for lazy-loaded components', function()
@@ -1418,17 +1417,19 @@ return function()
         --     }, React.createElement(LazyText, {
         --         text = 'Hi',
         --     }))))
-        --     expect(Scheduler).toHaveYielded({})
-        --     expect(componentStackMessage).toContain('in Lazy')
+        --     jestExpect(Scheduler).toHaveYielded({})
+        --     jestExpect(componentStackMessage).toContain('in Lazy')
         -- end)
-        -- it('mount and reorder lazy elements', function()
+
+        -- @gate enableLazyElements
+        -- xit('mount and reorder lazy elements', function()
         --     local Child = React.Component:extend("Child")
 
         --     function Child:componentDidMount()
-        --         Scheduler.unstable_yieldValue('Did mount: ' + self.props.label)
+        --         Scheduler.unstable_yieldValue('Did mount: ' .. self.props.label)
         --     end
         --     function Child:componentDidUpdate()
-        --         Scheduler.unstable_yieldValue('Did update: ' + self.props.label)
+        --         Scheduler.unstable_yieldValue('Did update: ' .. self.props.label)
         --     end
         --     function Child:render()
         --         return React.createElement(Text, {
@@ -1476,8 +1477,8 @@ return function()
         --         return React.createElement(Suspense, {
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
-        --             }),
-        --         }, (function()
+        --             })},
+        --             (function()
         --             if swap then
         --                 return{lazyChildB2, lazyChildA2}
         --             end
@@ -1486,48 +1487,52 @@ return function()
         --         end)())
         --     end
 
+        --     local root = ReactTestRenderer.create(React.createElement(Parent, {swap = false}), {
+        --         unstable_isConcurrent = true
+        --     })
 
-        --     local root = ReactTestRenderer.create(React.createElement(Parent, {swap = false}), {unstable_isConcurrent = true})
+        --     -- ROBLOX FIXME: delay by one frame is current best translation of `await Promise.resolve()`
+        --     Promise.delay(0):await()
 
-        --     expect(Scheduler).toFlushAndYield({
+        --     jestExpect(Scheduler).toFlushAndYield({
         --         'Init A',
         --         'Loading...',
         --     })
-        --     expect(root).never.toMatchRenderedOutput('AB')
+        --     jestExpect(root).never.toMatchRenderedOutput('AB')
 
         --     return _await(lazyChildA, function()
-        --         expect(Scheduler).toFlushAndYield({
+        --         jestExpect(Scheduler).toFlushAndYield({
         --             'Init B',
         --         })
 
         --         return _await(lazyChildB, function()
-        --             expect(Scheduler).toFlushAndYield({
+        --             jestExpect(Scheduler).toFlushAndYield({
         --                 'A',
         --                 'B',
         --                 'Did mount: A',
         --                 'Did mount: B',
         --             })
-        --             expect(root).toMatchRenderedOutput('AB')
+        --             jestExpect(root).toMatchRenderedOutput('AB')
         --             root.update(React.createElement(Parent, {swap = true}))
-        --             expect(Scheduler).toFlushAndYield({
+        --             jestExpect(Scheduler).toFlushAndYield({
         --                 'Init B2',
         --                 'Loading...',
         --             })
 
         --             return _await(lazyChildB2, function()
-        --                 expect(Scheduler).toFlushAndYield({
+        --                 jestExpect(Scheduler).toFlushAndYield({
         --                     'Init A2',
         --                     'Loading...',
         --                 })
 
         --                 return _await(lazyChildA2, function()
-        --                     expect(Scheduler).toFlushAndYield({
+        --                     jestExpect(Scheduler).toFlushAndYield({
         --                         'b',
         --                         'a',
         --                         'Did update: b',
         --                         'Did update: a',
         --                     })
-        --                     expect(root).toMatchRenderedOutput('ba')
+        --                     jestExpect(root).toMatchRenderedOutput('ba')
         --                 end)
         --             end)
         --         end)

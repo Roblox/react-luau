@@ -34,5 +34,6 @@ exports.unstable_flushUntilNextPaint = HostConfig.unstable_flushUntilNextPaint
 exports.unstable_flushAll = HostConfig.unstable_flushAll
 exports.unstable_yieldValue = HostConfig.unstable_yieldValue
 exports.unstable_advanceTime = HostConfig.unstable_advanceTime
+exports.unstable_Profiling = Scheduler.unstable_Profiling
 
 return exports

@@ -23,32 +23,50 @@ local cloneElement = _G.__DEV__ and
 	ReactElement.cloneElement
 
 return {
-	__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = ReactSharedInternals,
 	Children = ReactChildren,
+	createMutableSource = createMutableSource,
+	createRef = ReactCreateRef.createRef,
 	Component = ReactBaseClasses.Component,
 	PureComponent = ReactBaseClasses.PureComponent,
-	createElement = createElement,
-	cloneElement = cloneElement,
-	createMutableSource = createMutableSource,
-	isValidElement = ReactElement.	isValidElement,
-	createRef = ReactCreateRef.createRef,
+	createContext = ReactContext.createContext,
 	forwardRef = ReactForwardRef.forwardRef,
 	lazy = ReactLazy.lazy,
+	memo = ReactMemo.memo,
+	useCallback = ReactHooks.useCallback,
+	useContext = ReactHooks.useContext,
+	useEffect = ReactHooks.useEffect,
+	useImperativeHandle = ReactHooks.useImperativeHandle,
+	-- ROBLOX TODO: useDebugValue
+	useLayoutEffect = ReactHooks.useLayoutEffect,
+	useMemo = ReactHooks.useMemo,
+	useMutableSource = ReactHooks.useMutableSource,
+	useReducer = ReactHooks.useReducer,
+	useRef = ReactHooks.useRef,
+	useState = ReactHooks.useState,
 	Fragment = ReactSymbols.REACT_FRAGMENT_TYPE,
 	Profiler = ReactSymbols.REACT_PROFILER_TYPE,
 	StrictMode = ReactSymbols.REACT_STRICT_MODE_TYPE,
+	unstable_DebugTracingMode = ReactSymbols.REACT_DEBUG_TRACING_MODE_TYPE,
 	Suspense = ReactSymbols.REACT_SUSPENSE_TYPE,
-	memo = ReactMemo.memo,
-	useState = ReactHooks.useState,
-	useReducer = ReactHooks.useReducer,
-	useEffect = ReactHooks.useEffect,
-	useImperativeHandle = ReactHooks.useImperativeHandle,
-	useLayoutEffect = ReactHooks.useLayoutEffect,
-	useRef = ReactHooks.useRef,
-	useMemo = ReactHooks.useMemo,
-	useMutableSource = ReactHooks.useMutableSource,
-	useCallback = ReactHooks.useCallback,
-	useContext = ReactHooks.useContext,
-	createContext = ReactContext.createContext,
-	unstable_LegacyHidden = ReactSymbols.REACT_LEGACY_HIDDEN_TYPE
+	createElement = createElement,
+	cloneElement = cloneElement,
+	isValidElement = ReactElement.isValidElement,
+	-- ROBLOX TODO: ReactVersion
+	__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = ReactSharedInternals,
+	-- Deprecated behind disableCreateFactory
+	-- ROBLOX TODO: createFactory,
+	-- Concurrent Mode
+	-- ROBLOX TODO: useTransition,
+	-- ROBLOX TODO: startTransition,
+	-- ROBLOX TODO: useDeferredValue,
+	-- ROBLOX TODO: REACT_SUSPENSE_LIST_TYPE as SuspenseList,
+	unstable_LegacyHidden = ReactSymbols.REACT_LEGACY_HIDDEN_TYPE,
+	-- enableBlocksAPI
+	-- ROBLOX TODO: block,
+	-- enableFundamentalAPI
+	-- ROBLOX TODO: createFundamental as unstable_createFundamental,
+	-- enableScopeAPI
+	-- ROBLOX TODO: REACT_SCOPE_TYPE as unstable_Scope,
+	-- ROBLOX TODO: useOpaqueIdentifier as unstable_useOpaqueIdentifier,
+
 }

@@ -1,3 +1,4 @@
+-- ROBLOX upstream: https://github.com/facebook/react/blob/8af27aeedbc6b00bc2ef49729fc84f116c70a27c/packages/react-reconciler/src/__tests__/SchedulingProfiler-test.internal.js
 -- /**
 --  * Copyright (c) Facebook, Inc. and its affiliates.
 --  *
@@ -42,8 +43,47 @@ return function()
 			marks = {}
 
 			local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
-			ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback = false
 			ReactFeatureFlags.enableSchedulingProfiler = true
+			ReactFeatureFlags.enableProfilerTimer = true
+			ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback = true
+			ReactFeatureFlags.enableSuspenseServerRenderer = true
+			ReactFeatureFlags.decoupleUpdatePriorityFromScheduler = true
+
+			ReactFeatureFlags.debugRenderPhaseSideEffectsForStrictMode = false
+			ReactFeatureFlags.enableDebugTracing = false
+			ReactFeatureFlags.warnAboutDeprecatedLifecycles = true
+			ReactFeatureFlags.enableProfilerCommitHooks = false
+			ReactFeatureFlags.enableSelectiveHydration = false
+			ReactFeatureFlags.enableBlocksAPI = false
+			ReactFeatureFlags.enableLazyElements = false
+			ReactFeatureFlags.disableJavaScriptURLs = false
+			ReactFeatureFlags.disableInputAttributeSyncing = false
+			ReactFeatureFlags.enableSchedulerDebugging = false
+			ReactFeatureFlags.enableFundamentalAPI = false
+			ReactFeatureFlags.enableScopeAPI = false
+			ReactFeatureFlags.enableCreateEventHandleAPI = false
+			ReactFeatureFlags.warnAboutUnmockedScheduler = false
+			ReactFeatureFlags.enableSuspenseCallback = false
+			ReactFeatureFlags.warnAboutDefaultPropsOnFunctionComponents = false
+			ReactFeatureFlags.warnAboutStringRefs = false
+			ReactFeatureFlags.disableLegacyContext = false
+			ReactFeatureFlags.disableSchedulerTimeoutBasedOnReactExpirationTime = false
+			ReactFeatureFlags.enableTrustedTypesIntegration = false
+			ReactFeatureFlags.disableTextareaChildren = false
+			ReactFeatureFlags.disableModulePatternComponents = false
+			ReactFeatureFlags.warnUnstableRenderSubtreeIntoContainer = false
+			ReactFeatureFlags.warnAboutSpreadingKeyToJSX = false
+			ReactFeatureFlags.enableComponentStackLocations = true
+			ReactFeatureFlags.enableLegacyFBSupport = false
+			ReactFeatureFlags.enableFilterEmptyStringAttributesDOM = false
+			ReactFeatureFlags.skipUnmountedBoundaries = false
+
+			ReactFeatureFlags.enableNewReconciler = false
+			ReactFeatureFlags.deferRenderPhaseUpdateToNextBatch = true
+			ReactFeatureFlags.enableDiscreteEventFlushingChange = false
+			ReactFeatureFlags.enableEagerRootListeners = true
+
+			ReactFeatureFlags.enableDoubleInvokingEffects = false
 
 			React = require(Packages.React)
 
@@ -138,20 +178,21 @@ return function()
 		end)
 
 		-- @gate enableSchedulingProfiler
-		-- ROBLOX FIXME: Example suspended while rendering, but no fallback UI was specified
-		xit("should mark sync render with suspense that resolves", function()
-			local fakeSuspensePromise = Promise.resolve(true)
+		it("should mark sync render with suspense that resolves", function()
+			-- ROBLOX deviation: can't just Promise.resolve() due to evaera Promise issue
+			local fakeSuspensePromise = Promise.delay(0):andThen(function()
+				return true
+			end)
 			local function Example()
 				error(fakeSuspensePromise)
 			end
 
-			ReactTestRenderer.create(
-				React.createElement(
-					React.Suspense,
-					{ fallback = nil },
-					React.createElement(Example)
-				)
-			)
+			ReactTestRenderer.create(React.createElement(
+				React.Suspense,
+				-- ROBLOX deviation: Lua can't express 'empty' fallback with nil, so we use empty array
+				{ fallback = {} },
+				React.createElement(Example)
+			))
 
 			jestExpect(marks).toEqual({
 				"--react-init-" .. tostring(ReactVersion),
@@ -172,20 +213,21 @@ return function()
 		end)
 
 		-- @gate enableSchedulingProfiler
-		-- ROBLOX FIXME: Example suspended while rendering, but no fallback UI was specified
-		xit("should mark sync render with suspense that rejects", function()
-			local fakeSuspensePromise = Promise.reject(Error.new("error"))
+		it("should mark sync render with suspense that rejects", function()
+			-- ROBLOX deviation: can't just Promise.reject() due to evaera Promise issue
+			local fakeSuspensePromise = Promise.delay(0):andThen(function()
+				error(Error.new("error"))
+			end)
 			local function Example()
 				error(fakeSuspensePromise)
 			end
 
-			ReactTestRenderer.create(
-				React.createElement(
-					React.Suspense,
-					{ fallback = nil },
-					React.createElement(Example)
-				)
-			)
+			ReactTestRenderer.create(React.createElement(
+				React.Suspense,
+				-- ROBLOX deviation: Lua can't express 'empty' fallback with nil, so we use empty array
+				{ fallback = {} },
+				React.createElement(Example)
+			))
 
 			jestExpect(marks).toEqual({
 				"--react-init-" .. tostring(ReactVersion),
@@ -201,15 +243,21 @@ return function()
 
 			Array.splice(marks, 1)
 
-			-- ROBLOX TODO: how do we do this?
+			-- ROBLOX deviation: jest-roblox doesn't support these Promise matchers yet
 			-- await jestExpect(fakeSuspensePromise).rejects.toThrow()
+			jestExpect(function()
+				fakeSuspensePromise:expect()
+			end).toThrow()
+
 			jestExpect(marks).toEqual({ "--suspense-rejected-0-Example" })
 		end)
 
 		-- @gate enableSchedulingProfiler
-		-- ROBLOX FIXME: Example suspended while rendering, but no fallback UI was specified
-		xit("should mark concurrent render with suspense that resolves", function()
-			local fakeSuspensePromise = Promise.resolve(true)
+		it("should mark concurrent render with suspense that resolves", function()
+			-- ROBLOX deviation: can't just Promise.resolve() due to evaera Promise issue
+			local fakeSuspensePromise = Promise.delay(0):andThen(function()
+				return true
+			end)
 			local function Example()
 				error(fakeSuspensePromise)
 			end
@@ -217,7 +265,8 @@ return function()
 			ReactTestRenderer.create(
 				React.createElement(
 					React.Suspense,
-					{ fallback = nil },
+					-- ROBLOX deviation: Lua can't express 'empty' fallback with nil, so we use empty array
+					{ fallback = {} },
 					React.createElement(Example)
 				),
 				{ unstable_isConcurrent = true }
@@ -244,14 +293,18 @@ return function()
 
 			Array.splice(marks, 1)
 
-			fakeSuspensePromise:await()
+			fakeSuspensePromise:expect()
+
 			jestExpect(marks).toEqual({ "--suspense-resolved-0-Example" })
 		end)
 
 		-- @gate enableSchedulingProfiler
-		-- ROBLOX FIXME: Example suspended while rendering, but no fallback UI was specified
-		xit("should mark concurrent render with suspense that rejects", function()
-			local fakeSuspensePromise = Promise.reject(Error.new("error"))
+		it("should mark concurrent render with suspense that rejects", function()
+			-- ROBLOX deviation: can't just Promise.reject() due to evaera Promise issue
+			local fakeSuspensePromise = Promise.delay(0):andThen(function()
+				error(Error.new("error"))
+			end)
+
 			local function Example()
 				error(fakeSuspensePromise)
 			end
@@ -259,7 +312,8 @@ return function()
 			ReactTestRenderer.create(
 				React.createElement(
 					React.Suspense,
-					{ fallback = nil },
+					-- ROBLOX deviation: Lua can't express 'empty' fallback with nil, so we use empty array
+					{ fallback = {} },
 					React.createElement(Example)
 				),
 				{ unstable_isConcurrent = true }
@@ -286,6 +340,7 @@ return function()
 
 			Array.splice(marks, 1)
 
+			-- ROBLOX deviation: jest-roblox doesn't support these Promise matchers yet
 			-- await jestExpect(fakeSuspensePromise).rejects.toThrow()
 			jestExpect(function()
 				fakeSuspensePromise:expect()
@@ -406,8 +461,8 @@ return function()
 			-- ROBLOX FIXME: no way to gate feature tests like upstream
 			-- gate(({old}) =>
 			--   old
-			--     ? jestExpect(marks).toContain('--schedule-state-update-1024-Example')
-			--     : jestExpect(marks).toContain('--schedule-state-update-512-Example'),
+			jestExpect(marks).toContain("--schedule-state-update-1024-Example")
+			-- jestExpect(marks).toContain('--schedule-state-update-512-Example')
 			-- )
 		end)
 
@@ -445,8 +500,8 @@ return function()
 			-- ROBLOX TODO: we have no way to gate tests on features like upstream
 			-- gate(({old}) =>
 			--   old
-			--     ? jestExpect(marks).toContain('--schedule-forced-update-1024-Example')
-			--     : jestExpect(marks).toContain('--schedule-forced-update-512-Example'),
+			jestExpect(marks).toContain("--schedule-forced-update-1024-Example")
+			-- jestExpect(marks).toContain('--schedule-forced-update-512-Example')
 			-- )
 		end)
 
@@ -545,7 +600,7 @@ return function()
 			-- ROBLOX TODO: we don't have a way to gate tests based on features like upstream does
 			-- gate(({old}) =>
 			--   old
-			--     ? jestExpect(marks).toContain('--schedule-state-update-1024-Example')
+			jestExpect(marks).toContain("--schedule-state-update-1024-Example")
 			--     : jestExpect(marks).toContain('--schedule-state-update-512-Example'),
 			-- )
 		end)

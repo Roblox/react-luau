@@ -266,11 +266,15 @@ local function isSimpleFunctionComponent(type: any)
 		-- type.defaultProps == undefined
 end
 
--- deviation: FIXME: `Component: Function` - lock down component type def
 local function resolveLazyComponentTag(Component: any): WorkTag
-	-- ROBLOX FIXME: Need to actually differentiate correctly
-	if typeof(Component) == "function" then
-		return shouldConstruct(Component) and ClassComponent or FunctionComponent
+	if typeof(Component) == "function"
+		-- ROBLOX deviation: upstream is a function with method on, we use a table and need an alternate route
+		 or (typeof(Component) == "table" and Component.isReactComponent) then
+		if shouldConstruct(Component) then
+			return ClassComponent
+		end
+
+		return FunctionComponent
 	-- ROBLOX deviation: we can only index ["$$typeof"] on a table
 	elseif Component ~= nil and typeof(Component) == 'table' then
 		local __typeof = Component["$$typeof"]

@@ -1,4 +1,4 @@
--- upstream https://github.com/facebook/react/blob/9abc2785cb070148d64fae81e523246b90b92016/packages/scheduler/src/SchedulerProfiling.js
+-- ROBLOX upstream https://github.com/facebook/react/blob/8af27aeedbc6b00bc2ef49729fc84f116c70a27c/packages/scheduler/src/SchedulerProfiling.js
 --[[*
 * Copyright (c) Facebook, Inc. and its affiliates.
 *
@@ -6,10 +6,11 @@
 * LICENSE file in the root directory of this source tree.
 *
 ]]
-
+-- ROBLOX NOTE: this file is synced against a post-17.0.1 version that doesn't use SharedArrayBuffer
 local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
+local exports = {}
 
 local SchedulerPriorities = require(script.Parent.SchedulerPriorities)
 type PriorityLevel = SchedulerPriorities.PriorityLevel
@@ -17,51 +18,9 @@ type PriorityLevel = SchedulerPriorities.PriorityLevel
 local ScheduleFeatureFlags = require(script.Parent.SchedulerFeatureFlags)
 local enableProfiling = ScheduleFeatureFlags.enableProfiling
 
-local NoPriority = SchedulerPriorities.NoPriority
-
 local runIdCounter: number = 0
 local mainThreadIdCounter: number = 0
 
--- local profilingStateSize = 4
-
--- FIXME (roblox): remove this when our unimplemented
-local function unimplemented(message)
-	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-	print("UNIMPLEMENTED ERROR: " .. tostring(message))
-	error("FIXME (roblox): " .. message .. " is unimplemented", 2)
-end
-
-local exports = {}
-
-if enableProfiling then
-	exports.sharedProfilingBuffer = {}
-else
-	exports.sharedProfilingBuffer = nil
-end
-
--- ROBLOX deviation: just use an array
--- local profilingState =
---   enableProfiling && sharedProfilingBuffer !== null
---     ? new Int32Array(sharedProfilingBuffer)
---     : []; // We can't read this but it helps save bytes for null checks
-
-local profilingState = {}
-
-local PRIORITY = 0
-local CURRENT_TASK_ID = 1
-local CURRENT_RUN_ID = 2
-local QUEUE_SIZE = 3
-
-if enableProfiling then
-	profilingState[PRIORITY] = NoPriority
-	-- This is maintained with a counter, because the size of the priority queue
-	-- array might include canceled tasks.
-	profilingState[QUEUE_SIZE] = 0
-	profilingState[CURRENT_TASK_ID] = 0
-end
 
 -- Bytes per element is 4
 local INITIAL_EVENT_LOG_SIZE = 131072
@@ -70,7 +29,7 @@ local MAX_EVENT_LOG_SIZE = 524288 -- Equivalent to 2 megabytes
 local eventLogSize = 0
 local eventLogBuffer = nil
 local eventLog = nil
-local eventLogIndex = 0
+local eventLogIndex = 1
 
 local TaskStartEvent = 1
 local TaskCompleteEvent = 2
@@ -82,9 +41,8 @@ local SchedulerSuspendEvent = 7
 local SchedulerResumeEvent = 8
 
 local function logEvent(entries)
-	unimplemented("SchedulerProfiling:logEvent")
 	if eventLog ~= nil then
-		local offset = eventLogIndex
+		-- ROBLOX deviation: upstream uses a packed array for performance. we do something simpler for now
 		eventLogIndex += #entries
 		if eventLogIndex + 1 > eventLogSize then
 			eventLogSize *= 2
@@ -99,18 +57,18 @@ local function logEvent(entries)
 			end
 			local newEventLog = {}
 			table.insert(newEventLog, eventLog)
-			eventLogBuffer = newEventLog.buffer
+			eventLogBuffer = newEventLog
 			eventLog = newEventLog
 		end
-		table.insert(eventLog, entries, offset)
+		table.insert(eventLog, entries)
 	end
 end
 
 exports.startLoggingProfilingEvents = function()
 	eventLogSize = INITIAL_EVENT_LOG_SIZE
 	eventLogBuffer = {}
-	eventLog = {}
-	eventLogIndex = 0
+	eventLog = eventLogBuffer
+	eventLogIndex = 1
 end
 
 exports.stopLoggingProfilingEvents = function()
@@ -118,14 +76,12 @@ exports.stopLoggingProfilingEvents = function()
 	eventLogSize = 0
 	eventLogBuffer = nil
 	eventLog = nil
-	eventLogIndex = 0
+	eventLogIndex = 1
 	return buffer
 end
 
 exports.markTaskStart = function(task, ms: number)
 	if enableProfiling then
-		profilingState[QUEUE_SIZE] += 1
-
 		if eventLog ~= nil then
 			-- performance.now returns a float, representing milliseconds. When the
 			-- event is logged, it's coerced to an int. Convert to microseconds to
@@ -137,10 +93,6 @@ end
 
 exports.markTaskCompleted = function(task, ms: number)
 	if enableProfiling then
-		profilingState[PRIORITY] = NoPriority
-		profilingState[CURRENT_TASK_ID] = 0
-		profilingState[QUEUE_SIZE] -= 1
-
 		if eventLog ~= nil then
 			-- performance.now returns a float, representing milliseconds. When the
 			-- event is logged, it's coerced to an int. Convert to microseconds to
@@ -152,8 +104,6 @@ end
 
 exports.markTaskCanceled = function(task, ms: number)
 	if enableProfiling then
-		profilingState[QUEUE_SIZE] -= 1
-
 		if eventLog ~= nil then
 			logEvent({ TaskCancelEvent, ms * 1000, task.id })
 		end
@@ -162,10 +112,6 @@ end
 
 exports.markTaskErrored = function(task, ms: number)
 	if enableProfiling then
-		profilingState[PRIORITY] = NoPriority
-		profilingState[CURRENT_TASK_ID] = 0
-		profilingState[QUEUE_SIZE] -= 1
-
 		if eventLog ~= nil then
 			logEvent({ TaskErrorEvent, ms * 1000, task.id })
 		end
@@ -176,10 +122,6 @@ exports.markTaskRun = function(task, ms: number)
 	if enableProfiling then
 		runIdCounter += 1
 
-		profilingState[PRIORITY] = task.priorityLevel
-		profilingState[CURRENT_TASK_ID] = task.id
-		profilingState[CURRENT_RUN_ID] = runIdCounter
-
 		if eventLog ~= nil then
 			logEvent({ TaskRunEvent, ms * 1000, task.id, runIdCounter })
 		end
@@ -188,10 +130,6 @@ end
 
 exports.markTaskYield = function(task, ms: number)
 	if enableProfiling then
-		profilingState[PRIORITY] = NoPriority
-		profilingState[CURRENT_TASK_ID] = 0
-		profilingState[CURRENT_RUN_ID] = 0
-
 		if eventLog ~= nil then
 			logEvent({ TaskYieldEvent, ms * 1000, task.id, runIdCounter })
 		end

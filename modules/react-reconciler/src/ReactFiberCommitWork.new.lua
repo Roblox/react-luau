@@ -37,6 +37,9 @@ end
 local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
+local LuauPolyfill = require(Packages.LuauPolyfill)
+local Object = LuauPolyfill.Object
+local Set = LuauPolyfill.Set
 type Array<T> = { [number]: T }
 
 local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
@@ -193,8 +196,6 @@ end
 -- local captureCommitPhaseError = ReactFiberWorkLoop.captureCommitPhaseError
 -- local schedulePassiveEffectCallback = ReactFiberWorkLoop.schedulePassiveEffectCallback
 
-local LuauPolyfill = require(Packages.LuauPolyfill)
-local Object = LuauPolyfill.Object
 
 -- deviation: stub to allow dependency injection that breaks circular dependency
 local schedulePassiveEffectCallback
@@ -2120,7 +2121,7 @@ function attachSuspenseRetryListeners(finishedWork: Fiber)
     finishedWork.updateQueue = nil
     local retryCache = finishedWork.stateNode
     if retryCache == nil then
-      finishedWork.stateNode = {}
+      finishedWork.stateNode = Set.new()
       retryCache = finishedWork.stateNode
     end
     for wakeable, _ in pairs((wakeables :: Set<Wakeable>)) do
@@ -2129,14 +2130,21 @@ function attachSuspenseRetryListeners(finishedWork: Fiber)
         return resolveRetryWakeable(finishedWork, wakeable)
       end
 
-      if not retryCache[wakeable] then
+      if not retryCache:has(wakeable) then
         if enableSchedulerTracing then
           if wakeable.__reactDoNotTraceInteractions ~= true then
             retry = Schedule_tracing_wrap(retry)
           end
         end
-        table.insert(retryCache, wakeable)
-        wakeable:andThen(retry, retry)
+        retryCache:add(wakeable)
+        wakeable:andThen(
+          function()
+            return retry()
+          end,
+          function()
+            return retry()
+          end
+        )
       end
     end
   end

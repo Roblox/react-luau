@@ -45,8 +45,8 @@ return function(hostConfig)
 	local markSchedulerSuspended = SchedulerProfiling.markSchedulerSuspended
 	local markSchedulerUnsuspended = SchedulerProfiling.markSchedulerUnsuspended
 	local markTaskStart = SchedulerProfiling.markTaskStart
-	-- local stopLoggingProfilingEvents = SchedulerProfiling.stopLoggingProfilingEvents
-	-- local startLoggingProfilingEvents = SchedulerProfiling.startLoggingProfilingEvents
+	local stopLoggingProfilingEvents = SchedulerProfiling.stopLoggingProfilingEvents
+	local startLoggingProfilingEvents = SchedulerProfiling.startLoggingProfilingEvents
 
 	-- Max 31 bit integer. The max integer size in V8 for 32-bit systems.
 	-- Math.pow(2, 30) - 1
@@ -161,8 +161,7 @@ return function(hostConfig)
 						end
 						error(error_)
 					end
-					-- ROBLOX FIXME: workaround for Luau not understanding error is a no-return
-					return nil
+					return enableProfilingResult
 				else
 					-- No catch in prod code path.
 					return workLoop(hasTimeRemaining, initialTime)
@@ -485,5 +484,14 @@ return function(hostConfig)
 		unstable_getFirstCallbackNode = unstable_getFirstCallbackNode,
 		unstable_now = getCurrentTime,
 		unstable_forceFrameRate = forceFrameRate,
+		unstable_Profiling = (function()
+			if enableProfiling then
+				return {
+					startLoggingProfilingEvents = startLoggingProfilingEvents,
+					stopLoggingProfilingEvents = stopLoggingProfilingEvents,
+				}
+			end
+			return nil
+		end)()
 	}
 end

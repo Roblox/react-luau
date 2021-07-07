@@ -2740,10 +2740,12 @@ local flushPassiveEffectsImpl
 exports.flushPassiveEffects = function(): boolean
   -- Returns whether passive effects were flushed.
   if pendingPassiveEffectsRenderPriority ~= NoSchedulerPriority then
-    local priorityLevel =
-      pendingPassiveEffectsRenderPriority > NormalSchedulerPriority
-        and NormalSchedulerPriority
-        or pendingPassiveEffectsRenderPriority
+    local priorityLevel = (function()
+      if pendingPassiveEffectsRenderPriority > NormalSchedulerPriority then
+        return NormalSchedulerPriority
+      end
+      return pendingPassiveEffectsRenderPriority
+    end)()
     pendingPassiveEffectsRenderPriority = NoSchedulerPriority
     if ReactFeatureFlags.decoupleUpdatePriorityFromScheduler then
       local previousLanePriority = getCurrentUpdateLanePriority()
@@ -3200,7 +3202,7 @@ exports.resolveRetryWakeable = function(boundaryFiber: Fiber, wakeable: Wakeable
   if retryCache ~= nil then
     -- The wakeable resolved, so we no longer need to memoize, because it will
     -- never be thrown again.
-    retryCache[wakeable] = nil
+    retryCache:delete(wakeable)
   end
 
   retryTimedOutBoundary(boundaryFiber, retryLane)
@@ -3496,7 +3498,7 @@ if _G.__DEV__ and ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallb
     end)
     if not ok then
       local originalError = result
-      warn(originalError)
+
       if
         originalError ~= nil and
         typeof(originalError) == "table" and
