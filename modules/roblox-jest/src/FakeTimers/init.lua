@@ -2,7 +2,7 @@
 
 type Timer = {
 	expiry: number,
-	callback: () -> ()
+	callback: () -> (),
 }
 
 local realDelay = delay
@@ -74,7 +74,7 @@ local function advanceTimersByTime(msToRun: number): ()
 			-- There are no timers between now and the target we're running to, so
 			-- adjust our time cursor and quit
 			now += secondsToRun
-			break;
+			break
 		else
 			secondsToRun -= nextTimerExpiry - now
 			now = nextTimerExpiry
@@ -85,9 +85,10 @@ local function advanceTimersByTime(msToRun: number): ()
 	end
 	if i == 100000 then
 		error(
-			'Ran 100000' ..
-			' timers, and there are still more! ' ..
-			"Assuming we've hit an infinite recursion and bailing out...")
+			"Ran 100000"
+				.. " timers, and there are still more! "
+				.. "Assuming we've hit an infinite recursion and bailing out..."
+		)
 	end
 end
 

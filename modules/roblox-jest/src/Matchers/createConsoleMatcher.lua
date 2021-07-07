@@ -21,16 +21,19 @@ local function shouldIgnoreConsoleError(format, args)
 			end
 		end
 	else
-		if format ~= nil and
-			typeof(format.message) == "string" and
-			typeof(format.stack) == "string"
+		if
+			format ~= nil
+			and typeof(format.message) == "string"
+			and typeof(format.stack) == "string"
 			and #args == 0
 		then
 			-- // In production, ReactFiberErrorLogger logs error objects directly.
 			-- // They are noisy too so we'll try to ignore them.
 			return true
 		end
-		if format:find("act(...) is not supported in production builds of React") == 0 then
+		if
+			format:find("act(...) is not supported in production builds of React") == 0
+		then
 			-- // We don't yet support act() for prod builds, and warn for it.
 			-- // But we'd like to use act() ourselves for prod builds.
 			-- // Let's ignore the warning and #yolo.
@@ -74,27 +77,32 @@ return function(consoleMethod, matcherName)
 		if _G.__DEV__ then
 			-- // Warn about incorrect usage of matcher.
 			if typeof(expectedMessages) == "string" then
-				expectedMessages = {expectedMessages}
+				expectedMessages = { expectedMessages }
 			elseif not Array.isArray(expectedMessages) then
 				error(
-					("%s() requires a parameter of type string or an array of strings "):format(matcherName)
+					("%s() requires a parameter of type string or an array of strings "):format(
+						matcherName
+					)
 						.. ("but was given %s."):format(typeof(expectedMessages))
 				)
 			end
 			-- deviation: since an empty table will return true for
 			-- `Array.isArray(options)`, check if the table is not empty
-			if typeof(options) ~= "table" or
-				(Array.isArray(options) and next(options) ~= nil)
+			if
+				typeof(options) ~= "table"
+				or (Array.isArray(options) and next(options) ~= nil)
 			then
 				error(
-					("%s() second argument, when present, should be an object. "):format(matcherName) ..
-						"Did you forget to wrap the messages into an array?"
+					("%s() second argument, when present, should be an object. "):format(
+						matcherName
+					)
+						.. "Did you forget to wrap the messages into an array?"
 				)
 			end
 			if select("#", ...) > 0 then
 				error(
-					("%s() received more than two arguments. "):format(matcherName) ..
-						"Did you forget to wrap the messages into an array?"
+					("%s() received more than two arguments. "):format(matcherName)
+						.. "Did you forget to wrap the messages into an array?"
 				)
 			end
 
@@ -114,23 +122,27 @@ return function(consoleMethod, matcherName)
 			local caughtError
 
 			local function isLikelyAComponentStack(message)
-				return typeof(message) == "string" and
-					message:match('\n    in ') ~= nil
+				return typeof(message) == "string" and message:match("\n    in ") ~= nil
 			end
 
 			local function consoleSpy(format, ...)
 				-- // Ignore uncaught errors reported by jsdom
 				-- // and React addendums because they're too noisy.
-				local args = {...}
-				if not logAllErrors and
-					consoleMethod == 'error' and
-					shouldIgnoreConsoleError(format, args)
+				local args = { ... }
+				if
+					not logAllErrors
+					and consoleMethod == "error"
+					and shouldIgnoreConsoleError(format, args)
 				then
 					return
 				end
 
 				local message = format
-				local formattedOk, formattedOrError = pcall(string.format, format, unpack(args))
+				local formattedOk, formattedOrError = pcall(
+					string.format,
+					format,
+					unpack(args)
+				)
 				if formattedOk then
 					message = formattedOrError
 				end
@@ -155,17 +167,20 @@ return function(consoleMethod, matcherName)
 
 				-- // Protect against accidentally passing a component stack
 				-- // to warning() which already injects the component stack.
-				if #args >= 2 and
-					isLikelyAComponentStack(args[#args]) and
-					isLikelyAComponentStack(args[#args - 1])
+				if
+					#args >= 2
+					and isLikelyAComponentStack(args[#args])
+					and isLikelyAComponentStack(args[#args - 1])
 				then
-					lastWarningWithExtraComponentStack = {format = format}
+					lastWarningWithExtraComponentStack = { format = format }
 				end
 
-				for index=1, #expectedMessages do
+				for index = 1, #expectedMessages do
 					local expectedMessage = expectedMessages[index]
-					if normalizedMessage == expectedMessage or
-						normalizedMessage:find(expectedMessage, 1, true) ~= nil
+					if
+						normalizedMessage == expectedMessage
+						or normalizedMessage:find(expectedMessage, 1, true)
+							~= nil
 					then
 						if isLikelyAComponentStack(normalizedMessage) then
 							table.insert(warningsWithComponentStack, normalizedMessage)
@@ -179,11 +194,13 @@ return function(consoleMethod, matcherName)
 
 				local errorMessage
 				if #expectedMessages == 0 then
-					errorMessage = 'Unexpected warning recorded: ' .. normalizedMessage
+					errorMessage = "Unexpected warning recorded: " .. normalizedMessage
 				elseif #expectedMessages == 1 then
-					errorMessage = 'Unexpected warning recorded: ' .. jestDiff(expectedMessages[1], normalizedMessage)
+					errorMessage = "Unexpected warning recorded: "
+						.. jestDiff(expectedMessages[1], normalizedMessage)
 				else
-					errorMessage = 'Unexpected warning recorded: ' .. jestDiff(expectedMessages, {normalizedMessage})
+					errorMessage = "Unexpected warning recorded: "
+						.. jestDiff(expectedMessages, { normalizedMessage })
 				end
 
 				-- // Record the call stack for unexpected warnings.
@@ -243,10 +260,12 @@ return function(consoleMethod, matcherName)
 					local warnings = warningsWithoutComponentStack
 					return {
 						message = function()
-							return ("Expected %s warnings without a component stack but received %s:\n"):format(
-								withoutStack,
-								#warningsWithoutComponentStack
-								) .. table.concat(warnings, "\n")
+							return (
+								"Expected %s warnings without a component stack but received %s:\n"
+							):format(withoutStack, #warningsWithoutComponentStack) .. table.concat(
+								warnings,
+								"\n"
+							)
 						end,
 						pass = false,
 					}
@@ -255,12 +274,19 @@ return function(consoleMethod, matcherName)
 				if #warningsWithComponentStack > 0 then
 					return {
 						message = function()
-							return "Received warning unexpectedly includes a component stack:\n" ..
-								("  %s\nIf this warning intentionally includes the component stack, remove ")
-									:format(warningsWithComponentStack[1]) ..
-								("{withoutStack: true} from the %s() call. If you have a mix of "):format(matcherName) ..
-								("warnings with and without stack in one %s() call, pass "):format(matcherName) ..
-								("{withoutStack: N} where N is the number of warnings without stacks."):format(matcherName)
+							return "Received warning unexpectedly includes a component stack:\n"
+								.. (
+									"  %s\nIf this warning intentionally includes the component stack, remove "
+								):format(warningsWithComponentStack[1])
+								.. (
+									"{withoutStack: true} from the %s() call. If you have a mix of "
+								):format(matcherName)
+								.. (
+									"warnings with and without stack in one %s() call, pass "
+								):format(matcherName)
+								.. (
+									"{withoutStack: N} where N is the number of warnings without stacks."
+								):format(matcherName)
 						end,
 						pass = false,
 					}
@@ -271,25 +297,33 @@ return function(consoleMethod, matcherName)
 				if #warningsWithoutComponentStack > 0 then
 					return {
 						message = function()
-							return "Received warning unexpectedly does not include a component stack:\n" ..
-								("  %s\nIf this warning intentionally omits the component stack, add "):format(warningsWithoutComponentStack[1]) ..
-								("{withoutStack: true} to the %s call."):format(matcherName)
+							return "Received warning unexpectedly does not include a component stack:\n"
+								.. (
+									"  %s\nIf this warning intentionally omits the component stack, add "
+								):format(warningsWithoutComponentStack[1])
+								.. ("{withoutStack: true} to the %s call."):format(
+									matcherName
+								)
 						end,
 						pass = false,
 					}
 				end
 			else
 				error(
-					("The second argument for %s(), when specified, must be an object. It may have a "):format(matcherName) ..
-						'property called "withoutStack" whose value may be undefined, boolean, or a number. ' ..
-						("Instead received %s."):format(typeof(withoutStack))
+					(
+						"The second argument for %s(), when specified, must be an object. It may have a "
+					):format(matcherName)
+						.. 'property called "withoutStack" whose value may be undefined, boolean, or a number. '
+						.. ("Instead received %s."):format(typeof(withoutStack))
 				)
 			end
 
 			if lastWarningWithMismatchingFormat ~= nil then
 				return {
 					message = function()
-						return ("Received %s arguments for a message with %s placeholders:\n  %s"):format(
+						return (
+							"Received %s arguments for a message with %s placeholders:\n  %s"
+						):format(
 							#lastWarningWithMismatchingFormat.args,
 							lastWarningWithMismatchingFormat.expectedArgCount,
 							lastWarningWithMismatchingFormat.format
@@ -301,21 +335,22 @@ return function(consoleMethod, matcherName)
 			if lastWarningWithExtraComponentStack ~= nil then
 				return {
 					message = function()
-						return "Received more than one component stack for a warning:\n" ..
-							("  %s\nDid you accidentally pass a stack to warning() as the last argument? ")
-								:format(lastWarningWithExtraComponentStack.format) ..
-							"Don't forget warning() already injects the component stack automatically."
+						return "Received more than one component stack for a warning:\n"
+							.. (
+								"  %s\nDid you accidentally pass a stack to warning() as the last argument? "
+							):format(lastWarningWithExtraComponentStack.format)
+							.. "Don't forget warning() already injects the component stack automatically."
 					end,
 					pass = false,
 				}
 			end
 
-			return {pass = true}
+			return { pass = true }
 		else
 			-- // Any uncaught errors or warnings should fail tests in production mode.
 			callback()
 
-			return {pass = true}
+			return { pass = true }
 		end
 	end
 end

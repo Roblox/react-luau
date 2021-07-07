@@ -5,8 +5,10 @@ local requiredModules: { [ModuleScript]: any } = {}
 local mocks: { [ModuleScript]: (() -> any)? } = {}
 
 if _G.__NO_LOADMODULE__ then
-	warn("debug.loadmodule not enabled. Test plans relying on resetModules " ..
-		"will not work properly.")
+	warn(
+		"debug.loadmodule not enabled. Test plans relying on resetModules "
+			.. "will not work properly."
+	)
 
 	return {
 		requireOverride = require,
@@ -40,7 +42,11 @@ local function requireOverride(scriptInstance: ModuleScript): any
 	--
 	-- TODO: This is a little janky, so we should find a way to do this that's a
 	-- little more robust. We may want to apply it to anything in RobloxJest?
-	if scriptInstance == script or scriptInstance == script.Parent or scriptInstance.Name == "jest-roblox" then
+	if
+		scriptInstance == script
+		or scriptInstance == script.Parent
+		or scriptInstance.Name == "jest-roblox"
+	then
 		return require(scriptInstance)
 	end
 	-- FIXME: an extra special hack that prevents us from frequently reloading
@@ -58,16 +64,18 @@ local function requireOverride(scriptInstance: ModuleScript): any
 
 	local moduleResult
 	-- First, check the mock cache and see if this is being mocked
-	if typeof (mocks[scriptInstance]) == "function" then
+	if typeof(mocks[scriptInstance]) == "function" then
 		-- ROBLOX FIXME: Luau flow analysis bug workaround
-		moduleResult = (mocks[scriptInstance]:: () -> any)()
+		moduleResult = (mocks[scriptInstance] :: () -> any)()
 
 		if moduleResult == nil then
-			error(string.format(
-				"[Mock Error]: %s did not return a valid result\n" ..
-				"\tmocks must return a non-nil value",
-				tostring(scriptInstance)
-			))
+			error(
+				string.format(
+					"[Mock Error]: %s did not return a valid result\n"
+						.. "\tmocks must return a non-nil value",
+					tostring(scriptInstance)
+				)
+			)
 		end
 	else
 		-- Narrowing this type here lets us appease the type checker while still
@@ -82,11 +90,13 @@ local function requireOverride(scriptInstance: ModuleScript): any
 		moduleResult = moduleFunction()
 
 		if moduleResult == nil then
-			error(string.format(
-				"[Module Error]: %s did not return a valid result\n" ..
-				"\tModuleScripts must return a non-nil value",
-				tostring(scriptInstance)
-			))
+			error(
+				string.format(
+					"[Module Error]: %s did not return a valid result\n"
+						.. "\tModuleScripts must return a non-nil value",
+					tostring(scriptInstance)
+				)
+			)
 		end
 	end
 

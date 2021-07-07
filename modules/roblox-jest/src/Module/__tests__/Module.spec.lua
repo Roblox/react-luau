@@ -26,7 +26,9 @@ return function()
 		end)
 
 		it("should clear any top-level module state", function()
-			local Incrementor = Module.requireOverride(script.Parent.TestScripts.Incrementor)
+			local Incrementor = Module.requireOverride(
+				script.Parent.TestScripts.Incrementor
+			)
 			jestExpect(Incrementor.get()).toBe(0)
 			Incrementor.increment()
 			jestExpect(Incrementor.get()).toBe(1)
@@ -38,8 +40,12 @@ return function()
 		end)
 
 		it("should clear transitive module requirements", function()
-			local Incrementor = Module.requireOverride(script.Parent.TestScripts.Incrementor)
-			local getIncrementorValue = Module.requireOverride(script.Parent.TestScripts.getIncrementorValue)
+			local Incrementor = Module.requireOverride(
+				script.Parent.TestScripts.Incrementor
+			)
+			local getIncrementorValue = Module.requireOverride(
+				script.Parent.TestScripts.getIncrementorValue
+			)
 			jestExpect(getIncrementorValue()).toBe(0)
 			Incrementor.increment()
 			Incrementor.increment()
@@ -48,7 +54,9 @@ return function()
 			-- Reset will reset the Incrementor's state before the
 			-- getIncrementorValue script requires it again
 			Module.resetModules()
-			getIncrementorValue = Module.requireOverride(script.Parent.TestScripts.getIncrementorValue)
+			getIncrementorValue = Module.requireOverride(
+				script.Parent.TestScripts.getIncrementorValue
+			)
 
 			jestExpect(getIncrementorValue()).toBe(0)
 		end)
@@ -106,7 +114,9 @@ return function()
 			end)
 			-- addFour requires add, which we did not required directly
 			-- ourselves
-			local addFourMocked = Module.requireOverride(script.Parent.TestScripts.addFour)
+			local addFourMocked = Module.requireOverride(
+				script.Parent.TestScripts.addFour
+			)
 
 			jestExpect(addFourMocked(10)).toBe(40)
 		end)

@@ -8,7 +8,7 @@ return function()
 	local function overrideWarn(fn, ...)
 		local originalWarn = getfenv(fn).warn
 		getfenv(fn).warn = function(...)
-			table.insert(warnings, {...})
+			table.insert(warnings, { ... })
 		end
 		fn(...)
 		getfenv(fn).warn = originalWarn

@@ -57,7 +57,7 @@ return function()
 				if _G.__DEV__ then
 					console.error("Hello")
 				end
-			end).toErrorDev("Hello", {withoutStack = true})
+			end).toErrorDev("Hello", { withoutStack = true })
 			jestExpect(function()
 				if _G.__DEV__ then
 					console.error("Hello")
@@ -68,22 +68,29 @@ return function()
 				"Hello",
 				"Good day",
 				"Bye",
-			}, {withoutStack = true})
+			}, {
+				withoutStack = true,
+			})
 		end)
 
-		it("does not fail when expected stack-less warning number matches the actual one", function()
-			jestExpect(function()
-				if _G.__DEV__ then
-					console.error("Hello\n    in div")
-					console.error("Good day")
-					console.error("Bye\n    in div")
-				end
-			end).toErrorDev({
-				"Hello",
-				"Good day",
-				"Bye",
-			}, {withoutStack = 1})
-		end)
+		it(
+			"does not fail when expected stack-less warning number matches the actual one",
+			function()
+				jestExpect(function()
+					if _G.__DEV__ then
+						console.error("Hello\n    in div")
+						console.error("Good day")
+						console.error("Bye\n    in div")
+					end
+				end).toErrorDev({
+					"Hello",
+					"Good day",
+					"Bye",
+				}, {
+					withoutStack = 1,
+				})
+			end
+		)
 
 		if _G.__DEV__ then
 			-- // Helper methods avoids invalid toWarn().toThrow() nesting
@@ -152,7 +159,7 @@ return function()
 				expectToWarnAndToThrow(function()
 					jestExpect(function()
 						console.error("Hello\n    in div")
-					end).toErrorDev("Hello", {withoutStack = true})
+					end).toErrorDev("Hello", { withoutStack = true })
 				end, "Received warning unexpectedly includes a component stack")
 				expectToWarnAndToThrow(function()
 					jestExpect(function()
@@ -163,23 +170,30 @@ return function()
 						"Hello",
 						"Good day",
 						"Bye",
-					}, {withoutStack = true})
+					}, {
+						withoutStack = true,
+					})
 				end, "Received warning unexpectedly includes a component stack")
 			end)
 
-			it("fails if expected stack-less warning number does not match the actual one", function()
-				expectToWarnAndToThrow(function()
-					jestExpect(function()
-						console.error("Hello\n    in div")
-						console.error("Good day")
-						console.error("Bye\n    in div")
-					end).toErrorDev({
-						"Hello",
-						"Good day",
-						"Bye",
-					}, {withoutStack = 4})
-				end, "Expected 4 warnings without a component stack but received 1")
-			end)
+			it(
+				"fails if expected stack-less warning number does not match the actual one",
+				function()
+					expectToWarnAndToThrow(function()
+						jestExpect(function()
+							console.error("Hello\n    in div")
+							console.error("Good day")
+							console.error("Bye\n    in div")
+						end).toErrorDev({
+							"Hello",
+							"Good day",
+							"Bye",
+						}, {
+							withoutStack = 4,
+						})
+					end, "Expected 4 warnings without a component stack but received 1")
+				end
+			)
 
 			it("fails if withoutStack is invalid", function()
 				-- deviation: null should error, but not undefined. Since they're the same
@@ -192,7 +206,7 @@ return function()
 				expectToWarnAndToThrow(function()
 					jestExpect(function()
 						console.error("Hi")
-					end).toErrorDev("Hi", {withoutStack = {}})
+					end).toErrorDev("Hi", { withoutStack = {} })
 				end, "Instead received table")
 				expectToWarnAndToThrow(function()
 					jestExpect(function()
@@ -207,12 +221,12 @@ return function()
 				expectToWarnAndToThrow(function()
 					jestExpect(function()
 						console.error("Hi %s", "Sara", "extra")
-					end).toErrorDev("Hi", {withoutStack = true})
+					end).toErrorDev("Hi", { withoutStack = true })
 				end, "Received 2 arguments for a message with 1 placeholders")
 				expectToWarnAndToThrow(function()
 					jestExpect(function()
 						console.error("Hi %s")
-					end).toErrorDev("Hi", {withoutStack = true})
+					end).toErrorDev("Hi", { withoutStack = true })
 				end, "Received 0 arguments for a message with 1 placeholders")
 			end)
 
@@ -292,7 +306,7 @@ return function()
 				if _G.__DEV__ then
 					console.warn("Hello")
 				end
-			end).toWarnDev("Hello", {withoutStack = true})
+			end).toWarnDev("Hello", { withoutStack = true })
 			jestExpect(function()
 				if _G.__DEV__ then
 					console.warn("Hello")
@@ -303,22 +317,29 @@ return function()
 				"Hello",
 				"Good day",
 				"Bye",
-			}, {withoutStack = true})
+			}, {
+				withoutStack = true,
+			})
 		end)
 
-		it("does not fail when expected stack-less warning number matches the actual one", function()
-			jestExpect(function()
-				if _G.__DEV__ then
-					console.warn("Hello\n    in div")
-					console.warn("Good day")
-					console.warn("Bye\n    in div")
-				end
-			end).toWarnDev({
-				"Hello",
-				"Good day",
-				"Bye",
-			}, {withoutStack = 1})
-		end)
+		it(
+			"does not fail when expected stack-less warning number matches the actual one",
+			function()
+				jestExpect(function()
+					if _G.__DEV__ then
+						console.warn("Hello\n    in div")
+						console.warn("Good day")
+						console.warn("Bye\n    in div")
+					end
+				end).toWarnDev({
+					"Hello",
+					"Good day",
+					"Bye",
+				}, {
+					withoutStack = 1,
+				})
+			end
+		)
 
 		if _G.__DEV__ then
 			-- // Helper methods avoids invalid toWarn().toThrow() nesting
@@ -387,7 +408,7 @@ return function()
 				expectToWarnAndToThrow(function()
 					jestExpect(function()
 						console.warn("Hello\n    in div")
-					end).toWarnDev("Hello", {withoutStack = true})
+					end).toWarnDev("Hello", { withoutStack = true })
 				end, "Received warning unexpectedly includes a component stack")
 				expectToWarnAndToThrow(function()
 					jestExpect(function()
@@ -398,23 +419,30 @@ return function()
 						"Hello",
 						"Good day",
 						"Bye",
-					}, {withoutStack = true})
+					}, {
+						withoutStack = true,
+					})
 				end, "Received warning unexpectedly includes a component stack")
 			end)
 
-			it("fails if expected stack-less warning number does not match the actual one", function()
-				expectToWarnAndToThrow(function()
-					jestExpect(function()
-						console.warn("Hello\n    in div")
-						console.warn("Good day")
-						console.warn("Bye\n    in div")
-					end).toWarnDev({
-						"Hello",
-						"Good day",
-						"Bye",
-					}, {withoutStack = 4})
-				end, "Expected 4 warnings without a component stack but received 1")
-			end)
+			it(
+				"fails if expected stack-less warning number does not match the actual one",
+				function()
+					expectToWarnAndToThrow(function()
+						jestExpect(function()
+							console.warn("Hello\n    in div")
+							console.warn("Good day")
+							console.warn("Bye\n    in div")
+						end).toWarnDev({
+							"Hello",
+							"Good day",
+							"Bye",
+						}, {
+							withoutStack = 4,
+						})
+					end, "Expected 4 warnings without a component stack but received 1")
+				end
+			)
 
 			it("fails if withoutStack is invalid", function()
 				-- deviation: null should error, but not undefined. Since they're the same
@@ -427,7 +455,7 @@ return function()
 				expectToWarnAndToThrow(function()
 					jestExpect(function()
 						console.warn("Hi")
-					end).toWarnDev("Hi", {withoutStack = {}})
+					end).toWarnDev("Hi", { withoutStack = {} })
 				end, "Instead received table")
 				expectToWarnAndToThrow(function()
 					jestExpect(function()
@@ -442,12 +470,12 @@ return function()
 				expectToWarnAndToThrow(function()
 					jestExpect(function()
 						console.warn("Hi %s", "Sara", "extra")
-					end).toWarnDev("Hi", {withoutStack = true})
+					end).toWarnDev("Hi", { withoutStack = true })
 				end, "Received 2 arguments for a message with 1 placeholders")
 				expectToWarnAndToThrow(function()
 					jestExpect(function()
 						console.warn("Hi %s")
-					end).toWarnDev("Hi", {withoutStack = true})
+					end).toWarnDev("Hi", { withoutStack = true })
 				end, "Received 0 arguments for a message with 1 placeholders")
 			end)
 
