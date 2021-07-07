@@ -16,7 +16,7 @@ return function()
 		end).toWarnDev(
 			"Warning: The legacy Roact API 'oldAPI' is deprecated, and will be "
 				.. "removed in a future release.\n\nFoo",
-			{withoutStack = true}
+			{ withoutStack = true }
 		)
 
 		jestExpect(function()

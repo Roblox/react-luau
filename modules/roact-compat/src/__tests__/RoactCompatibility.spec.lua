@@ -51,21 +51,30 @@ return function()
 	describe("warns about deprecated Roact API features", function()
 		it("warns about createFragment", function()
 			jestExpect(function()
-				RoactCompat.createFragment({RoactCompat.createElement("div")})
-			end).toWarnDev("Warning: The legacy Roact API 'createFragment' is deprecated", {withoutStack = true})
+				RoactCompat.createFragment({ RoactCompat.createElement("div") })
+			end).toWarnDev(
+				"Warning: The legacy Roact API 'createFragment' is deprecated",
+				{ withoutStack = true }
+			)
 		end)
 
 		-- FIXME: Underlying ReactChildren API not yet ported
 		xit("warns about oneChild", function()
 			jestExpect(function()
-				RoactCompat.oneChild({RoactCompat.createElement("div")})
-			end).toWarnDev("Warning: The legacy Roact API 'oneChild' is deprecated", {withoutStack = true})
+				RoactCompat.oneChild({ RoactCompat.createElement("div") })
+			end).toWarnDev(
+				"Warning: The legacy Roact API 'oneChild' is deprecated",
+				{ withoutStack = true }
+			)
 		end)
 
 		it("warns about setGlobalConfig", function()
 			jestExpect(function()
-				RoactCompat.setGlobalConfig({propValidation = true})
-			end).toWarnDev("Warning: The legacy Roact API 'setGlobalConfig' is deprecated", {withoutStack = true})
+				RoactCompat.setGlobalConfig({ propValidation = true })
+			end).toWarnDev(
+				"Warning: The legacy Roact API 'setGlobalConfig' is deprecated",
+				{ withoutStack = true }
+			)
 		end)
 
 		it("warns about Roact.Portal", function()
@@ -81,29 +90,49 @@ return function()
 			jestExpect(function()
 				local root = ReactRoblox.createLegacyRoot(Instance.new("ScreenGui"))
 				root:render(RoactCompat.createElement(withPortal))
-			end).toWarnDev("Warning: The legacy Roact API 'Roact.Portal' is deprecated")
+			end).toWarnDev(
+				"Warning: The legacy Roact API 'Roact.Portal' is deprecated"
+			)
 		end)
 
 		it("warns about mount", function()
 			jestExpect(function()
-				RoactCompat.mount(RoactCompat.createElement("TextLabel", {Text = "Foo"}))
-			end).toWarnDev("Warning: The legacy Roact API 'mount' is deprecated", {withoutStack = true})
+				RoactCompat.mount(
+					RoactCompat.createElement("TextLabel", { Text = "Foo" })
+				)
+			end).toWarnDev(
+				"Warning: The legacy Roact API 'mount' is deprecated",
+				{ withoutStack = true }
+			)
 		end)
 
 		it("warns about update", function()
-			local tree = RoactCompat.mount(RoactCompat.createElement("TextLabel", {Text = "Foo"}))
+			local tree = RoactCompat.mount(
+				RoactCompat.createElement("TextLabel", { Text = "Foo" })
+			)
 
 			jestExpect(function()
-				RoactCompat.update(tree, RoactCompat.createElement("TextLabel", {Text = "Bar"}))
-			end).toWarnDev("Warning: The legacy Roact API 'update' is deprecated", {withoutStack = true})
+				RoactCompat.update(
+					tree,
+					RoactCompat.createElement("TextLabel", { Text = "Bar" })
+				)
+			end).toWarnDev(
+				"Warning: The legacy Roact API 'update' is deprecated",
+				{ withoutStack = true }
+			)
 		end)
 
 		it("warns about unmount", function()
-			local tree = RoactCompat.mount(RoactCompat.createElement("TextLabel", {Text = "Foo"}))
+			local tree = RoactCompat.mount(
+				RoactCompat.createElement("TextLabel", { Text = "Foo" })
+			)
 
 			jestExpect(function()
 				RoactCompat.unmount(tree)
-			end).toWarnDev("Warning: The legacy Roact API 'unmount' is deprecated", {withoutStack = true})
+			end).toWarnDev(
+				"Warning: The legacy Roact API 'unmount' is deprecated",
+				{ withoutStack = true }
+			)
 		end)
 	end)
 end
