@@ -23,22 +23,23 @@ local clearTimeout = LuauPolyfill.clearTimeout
 local console = require(Packages.Shared).console
 
 local ReactTypes = require(Packages.Shared)
-type ReactFundamentalComponentInstance<T, U> = ReactTypes.ReactFundamentalComponentInstance<T, U>
+type ReactFundamentalComponentInstance<T, U> =
+	ReactTypes.ReactFundamentalComponentInstance<T, U>
 
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 local REACT_OPAQUE_ID_TYPE = ReactSymbols.REACT_OPAQUE_ID_TYPE
 
-type Array<T> = { [number]: T };
-type Object = { [string]: any };
-type Function = (any) -> any;
+type Array<T> = { [number]: T }
+type Object = { [string]: any }
+type Function = (any) -> any
 
-export type Type = string;
-export type Props = Object;
+export type Type = string
+export type Props = Object
 export type Container = {
 	children: Array<Instance | TextInstance>,
 	createNodeMock: Function,
 	tag: string, -- ROBLOX deviation: Luau can't specify literals
-};
+}
 export type Instance = {
 	type: string,
 	props: Object,
@@ -47,32 +48,32 @@ export type Instance = {
 	internalInstanceHandle: Object,
 	rootContainerInstance: Container,
 	tag: string,
-};
+}
 export type TextInstance = {
 	text: string,
 	isHidden: boolean,
 	tag: string,
-};
-export type HydratableInstance = Instance | TextInstance;
-export type PublicInstance = Instance | TextInstance;
-export type HostContext = Object;
-export type UpdatePayload = Object;
+}
+export type HydratableInstance = Instance | TextInstance
+export type PublicInstance = Instance | TextInstance
+export type HostContext = Object
+export type UpdatePayload = Object
 -- Unused
 -- export type ChildSet = void;
 
 -- FIXME (roblox): This typically uses a builtin flowtype called 'TimeoutID', we
 -- should find a common solution for polyfill types with Luau
-export type TimeoutHandle = any;
-export type NoTimeout = number;
-export type EventResponder = any;
+export type TimeoutHandle = any
+export type NoTimeout = number
+export type EventResponder = any
 -- deviation: explicitly include `$$typeof` in type def
-export type OpaqueIDType = string | Object;
+export type OpaqueIDType = string | Object
 -- export type OpaqueIDType = string | {
 -- 	toString: () -> string?,
 -- 	valueOf: () -> string?,
 -- };
 
-export type RendererInspectionConfig = {};
+export type RendererInspectionConfig = {}
 
 local ReactFiberHostConfig = require(Packages.Shared).ReactFiberHostConfig
 local exports = Cryo.Dictionary.join(
@@ -89,7 +90,6 @@ if _G.__DEV__ then
 	Object.freeze(NO_CONTEXT)
 	Object.freeze(UPDATE_SIGNAL)
 end
-
 
 exports.getPublicInstance = function(inst: Instance | TextInstance)
 	if inst.tag == "INSTANCE" then
@@ -109,26 +109,24 @@ exports.getPublicInstance = function(inst: Instance | TextInstance)
 	end
 end
 
-exports.appendChild = function(
-	parentInstance: Instance | Container,
-	child: Instance | TextInstance
-)
-	if _G.__DEV__ then
-		if not Array.isArray(parentInstance.children) then
-			console.error(
-				"An invalid container has been provided. " ..
-					"This may indicate that another renderer is being used in addition to the test renderer. " ..
-					"(For example, ReactDOM.createPortal inside of a ReactTestRenderer tree.) " ..
-					"This is not supported."
-			)
+exports.appendChild =
+	function(parentInstance: Instance | Container, child: Instance | TextInstance)
+		if _G.__DEV__ then
+			if not Array.isArray(parentInstance.children) then
+				console.error(
+					"An invalid container has been provided. "
+						.. "This may indicate that another renderer is being used in addition to the test renderer. "
+						.. "(For example, ReactDOM.createPortal inside of a ReactTestRenderer tree.) "
+						.. "This is not supported."
+				)
+			end
 		end
+		local index = Array.indexOf(parentInstance.children, child)
+		if index ~= -1 then
+			Array.splice(parentInstance.children, index, 1)
+		end
+		table.insert(parentInstance.children, child)
 	end
-	local index = Array.indexOf(parentInstance.children, child)
-	if index ~= -1 then
-		Array.splice(parentInstance.children, index, 1)
-	end
-	table.insert(parentInstance.children, child)
-end
 
 exports.insertBefore = function(
 	parentInstance: Instance | Container,
@@ -143,21 +141,17 @@ exports.insertBefore = function(
 	Array.splice(parentInstance.children, beforeIndex, 0, child)
 end
 
-exports.removeChild = function(
-	parentInstance: Instance | Container,
-	child: Instance | TextInstance
-)
-	local index = Array.indexOf(parentInstance.children, child)
-	Array.splice(parentInstance.children, index, 1)
-end
+exports.removeChild =
+	function(parentInstance: Instance | Container, child: Instance | TextInstance)
+		local index = Array.indexOf(parentInstance.children, child)
+		Array.splice(parentInstance.children, index, 1)
+	end
 
 exports.clearContainer = function(container: Container)
 	Array.splice(container.children, 0)
 end
 
-exports.getRootHostContext = function(
-	rootContainerInstance: Container
-): HostContext
+exports.getRootHostContext = function(rootContainerInstance: Container): HostContext
 	return NO_CONTEXT
 end
 
@@ -196,16 +190,14 @@ exports.createInstance = function(
 	}
 end
 
-exports.appendInitialChild = function(
-	parentInstance: Instance,
-	child: Instance | TextInstance
-)
-	local index = Array.indexOf(parentInstance.children, child)
-	if index ~= -1 then
-		Array.splice(parentInstance.children, index, 1)
+exports.appendInitialChild =
+	function(parentInstance: Instance, child: Instance | TextInstance)
+		local index = Array.indexOf(parentInstance.children, child)
+		if index ~= -1 then
+			Array.splice(parentInstance.children, index, 1)
+		end
+		table.insert(parentInstance.children, child)
 	end
-	table.insert(parentInstance.children, child)
-end
 
 exports.finalizeInitialChildren = function(
 	testElement: Instance,
@@ -270,22 +262,15 @@ exports.commitUpdate = function(
 	instance.props = newProps
 end
 
-exports.commitMount = function(
-	instance: Instance,
-	type: string,
-	newProps: Props,
-	internalInstanceHandle: Object
-)
-	-- noop
-end
+exports.commitMount =
+	function(instance: Instance, type: string, newProps: Props, internalInstanceHandle: Object)
+		-- noop
+	end
 
-exports.commitTextUpdate = function(
-	textInstance: TextInstance,
-	oldText: string,
-	newText: string
-)
-	textInstance.text = newText
-end
+exports.commitTextUpdate =
+	function(textInstance: TextInstance, oldText: string, newText: string)
+		textInstance.text = newText
+	end
 
 exports.resetTextContent = function(testElement: Instance)
 	-- noop
@@ -307,75 +292,67 @@ exports.unhideInstance = function(instance: Instance, props: Props)
 	instance.isHidden = false
 end
 
-exports.unhideTextInstance = function(
-	textInstance: TextInstance,
-	text: string
-)
+exports.unhideTextInstance = function(textInstance: TextInstance, text: string)
 	textInstance.isHidden = false
 end
 
-exports.getFundamentalComponentInstance = function(
-	fundamentalInstance: ReactFundamentalComponentInstance<any, any>
-): Instance
-	local impl = fundamentalInstance.impl
-	local props = fundamentalInstance.props
-	local state = fundamentalInstance.state
-	return impl.getInstance(nil, props, state)
-end
-
-exports.mountFundamentalComponent = function(
-	fundamentalInstance: ReactFundamentalComponentInstance<any, any>
-)
-	local impl = fundamentalInstance.impl
-	local instance = fundamentalInstance.instance
-	local props = fundamentalInstance.props
-	local state = fundamentalInstance.state
-	local onMount = impl.onMount
-	if onMount ~= nil then
-		onMount(nil, instance, props, state)
+exports.getFundamentalComponentInstance =
+	function(fundamentalInstance: ReactFundamentalComponentInstance<any, any>): Instance
+		local impl = fundamentalInstance.impl
+		local props = fundamentalInstance.props
+		local state = fundamentalInstance.state
+		return impl.getInstance(nil, props, state)
 	end
-end
 
-exports.shouldUpdateFundamentalComponent = function(
-	fundamentalInstance: ReactFundamentalComponentInstance<any, any>
-): boolean
-	local impl = fundamentalInstance.impl
-	local prevProps = fundamentalInstance.prevProps
-	local props = fundamentalInstance.props
-	local state = fundamentalInstance.state
-	local shouldUpdate = impl.shouldUpdate
-	if shouldUpdate ~= nil then
-		return shouldUpdate(nil, prevProps, props, state)
+exports.mountFundamentalComponent =
+	function(fundamentalInstance: ReactFundamentalComponentInstance<any, any>)
+		local impl = fundamentalInstance.impl
+		local instance = fundamentalInstance.instance
+		local props = fundamentalInstance.props
+		local state = fundamentalInstance.state
+		local onMount = impl.onMount
+		if onMount ~= nil then
+			onMount(nil, instance, props, state)
+		end
 	end
-	return true
-end
 
-exports.updateFundamentalComponent = function(
-	fundamentalInstance: ReactFundamentalComponentInstance<any, any>
-)
-	local impl = fundamentalInstance.impl
-	local instance = fundamentalInstance.instance
-	local prevProps = fundamentalInstance.prevProps
-	local props = fundamentalInstance.props
-	local state = fundamentalInstance.state
-	local onUpdate = impl.onUpdate
-	if onUpdate ~= nil then
-		onUpdate(nil, instance, prevProps, props, state)
+exports.shouldUpdateFundamentalComponent =
+	function(fundamentalInstance: ReactFundamentalComponentInstance<any, any>): boolean
+		local impl = fundamentalInstance.impl
+		local prevProps = fundamentalInstance.prevProps
+		local props = fundamentalInstance.props
+		local state = fundamentalInstance.state
+		local shouldUpdate = impl.shouldUpdate
+		if shouldUpdate ~= nil then
+			return shouldUpdate(nil, prevProps, props, state)
+		end
+		return true
 	end
-end
 
-exports.unmountFundamentalComponent = function(
-	fundamentalInstance: ReactFundamentalComponentInstance<any, any>
-)
-	local impl = fundamentalInstance.impl
-	local instance = fundamentalInstance.instance
-	local props = fundamentalInstance.props
-	local state = fundamentalInstance.state
-	local onUnmount = impl.onUnmount
-	if onUnmount ~= nil then
-		onUnmount(nil, instance, props, state)
+exports.updateFundamentalComponent =
+	function(fundamentalInstance: ReactFundamentalComponentInstance<any, any>)
+		local impl = fundamentalInstance.impl
+		local instance = fundamentalInstance.instance
+		local prevProps = fundamentalInstance.prevProps
+		local props = fundamentalInstance.props
+		local state = fundamentalInstance.state
+		local onUpdate = impl.onUpdate
+		if onUpdate ~= nil then
+			onUpdate(nil, instance, prevProps, props, state)
+		end
 	end
-end
+
+exports.unmountFundamentalComponent =
+	function(fundamentalInstance: ReactFundamentalComponentInstance<any, any>)
+		local impl = fundamentalInstance.impl
+		local instance = fundamentalInstance.instance
+		local props = fundamentalInstance.props
+		local state = fundamentalInstance.state
+		local onUnmount = impl.onUnmount
+		if onUnmount ~= nil then
+			onUnmount(nil, instance, props, state)
+		end
+	end
 
 exports.getInstanceFromNode = function(mockNode: Object)
 	local instance = nodeToInstanceMap[mockNode]
@@ -412,14 +389,10 @@ exports.makeClientIdInDEV = function(warnOnAccessInDEV: () -> ()): OpaqueIDType
 end
 
 exports.isOpaqueHydratingObject = function(value: any): boolean
-	return
-		typeof(value) == "table" and
-		value["$$typeof"] == REACT_OPAQUE_ID_TYPE
+	return typeof(value) == "table" and value["$$typeof"] == REACT_OPAQUE_ID_TYPE
 end
 
-exports.makeOpaqueHydratingObject = function(
-	attemptToReadValue: () -> ()
-): OpaqueIDType
+exports.makeOpaqueHydratingObject = function(attemptToReadValue: () -> ()): OpaqueIDType
 	return {
 		["$$typeof"] = REACT_OPAQUE_ID_TYPE,
 		toString = attemptToReadValue,

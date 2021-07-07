@@ -61,8 +61,8 @@ return function()
 					}),
 					React.createElement(View),
 					React.createElement(ExampleSpread, {
-							bar = "bar",
-						}),
+						bar = "bar",
+					}),
 					React.createElement(ExampleFn, {
 						bar = "bar",
 						bing = "bing",
@@ -91,8 +91,8 @@ return function()
 							end,
 						},
 						React.createElement(ExampleForwardRef, {
-								qux = "qux",
-							})
+							qux = "qux",
+						})
 					),
 					React.createElement(
 						React.Fragment,
@@ -104,8 +104,8 @@ return function()
 								Context.Provider,
 								{ value = Object.None },
 								React.createElement(Context.Consumer, nil, function()
-										return React.createElement(View, { nested = true })
-									end)
+									return React.createElement(View, { nested = true })
+								end)
 							)
 						),
 						React.createElement(View, { nested = true }),
@@ -214,7 +214,9 @@ return function()
 			jestExpect(render.root:findAll(hasBingProp, { deep = false })).toHaveLength(1)
 			jestExpect(render.root:findAll(hasNullProp, { deep = false })).toHaveLength(1)
 			jestExpect(render.root:findAll(hasVoidProp, { deep = false })).toHaveLength(0)
-			jestExpect(render.root:findAll(hasNestedProp, { deep = false })).toHaveLength(3)
+			jestExpect(render.root:findAll(hasNestedProp, { deep = false })).toHaveLength(
+				3
+			)
 
 			-- note: with {deep: true}, :findAll() will continue to
 			--       search children, even after finding a match
@@ -224,7 +226,9 @@ return function()
 			jestExpect(render.root:findAll(hasBingProp)).toHaveLength(1) -- no spread
 			jestExpect(render.root:findAll(hasNullProp)).toHaveLength(1) -- no spread
 			jestExpect(render.root:findAll(hasVoidProp)).toHaveLength(0)
-			jestExpect(render.root:findAll(hasNestedProp, { deep = false })).toHaveLength(3)
+			jestExpect(render.root:findAll(hasNestedProp, { deep = false })).toHaveLength(
+				3
+			)
 
 			local bing = render.root:find(hasBingProp)
 
@@ -301,10 +305,18 @@ return function()
 				return render.root:findByProps({ qux = qux })
 			end).never.toThrow() -- 1 match
 
-			jestExpect(render.root:findAllByProps({ foo = foo }, { deep = false })).toHaveLength(1)
-			jestExpect(render.root:findAllByProps({ bar = bar }, { deep = false })).toHaveLength(5)
-			jestExpect(render.root:findAllByProps({ baz = baz }, { deep = false })).toHaveLength(2)
-			jestExpect(render.root:findAllByProps({ qux = qux }, { deep = false })).toHaveLength(1)
+			jestExpect(render.root:findAllByProps({ foo = foo }, { deep = false })).toHaveLength(
+				1
+			)
+			jestExpect(render.root:findAllByProps({ bar = bar }, { deep = false })).toHaveLength(
+				5
+			)
+			jestExpect(render.root:findAllByProps({ baz = baz }, { deep = false })).toHaveLength(
+				2
+			)
+			jestExpect(render.root:findAllByProps({ qux = qux }, { deep = false })).toHaveLength(
+				1
+			)
 
 			jestExpect(render.root:findAllByProps({ foo = foo })).toHaveLength(2)
 			jestExpect(render.root:findAllByProps({ bar = bar })).toHaveLength(9)
@@ -341,38 +353,57 @@ return function()
 				return React.createElement("section", props)
 			end)
 
-			jestExpect(#ReactTestRenderer.create(React.createElement(
-				FR,
-				nil,
-				React.createElement("div", nil),
-				React.createElement("div", nil)
-			)).root:findAllByType("div")).toEqual(2)
-			jestExpect(#ReactTestRenderer.create(React.createElement(
-				React.Fragment,
-				nil,
-				React.createElement("div", nil),
-				React.createElement("div", nil)
-			)).root:findAllByType("div")).toEqual(2)
-			jestExpect(#ReactTestRenderer.create(React.createElement(
-				React.Fragment,
-				{
+			jestExpect(
+				#ReactTestRenderer.create(
+					React.createElement(
+						FR,
+						nil,
+						React.createElement("div", nil),
+						React.createElement("div", nil)
+					)
+				).root:findAllByType("div")
+			).toEqual(2)
+			jestExpect(
+				#ReactTestRenderer.create(
+					React.createElement(
+						React.Fragment,
+						nil,
+						React.createElement("div", nil),
+						React.createElement("div", nil)
+					)
+				).root:findAllByType("div")
+			).toEqual(2)
+			jestExpect(
+				#ReactTestRenderer.create(React.createElement(React.Fragment, {
 					key = "foo",
-				},
-				React.createElement("div", nil),
-				React.createElement("div", nil)
-			)).root:findAllByType("div")).toEqual(2)
-			jestExpect(#ReactTestRenderer.create(React.createElement(
-				React.StrictMode,
-				nil,
-				React.createElement("div", nil),
-				React.createElement("div", nil)
-			)).root:findAllByType("div")).toEqual(2)
-			jestExpect(#ReactTestRenderer.create(React.createElement(
-				Context.Provider,
-				{ value = Object.None },
-				React.createElement("div", nil),
-				React.createElement("div", nil)
-			)).root:findAllByType("div")).toEqual(2)
+				}, React.createElement(
+					"div",
+					nil
+				), React.createElement(
+					"div",
+					nil
+				))).root:findAllByType("div")
+			).toEqual(2)
+			jestExpect(
+				#ReactTestRenderer.create(
+					React.createElement(
+						React.StrictMode,
+						nil,
+						React.createElement("div", nil),
+						React.createElement("div", nil)
+					)
+				).root:findAllByType("div")
+			).toEqual(2)
+			jestExpect(
+				#ReactTestRenderer.create(
+					React.createElement(
+						Context.Provider,
+						{ value = Object.None },
+						React.createElement("div", nil),
+						React.createElement("div", nil)
+					)
+				).root:findAllByType("div")
+			).toEqual(2)
 		end)
 	end)
 end
