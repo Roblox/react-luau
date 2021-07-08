@@ -10,10 +10,17 @@ local Packages = script.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
 local setTimeout = LuauPolyfill.setTimeout
+
 local function normalizeCodeLocInfo(str)
-    return str and str.replace(function(m, name)
-        return'\n    in ' .. name .. ' (at **)'
-    end)
+	if typeof(str) ~= "string" then
+		return str
+	end
+
+	str = str:gsub("Check your code at .*:%d+", "Check your code at **")
+	-- ROBLOX deviation: In roblox/luau, we're using the stack frame from luau,
+	-- which looks like:
+	--     in Component (at ModulePath.FileName.lua:123)
+	return (str:gsub("\n    in ([%w%-%._]+)[^\n]*", "\n    in %1 (at **)"))
 end
 
 return function()
@@ -1094,7 +1101,7 @@ return function()
         --     end)
         -- end))
 
-        -- ROBLOX TODO: wrong stacktrace
+        -- ROBLOX TODO: wrong component stack, not resolving past Suspense/Lazy wrappers
         xit('includes lazy-loaded component in warning stack', function()
             local LazyFoo = lazy(function()
                 Scheduler.unstable_yieldValue('Started loading')
@@ -1116,17 +1123,14 @@ return function()
                 fallback = React.createElement(Text, {
                     text = 'Loading...',
                 }),
-            }, React.createElement(LazyFoo, nil)), {unstable_isConcurrent = true})
+            }, React.createElement(LazyFoo)), {unstable_isConcurrent = true})
 
-            -- ROBLOX FIXME: in fakeImport, we call resolve() immediately instead of acting like a Promise
-            -- as such, the Suspense fallback ('Loading...') never gets rendered
             jestExpect(Scheduler).toFlushAndYield({
                 'Started loading',
                 'Loading...',
             })
             jestExpect(root).never.toMatchRenderedOutput(React.createElement('div', nil, 'AB'))
 
-            -- ROBLOX FIXME: delay by one frame is current best translation of `await Promise.resolve()`
             Promise.delay(0):await()
 
             jestExpect(function()
@@ -1351,7 +1355,7 @@ return function()
             function ErrorBoundary:componentDidCatch(error_, errMessage)
                 componentStackMessage = normalizeCodeLocInfo(errMessage.componentStack)
 
-                self.setState({error = error_})
+                self:setState({error = error_})
             end
             function ErrorBoundary:render()
                 if self.state.error then
@@ -1379,47 +1383,50 @@ return function()
             jestExpect(Scheduler).toFlushAndYield({})
             jestExpect(componentStackMessage).toContain('in ResolvedText')
         end)
-        -- xit('should error with a component stack containing Lazy if unresolved', function()
-        --     local componentStackMessage
-        --     local LazyText = lazy(function()
-        --         return {
-        --             andThen = function(resolve, reject)
-        --                 reject(Error('oh no'))
-        --             end,
-        --         }
-        --     end)
-        --     local ErrorBoundary = React.Component:extend("ErrorBoundary")
+        -- ROBLOX FIXME: missing stack frame that contains Lazy
+        xit('should error with a component stack containing Lazy if unresolved', function()
+            local componentStackMessage
+            local LazyText = lazy(function()
+                return {
+                    andThen = function(resolve, reject)
+                        reject(Error('oh no'))
+                    end,
+                }
+            end)
+            local ErrorBoundary = React.Component:extend("ErrorBoundary")
 
-        --     function ErrorBoundary:init()
-        --         self.state = {
-        --             error = nil
-        --         }
-        --     end
-        --     function ErrorBoundary:componentDidCatch(error, errMessage)
-        --         componentStackMessage = normalizeCodeLocInfo(errMessage.componentStack)
+            function ErrorBoundary:init()
+                self.state = {
+                    error_ = nil
+                }
+            end
+            function ErrorBoundary:componentDidCatch(error_, errMessage)
+                -- ROBLOX FIXME: componentStack is missing LazyText even before normalize
+                componentStackMessage = normalizeCodeLocInfo(errMessage.componentStack)
 
-        --         self.setState({error = error})
-        --     end
-        --     function ErrorBoundary:render()
-        --         return(function()
-        --             if self.state.error then
-        --                 return nil
-        --             end
+                self:setState({error_ = error_})
+            end
+            function ErrorBoundary:render()
+                return(function()
+                    if self.state.error_ then
+                        return nil
+                    end
 
-        --             return self.props.children
-        --         end)()
-        --     end
+                    return self.props.children
+                end)()
+            end
 
-        --     ReactTestRenderer.create(React.createElement(ErrorBoundary, nil, React.createElement(Suspense, {
-        --         fallback = React.createElement(Text, {
-        --             text = 'Loading...',
-        --         }),
-        --     }, React.createElement(LazyText, {
-        --         text = 'Hi',
-        --     }))))
-        --     jestExpect(Scheduler).toHaveYielded({})
-        --     jestExpect(componentStackMessage).toContain('in Lazy')
-        -- end)
+            ReactTestRenderer.create(React.createElement(ErrorBoundary, nil, React.createElement(Suspense, {
+                fallback = React.createElement(Text, {
+                    text = 'Loading...',
+                }),
+            }, React.createElement(LazyText, {
+                text = 'Hi',
+            }))))
+            jestExpect(Scheduler).toHaveYielded({})
+            -- ROBLOX TODO: only this final assert fails
+            jestExpect(componentStackMessage).toContain('in Lazy')
+        end)
 
         -- @gate enableLazyElements
         -- xit('mount and reorder lazy elements', function()

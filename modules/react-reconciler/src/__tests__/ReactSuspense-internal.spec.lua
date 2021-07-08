@@ -649,9 +649,10 @@ return function()
             })
             jestExpect(root).toMatchRenderedOutput('A2B2C2')
         end)
-        xit('mounts a lazy class component in non-concurrent mode', function()
+
+        it('mounts a lazy class component in non-concurrent mode', function()
             local fakeImport = function(result)
-                -- ROBLOX FIXME: delay(0) because resolved promises are andThen'd on the same tick cycle
+                -- ROBLOX deviation: delay(0) because resolved promises are andThen'd on the same tick cycle
                 -- remove once addressed in polyfill
                 return Promise.delay(0):andThen(function()
                     return {default = result}
@@ -687,8 +688,8 @@ return function()
             })
             jestExpect(root).toMatchRenderedOutput('Loading...')
 
-            -- ROBLOX FIXME: LazyClass seemingly isn't a Promise? 'attempt to call a nil value'
-            LazyClass:await()
+            -- ROBLOX deviation: used to synchronize on the above Promise.delay()
+            Promise.delay(0):await()
 
             jestExpect(Scheduler).toFlushExpired({
                 'Hi',
@@ -696,6 +697,7 @@ return function()
             })
             jestExpect(root).toMatchRenderedOutput('Hi')
         end)
+
         it('only captures if `fallback` is defined', function()
             local root = ReactTestRenderer.create(React.createElement(Suspense, {
                 fallback = React.createElement(Text, {

@@ -158,7 +158,7 @@ export type Hook = {
   memoizedState: any,
   baseState: any,
   baseQueue: Update<any, any>?,
-  queue: UpdateQueue<any, any>?,
+  queue: UpdateQueue<any, any>,
   next: Hook?,
 }
 
@@ -415,7 +415,7 @@ exports.bailoutHooks = function(
 end
 
 local _isUpdatingOpaqueValueInRenderPhase = false
-exports.resetHooksAfterThrow = function()
+exports.resetHooksAfterThrow = function(): ()
   -- We can assume the previous dispatcher is always this one, since we set it
   -- at the beginning of the render phase and there's no re-entrancy.
   ReactCurrentDispatcher.current = exports.ContextOnlyDispatcher
@@ -505,7 +505,7 @@ local function updateWorkInProgressHook(): Hook
 
   -- FIXME (roblox): type refinement
   -- local nextWorkInProgressHook: Hook?
-  local nextWorkInProgressHook
+  local nextWorkInProgressHook: Hook
   if workInProgressHook == nil then
     nextWorkInProgressHook = currentlyRenderingFiber.memoizedState
   else
@@ -595,7 +595,6 @@ function mountReducer(
     pending = nil,
     dispatch = nil,
     lastRenderedReducer = reducer,
-    -- ROBLOX TODO: recast(initialState: any)
     lastRenderedState = initialState
   }
 
@@ -2151,7 +2150,7 @@ if _G.__DEV__ then
       if not ok then
         error(result)
       end
-      -- deviation: Lua version of useState and useReducer return two items, not list like upstream
+      -- ROBLOX deviation: Lua version of useState and useReducer return two items, not list like upstream
       return result, setResult
       end,
 --     useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {

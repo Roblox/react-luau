@@ -13,11 +13,11 @@
 local Packages = script.Parent.Parent.Parent
 local React
 
-local LuauPolyfill = require(Packages.LuauPolyfill)
-local clearTimeout = LuauPolyfill.clearTimeout
-local setTimeout = LuauPolyfill.setTimeout
-local Array = LuauPolyfill.Array
-local Promise = require(Packages.Promise)
+local LuauPolyfill
+local clearTimeout
+local setTimeout
+local Array
+local Promise
 
 
 -- local textCache
@@ -48,6 +48,11 @@ return function()
 	beforeEach(function()
 		RobloxJest.resetModules()
 		RobloxJest.useFakeTimers()
+		LuauPolyfill = require(Packages.LuauPolyfill)
+		clearTimeout = LuauPolyfill.clearTimeout
+		setTimeout = LuauPolyfill.setTimeout
+		Array = LuauPolyfill.Array
+		Promise = require(Packages.Promise)
 
 		React = require(Packages.React)
 		ReactNoop = require(Packages.Dev.ReactNoopRenderer)
@@ -3557,19 +3562,22 @@ return function()
 
 	describe("useRef", function()
 		-- ROBLOX TODO: clearTimeout: attempt to index number with userdata (LUAFDN-293)
-		xit("creates a ref object initialized with the provided value", function()
+		it("creates a ref object initialized with the provided value", function()
 			local jest = RobloxJest
-			jest.useFakeTimers()
 
 			local function useDebouncedCallback(callback, ms, inputs)
 				local timeoutID = useRef(-1)
 				useEffect(function()
 					return function()
-						clearTimeout(timeoutID.current)
+						if typeof(timeoutID.current) == "table" then
+							clearTimeout(timeoutID.current)
+						end
 					end
 				end, {})
 				local debouncedCallback = useCallback(function(...)
-					clearTimeout(timeoutID.current)
+					if typeof(timeoutID.current) == "table" then
+						clearTimeout(timeoutID.current)
+					end
 					timeoutID.current = setTimeout(callback, ms, ...)
 				end, {
 					callback,
@@ -3603,8 +3611,11 @@ return function()
 
 			ping(4)
 			jest.advanceTimersByTime(20)
+			jestExpect(Scheduler).toHaveYielded({})
 			ping(5)
+			jestExpect(Scheduler).toHaveYielded({})
 			ping(6)
+			jestExpect(Scheduler).toHaveYielded({})
 			jest.advanceTimersByTime(80)
 
 			jestExpect(Scheduler).toHaveYielded({})

@@ -52,6 +52,11 @@ local function mockTick(_)
 	return now
 end
 
+function round(number, decimals)
+    local power = 10 ^ decimals
+    return math.floor(number * power) / power
+end
+
 local function advanceTimersByTime(msToRun: number): ()
 	-- Only run a generous number of timers and then bail.
 	-- This is just to help avoid recursive loops
@@ -70,7 +75,7 @@ local function advanceTimersByTime(msToRun: number): ()
 
 		local nextTimerExpiry = timers[1].expiry
 
-		if now + secondsToRun < nextTimerExpiry then
+		if round(now + secondsToRun, 5) < round(nextTimerExpiry, 5) then
 			-- There are no timers between now and the target we're running to, so
 			-- adjust our time cursor and quit
 			now += secondsToRun

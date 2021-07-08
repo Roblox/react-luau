@@ -158,7 +158,7 @@ return function()
             })
             jestExpect(instances[1]:_isMounted()).toBe(false)
         end)
-        -- ROBLOX TODO: 292: gets "componentDidMount", but not the inner span
+        -- ROBLOX TODO: 292: gets "componentDidMount", but not the inner span. maybe ReactFeatureFlags need alignment for tests?
         xit('finds no node before insertion and correct node before deletion', function()
             local classInstance = nil
             local function findInstance(inst)
@@ -168,6 +168,7 @@ return function()
                 local oldConsoleError = console.error
                 console.error = nil
                 local ok, result = pcall(function()
+                    -- ROBLOX FIXME: always returns nil because subtreeFlags don't match upstream while finding fiber in getNearestMountedFiber
                     return ReactNoop.findInstance(inst)
                 end)
                 console.error = oldConsoleError
