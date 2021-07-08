@@ -1,0 +1,17 @@
+[package]
+name = "ReactDevToolsShared"
+version = { workspace = true }
+authors = { workspace = true }
+publish = true
+content_root = "src"
+
+[dependencies]
+LuauPolyfill = { workspace = true }
+Shared = { path = "../shared" }
+React = { path = "../react" }
+ReactIs = { path = "../react-is" }
+ReactReconciler = { path = "../react-reconciler" }
+
+[dev_dependencies]
+JestRoblox = { workspace = true }
+RobloxJest = { path = "../roblox-jest" }
