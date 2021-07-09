@@ -28,25 +28,26 @@ return function(jestExpect)
 	local function assertYieldsWereCleared(scheduler)
 		local actualYields = scheduler.unstable_clearYields()
 		if #actualYields ~= 0 then
-			error("Log of yielded values is not empty. " ..
-				"Call expectToHaveYielded(scheduler, ...) first.", 3)
+			error(
+				"Log of yielded values is not empty. "
+					.. "Call expectToHaveYielded(scheduler, ...) first.",
+				3
+			)
 		end
 	end
 
 	local function expectToMatchRenderedOutput(_matcherContext, ReactNoop, expectedJSX)
-		if typeof(ReactNoop.getChildrenAsJSX) == 'function' then
-			local Scheduler = ReactNoop._Scheduler;
-			assertYieldsWereCleared(Scheduler);
-			return captureAssertion(
-				function()
-					jestExpect(ReactNoop.getChildrenAsJSX()).toEqual(expectedJSX);
-				end
-			)
+		if typeof(ReactNoop.getChildrenAsJSX) == "function" then
+			local Scheduler = ReactNoop._Scheduler
+			assertYieldsWereCleared(Scheduler)
+			return captureAssertion(function()
+				jestExpect(ReactNoop.getChildrenAsJSX()).toEqual(expectedJSX)
+			end)
 		end
 		return JestReact.unstable_toMatchRenderedOutput(ReactNoop, expectedJSX)
 	end
 
 	return {
-		toMatchRenderedOutput = expectToMatchRenderedOutput
+		toMatchRenderedOutput = expectToMatchRenderedOutput,
 	}
 end
