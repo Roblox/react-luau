@@ -57,14 +57,20 @@ return function()
 								listeners = { { resolve = resolve, reject = reject } }
 								LuauPolyfill.setTimeout(function()
 									if textResourceShouldFail then
-										Scheduler.unstable_yieldValue(string.format("Promise rejected [%s]", text))
+										Scheduler.unstable_yieldValue(
+											string.format("Promise rejected [%s]", text)
+										)
 										status = "rejected"
-										value = LuauPolyfill.Error("Failed to load: " .. text)
+										value = LuauPolyfill.Error(
+											"Failed to load: " .. text
+										)
 										for _, listener in ipairs(listeners) do
 											listener.reject(value)
 										end
 									else
-										Scheduler.unstable_yieldValue(string.format("Promise resolved [%s]", text))
+										Scheduler.unstable_yieldValue(
+											string.format("Promise resolved [%s]", text)
+										)
 										status = "resolved"
 										value = text
 										for _, listener in ipairs(listeners) do
@@ -73,7 +79,10 @@ return function()
 									end
 								end, ms)
 							else
-								table.insert(listeners, { resolve = resolve, reject = reject })
+								table.insert(
+									listeners,
+									{ resolve = resolve, reject = reject }
+								)
 							end
 						elseif status == "resolved" then
 							resolve(value)
@@ -163,57 +172,64 @@ return function()
 			jestExpect(Scheduler).toHaveYielded({ "Error! [Hi]", "Error! [Hi]" })
 		end)
 
-		it("warns if non-primitive key is passed to a resource without a hash function", function()
-			local BadTextResource = createResource(function(input)
-				local text = input[1]
-				local ms = input[2] or 0
-				return Promise.new(function(resolve, _reject)
-					setTimeout(function()
-						resolve(text)
-					end, ms)
+		it(
+			"warns if non-primitive key is passed to a resource without a hash function",
+			function()
+				local BadTextResource = createResource(function(input)
+					local text = input[1]
+					local ms = input[2] or 0
+					return Promise.new(function(resolve, _reject)
+						setTimeout(function()
+							resolve(text)
+						end, ms)
+					end)
 				end)
-			end)
 
-			local function App()
-				Scheduler.unstable_yieldValue("App")
-				return BadTextResource.read({ "Hi", 100 })
-			end
+				local function App()
+					Scheduler.unstable_yieldValue("App")
+					return BadTextResource.read({ "Hi", 100 })
+				end
 
-			ReactTestRenderer.create(
-				React.createElement(
-					Suspense,
-					{ fallback = React.createElement(Text, { text = "Loading..." }) },
-					{ React.createElement(App) }
-				),
-				{ unstable_isConcurrent = true }
-			)
-
-			if _G.__DEV__ then
-				jestExpect(function()
-					jestExpect(Scheduler).toFlushAndYield({ "App", "Loading..." })
-				end).toErrorDev(
-					"Warning: " -- ROBLOX FIXME: remove the Warning: prefix in consoleWithStackDev
-						.. "Invalid key type. Expected a string, number, symbol, or "
-						-- ROBLOX TODO: make console polyfill format arrays the same as JS
-						.. 'boolean, but instead received: { "Hi", 100 }\n\n'
-						.. "To use non-primitive values as keys, you must pass a hash "
-						.. "function as the second argument to createResource()."
+				ReactTestRenderer.create(
+					React.createElement(
+						Suspense,
+						{ fallback = React.createElement(Text, { text = "Loading..." }) },
+						{ React.createElement(App) }
+					),
+					{ unstable_isConcurrent = true }
 				)
-			else
-				jestExpect(Scheduler).toFlushAndYield({ "App", "Loading..." })
+
+				if _G.__DEV__ then
+					jestExpect(function()
+						jestExpect(Scheduler).toFlushAndYield({ "App", "Loading..." })
+					end).toErrorDev(
+						"Warning: " -- ROBLOX FIXME: remove the Warning: prefix in consoleWithStackDev
+							.. "Invalid key type. Expected a string, number, symbol, or "
+							-- ROBLOX TODO: make console polyfill format arrays the same as JS
+							.. 'boolean, but instead received: { "Hi", 100 }\n\n'
+							.. "To use non-primitive values as keys, you must pass a hash "
+							.. "function as the second argument to createResource()."
+					)
+				else
+					jestExpect(Scheduler).toFlushAndYield({ "App", "Loading..." })
+				end
 			end
-		end)
+		)
 
 		it("evicts least recently used values", function()
 			ReactCache.unstable_setGlobalCacheLimit(3)
 
 			-- Render 1, 2, and 3
 			local root = ReactTestRenderer.create(
-				React.createElement(Suspense, { fallback = React.createElement(Text, { text = "Loading..." }) }, {
-					React.createElement(AsyncText, { ms = 100, text = 1 }),
-					React.createElement(AsyncText, { ms = 100, text = 2 }),
-					React.createElement(AsyncText, { ms = 100, text = 3 }),
-				}),
+				React.createElement(
+					Suspense,
+					{ fallback = React.createElement(Text, { text = "Loading..." }) },
+					{
+						React.createElement(AsyncText, { ms = 100, text = 1 }),
+						React.createElement(AsyncText, { ms = 100, text = 2 }),
+						React.createElement(AsyncText, { ms = 100, text = 3 }),
+					}
+				),
 				{ unstable_isConcurrent = true }
 			)
 			jestExpect(Scheduler).toFlushAndYield({
@@ -233,11 +249,15 @@ return function()
 
 			-- Render 1, 4, 5
 			root.update(
-				React.createElement(Suspense, { fallback = React.createElement(Text, { text = "Loading..." }) }, {
-					React.createElement(AsyncText, { ms = 100, text = 1 }),
-					React.createElement(AsyncText, { ms = 100, text = 4 }),
-					React.createElement(AsyncText, { ms = 100, text = 5 }),
-				})
+				React.createElement(
+					Suspense,
+					{ fallback = React.createElement(Text, { text = "Loading..." }) },
+					{
+						React.createElement(AsyncText, { ms = 100, text = 1 }),
+						React.createElement(AsyncText, { ms = 100, text = 4 }),
+						React.createElement(AsyncText, { ms = 100, text = 5 }),
+					}
+				)
 			)
 
 			jestExpect(Scheduler).toFlushAndYield({
@@ -258,11 +278,15 @@ return function()
 			-- recently used values are 2 and 3. They should have been evicted.
 
 			root.update(
-				React.createElement(Suspense, { fallback = React.createElement(Text, { text = "Loading..." }) }, {
-					React.createElement(AsyncText, { ms = 100, text = 1 }),
-					React.createElement(AsyncText, { ms = 100, text = 2 }),
-					React.createElement(AsyncText, { ms = 100, text = 3 }),
-				})
+				React.createElement(
+					Suspense,
+					{ fallback = React.createElement(Text, { text = "Loading..." }) },
+					{
+						React.createElement(AsyncText, { ms = 100, text = 1 }),
+						React.createElement(AsyncText, { ms = 100, text = 2 }),
+						React.createElement(AsyncText, { ms = 100, text = 3 }),
+					}
+				)
 			)
 
 			jestExpect(Scheduler).toFlushAndYield({
@@ -310,98 +334,109 @@ return function()
 			jestExpect(root).toMatchRenderedOutput("Result")
 		end)
 
-		it("if a thenable resolves multiple times, does not update the first cached value", function()
-			local resolveThenable
-			local BadTextResource = createResource(function(props)
-				local _text = props.text
-				local _ms = props.ms or 0
-				local listeners = nil
-				local value = nil
-				return {
-					andThen = function(self, resolve, reject)
-						if value ~= nil then
-							resolve(value)
-						else
-							if listeners == nil then
-								listeners = { resolve }
-								resolveThenable = function(v)
-									for _, listener in pairs(listeners) do
-										listener(v)
-									end
-								end
+		it(
+			"if a thenable resolves multiple times, does not update the first cached value",
+			function()
+				local resolveThenable
+				local BadTextResource = createResource(function(props)
+					local _text = props.text
+					local _ms = props.ms or 0
+					local listeners = nil
+					local value = nil
+					return {
+						andThen = function(self, resolve, reject)
+							if value ~= nil then
+								resolve(value)
 							else
-								table.insert(listeners, resolve)
+								if listeners == nil then
+									listeners = { resolve }
+									resolveThenable = function(v)
+										for _, listener in pairs(listeners) do
+											listener(v)
+										end
+									end
+								else
+									table.insert(listeners, resolve)
+								end
 							end
-						end
-					end,
-				}
-			end, function(input)
-				return input[1]
-			end)
-
-			local function BadAsyncText(props)
-				local text = props.text
-				local ok, result = pcall(function()
-					local actualText = BadTextResource.read({ props.text, props.ms })
-					Scheduler.unstable_yieldValue(actualText)
-					return actualText
+						end,
+					}
+				end, function(input)
+					return input[1]
 				end)
 
-				if not ok then
-					if typeof(result.andThen) == "function" then
-						Scheduler.unstable_yieldValue(string.format("Suspend! [%s]", text))
-					else
-						Scheduler.unstable_yieldValue(string.format("Error! [%s]", text))
+				local function BadAsyncText(props)
+					local text = props.text
+					local ok, result = pcall(function()
+						local actualText = BadTextResource.read({ props.text, props.ms })
+						Scheduler.unstable_yieldValue(actualText)
+						return actualText
+					end)
+
+					if not ok then
+						if typeof(result.andThen) == "function" then
+							Scheduler.unstable_yieldValue(
+								string.format("Suspend! [%s]", text)
+							)
+						else
+							Scheduler.unstable_yieldValue(
+								string.format("Error! [%s]", text)
+							)
+						end
+						error(result)
 					end
-					error(result)
+					return result
 				end
-				return result
+
+				local root = ReactTestRenderer.create(
+					React.createElement(
+						Suspense,
+						{ fallback = React.createElement(Text, { text = "Loading..." }) },
+						{ React.createElement(BadAsyncText, { text = "Hi" }) }
+					),
+					{
+						unstable_isConcurrent = true,
+					}
+				)
+
+				jestExpect(Scheduler).toFlushAndYield({ "Suspend! [Hi]", "Loading..." })
+
+				resolveThenable("Hi")
+				-- This thenable improperly resolves twice. We should not update the
+				-- cached value.
+				resolveThenable("Hi muahahaha I am different")
+
+				root.update(
+					React.createElement(
+						Suspense,
+						{ fallback = React.createElement(Text, { text = "Loading..." }) },
+						{ React.createElement(BadAsyncText, { text = "Hi" }) }
+					),
+					{
+						unstable_isConcurrent = true,
+					}
+				)
+
+				jestExpect(Scheduler).toHaveYielded({})
+				jestExpect(Scheduler).toFlushAndYield({ "Hi" })
+				jestExpect(root).toMatchRenderedOutput("Hi")
 			end
-
-			local root = ReactTestRenderer.create(
-				React.createElement(
-					Suspense,
-					{ fallback = React.createElement(Text, { text = "Loading..." }) },
-					{ React.createElement(BadAsyncText, { text = "Hi" }) }
-				),
-				{
-					unstable_isConcurrent = true,
-				}
-			)
-
-			jestExpect(Scheduler).toFlushAndYield({ "Suspend! [Hi]", "Loading..." })
-
-			resolveThenable("Hi")
-			-- This thenable improperly resolves twice. We should not update the
-			-- cached value.
-			resolveThenable("Hi muahahaha I am different")
-
-			root.update(
-				React.createElement(
-					Suspense,
-					{ fallback = React.createElement(Text, { text = "Loading..." }) },
-					{ React.createElement(BadAsyncText, { text = "Hi" }) }
-				),
-				{
-					unstable_isConcurrent = true,
-				}
-			)
-
-			jestExpect(Scheduler).toHaveYielded({})
-			jestExpect(Scheduler).toFlushAndYield({ "Hi" })
-			jestExpect(root).toMatchRenderedOutput("Hi")
-		end)
+		)
 
 		it("throws if read is called outside render", function()
 			jestExpect(function()
 				TextResource.read({ "A", 1000 })
-			end).toThrow("read and preload may only be called from within a component's render")
+			end).toThrow(
+				"read and preload may only be called from within a component's render"
+			)
 		end)
 
 		it("throws if preload is called outside render", function()
 			jestExpect(function()
 				TextResource.preload({ "A", 1000 })
-			end).toThrow("read and preload may only be called from within a component's render")
+			end).toThrow(
+				"read and preload may only be called from within a component's render"
+			)
 		end)
 	end)
 end
