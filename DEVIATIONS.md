@@ -5,16 +5,16 @@ Upstream naming and logic has some deviations and incompatibilities with existin
 #### Table of Contents
 * [Naming](#naming)
   * [Component Lifecycle](#component-lifecycle) ✔️
-  * [Reserved Prop Keys: "ref"](#reserved-prop-keys-ref)
-  * [Reserved Prop Keys: "key"](#reserved-prop-keys-key)
+  * [Reserved Prop Keys: "ref"](#reserved-prop-keys-ref) 🔨
+  * [Reserved Prop Keys: "key"](#reserved-prop-keys-key) 🔨
   * [Reserved Prop Keys: "children"](#reserved-prop-keys-children) ✔️
 * [Behavior](#behavior)
-  * [Old Context](#old-context-roact-only)
-  * [Context.Consumer Interface](#contextconsumer-interface)
+  * [Old Context](#old-context-roact-only) 🔨
+  * [Context.Consumer Interface](#contextconsumer-interface) ✔️
   * [createFragment](#createfragment) ✔️
   * [Ref Forwarding](#ref-forwarding)
   * [Stable Keys](#stable-keys) ✔️
-  * [Use of setState](#use-of-setstate)
+  * [Use of setState](#use-of-setstate) ✔️
   * [Functional setState](#functional-setstate)
   * [Roact.Portal](#roactportal) ✔️
   * [State Initialization](#state-initialization)
@@ -200,14 +200,17 @@ We'll likely have to modernize all existing uses of `_context` to instead use th
 This is likely the biggest refactor effort that the Lua Apps adoption is contingent on. It also incurs some knock-on efforts on projects that the App depends upon, like [roact-rodux](https://github.com/roblox/roact-rodux/issues/26), which has some work completed, [but with unaddressed backwards compatibility problems](https://github.com/Roblox/roact-rodux/pull/38#issuecomment-644902307).
 
 ### Context.Consumer Interface
-**Status:** ❔ Alignment Strategy TBD
+**Status:** ✔️ Resolved
+<details>
+  <summary>Details</summary>
+ 
+The context consumer api doesn't match that of Roact's createContext context consumer.
+* Roact's implementation accepts a single prop, which is a render functions `render(contextObject) -> ReactElement`
+* React's implementation accepts no props, and a single child, which is a `render` function with the same signature as above
 
-Stub: context consumer api doesn't match that of Roact's createContext context consumer
-
-#### In Production Code
-
-#### Proposed Alignment Strategy
-We'll probably want to support both interfaces
+#### Implemented Alignment Strategy
+We've provided support for both interfaces. Resolution and more info at https://github.com/Roblox/roact-alignment/pull/119
+</details>
 
 ### createFragment
 **Status:** ✔️ Resolved
@@ -386,7 +389,9 @@ An implementation of this approach was merged in [#68](https://github.com/Roblox
 </details>
 
 ### Use of setState
-**Status:** ❔ Alignment Strategy TBD
+**Status:** ✔️ Resolved
+<details>
+  <summary>Details</summary>
 
 In React, `setState` is not allowed inside a constructor. Instead, it is recommended to assign directly to `this.state` (more info in the [React documentation](https://reactjs.org/docs/react-component.html#constructor))
 
@@ -416,12 +421,13 @@ end
 #### In Production Code
 It's difficult to measure this without relying heavily on formatting, but it seems that ~90 component definitions in the Lua App repo, including dependencies, invoke `setState` inside of their `init` functions (equivalent to a class component constructor).
 
-#### Proposed Alignment Strategy
-We should continue to support calling `setState` in init, and ensure that its behavior is equivalent to assigning directly to state.
+#### Implemented Alignment Strategy
+We continue to support calling `setState` in init, and ensure that its behavior is equivalent to assigning directly to state.
 
-This will maximize compatibility with existing Roact code, and does not risk incurring significant tech debt, as we anticipate that class components will become less ubiquitous as hooks begin to see adoption.
+This maximizes compatibility with existing Roact code, and does not risk incurring significant tech debt, as we anticipate that class components will become less ubiquitous as hooks begin to see adoption.
 
-This deviation may be non-trivial to implement, and might have some subtle and dangerous corner cases. We should apply thorough test cases to confirm that the behavior is as expected, which may mean adapting some of current Roact's tests.
+Resolution and more info at https://github.com/Roblox/roact-alignment/pull/124
+</details>
 
 ### Functional setState
 **Status:** ❔ Alignment Strategy TBD
@@ -585,22 +591,31 @@ Upstream React introduces a number of incoming features. Some of these are alrea
 _(section needs filling in...)_
 
 ### Hooks
-...
+[React Hooks](https://reactjs.org/docs/hooks-intro.html)
+
+Most hooks are ported and exposed (a few experimental and in-development ones are not yet available): https://github.com/Roblox/roact-alignment/blob/v17.0.1-preview.0/modules/react/src/React.lua#L35-L45
 
 ### Memo
-...
+[React Memo](https://reactjs.org/docs/react-api.html#reactmemo)
+
+Memo is ported and exposed via `React.memo`.
 
 ### Lazy
-...
+[React Lazy](https://reactjs.org/docs/code-splitting.html#reactlazy)
+
+Lazy is ported and exposed via `React.lazy`.
 
 ### Suspense
-...
+[React Suspense](https://reactjs.org/docs/react-api.html#reactsuspense)
+
+Suspense is ported and exposed via `React.Suspense`.
 
 ### Error Boundaries
-...
+[React Error Boundaries](https://reactjs.org/docs/error-boundaries.html)
+
+Error boundaries are ported and exposed via the component lifecycle methods `getDerivedStateFromError` and `componentDidCatch`.
 
 ### DEV mode
-...
-
-### Better Error Messages
-...
+DEV Mode can be enabled by setting the `__DEV__` global to `true` before the initial require of any Roact package. You can accomplish this either by:
+* In Roblox Studio, executing `_G.__DEV__ = true` at the entry point of your test or application (before requiring any React packages)
+* In roblox-cli, including the argument `--lua.globals=__DEV__=true` when using the `run` command
