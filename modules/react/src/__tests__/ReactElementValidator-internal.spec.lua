@@ -117,8 +117,7 @@ return function()
 			)
 		end)
 
-		-- ROBLOX FIXME: instead of component name "Parent", outputs "LoadedCode.RoactAlignment._Workspace.React.React.__tests__.ReactElementValidator-internal.spec"
-		xit("warns for keys with component stack info", function()
+		it("warns for keys with component stack info", function()
 			local function Component()
 				return React.createElement("div", nil, {
 					React.createElement("div"),
@@ -145,8 +144,6 @@ return function()
 					"https://reactjs.org/link/warning-keys for more information.\n" ..
 					"    in div (at **)\n" ..
 					"    in Component (at **)\n" ..
-					-- ROBLOX FIXME: the stack is correct, EXCEPT for Parent, which shows up as
-					-- in LoadedCode.RoactAlignment.Packages.Modules.React.__tests__.ReactElementValidator-internal.spec (at **)
 					"    in Parent (at **)\n" ..
 					"    in GrandParent (at **)"
 			)

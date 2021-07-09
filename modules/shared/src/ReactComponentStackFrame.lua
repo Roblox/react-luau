@@ -116,6 +116,7 @@ local function describeNativeComponentFrame(
 	-- This will change the theorical stack trace we want, because of
 	-- the function where we call 'debug.traceback()', but the control
 	-- stack will have the same added frame.
+	local traceback
 	local _, sample = xpcall(function()
 		if construct then
 			-- deviation: since we can't have a meaningful stack trace when
@@ -123,8 +124,9 @@ local function describeNativeComponentFrame(
 			-- component definition), we skip this case.
 		else
 			local _, x = pcall(function()
+				traceback = debug.traceback()
 				error({
-					stack = debug.traceback(),
+					stack = traceback,
 				})
 			end)
 			control = x;
@@ -134,7 +136,7 @@ local function describeNativeComponentFrame(
 	end, function(message)
 		return {
 			message = message,
-			stack = debug.traceback(),
+			stack = traceback,
 		}
 	end)
 

@@ -2239,7 +2239,7 @@ return function()
 				return self.props.children
 			end
 
-			local Throws = function()
+			local function Throws()
 				error("expected")
 			end
 
@@ -2250,9 +2250,9 @@ return function()
 			jestExpect(function()
 				root.render(React.createElement(InvalidErrorBoundary, nil, React.createElement(Throws)))
 			end).toErrorDev({
-				"Warning: The above error occurred in one of your React components:\
+				"Warning: The above error occurred in the <Throws> component:\
 \
-    in LoadedCode.RoactAlignment._Workspace.ReactReconciler.ReactReconciler.__tests__.ReactErrorBoundaries-internal.spec (at **)\
+    in Throws (at **)\
     in InvalidErrorBoundary (at **)\
 \
 React will try to recreate this component tree from scratch using the error boundary you provided, InvalidErrorBoundary.\
