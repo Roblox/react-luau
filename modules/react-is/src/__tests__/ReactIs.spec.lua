@@ -15,7 +15,7 @@ return function()
 		beforeEach(function()
 			RobloxJest.resetModules()
 			ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
-			ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback = false;
+			ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback = false
 
 			React = require(Packages.Dev.React)
 			ReactIs = require(Packages.ReactIs)
@@ -88,24 +88,38 @@ return function()
 			jestExpect(ReactIs.isValidElementType(nil)).toEqual(false)
 			-- ROBLOX deviation: no difference between nil and undefined in Lua
 			-- jestExpect(ReactIs.isValidElementType(undefined)).toEqual(false)
-			jestExpect(ReactIs.isValidElementType({ type = "TextLabel", props = {} })).toEqual(false)
+			jestExpect(ReactIs.isValidElementType({ type = "TextLabel", props = {} })).toEqual(
+				false
+			)
 		end)
 
 		it("should identify context consumers", function()
 			local Context = React.createContext(false)
 			jestExpect(ReactIs.isValidElementType(Context.Consumer)).toBe(true)
-			jestExpect(ReactIs.typeOf(React.createElement(Context.Consumer))).toBe(ReactIs.ContextConsumer)
-			jestExpect(ReactIs.isContextConsumer(React.createElement(Context.Consumer))).toBe(true)
-			jestExpect(ReactIs.isContextConsumer(React.createElement(Context.Provider))).toBe(false)
+			jestExpect(ReactIs.typeOf(React.createElement(Context.Consumer))).toBe(
+				ReactIs.ContextConsumer
+			)
+			jestExpect(ReactIs.isContextConsumer(React.createElement(Context.Consumer))).toBe(
+				true
+			)
+			jestExpect(ReactIs.isContextConsumer(React.createElement(Context.Provider))).toBe(
+				false
+			)
 			jestExpect(ReactIs.isContextConsumer(React.createElement("div"))).toBe(false)
 		end)
 
 		it("should identify context providers", function()
 			local Context = React.createContext(false)
 			jestExpect(ReactIs.isValidElementType(Context.Provider)).toBe(true)
-			jestExpect(ReactIs.typeOf(React.createElement(Context.Provider))).toBe(ReactIs.ContextProvider)
-			jestExpect(ReactIs.isContextProvider(React.createElement(Context.Provider))).toBe(true)
-			jestExpect(ReactIs.isContextProvider(React.createElement(Context.Consumer))).toBe(false)
+			jestExpect(ReactIs.typeOf(React.createElement(Context.Provider))).toBe(
+				ReactIs.ContextProvider
+			)
+			jestExpect(ReactIs.isContextProvider(React.createElement(Context.Provider))).toBe(
+				true
+			)
+			jestExpect(ReactIs.isContextProvider(React.createElement(Context.Consumer))).toBe(
+				false
+			)
 			jestExpect(ReactIs.isContextProvider(React.createElement("div"))).toBe(false)
 		end)
 
@@ -122,10 +136,16 @@ return function()
 
 			-- It should also identify more specific types as elements
 			local Context = React.createContext(false)
-			jestExpect(ReactIs.isElement(React.createElement(Context.Provider))).toBe(true)
-			jestExpect(ReactIs.isElement(React.createElement(Context.Consumer))).toBe(true)
+			jestExpect(ReactIs.isElement(React.createElement(Context.Provider))).toBe(
+				true
+			)
+			jestExpect(ReactIs.isElement(React.createElement(Context.Consumer))).toBe(
+				true
+			)
 			jestExpect(ReactIs.isElement(React.createElement(React.Fragment))).toBe(true)
-			jestExpect(ReactIs.isElement(React.createElement(React.StrictMode))).toBe(true)
+			jestExpect(ReactIs.isElement(React.createElement(React.StrictMode))).toBe(
+				true
+			)
 			jestExpect(ReactIs.isElement(React.createElement(React.Suspense))).toBe(true)
 		end)
 
@@ -134,15 +154,21 @@ return function()
 				return nil
 			end)
 			jestExpect(ReactIs.isValidElementType(RefForwardingComponent)).toBe(true)
-			jestExpect(ReactIs.typeOf(React.createElement(RefForwardingComponent))).toBe(ReactIs.ForwardRef)
-			jestExpect(ReactIs.isForwardRef(React.createElement(RefForwardingComponent))).toBe(true)
+			jestExpect(ReactIs.typeOf(React.createElement(RefForwardingComponent))).toBe(
+				ReactIs.ForwardRef
+			)
+			jestExpect(ReactIs.isForwardRef(React.createElement(RefForwardingComponent))).toBe(
+				true
+			)
 			jestExpect(ReactIs.isForwardRef({ type = ReactIs.StrictMode })).toBe(false)
 			jestExpect(ReactIs.isForwardRef(React.createElement("div"))).toBe(false)
 		end)
 
 		it("should identify fragments", function()
 			jestExpect(ReactIs.isValidElementType(React.Fragment)).toBe(true)
-			jestExpect(ReactIs.typeOf(React.createElement(React.Fragment))).toBe(ReactIs.Fragment)
+			jestExpect(ReactIs.typeOf(React.createElement(React.Fragment))).toBe(
+				ReactIs.Fragment
+			)
 			jestExpect(ReactIs.isFragment(React.createElement(React.Fragment))).toBe(true)
 			jestExpect(ReactIs.isFragment({ type = ReactIs.Fragment })).toBe(false)
 			jestExpect(ReactIs.isFragment("React.Fragment")).toBe(false)
@@ -152,7 +178,10 @@ return function()
 
 		it("should identify portals", function()
 			local ScreenGui = Instance.new("ScreenGui")
-			local portal = ReactRoblox.createPortal(React.createElement("Frame"), ScreenGui)
+			local portal = ReactRoblox.createPortal(
+				React.createElement("Frame"),
+				ScreenGui
+			)
 			jestExpect(ReactIs.isValidElementType(portal)).toBe(false)
 			jestExpect(ReactIs.typeOf(portal)).toBe(ReactIs.Portal)
 			jestExpect(ReactIs.isPortal(portal)).toBe(true)
@@ -178,22 +207,30 @@ return function()
 				return Component
 			end)
 			jestExpect(ReactIs.isValidElementType(LazyComponent)).toBe(true)
-			jestExpect(ReactIs.typeOf(React.createElement(LazyComponent))).toBe(ReactIs.Lazy)
+			jestExpect(ReactIs.typeOf(React.createElement(LazyComponent))).toBe(
+				ReactIs.Lazy
+			)
 			jestExpect(ReactIs.isLazy(React.createElement(LazyComponent))).toBe(true)
 			jestExpect(ReactIs.isLazy(React.createElement(Component))).toBe(false)
 		end)
 
 		it("should identify strict mode", function()
 			jestExpect(ReactIs.isValidElementType(React.StrictMode)).toBe(true)
-			jestExpect(ReactIs.typeOf(React.createElement(React.StrictMode))).toBe(ReactIs.StrictMode)
-			jestExpect(ReactIs.isStrictMode(React.createElement(React.StrictMode))).toBe(true)
+			jestExpect(ReactIs.typeOf(React.createElement(React.StrictMode))).toBe(
+				ReactIs.StrictMode
+			)
+			jestExpect(ReactIs.isStrictMode(React.createElement(React.StrictMode))).toBe(
+				true
+			)
 			jestExpect(ReactIs.isStrictMode({ type = ReactIs.StrictMode })).toBe(false)
 			jestExpect(ReactIs.isStrictMode(React.createElement("div"))).toBe(false)
 		end)
 
 		it("should identify suspense", function()
 			jestExpect(ReactIs.isValidElementType(React.Suspense)).toBe(true)
-			jestExpect(ReactIs.typeOf(React.createElement(React.Suspense))).toBe(ReactIs.Suspense)
+			jestExpect(ReactIs.typeOf(React.createElement(React.Suspense))).toBe(
+				ReactIs.Suspense
+			)
 			jestExpect(ReactIs.isSuspense(React.createElement(React.Suspense))).toBe(true)
 			jestExpect(ReactIs.isSuspense({ type = ReactIs.Suspense })).toBe(false)
 			jestExpect(ReactIs.isSuspense("React.Suspense")).toBe(false)
@@ -202,8 +239,22 @@ return function()
 
 		it("should identify profile root", function()
 			jestExpect(ReactIs.isValidElementType(React.Profiler)).toBe(true)
-			jestExpect(ReactIs.typeOf(React.createElement(React.Profiler, { id = "foo", onRender = jest:fn() }))).toBe(ReactIs.Profiler)
-			jestExpect(ReactIs.isProfiler(React.createElement(React.Profiler, { id = "foo", onRender = jest:fn() }))).toBe(true)
+			jestExpect(
+				ReactIs.typeOf(
+					React.createElement(
+						React.Profiler,
+						{ id = "foo", onRender = jest:fn() }
+					)
+				)
+			).toBe(ReactIs.Profiler)
+			jestExpect(
+				ReactIs.isProfiler(
+					React.createElement(
+						React.Profiler,
+						{ id = "foo", onRender = jest:fn() }
+					)
+				)
+			).toBe(true)
 			jestExpect(ReactIs.isProfiler({ type = ReactIs.Profiler })).toBe(false)
 			jestExpect(ReactIs.isProfiler(React.createElement("div"))).toBe(false)
 		end)
@@ -212,11 +263,11 @@ return function()
 		it("should warn for deprecated functions", function()
 			jestExpect(function()
 				ReactIs.isConcurrentMode(nil)
-			end).toWarnDev('deprecated', {withoutStack = true})
+			end).toWarnDev("deprecated", { withoutStack = true })
 
 			jestExpect(function()
 				ReactIs.isAsyncMode(nil)
-			end).toWarnDev('deprecated', {withoutStack = true})
+			end).toWarnDev("deprecated", { withoutStack = true })
 		end)
 	end)
 end

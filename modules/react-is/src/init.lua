@@ -17,31 +17,33 @@ local isValidElementType = require(Packages.Shared).isValidElementType
 local exports = {}
 
 exports.typeOf = function(object)
-	if typeof(object) == 'table' and object ~= nil then
-		local __typeof = object['$$typeof']
+	if typeof(object) == "table" and object ~= nil then
+		local __typeof = object["$$typeof"]
 
 		if __typeof == ReactSymbols.REACT_ELEMENT_TYPE then
 			local __type = object.type
 
 			if
-				__type == ReactSymbols.REACT_FRAGMENT_TYPE or
-				__type == ReactSymbols.REACT_PROFILER_TYPE or
-				__type == ReactSymbols.REACT_STRICT_MODE_TYPE or
-				__type == ReactSymbols.REACT_SUSPENSE_TYPE or
-				__type == ReactSymbols.REACT_SUSPENSE_LIST_TYPE
+				__type == ReactSymbols.REACT_FRAGMENT_TYPE
+				or __type == ReactSymbols.REACT_PROFILER_TYPE
+				or __type == ReactSymbols.REACT_STRICT_MODE_TYPE
+				or __type == ReactSymbols.REACT_SUSPENSE_TYPE
+				or __type == ReactSymbols.REACT_SUSPENSE_LIST_TYPE
 			then
 				return __type
 			else
 				-- deviation: We need to check that __type is a table before we
 				-- index into it, or Luau will throw errors
-				local __typeofType = __type and typeof(__type) == "table" and __type['$$typeof']
+				local __typeofType = __type
+					and typeof(__type) == "table"
+					and __type["$$typeof"]
 
 				if
-					__typeofType == ReactSymbols.REACT_CONTEXT_TYPE or
-					__typeofType == ReactSymbols.REACT_FORWARD_REF_TYPE or
-					__typeofType == ReactSymbols.REACT_LAZY_TYPE or
-					__typeofType == ReactSymbols.REACT_MEMO_TYPE or
-					__typeofType == ReactSymbols.REACT_PROVIDER_TYPE
+					__typeofType == ReactSymbols.REACT_CONTEXT_TYPE
+					or __typeofType == ReactSymbols.REACT_FORWARD_REF_TYPE
+					or __typeofType == ReactSymbols.REACT_LAZY_TYPE
+					or __typeofType == ReactSymbols.REACT_MEMO_TYPE
+					or __typeofType == ReactSymbols.REACT_PROVIDER_TYPE
 				then
 					return __typeofType
 				else
@@ -76,7 +78,10 @@ exports.isAsyncMode = function(object)
 			hasWarnedAboutDeprecatedIsAsyncMode = true
 			-- Using console['warn'] to evade Babel and ESLint
 
-			console['warn']('The ReactIs.isAsyncMode() alias has been deprecated, ' .. 'and will be removed in React 18+.')
+			console["warn"](
+				"The ReactIs.isAsyncMode() alias has been deprecated, "
+					.. "and will be removed in React 18+."
+			)
 		end
 	end
 
@@ -89,7 +94,10 @@ exports.isConcurrentMode = function(object)
 			hasWarnedAboutDeprecatedIsConcurrentMode = true
 			-- Using console['warn'] to evade Babel and ESLint
 
-			console['warn']('The ReactIs.isConcurrentMode() alias has been deprecated, ' .. 'and will be removed in React 18+.')
+			console["warn"](
+				"The ReactIs.isConcurrentMode() alias has been deprecated, "
+					.. "and will be removed in React 18+."
+			)
 		end
 	end
 
@@ -103,7 +111,10 @@ exports.isContextProvider = function(object)
 	return exports.typeOf(object) == ReactSymbols.REACT_PROVIDER_TYPE
 end
 exports.isElement = function(object)
-	return ((typeof(object) == 'table' and object ~= nil) and object['$$typeof'] == ReactSymbols.REACT_ELEMENT_TYPE)
+	return (
+			(typeof(object) == "table" and object ~= nil)
+			and object["$$typeof"] == ReactSymbols.REACT_ELEMENT_TYPE
+		)
 end
 exports.isForwardRef = function(object)
 	return exports.typeOf(object) == ReactSymbols.REACT_FORWARD_REF_TYPE

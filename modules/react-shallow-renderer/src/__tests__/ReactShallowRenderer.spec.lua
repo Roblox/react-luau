@@ -11,7 +11,7 @@
 return function()
 	-- local Dependencies = script.Parent.Parent.Parent.Parent.Packages
 	local Packages = script.Parent.Parent.Parent
-  local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
 	local LuauPolyfill = require(Packages.LuauPolyfill)
 	local Array = LuauPolyfill.Array
 	local Error = LuauPolyfill.Error
@@ -49,7 +49,9 @@ return function()
 		local SomeComponent = React.Component:extend("SomeComponent")
 		SomeComponent.UNSAFE_componentWillMount = logger("componentWillMount")
 		SomeComponent.componentDidMount = logger("componentDidMount")
-		SomeComponent.UNSAFE_componentWillReceiveProps = logger("componentWillReceiveProps")
+		SomeComponent.UNSAFE_componentWillReceiveProps = logger(
+			"componentWillReceiveProps"
+		)
 		SomeComponent.shouldComponentUpdate = logger("shouldComponentUpdate")
 		SomeComponent.UNSAFE_componentWillUpdate = logger("componentWillUpdate")
 		SomeComponent.componentDidUpdate = logger("componentDidUpdate")
@@ -136,80 +138,89 @@ return function()
 		jestExpect(logs).toEqual({ "getDerivedStateFromProps", "shouldComponentUpdate" })
 	end)
 
-	it("should not invoke deprecated lifecycles (cWM/cWRP/cWU) if new static gDSFP is present", function()
-		local Component = React.Component:extend("Component")
-		function Component:init()
-			self.state = {}
-		end
-		function Component.getDerivedStateFromProps()
-			return nil
-		end
-		function Component:componentWillMount()
-			error(Error("unexpected"))
-		end
-		function Component:componentWillReceiveProps()
-			error(Error("unexpected"))
-		end
-		function Component:componentWillUpdate()
-			error(Error("unexpected"))
-		end
-		function Component:render()
-			return nil
-		end
+	it(
+		"should not invoke deprecated lifecycles (cWM/cWRP/cWU) if new static gDSFP is present",
+		function()
+			local Component = React.Component:extend("Component")
+			function Component:init()
+				self.state = {}
+			end
+			function Component.getDerivedStateFromProps()
+				return nil
+			end
+			function Component:componentWillMount()
+				error(Error("unexpected"))
+			end
+			function Component:componentWillReceiveProps()
+				error(Error("unexpected"))
+			end
+			function Component:componentWillUpdate()
+				error(Error("unexpected"))
+			end
+			function Component:render()
+				return nil
+			end
 
-		local shallowRenderer = createRenderer()
-		jestExpect(function()
-			shallowRenderer:render(React.createElement(Component))
-		end).never.toThrow()
-	end)
+			local shallowRenderer = createRenderer()
+			jestExpect(function()
+				shallowRenderer:render(React.createElement(Component))
+			end).never.toThrow()
+		end
+	)
 
-	it("should not invoke deprecated lifecycles (cWM/cWRP/cWU) if new getSnapshotBeforeUpdate is present", function()
-		local Component = React.Component:extend("Component")
-		function Component:getSnapshotBeforeUpdate()
-			return nil
-		end
-		function Component:componentWillMount()
-			error(Error("unexpected"))
-		end
-		function Component:componentWillReceiveProps()
-			error(Error("unexpected"))
-		end
-		function Component:componentWillUpdate()
-			error(Error("unexpected"))
-		end
-		function Component:render()
-			return nil
-		end
+	it(
+		"should not invoke deprecated lifecycles (cWM/cWRP/cWU) if new getSnapshotBeforeUpdate is present",
+		function()
+			local Component = React.Component:extend("Component")
+			function Component:getSnapshotBeforeUpdate()
+				return nil
+			end
+			function Component:componentWillMount()
+				error(Error("unexpected"))
+			end
+			function Component:componentWillReceiveProps()
+				error(Error("unexpected"))
+			end
+			function Component:componentWillUpdate()
+				error(Error("unexpected"))
+			end
+			function Component:render()
+				return nil
+			end
 
-		local shallowRenderer = createRenderer()
-		jestExpect(function()
-			shallowRenderer:render(React.createElement(Component, { value = 1 }))
-		end).never.toThrow()
-		jestExpect(function()
-			shallowRenderer:render(React.createElement(Component, { value = 2 }))
-		end).never.toThrow()
-	end)
+			local shallowRenderer = createRenderer()
+			jestExpect(function()
+				shallowRenderer:render(React.createElement(Component, { value = 1 }))
+			end).never.toThrow()
+			jestExpect(function()
+				shallowRenderer:render(React.createElement(Component, { value = 2 }))
+			end).never.toThrow()
+		end
+	)
 
-	it("should not call getSnapshotBeforeUpdate or componentDidUpdate when updating since refs wont exist", function()
-		local Component = React.Component:extend("Component")
-		function Component:getSnapshotBeforeUpdate()
-			error(Error("unexpected"))
-		end
-		function Component:componentDidUpdate()
-			error(Error("unexpected"))
-		end
-		function Component:render()
-			return nil
-		end
+	it(
+		"should not call getSnapshotBeforeUpdate or componentDidUpdate when updating since refs wont exist",
+		function()
+			local Component = React.Component:extend("Component")
+			function Component:getSnapshotBeforeUpdate()
+				error(Error("unexpected"))
+			end
+			function Component:componentDidUpdate()
+				error(Error("unexpected"))
+			end
+			function Component:render()
+				return nil
+			end
 
-		local shallowRenderer = createRenderer()
-		jestExpect(function()
-			shallowRenderer:render(React.createElement(Component, { value = 1 }))
-		end).never.toThrow()
-		jestExpect(function()
-			shallowRenderer:render(React.createElement(Component, { value = 2 }))
-		end).never.toThrow()
-	end)
+			local shallowRenderer = createRenderer()
+			jestExpect(function()
+				shallowRenderer:render(React.createElement(Component, { value = 1 }))
+			end).never.toThrow()
+			jestExpect(function()
+				shallowRenderer:render(React.createElement(Component, { value = 2 }))
+			end).never.toThrow()
+		end
+	)
 
 	it("should only render 1 level deep", function()
 		local function Child()
@@ -276,8 +287,7 @@ return function()
 		function SomeComponent:render()
 			return React.createElement(
 				React.Profiler,
-				{ id = "test", onRender = function()
-				end },
+				{ id = "test", onRender = function() end },
 				React.createElement(
 					"Text",
 					nil,
@@ -291,12 +301,16 @@ return function()
 		local result = shallowRenderer:render(React.createElement(SomeComponent))
 
 		jestExpect(result.type).toEqual(React.Profiler)
-		jestExpect(result.props.children).toEqual(validateElement(React.createElement(
-			"Text",
-			nil,
-			React.createElement("Frame", { className = "child1" }),
-			React.createElement("Frame", { className = "child2" })
-		)))
+		jestExpect(result.props.children).toEqual(
+			validateElement(
+				React.createElement(
+					"Text",
+					nil,
+					React.createElement("Frame", { className = "child1" }),
+					React.createElement("Frame", { className = "child2" })
+				)
+			)
+		)
 	end)
 
 	it("should enable shouldComponentUpdate to prevent a re-render", function()
@@ -315,14 +329,20 @@ return function()
 
 		local shallowRenderer = createRenderer()
 		shallowRenderer:render(React.createElement(SimpleComponent))
-		jestExpect(shallowRenderer:getRenderOutput()).toEqual(React.createElement("TextLabel", { Text = 1 }))
+		jestExpect(shallowRenderer:getRenderOutput()).toEqual(
+			React.createElement("TextLabel", { Text = 1 })
+		)
 
 		local instance = shallowRenderer:getMountedInstance()
 		instance:setState({ update = false })
-		jestExpect(shallowRenderer:getRenderOutput()).toEqual(React.createElement("TextLabel", { Text = 1 }))
+		jestExpect(shallowRenderer:getRenderOutput()).toEqual(
+			React.createElement("TextLabel", { Text = 1 })
+		)
 
 		instance:setState({ update = true })
-		jestExpect(shallowRenderer:getRenderOutput()).toEqual(React.createElement("TextLabel", { Text = 2 }))
+		jestExpect(shallowRenderer:getRenderOutput()).toEqual(
+			React.createElement("TextLabel", { Text = 2 })
+		)
 	end)
 
 	it("should enable PureComponent to prevent a re-render", function()
@@ -338,14 +358,20 @@ return function()
 
 		local shallowRenderer = createRenderer()
 		shallowRenderer:render(React.createElement(SimpleComponent))
-		jestExpect(shallowRenderer:getRenderOutput()).toEqual(React.createElement("TextLabel", { Text = 1 }))
+		jestExpect(shallowRenderer:getRenderOutput()).toEqual(
+			React.createElement("TextLabel", { Text = 1 })
+		)
 
 		local instance = shallowRenderer:getMountedInstance()
 		instance:setState({ update = false })
-		jestExpect(shallowRenderer:getRenderOutput()).toEqual(React.createElement("TextLabel", { Text = 1 }))
+		jestExpect(shallowRenderer:getRenderOutput()).toEqual(
+			React.createElement("TextLabel", { Text = 1 })
+		)
 
 		instance:setState({ update = true })
-		jestExpect(shallowRenderer:getRenderOutput()).toEqual(React.createElement("TextLabel", { Text = 2 }))
+		jestExpect(shallowRenderer:getRenderOutput()).toEqual(
+			React.createElement("TextLabel", { Text = 2 })
+		)
 	end)
 
 	it("should not run shouldComponentUpdate during forced update", function()
@@ -365,13 +391,17 @@ return function()
 		local shallowRenderer = createRenderer()
 		shallowRenderer:render(React.createElement(SimpleComponent))
 		jestExpect(scuCounter).toEqual(0)
-		jestExpect(shallowRenderer:getRenderOutput()).toEqual(React.createElement("TextLabel", { Text = 1 }))
+		jestExpect(shallowRenderer:getRenderOutput()).toEqual(
+			React.createElement("TextLabel", { Text = 1 })
+		)
 
 		-- Force update the initial state. sCU should not fire.
 		local instance = shallowRenderer:getMountedInstance()
 		instance:forceUpdate()
 		jestExpect(scuCounter).toEqual(0)
-		jestExpect(shallowRenderer:getRenderOutput()).toEqual(React.createElement("TextLabel", { Text = 1 }))
+		jestExpect(shallowRenderer:getRenderOutput()).toEqual(
+			React.createElement("TextLabel", { Text = 1 })
+		)
 
 		-- Setting state updates the instance, but doesn't re-render
 		-- because sCU returned false.
@@ -380,13 +410,17 @@ return function()
 		end)
 		jestExpect(scuCounter).toEqual(1)
 		jestExpect(instance.state.count).toEqual(2)
-		jestExpect(shallowRenderer:getRenderOutput()).toEqual(React.createElement("TextLabel", { Text = 1 }))
+		jestExpect(shallowRenderer:getRenderOutput()).toEqual(
+			React.createElement("TextLabel", { Text = 1 })
+		)
 
 		-- A force update updates the render output, but doesn't call sCU.
 		instance:forceUpdate()
 		jestExpect(scuCounter).toEqual(1)
 		jestExpect(instance.state.count).toEqual(2)
-		jestExpect(shallowRenderer:getRenderOutput()).toEqual(React.createElement("TextLabel", { Text = 2 }))
+		jestExpect(shallowRenderer:getRenderOutput()).toEqual(
+			React.createElement("TextLabel", { Text = 2 })
+		)
 	end)
 
 	it("should rerender when calling forceUpdate", function()
@@ -421,7 +455,10 @@ return function()
 		--     }
 
 		local shallowRenderer = createRenderer()
-		local result = shallowRenderer:render(React.createElement(SomeComponent, { foo = "FOO" }), { bar = "BAR" })
+		local result = shallowRenderer:render(
+			React.createElement(SomeComponent, { foo = "FOO" }),
+			{ bar = "BAR" }
+		)
 
 		jestExpect(result.type).toEqual("Frame")
 		jestExpect(result.props.children).toEqual(validate({
@@ -432,25 +469,35 @@ return function()
 		}))
 	end)
 
-	it("should shallow render a component returning strings directly from render", function()
-		local Text = function(props)
-			return props.value
+	it(
+		"should shallow render a component returning strings directly from render",
+		function()
+			local Text = function(props)
+				return props.value
+			end
+
+			local shallowRenderer = createRenderer()
+			local result = shallowRenderer:render(
+				React.createElement(Text, { value = "foo" })
+			)
+			jestExpect(result).toEqual("foo")
 		end
+	)
 
-		local shallowRenderer = createRenderer()
-		local result = shallowRenderer:render(React.createElement(Text, { value = "foo" }))
-		jestExpect(result).toEqual("foo")
-	end)
+	it(
+		"should shallow render a component returning numbers directly from render",
+		function()
+			local Text = function(props)
+				return props.value
+			end
 
-	it("should shallow render a component returning numbers directly from render", function()
-		local Text = function(props)
-			return props.value
+			local shallowRenderer = createRenderer()
+			local result = shallowRenderer:render(
+				React.createElement(Text, { value = 10 })
+			)
+			jestExpect(result).toEqual(10)
 		end
-
-		local shallowRenderer = createRenderer()
-		local result = shallowRenderer:render(React.createElement(Text, { value = 10 }))
-		jestExpect(result).toEqual(10)
-	end)
+	)
 
 	it("should shallow render a fragment", function()
 		local SomeComponent = React.Component:extend("SomeComponent")
@@ -469,7 +516,9 @@ return function()
 
 		local shallowRenderer = createRenderer()
 		local result = shallowRenderer:render(React.createElement(Fragment))
-		jestExpect(result.ChildA).toEqual(React.createElement("TextLabel", { Text = "a" }))
+		jestExpect(result.ChildA).toEqual(
+			React.createElement("TextLabel", { Text = "a" })
+		)
 		jestExpect(result.ChildB).toEqual(React.createElement("Frame", { Value = "b" }))
 		jestExpect(result.ChildC).toEqual(React.createElement(SomeComponent))
 		jestExpect(result).toEqual({
@@ -498,8 +547,12 @@ return function()
 		jestExpect(result.type).toEqual(React.Fragment)
 
 		jestExpect(#result.props.children).toEqual(3)
-		jestExpect(result.props.children[1]).toEqual(validateElement(React.createElement("Text")))
-		jestExpect(result.props.children[2]).toEqual(validateElement(React.createElement("Frame")))
+		jestExpect(result.props.children[1]).toEqual(
+			validateElement(React.createElement("Text"))
+		)
+		jestExpect(result.props.children[2]).toEqual(
+			validateElement(React.createElement("Frame"))
+		)
 		React.createElement(React.Fragment, nil, {
 			React.createElement("Text"),
 			React.createElement("Frame"),
@@ -593,12 +646,12 @@ return function()
 			end
 
 			if self.props.aNew == "prop" then
-				return React.createElement(
-					"Button",
-					{ onClick = function()
+				return React.createElement("Button", {
+					onClick = function()
 						self:onClick()
-					end, className = className }
-				)
+					end,
+					className = className,
+				})
 			else
 				return React.createElement("TextLabel", nil, {
 					React.createElement("Frame", { className = "child1" }),
@@ -615,7 +668,9 @@ return function()
 			React.createElement("Frame", { className = "child2" }),
 		}))
 
-		local updatedResult = shallowRenderer:render(React.createElement(SomeComponent, { aNew = "prop" }))
+		local updatedResult = shallowRenderer:render(
+			React.createElement(SomeComponent, { aNew = "prop" })
+		)
 		jestExpect(updatedResult.type).toEqual("Button")
 
 		updatedResult.props:onClick()
@@ -643,7 +698,7 @@ return function()
 	it("can shallowly render components with contextTypes", function()
 		local SimpleComponent = React.Component:extend("SimpleComponent")
 		SimpleComponent.contextTypes = {
-			name = "string",  -- ROBLOX TODO: missing PropTypes.string
+			name = "string", -- ROBLOX TODO: missing PropTypes.string
 		}
 
 		function SimpleComponent:render()
@@ -700,7 +755,10 @@ return function()
 		end
 
 		local shallowRenderer = createRenderer()
-		shallowRenderer:render(React.createElement(SimpleComponent, initialProp), initialContext)
+		shallowRenderer:render(
+			React.createElement(SimpleComponent, initialProp),
+			initialContext
+		)
 		jestExpect(componentDidUpdateParams).toEqual({})
 		jestExpect(componentWillReceivePropsParams).toEqual({})
 		jestExpect(componentWillUpdateParams).toEqual({})
@@ -708,7 +766,10 @@ return function()
 		jestExpect(shouldComponentUpdateParams).toEqual({})
 
 		-- Lifecycle hooks should be invoked with the correct prev/next params on update.
-		shallowRenderer:render(React.createElement(SimpleComponent, updatedProp), updatedContext)
+		shallowRenderer:render(
+			React.createElement(SimpleComponent, updatedProp),
+			updatedContext
+		)
 
 		jestExpect(componentWillReceivePropsParams).toEqual({
 			{ updatedProp, updatedContext },
@@ -767,16 +828,24 @@ return function()
 
 		-- The only lifecycle hook that should be invoked on initial render
 		-- Is the static getDerivedStateFromProps() methods
-		shallowRenderer:render(React.createElement(SimpleComponent, initialProp), initialContext)
-		jestExpect(getDerivedStateFromPropsParams).toEqual({ {
-			initialProp,
-			initialState,
-		} })
+		shallowRenderer:render(
+			React.createElement(SimpleComponent, initialProp),
+			initialContext
+		)
+		jestExpect(getDerivedStateFromPropsParams).toEqual({
+			{
+				initialProp,
+				initialState,
+			},
+		})
 		jestExpect(componentDidUpdateParams).toEqual({})
 		jestExpect(shouldComponentUpdateParams).toEqual({})
 
 		-- Lifecycle hooks should be invoked with the correct prev/next params on update.
-		shallowRenderer:render(React.createElement(SimpleComponent, updatedProp), updatedContext)
+		shallowRenderer:render(
+			React.createElement(SimpleComponent, updatedProp),
+			updatedContext
+		)
 
 		jestExpect(getDerivedStateFromPropsParams).toEqual({
 			{ initialProp, initialState },
@@ -811,8 +880,7 @@ return function()
 			end
 
 			return React.createElement(SimpleComponent, {
-				ref = function()
-				end,
+				ref = function() end,
 				onClick = function()
 					self:handleUserClick()
 				end,
@@ -848,12 +916,20 @@ return function()
 		end
 
 		function SimpleComponent:render()
-			return React.createElement("TextLabel", nil, "count:" .. self.state.count .. ", other:" .. self.state.other)
+			return React.createElement(
+				"TextLabel",
+				nil,
+				"count:" .. self.state.count .. ", other:" .. self.state.other
+			)
 		end
 
 		local shallowRenderer = createRenderer()
-		local result = shallowRenderer:render(React.createElement(SimpleComponent, { incrementBy = 2 }))
-		jestExpect(result).toEqual(React.createElement("TextLabel", nil, "count:3, other:foobar"))
+		local result = shallowRenderer:render(
+			React.createElement(SimpleComponent, { incrementBy = 2 })
+		)
+		jestExpect(result).toEqual(
+			React.createElement("TextLabel", nil, "count:3, other:foobar")
+		)
 	end)
 
 	it("can setState in componentWillMount when shallow rendering", function()
@@ -887,41 +963,53 @@ return function()
 			local doovy = self.state.doovy
 			local separator = self.state.separator
 
-			return React.createElement("TextLabel", { Text = groovy .. separator .. doovy })
+			return React.createElement(
+				"TextLabel",
+				{ Text = groovy .. separator .. doovy }
+			)
 		end
 
 		local shallowRenderer = createRenderer()
 		local result = shallowRenderer:render(React.createElement(SimpleComponent))
-		jestExpect(result).toEqual(React.createElement("TextLabel", { Text = "doovy-groovy" }))
+		jestExpect(result).toEqual(
+			React.createElement("TextLabel", { Text = "doovy-groovy" })
+		)
 	end)
 
-	it("can setState in componentWillMount with an updater function repeatedly when shallow rendering", function()
-		local SimpleComponent = React.Component:extend("SimpleComponent")
-		function SimpleComponent:init()
-			self.state = { separator = "-" }
+	it(
+		"can setState in componentWillMount with an updater function repeatedly when shallow rendering",
+		function()
+			local SimpleComponent = React.Component:extend("SimpleComponent")
+			function SimpleComponent:init()
+				self.state = { separator = "-" }
+			end
+
+			function SimpleComponent:UNSAFE_componentWillMount()
+				self:setState(function(state)
+					return { groovy = "doovy" }
+				end)
+				self:setState(function(state)
+					return { doovy = state.groovy }
+				end)
+			end
+
+			function SimpleComponent:render()
+				local groovy = self.state.groovy
+				local doovy = self.state.doovy
+				local separator = self.state.separator
+
+				return React.createElement(
+					"TextLabel",
+					nil,
+					{ groovy .. separator .. doovy }
+				)
+			end
+
+			local shallowRenderer = createRenderer()
+			local result = shallowRenderer:render(React.createElement(SimpleComponent))
+			jestExpect(result.props.children[1]).toEqual("doovy-doovy")
 		end
-
-		function SimpleComponent:UNSAFE_componentWillMount()
-			self:setState(function(state)
-				return { groovy = "doovy" }
-			end)
-			self:setState(function(state)
-				return { doovy = state.groovy }
-			end)
-		end
-
-		function SimpleComponent:render()
-			local groovy = self.state.groovy
-			local doovy = self.state.doovy
-			local separator = self.state.separator
-
-			return React.createElement("TextLabel", nil, { groovy .. separator .. doovy })
-		end
-
-		local shallowRenderer = createRenderer()
-		local result = shallowRenderer:render(React.createElement(SimpleComponent))
-		jestExpect(result.props.children[1]).toEqual("doovy-doovy")
-	end)
+	)
 
 	it("can setState in componentWillReceiveProps when shallow rendering", function()
 		local SimpleComponent = React.Component:extend("SimpleComponent")
@@ -940,109 +1028,145 @@ return function()
 		end
 
 		local shallowRenderer = createRenderer()
-		local result = shallowRenderer:render(React.createElement(SimpleComponent, { updateState = false }))
+		local result = shallowRenderer:render(
+			React.createElement(SimpleComponent, { updateState = false })
+		)
 
 		jestExpect(result.props.children).toEqual(0)
 
-		result = shallowRenderer:render(React.createElement(SimpleComponent, { updateState = true }))
+		result = shallowRenderer:render(
+			React.createElement(SimpleComponent, { updateState = true })
+		)
 
 		jestExpect(result.props.children).toEqual(1)
 	end)
 
-	it("can update state with static getDerivedStateFromProps when shallow rendering", function()
-		local SimpleComponent = React.Component:extend("SimpleComponent")
-		function SimpleComponent:init()
-			self.state = { count = 1 }
-		end
-
-		function SimpleComponent.getDerivedStateFromProps(nextProps, prevState)
-			if nextProps.updateState then
-				return { count = nextProps.incrementBy + prevState.count }
+	it(
+		"can update state with static getDerivedStateFromProps when shallow rendering",
+		function()
+			local SimpleComponent = React.Component:extend("SimpleComponent")
+			function SimpleComponent:init()
+				self.state = { count = 1 }
 			end
 
-			return nil
-		end
+			function SimpleComponent.getDerivedStateFromProps(nextProps, prevState)
+				if nextProps.updateState then
+					return { count = nextProps.incrementBy + prevState.count }
+				end
 
-		function SimpleComponent:render()
-			return React.createElement("TextLabel", nil, self.state.count)
-		end
-
-		local shallowRenderer = createRenderer()
-		local result = shallowRenderer:render(React.createElement(
-			SimpleComponent,
-			{ updateState = false, incrementBy = 0 }
-		))
-
-		jestExpect(result.props.children).toEqual(1)
-
-		result = shallowRenderer:render(React.createElement(SimpleComponent, { updateState = true, incrementBy = 2 }))
-		jestExpect(result.props.children).toEqual(3)
-
-		result = shallowRenderer:render(React.createElement(SimpleComponent, { updateState = false, incrementBy = 2 }))
-
-		jestExpect(result.props.children).toEqual(3)
-	end)
-
-	it("should not override state with stale values if prevState is spread within getDerivedStateFromProps", function()
-		local SimpleComponent = React.Component:extend("SimpleComponent")
-		function SimpleComponent:init()
-			self.state = { value = 0 }
-		end
-
-		function SimpleComponent.getDerivedStateFromProps(nextProps, prevState)
-			return { table.unpack(prevState) }
-		end
-
-		function SimpleComponent:updateState()
-			self:setState(function(state)
-				return { value = state.value + 1 }
-			end)
-		end
-
-		function SimpleComponent:render()
-			return React.createElement("TextLabel", nil, "value:" .. self.state.value)
-		end
-
-		local shallowRenderer = createRenderer()
-		local result = shallowRenderer:render(React.createElement(SimpleComponent))
-		jestExpect(result).toEqual(React.createElement("TextLabel", nil, "value:0"))
-
-		local instance = shallowRenderer:getMountedInstance()
-		instance:updateState()
-		result = shallowRenderer:getRenderOutput()
-		jestExpect(result).toEqual(React.createElement("TextLabel", nil, "value:1"))
-	end)
-
-	it("should pass previous state to shouldComponentUpdate even with getDerivedStateFromProps", function()
-		local SimpleComponent = React.Component:extend("SimpleComponent")
-		function SimpleComponent:init()
-			self.state = {
-				value = self.props.value,
-			}
-		end
-
-		function SimpleComponent.getDerivedStateFromProps(nextProps, prevState)
-			if nextProps.value == prevState.value then
 				return nil
 			end
 
-			return { value = nextProps.value }
-		end
+			function SimpleComponent:render()
+				return React.createElement("TextLabel", nil, self.state.count)
+			end
 
-		function SimpleComponent:shouldComponentUpdate(nextProps, nextState)
-			return nextState.value ~= self.state.value
-		end
+			local shallowRenderer = createRenderer()
+			local result = shallowRenderer:render(
+				React.createElement(
+					SimpleComponent,
+					{ updateState = false, incrementBy = 0 }
+				)
+			)
 
-		function SimpleComponent:render()
-			return React.createElement("TextLabel", { Text = "value:" .. self.state.value })
-		end
+			jestExpect(result.props.children).toEqual(1)
 
-		local shallowRenderer = createRenderer()
-		local initialResult = shallowRenderer:render(React.createElement(SimpleComponent, { value = "initial" }))
-		jestExpect(initialResult).toEqual(React.createElement("TextLabel", { Text = "value:initial" }))
-		local updatedResult = shallowRenderer:render(React.createElement(SimpleComponent, { value = "updated" }))
-		jestExpect(updatedResult).toEqual(React.createElement("TextLabel", { Text = "value:updated" }))
-	end)
+			result = shallowRenderer:render(
+				React.createElement(
+					SimpleComponent,
+					{ updateState = true, incrementBy = 2 }
+				)
+			)
+			jestExpect(result.props.children).toEqual(3)
+
+			result = shallowRenderer:render(
+				React.createElement(
+					SimpleComponent,
+					{ updateState = false, incrementBy = 2 }
+				)
+			)
+
+			jestExpect(result.props.children).toEqual(3)
+		end
+	)
+
+	it(
+		"should not override state with stale values if prevState is spread within getDerivedStateFromProps",
+		function()
+			local SimpleComponent = React.Component:extend("SimpleComponent")
+			function SimpleComponent:init()
+				self.state = { value = 0 }
+			end
+
+			function SimpleComponent.getDerivedStateFromProps(nextProps, prevState)
+				return { table.unpack(prevState) }
+			end
+
+			function SimpleComponent:updateState()
+				self:setState(function(state)
+					return { value = state.value + 1 }
+				end)
+			end
+
+			function SimpleComponent:render()
+				return React.createElement("TextLabel", nil, "value:" .. self.state.value)
+			end
+
+			local shallowRenderer = createRenderer()
+			local result = shallowRenderer:render(React.createElement(SimpleComponent))
+			jestExpect(result).toEqual(React.createElement("TextLabel", nil, "value:0"))
+
+			local instance = shallowRenderer:getMountedInstance()
+			instance:updateState()
+			result = shallowRenderer:getRenderOutput()
+			jestExpect(result).toEqual(React.createElement("TextLabel", nil, "value:1"))
+		end
+	)
+
+	it(
+		"should pass previous state to shouldComponentUpdate even with getDerivedStateFromProps",
+		function()
+			local SimpleComponent = React.Component:extend("SimpleComponent")
+			function SimpleComponent:init()
+				self.state = {
+					value = self.props.value,
+				}
+			end
+
+			function SimpleComponent.getDerivedStateFromProps(nextProps, prevState)
+				if nextProps.value == prevState.value then
+					return nil
+				end
+
+				return { value = nextProps.value }
+			end
+
+			function SimpleComponent:shouldComponentUpdate(nextProps, nextState)
+				return nextState.value ~= self.state.value
+			end
+
+			function SimpleComponent:render()
+				return React.createElement(
+					"TextLabel",
+					{ Text = "value:" .. self.state.value }
+				)
+			end
+
+			local shallowRenderer = createRenderer()
+			local initialResult = shallowRenderer:render(
+				React.createElement(SimpleComponent, { value = "initial" })
+			)
+			jestExpect(initialResult).toEqual(
+				React.createElement("TextLabel", { Text = "value:initial" })
+			)
+			local updatedResult = shallowRenderer:render(
+				React.createElement(SimpleComponent, { value = "updated" })
+			)
+			jestExpect(updatedResult).toEqual(
+				React.createElement("TextLabel", { Text = "value:updated" })
+			)
+		end
+	)
 
 	it("can setState with an updater function", function()
 		local instance
@@ -1060,7 +1184,9 @@ return function()
 		end
 
 		local shallowRenderer = createRenderer()
-		local result = shallowRenderer:render(React.createElement(SimpleComponent, { defaultCount = 1 }))
+		local result = shallowRenderer:render(
+			React.createElement(SimpleComponent, { defaultCount = 1 })
+		)
 		jestExpect(result.props.children).toEqual(0)
 
 		instance:setState(function(state, props)
@@ -1224,7 +1350,11 @@ return function()
 		end
 
 		function SimpleComponent:render()
-			return React.createElement("Text", nil, self.context.foo .. ":" .. self.state.bar)
+			return React.createElement(
+				"Text",
+				nil,
+				self.context.foo .. ":" .. self.state.bar
+			)
 		end
 
 		local shallowRenderer = createRenderer()
@@ -1246,7 +1376,11 @@ return function()
 			foo = "string",
 		}
 		function SimpleComponent:render()
-			return React.createElement("Text", nil, self.context.foo .. ":" .. tostring(self.context.bar))
+			return React.createElement(
+				"Text",
+				nil,
+				self.context.foo .. ":" .. tostring(self.context.bar)
+			)
 		end
 
 		local shallowRenderer = createRenderer()
@@ -1310,7 +1444,11 @@ return function()
 		end
 
 		function SimpleComponent:render()
-			return React.createElement("Text", nil, self.props.foo .. ":" .. self.state.bar)
+			return React.createElement(
+				"Text",
+				nil,
+				self.props.foo .. ":" .. self.state.bar
+			)
 		end
 
 		local shallowRenderer = createRenderer()
@@ -1323,30 +1461,33 @@ return function()
 		jestExpect(result.props.children).toEqual("baz:bar")
 	end)
 
-	it("self.state should be updated on setState callback inside componentWillMount", function()
-		local stateSuccessfullyUpdated = false
+	it(
+		"self.state should be updated on setState callback inside componentWillMount",
+		function()
+			local stateSuccessfullyUpdated = false
 
-		local MyComponent = React.Component:extend("Component")
-		function MyComponent:init(props, context)
-			self.state = {
-				hasUpdatedState = false,
-			}
+			local MyComponent = React.Component:extend("Component")
+			function MyComponent:init(props, context)
+				self.state = {
+					hasUpdatedState = false,
+				}
+			end
+
+			function MyComponent:UNSAFE_componentWillMount()
+				self:setState({ hasUpdatedState = true }, function()
+					stateSuccessfullyUpdated = self.state.hasUpdatedState
+				end)
+			end
+
+			function MyComponent:render()
+				return React.createElement("Text", nil, self.props.children)
+			end
+
+			local shallowRenderer = createRenderer()
+			shallowRenderer:render(React.createElement(MyComponent))
+			jestExpect(stateSuccessfullyUpdated).toEqual(true)
 		end
-
-		function MyComponent:UNSAFE_componentWillMount()
-			self:setState({ hasUpdatedState = true }, function()
-				stateSuccessfullyUpdated = self.state.hasUpdatedState
-			end)
-		end
-
-		function MyComponent:render()
-			return React.createElement("Text", nil, self.props.children)
-		end
-
-		local shallowRenderer = createRenderer()
-		shallowRenderer:render(React.createElement(MyComponent))
-		jestExpect(stateSuccessfullyUpdated).toEqual(true)
-	end)
+	)
 
 	it("should handle multiple callbacks", function()
 		local mockCalledTimes = 0
@@ -1383,40 +1524,43 @@ return function()
 		jestExpect(mockCalledTimes).toEqual(3)
 	end)
 
-	it("should call the setState callback even if shouldComponentUpdate = false", function()
-		local mockCalledTimes = 0
-		local mockFn = function()
-			mockCalledTimes += 1
-			return false
+	it(
+		"should call the setState callback even if shouldComponentUpdate = false",
+		function()
+			local mockCalledTimes = 0
+			local mockFn = function()
+				mockCalledTimes += 1
+				return false
+			end
+
+			local Component = React.Component:extend("Component")
+			function Component:init(props, context)
+				self.state = {
+					hasUpdatedState = false,
+				}
+			end
+
+			function Component:shouldComponentUpdate()
+				return mockFn()
+			end
+
+			function Component:render()
+				return React.createElement("Text", nil, self.state.hasUpdatedState)
+			end
+
+			local shallowRenderer = createRenderer()
+			shallowRenderer:render(React.createElement(Component))
+
+			local callbackWasCalled = false
+			local mountedInstance = shallowRenderer:getMountedInstance()
+			mountedInstance:setState({ hasUpdatedState = true }, function()
+				jestExpect(mockCalledTimes).toEqual(1)
+				jestExpect(mountedInstance.state.hasUpdatedState).toEqual(true)
+				callbackWasCalled = true
+			end)
+			jestExpect(callbackWasCalled).toEqual(true)
 		end
-
-		local Component = React.Component:extend("Component")
-		function Component:init(props, context)
-			self.state = {
-				hasUpdatedState = false,
-			}
-		end
-
-		function Component:shouldComponentUpdate()
-			return mockFn()
-		end
-
-		function Component:render()
-			return React.createElement("Text", nil, self.state.hasUpdatedState)
-		end
-
-		local shallowRenderer = createRenderer()
-		shallowRenderer:render(React.createElement(Component))
-
-		local callbackWasCalled = false
-		local mountedInstance = shallowRenderer:getMountedInstance()
-		mountedInstance:setState({ hasUpdatedState = true }, function()
-			jestExpect(mockCalledTimes).toEqual(1)
-			jestExpect(mountedInstance.state.hasUpdatedState).toEqual(true)
-			callbackWasCalled = true
-		end)
-		jestExpect(callbackWasCalled).toEqual(true)
-	end)
+	)
 
 	it("throws usefully when rendering badly-typed elements", function()
 		local shallowRenderer = createRenderer()
@@ -1473,7 +1617,9 @@ return function()
 		Component.componentWillReceiveProps = logger("componentWillReceiveProps")
 		Component.componentWillUpdate = logger("componentWillUpdate")
 		Component.UNSAFE_componentWillMount = logger("UNSAFE_componentWillMount")
-		Component.UNSAFE_componentWillReceiveProps = logger("UNSAFE_componentWillReceiveProps")
+		Component.UNSAFE_componentWillReceiveProps = logger(
+			"UNSAFE_componentWillReceiveProps"
+		)
 		Component.UNSAFE_componentWillUpdate = logger("UNSAFE_componentWillUpdate")
 
 		function Component:render()
@@ -1579,7 +1725,11 @@ return function()
 		end
 		local Foo = React.memo(function(props)
 			renderCount += 1
-			return React.createElement("Text", nil, tostring(props.foo) .. tostring(props.bar))
+			return React.createElement(
+				"Text",
+				nil,
+				tostring(props.foo) .. tostring(props.bar)
+			)
 		end, areEqual)
 
 		local shallowRenderer = createRenderer()
@@ -1592,20 +1742,23 @@ return function()
 		jestExpect(renderCount).toEqual(2)
 	end)
 
-	it("should not call the comparison function with React.memo on the initial render", function()
-		local comparisonWasCalled = false
-		local areEqual = function()
-			comparisonWasCalled = true
-			return false
+	it(
+		"should not call the comparison function with React.memo on the initial render",
+		function()
+			local comparisonWasCalled = false
+			local areEqual = function()
+				comparisonWasCalled = true
+				return false
+			end
+			local SomeComponent = React.memo(function(props)
+				return React.createElement("Text", nil, props.foo)
+			end, areEqual)
+			local shallowRenderer = createRenderer()
+			shallowRenderer:render(React.createElement(SomeComponent, { foo = 1 }))
+			jestExpect(comparisonWasCalled).toEqual(false)
+			jestExpect(shallowRenderer:getRenderOutput().props.children).toEqual(1)
 		end
-		local SomeComponent = React.memo(function(props)
-			return React.createElement("Text", nil, props.foo)
-		end, areEqual)
-		local shallowRenderer = createRenderer()
-		shallowRenderer:render(React.createElement(SomeComponent, { foo = 1 }))
-		jestExpect(comparisonWasCalled).toEqual(false)
-		jestExpect(shallowRenderer:getRenderOutput().props.children).toEqual(1)
-	end)
+	)
 
 	it("should handle memo(forwardRef())", function()
 		local testRef = React.createRef()
@@ -1620,7 +1773,9 @@ return function()
 		local SomeMemoComponent = React.memo(SomeComponent)
 
 		local shallowRenderer = createRenderer()
-		local result = shallowRenderer:render(React.createElement(SomeMemoComponent, { ref = testRef }))
+		local result = shallowRenderer:render(
+			React.createElement(SomeMemoComponent, { ref = testRef })
+		)
 
 		jestExpect(result.type).toEqual("Frame")
 		jestExpect(result.props.children).toEqual(validate({
