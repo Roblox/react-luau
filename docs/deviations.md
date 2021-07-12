@@ -20,5 +20,8 @@ For the time being, function components do not support the `defaultProps` featur
 ### propTypes
 For the time being, function components do not support the `propTypes` feature. While propTypes is less often used and can in many cases be superseded by static type checking, we may want to, in the future, re-implement it in terms of hooks to make sure that function components with hooks are as appealing and feature-rich as possible.
 
+### validateProps
+For the time being, we will continue to support legacy Roact's `validateProps`. Old Roact's documentation on this method can be found [here](https://roblox.github.io/roact/api-reference/#validateprops).
+
 ### contextTypes
 For the time being, function components do not support the `contextTypes` feature. While contextTypes is less often used and can in many cases be superseded by static type checking, we may want to, in the future, re-implement it in terms of hooks to make sure that function components with hooks are as appealing and feature-rich as possible.

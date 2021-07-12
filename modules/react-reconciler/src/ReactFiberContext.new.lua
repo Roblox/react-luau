@@ -135,7 +135,8 @@ local function getMaskedContext(
 
 		if _G.__DEV__ then
 			local name = getComponentName(type) or "Unknown"
-			checkPropTypes(contextTypes, context, "context", name)
+			-- ROBLOX deviation: nil as second argument for validateProps compatibility
+			checkPropTypes(contextTypes, nil, context, "context", name)
 		end
 
 		-- Cache unmasked context so we can avoid recreating masked context unless necessary.
@@ -249,7 +250,8 @@ local function processChildContext(
 		end
 		if _G.__DEV__ then
 			local name = getComponentName(type) or "Unknown"
-			checkPropTypes(childContextTypes, childContext, "child context", name)
+			-- ROBLOX deviation: nil as second argument for validateProps compatibility
+			checkPropTypes(childContextTypes, nil, childContext, "child context", name)
 		end
 
 		return Cryo.Dictionary.join(parentContext, childContext)

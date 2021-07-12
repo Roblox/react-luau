@@ -600,19 +600,17 @@ function ReactShallowRenderer:render(element, maybeContext)
 		ReactDebugCurrentFrame.getCurrentStack = getStackAddendum
 	end
 	local ok, result = pcall(function()
-		if
-			isMemo(element)
-			and typeof(elementType) == "table"
-			and elementType.propTypes
-		then
-			currentlyValidatingElement = element
-			checkPropTypes(
-				elementType.propTypes,
-				element.props,
-				"prop",
-				getComponentName(elementType)
-			)
-		end
+    if isMemo(element) and typeof(elementType) == "table" and (elementType.propTypes or elementType.validateProps) then
+      currentlyValidatingElement = element
+      -- ROBLOX deviation: adds support for legacy Roact's validateProps()
+      checkPropTypes(
+        elementType.propTypes,
+        elementType.validateProps,
+        element.props,
+        'prop',
+        getComponentName(elementType)
+      )
+    end
 
 		if self._instance then
 			self:_updateClassComponent(elementType, element, self._context)
@@ -652,17 +650,19 @@ function ReactShallowRenderer:render(element, maybeContext)
 					end
 				end
 
-				if typeof(elementType) == "table" and elementType.contextTypes then
-					currentlyValidatingElement = element
-					checkPropTypes(
-						elementType.contextTypes,
-						self._context,
-						"context",
-						getName(elementType, self._instance)
-					)
+        if typeof(elementType) == "table" and (elementType.contextTypes or elementType.validateProps) then
+          currentlyValidatingElement = element
+          -- ROBLOX deviation: adds support for legacy Roact's validateProps()
+          checkPropTypes(
+            elementType.contextTypes,
+            elementType.validateProps,
+            self._context,
+            'context',
+            getName(elementType, self._instance)
+          )
 
-					currentlyValidatingElement = nil
-				end
+          currentlyValidatingElement = nil
+        end
 
 				self:_mountClassComponent(elementType, element, self._context)
 			else

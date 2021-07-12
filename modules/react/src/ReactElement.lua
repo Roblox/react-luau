@@ -469,7 +469,7 @@ end
 ]]
 
 exports.cloneElement = function(element, config, ...)
-	invariant(not (element == nil or element == nil), "React.cloneElement(...): The argument must be a React element, but you passed " .. tostring(element))
+	invariant(not (element == nil), "React.cloneElement(...): The argument must be a React element, but you passed " .. tostring(element))
 
 	-- Original props are copied
 	local props = Object.assign({}, element.props)

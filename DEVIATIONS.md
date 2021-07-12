@@ -212,6 +212,13 @@ The context consumer api doesn't match that of Roact's createContext context con
 We've provided support for both interfaces. Resolution and more info at https://github.com/Roblox/roact-alignment/pull/119
 </details>
 
+### validateProps
+**Status:** ✔️ Resolved
+<details>
+#### Implemented Alignment
+Roact 17 supports both propTypes and validateProps. `checkPropTypes` method was expanded to include logic for validateProps. For full details, see [#131](https://github.com/Roblox/roact-alignment/pull/131).
+</details>
+
 ### createFragment
 **Status:** ✔️ Resolved
 <details>

@@ -11,3 +11,7 @@ LuauPolyfill = { workspace = true }
 [dev_dependencies]
 JestRoblox = { workspace = true }
 RobloxJest = { path = "../roblox-jest" }
+React = { path = "../react" }
+Scheduler = { path = "../scheduler" }
+ReactNoop = { path = "../react-noop-renderer" }
+JestReact = { path = "../jest-react" }

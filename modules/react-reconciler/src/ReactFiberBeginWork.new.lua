@@ -369,10 +369,13 @@ local function updateForwardRef(
     if workInProgress.type ~= workInProgress.elementType then
       -- Lazy component props can't be validated in createElement
       -- because they're only guaranteed to be resolved here.
+      -- ROBLOX deviation: adds support for legacy Roact's validateProps()
       local innerPropTypes = Component.propTypes
-      if innerPropTypes then
+      local validateProps = Component.validateProps
+      if innerPropTypes or validateProps then
         checkPropTypes(
           innerPropTypes,
+          validateProps,
           nextProps, -- Resolved props
           "prop",
           getComponentName(Component)
@@ -481,13 +484,21 @@ local function updateMemoComponent(
       )
     end
     if  _G.__DEV__ then
+      -- ROBLOX deviation: adds support for legacy Roact's validateProps()
+      local innerPropTypes
+      local validateProps
       -- ROBLOX deviation: avoid accessing propTypes on a function, Lua doesn't support fields on functions
-      local innerPropTypes = typeof(type) == "table" and type.propTypes
-      if innerPropTypes then
+      if typeof(type) == "table" then
+        innerPropTypes = type.propTypes
+        validateProps = type.validateProps
+      end
+
+      if innerPropTypes or validateProps then
         -- Inner memo component props aren't currently validated in createElement.
         -- We could move it there, but we'd still need this for lazy code path.
         checkPropTypes(
           innerPropTypes,
+          validateProps,
           nextProps, -- Resolved props
           "prop",
           getComponentName(type)
@@ -512,13 +523,21 @@ local function updateMemoComponent(
   local current = (current :: Fiber)
   if  _G.__DEV__ then
     local type = Component.type
+    -- ROBLOX deviation: adds support for legacy Roact's validateProps()
+    local innerPropTypes
+    local validateProps
     -- ROBLOX deviation: only check for propTypes on class components, Lua doesn't support fields on functions
-    local innerPropTypes = typeof(type) == "table" and type.propTypes
-    if innerPropTypes then
+    if typeof(type) == "table" then
+      innerPropTypes = type.propTypes
+      validateProps = type.validateProps
+    end
+
+    if innerPropTypes or validateProps then
       -- Inner memo component props aren't currently validated in createElement.
       -- We could move it there, but we'd still need this for lazy code path.
       checkPropTypes(
         innerPropTypes,
+        validateProps,
         nextProps, -- Resolved props
         'prop',
         getComponentName(type)
@@ -579,11 +598,19 @@ function updateSimpleMemoComponent(
           outerMemoType = nil
         end
         -- Inner propTypes will be validated in the function component path.
+        -- ROBLOX deviation: adds support for legacy Roact's validateProps()
+        local outerPropTypes
+        local validateProps
         -- ROBLOX deviation: avoid accessing propTypes on a function, Lua doesn't support fields on functions
-        local outerPropTypes = typeof(outerMemoType) == "table" and (outerMemoType :: any).propTypes
-        if outerPropTypes then
+        if typeof(type) == "table" then
+          outerPropTypes = (outerMemoType :: any).propTypes
+          validateProps = (outerMemoType :: any).validateProps
+        end
+
+        if outerPropTypes or validateProps then
           checkPropTypes(
             outerPropTypes,
+            validateProps,
             nextProps, -- Resolved (SimpleMemoComponent has no defaultProps)
             "prop",
             getComponentName(outerMemoType)
@@ -803,14 +830,19 @@ updateFunctionComponent = function(
     if typeof(Component) ~= 'function' and (workInProgress.type ~= workInProgress.elementType) then
       -- Lazy component props can't be validated in createElement
       -- because they're only guaranteed to be resolved here.
+      -- ROBLOX deviation: adds support for legacy Roact's validateProps()
       local innerPropTypes
+      local validateProps
       -- ROBLOX deviation: Roact won't support propTypes on functional components
-      if typeof(Component) == "table" then
-        innerPropTypes = Component.propTypes
+      if typeof(type) == "table" then
+        innerPropTypes = (type :: any).propTypes
+        validateProps = (type :: any).validateProps
       end
-      if innerPropTypes then
+
+      if innerPropTypes or validateProps then
         checkPropTypes(
           innerPropTypes,
+          validateProps,
           nextProps, -- Resolved props
           'prop',
           getComponentName(Component)
@@ -967,10 +999,13 @@ local function updateClassComponent(
     if workInProgress.type ~= workInProgress.elementType then
       -- Lazy component props can't be validated in createElement
       -- because they're only guaranteed to be resolved here.
+      -- ROBLOX deviation: adds support for legacy Roact's validateProps()
       local innerPropTypes = Component.propTypes
-      if innerPropTypes then
+      local validateProps = Component.validateProps
+      if innerPropTypes or validateProps then
         checkPropTypes(
           innerPropTypes,
+          validateProps,
           nextProps, -- Resolved props
           "prop",
           getComponentName(Component)
@@ -1372,10 +1407,13 @@ local function mountLazyComponent(
   elseif resolvedTag == MemoComponent then
     if  _G.__DEV__ then
       if workInProgress.type ~= workInProgress.elementType then
+        -- ROBLOX deviation: adds support for legacy Roact's validateProps()
         local outerPropTypes = Component.propTypes
-        if outerPropTypes then
+        local validateProps = Component.validateProps
+        if outerPropTypes or validateProps then
           checkPropTypes(
             outerPropTypes,
+            validateProps,
             resolvedProps, -- Resolved for outer only
             'prop',
             getComponentName(Component)
@@ -3025,10 +3063,12 @@ local function updateContextProvider(
         )
       end
     end
+    -- ROBLOX deviation: adds support for legacy Roact's validateProps()
     local providerPropTypes = workInProgress.type.propTypes
+    local validateProps = workInProgress.type.validateProps
 
-    if providerPropTypes then
-      checkPropTypes(providerPropTypes, newProps, 'prop', 'Context.Provider')
+    if providerPropTypes or validateProps then
+      checkPropTypes(providerPropTypes, validateProps, newProps, 'prop', 'Context.Provider')
     end
   end
 
@@ -3568,11 +3608,18 @@ exports.beginWork = function(
     local resolvedProps = resolveDefaultProps(type, unresolvedProps)
     if _G.__DEV__ then
       if workInProgress.type ~= workInProgress.elementType then
+        -- ROBLOX deviation: adds support for legacy Roact's validateProps()
+        local outerPropTypes
+        local validateProps
         -- ROBLOX deviation: only get propTypes from class components, Lua doesn't support fields on functions
-        local outerPropTypes = typeof(type) == "table" and type.propTypes
-        if outerPropTypes then
+        if typeof(type) == "table" then
+          outerPropTypes = type.propTypes
+          validateProps = type.validateProps
+        end
+        if outerPropTypes or validateProps then
           checkPropTypes(
             outerPropTypes,
+            validateProps,
             resolvedProps, -- Resolved for outer only
             "prop",
             getComponentName(type)

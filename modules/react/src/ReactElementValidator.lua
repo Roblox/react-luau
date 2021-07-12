@@ -19,8 +19,8 @@ local isValidElementType = require(Packages.Shared).isValidElementType
 local getComponentName = require(Packages.Shared).getComponentName
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 local getIteratorFn = ReactSymbols.getIteratorFn
-local REACT_FORWARD_REF_TYPE = ReactSymbols.REACT_FORWARD_REF_TYPE
-local REACT_MEMO_TYPE = ReactSymbols.REACT_MEMO_TYPE
+local _REACT_FORWARD_REF_TYPE = ReactSymbols.REACT_FORWARD_REF_TYPE
+local _REACT_MEMO_TYPE = ReactSymbols.REACT_MEMO_TYPE
 local REACT_FRAGMENT_TYPE = ReactSymbols.REACT_FRAGMENT_TYPE
 local REACT_ELEMENT_TYPE = ReactSymbols.REACT_ELEMENT_TYPE
 
@@ -253,32 +253,28 @@ end
 local function validatePropTypes(element)
 	if _G.__DEV__ then
 		local type = element.type
-		if type == nil or type == nil or typeof(type) == "string" then
+		if type == nil or typeof(type) == "string" then
 			return
 		end
 
 		local propTypes
+		local validateProps
 		if typeof(type) == "function" then
 			-- deviation: function components can't have propTypes in Lua
 			-- propTypes = type.propTypes
 			return
-		elseif typeof(type) == "table" and
-			(
-				type["$$typeof"] == REACT_FORWARD_REF_TYPE or
-				-- Note: Memo only checks outer props here.
-				-- Inner props are checked in the reconciler.
-				type["$$typeof"] == REACT_MEMO_TYPE
-			)
-		then
+		elseif typeof(type) == "table" then
 			propTypes = type.propTypes
+			validateProps = type.validateProps
 		else
 			return
 		end
 
-		if propTypes then
+		if propTypes or validateProps then
 			-- Intentionally inside to avoid triggering lazy initializers:
 			local name = getComponentName(type)
-			checkPropTypes(propTypes, element.props, "prop", name, element)
+			-- ROBLOX deviation: adds support for legacy Roact's validateProps()
+			checkPropTypes(propTypes, validateProps, element.props, "prop", name, element)
 		elseif type.PropTypes ~= nil and not propTypesMisspellWarningShown then
 			propTypesMisspellWarningShown = true
 			-- Intentionally inside to avoid triggering lazy initializers:

@@ -75,7 +75,6 @@ local function identityHashFn(input)
 			and typeof(input) ~= "number"
 			and typeof(input) ~= "boolean"
 			and input ~= nil
-			and input ~= nil
 		then
 			console.error(
 				"Invalid key type. Expected a string, number, symbol, or boolean, "
