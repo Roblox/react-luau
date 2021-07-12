@@ -243,7 +243,7 @@ local getExecutionContext = ReactFiberWorkLoop.getExecutionContext
 local RetryAfterError = ReactFiberWorkLoop.RetryAfterError
 local NoContext = ReactFiberWorkLoop.NoContext
 
-local Schedule_tracing_wrap = require(Packages.Scheduler).tracing.unstable_wrap
+local Schedule_tracing_wrap
 local setWorkInProgressVersion = require(script.Parent["ReactMutableSource.new"]).setWorkInProgressVersion
 local markSkippedUpdateLanes = require(script.Parent.ReactFiberWorkInProgress).markSkippedUpdateLanes
 local ConsolePatchingDev = require(Packages.Shared).ConsolePatchingDev
@@ -2565,6 +2565,9 @@ function updateDehydratedSuspenseComponent(
     end
 
     if enableSchedulerTracing then
+      if Schedule_tracing_wrap == nil then
+        Schedule_tracing_wrap = require(Packages.Scheduler).tracing.unstable_wrap
+      end
       retry = Schedule_tracing_wrap(retry)
     end
 

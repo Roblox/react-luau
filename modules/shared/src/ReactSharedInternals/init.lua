@@ -21,6 +21,14 @@
 	* React depends on Shared
 	* Shared has no intra-workspace dependencies (no cycles)
 ]]
+local Packages = script.Parent.Parent
+local console = require(Packages.LuauPolyfill).console
+local function onlyInTestError(functionName: string)
+	return function()
+		console.error(functionName .. " is only available in tests, not in production")
+	end
+end
+
 
 -- import assign from 'object-assign';
 local ReactCurrentDispatcher = require(script.ReactCurrentDispatcher)
@@ -34,16 +42,20 @@ local ReactSharedInternals = {
 	ReactCurrentBatchConfig = ReactCurrentBatchConfig,
 	ReactCurrentOwner = ReactCurrentOwner,
 	IsSomeRendererActing = IsSomeRendererActing,
-	-- deviation: This is understood by Luau as a sealed table, so we specify
-	-- this key to make it safe to assign to it below
-	ReactDebugCurrentFrame = {},
+	-- ROBLOX deviation: Luau type checking requires us to have a consistent export shape regardless of __DEV__
+	ReactDebugCurrentFrame = (function()
+		if _G.__DEV__ then
+			return ReactDebugCurrentFrame
+		end
+		return {
+			setExtraStackFrame = function()
+				onlyInTestError("setExtraStackFrame")
+			end
+		}
+	end)(),
 	-- deviation: We shouldn't have to worry about duplicate bundling here
 	-- Used by renderers to avoid bundling object-assign twice in UMD bundles:
 	-- assign,
 }
-
-if _G.__DEV__ then
-	ReactSharedInternals.ReactDebugCurrentFrame = ReactDebugCurrentFrame
-end
 
 return ReactSharedInternals

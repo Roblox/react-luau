@@ -50,7 +50,7 @@ return function()
 
 	it("should throw an error when a module returns none", function()
 		jestExpect(function()
-			Module.requireOverride(script.Parent.TestScripts.NoReturn)
+			Module.requireOverride(script.Parent.TestScripts.NoReturn :: any)
 		end).toThrow("NoReturn")
 	end)
 

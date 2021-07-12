@@ -38,8 +38,11 @@ local exports = {
     unstable_clearYields = onlyInTestError("unstable_clearYields"),
     unstable_advanceTime = onlyInTestError("unstable_advanceTime"),
     unstable_flushExpired = onlyInTestError("unstable_flushExpired"),
+    unstable_yieldValue = onlyInTestError("unstable_yieldValue"),
 
-    tracing = {}
+    tracing = {
+        unstable_wrap = onlyInTestError("unstable_wrap")
+    }
 }
 
 for k, v in pairs(Tracing) do

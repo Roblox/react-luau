@@ -61,7 +61,7 @@ return function()
 											string.format("Promise rejected [%s]", text)
 										)
 										status = "rejected"
-										value = LuauPolyfill.Error(
+										value = LuauPolyfill.Error.new(
 											"Failed to load: " .. text
 										)
 										for _, listener in ipairs(listeners) do

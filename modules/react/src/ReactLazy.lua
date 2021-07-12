@@ -11,6 +11,7 @@
 local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
+
 local ReactTypes = require(Packages.Shared)
 type Wakeable = ReactTypes.Wakeable
 type Thenable<R> = ReactTypes.Thenable<R, any>
@@ -57,13 +58,12 @@ type Payload<T> =
 	| ResolvedPayload<T>
 	| RejectedPayload
 
-export type LazyComponent<T, P> = any -- {
--- ROBLOX FIXME: Luau can't express type keys with special chars
---     -- $$typeof: Symbol | number,
---   _payload: P,
---   _init: (P) -> T,
+export type LazyComponent<T, P> = {
+    [string]: number, -- ROBLOX deviation: we don't use Symbol for $$typeof
+	_payload: P,
+	_init: (P) -> T,
 --   ...
--- }
+}
 
 -- ROBLOX TODO: function generics
 -- function lazyInitializer<T>(payload: Payload<T>): T {

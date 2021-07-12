@@ -165,7 +165,7 @@ return function()
     local BadRender = React.Component:extend("BadRender")
     function BadRender:render()
       Scheduler.unstable_yieldValue("BadRender throw")
-      error(Error("oops!"))
+      error(Error.new("oops!"))
     end
 
     local function Wrapper(props)

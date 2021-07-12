@@ -14,8 +14,11 @@ local ReactSymbols = require(Packages.Shared).ReactSymbols
 local REACT_FORWARD_REF_TYPE = ReactSymbols.REACT_FORWARD_REF_TYPE
 local REACT_MEMO_TYPE = ReactSymbols.REACT_MEMO_TYPE
 
--- ROBLOX TODO: Luau doesn't have function generics yet
 local exports = {}
+-- ROBLOX TODO: Luau doesn't have function generics yet
+-- export function forwardRef<Props, ElementType: React$ElementType>(
+--   render: (props: Props, ref: React$Ref<ElementType>) => React$Node,
+-- ) {
 exports.forwardRef = function(render)
   if _G.__DEV__ then
     -- ROBLOX deviation: Lua functions can't have properties
@@ -65,7 +68,7 @@ exports.forwardRef = function(render)
   }
   if _G.__DEV__ then
     local ownName
-    -- deviation: use metatables to approximate Object.defineProperty logic
+    -- ROBLOX deviation: use metatables to approximate Object.defineProperty logic
     setmetatable(elementType, {
       __index = function(self, key)
         if key == "displayName" then
@@ -76,7 +79,7 @@ exports.forwardRef = function(render)
       __newindex = function(self, key, value)
         if key == "displayName" then
           ownName = value
-          -- deviation: render is a function and cannot have properties
+          -- ROBLOX deviation: render is a function and cannot have properties
           -- if (render.displayName == null) {
           --   render.displayName = name;
           -- }

@@ -9,16 +9,25 @@
 ]]
 local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from shared
-local console = require(Packages.Shared).console
+local Shared = require(Packages.Shared)
+local console = Shared.console
 
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 local REACT_PROVIDER_TYPE = ReactSymbols.REACT_PROVIDER_TYPE
 local REACT_CONTEXT_TYPE = ReactSymbols.REACT_CONTEXT_TYPE
-
+type ReactContext<T> = Shared.ReactContext<T>
 
 local exports = {}
 
-exports.createContext = function(defaultValue, calculateChangedBits)
+-- ROBLOX TODO: function generics
+-- export function createContext<T>(
+--   defaultValue: T,
+--   calculateChangedBits: ?(a: T, b: T) => number,
+-- ): ReactContext<T> {
+exports.createContext = function(
+  defaultValue,
+  calculateChangedBits: ((any, any) -> number)?
+): ReactContext<any>
   if calculateChangedBits == nil then
     calculateChangedBits = nil
   else

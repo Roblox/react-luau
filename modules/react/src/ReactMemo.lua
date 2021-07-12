@@ -15,7 +15,15 @@ local isValidElementType = require(Packages.Shared).isValidElementType
 
 local exports = {}
 
-exports.memo = function(_type, compare)
+-- ROBLOX TODO: use function generics
+-- export function memo<Props>(
+-- 	type: React$ElementType,
+-- 	compare?: (oldProps: Props, newProps: Props) => boolean,
+--   ) {
+exports.memo = function(
+	type_,
+	compare: ((any, any) -> boolean)?
+)
 	if _G.__DEV__ then
 		if not isValidElementType(type) then
 			console.error(
@@ -27,7 +35,7 @@ exports.memo = function(_type, compare)
 
 	local elementType = {
 		["$$typeof"] = REACT_MEMO_TYPE,
-		type = _type,
+		type = type_,
 		compare = compare or nil,
 	}
 
@@ -41,8 +49,8 @@ exports.memo = function(_type, compare)
 			local name = ({ ... })[1]
 			ownName = name
 
-			if _type.displayName == nil then
-				_type.displayName = name
+			if type_.displayName == nil then
+				type_.displayName = name
 			end
 
 			return nil

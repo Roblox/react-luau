@@ -10,4 +10,4 @@
 
 local Packages = script.Parent.Parent.Parent
 
-return require(Packages.ReactTestRenderer)
+return require(Packages.Dev.ReactTestRenderer)
