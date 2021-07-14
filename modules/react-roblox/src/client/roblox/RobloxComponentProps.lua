@@ -92,17 +92,9 @@ end
 -- end
 
 local function applyProp(hostInstance, key, newValue, oldValue)
-  -- RoactAlignment TODO: Upstream react uses reserved `children` and `ref` prop
-  -- keys, while Roact used special symbols `Roact.Children` and `Roact.Ref` to
-  -- reduce likelihood of collisions; should switch back to using placeholders?
   if key == "ref" or key == "children" then
     return
   end
-
-  -- if key == Ref or key == Children then
-  --   -- Refs and children are handled in a separate pass
-  --   return
-  -- end
 
   local internalKeyType = Type.of(key)
 

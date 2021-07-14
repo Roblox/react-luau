@@ -230,7 +230,9 @@ end
 
 function warnIfReactDOMContainerInDEV(container)
   if _G.__DEV__ then
-    -- ROBLOX TODO: This behavior will deviate or be unnecessary
+    -- ROBLOX TODO: This behavior will deviate; should we validate that the
+    -- container is not a PlayerGui of any sort?
+
     -- if
     --   container.nodeType == ELEMENT_NODE and
     --   container.tagName and

@@ -242,16 +242,17 @@ local exports = {
   -- This should only be used by React internals.
   -- unstable_runWithPriority = runWithPriority,
 
-  -- ROBLOX deviation: Provide prop markers for event/change
+  -- ROBLOX deviation: Export logic attached from Roact
+
+  -- ROBLOX FIXME: Is there a better way to provide this? Exposing these here
+  -- means that a large number of react components that wouldn't otherwise need
+  -- to import `ReactRoblox` will need to do so in order to set events/change
   Event = Event,
   Change = Change,
+
+  -- ROBLOX FIXME: Move binding implementation to React and integrate with refs
   createBinding = Binding.create,
   joinBindings = Binding.join,
-
-  -- ROBLOX deviation: Compatibility layer for special symbol keys, aligning
-  -- them with simple reserved props used by upstream
-  Children = "children",
-  Ref = "ref",
 }
 
 -- local foundDevTools = injectIntoDevTools({
