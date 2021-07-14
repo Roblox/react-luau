@@ -55,6 +55,8 @@ return function()
 				table.insert(log, "timer 5 callback")
 			end)
 
+			jestExpect(FakeTimers.getTimerCount()).toEqual(5)
+
 			-- advance timers passed timer 4 expiry
 			FakeTimers.advanceTimersByTime(70)
 			jestExpect(log).toEqual({ "timer 4 callback" })
@@ -76,6 +78,8 @@ return function()
 				"timer 3 callback",
 				"timer 5 callback",
 			})
+
+			jestExpect(FakeTimers.getTimerCount()).toEqual(0)
 		end)
 	end)
 end

@@ -114,6 +114,10 @@ local function useRealTimers()
 	tickOverride.__call = realTick
 end
 
+local function getTimerCount(): number
+	return #timers
+end
+
 return {
 	delayOverride = setmetatable({}, delayOverride),
 	tickOverride = setmetatable({}, tickOverride),
@@ -121,6 +125,7 @@ return {
 	useFakeTimers = useFakeTimers,
 	useRealTimers = useRealTimers,
 	advanceTimersByTime = advanceTimersByTime,
+	getTimerCount = getTimerCount,
 	reset = reset,
 	now = function() return now end
 }
