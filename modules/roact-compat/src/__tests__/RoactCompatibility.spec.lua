@@ -58,7 +58,16 @@ return function()
 			)
 		end)
 
-		-- FIXME: Underlying ReactChildren API not yet ported
+		it("warns about Component:extend() with no args", function()
+			jestExpect(function()
+				RoactCompat.Component:extend()
+			end).toWarnDev(
+				"Component:extend() accepting no arguments is deprecated",
+				{ withoutStack = true }
+			)
+		end)
+
+	-- FIXME: Underlying ReactChildren API not yet ported
 		xit("warns about oneChild", function()
 			jestExpect(function()
 				RoactCompat.oneChild({ RoactCompat.createElement("div") })

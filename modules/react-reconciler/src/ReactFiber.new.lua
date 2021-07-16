@@ -15,6 +15,7 @@ local Object = LuauPolyfill.Object
 
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
+local inspect = require(Packages.Shared).inspect.inspect
 
 local ReactTypes = require(Packages.Shared)
 -- ROBLOX deviation: ReactElement is defined at the top level of Shared along
@@ -579,16 +580,22 @@ local function createFiberFromTypeAndProps(
 					local ownerName
 					if owner then
 						ownerName = getComponentName(owner.type)
+					-- ROBLOX deviation: try harder to get the name of the component
+					elseif type ~= nil then
+						ownerName = type.__componentName
 					end
 					if ownerName then
 						info ..= "\n\nCheck the render method of `" .. ownerName .. "`."
+					else
+					-- ROBLOX deviation: print the raw table in readable form to give a clue, if no other info was gathered
+					info ..= inspect(type)
 					end
 				end
 				invariant(
 					false,
 					"Element type is invalid: expected a string (for built-in " ..
 						"components) or a class/function (for composite components) " ..
-						"but got: %s.%s",
+						"but got: %s. %s",
 					typeof(type),
 					info
 				)
