@@ -315,6 +315,11 @@ exports.createInstance = function(
   -- local hostKey = virtualNode.hostKey
 
   local domElement = Instance.new(type_)
+  -- ROBLOX deviation: compatibility with old Roact where instances have their name
+  -- set to the key value
+  if internalInstanceHandle.key then
+  	domElement.Name = internalInstanceHandle.key
+  end
 
   precacheFiberNode(internalInstanceHandle, domElement)
   updateFiberProps(domElement, props)

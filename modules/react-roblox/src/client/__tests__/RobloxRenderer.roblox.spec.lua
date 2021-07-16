@@ -1,6 +1,9 @@
 return function()
 	local Packages = script.Parent.Parent.Parent.Parent
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+
+	local JestRoblox = require(Packages.Dev.JestRoblox)
+	local jestExpect = JestRoblox.Globals.expect
+	local jest = JestRoblox.Globals.jest
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 
 	local React
@@ -52,47 +55,135 @@ return function()
 			jestExpect(rootInstance.Name).toBe(key)
 		end)
 
-		-- it("should create children with correct names and props", function()
-		-- 	local parent = Instance.new("Folder")
-		-- 	local rootValue = "Hey there!"
-		-- 	local childValue = 173
-		-- 	local key = "Some Key"
+		it("names instances with their key value using legacy key syntax", function()
+			local parent = Instance.new("Folder")
+			local key = "Some Key"
 
-		-- 	local element = createElement("StringValue", {
-		-- 		Value = rootValue,
-		-- 	}, {
-		-- 		ChildA = createElement("IntValue", {
-		-- 			Value = childValue,
-		-- 		}),
+			local element = React.createElement("Folder", {}, {
+				[key] = React.createElement("BoolValue"),
+			})
 
-		-- 		ChildB = createElement("Folder"),
-		-- 	})
+			local root = ReactRoblox.createRoot(parent)
+			root:render(element)
+			Scheduler.unstable_flushAllWithoutAsserting()
 
-		-- 	local node = reconciler.createVirtualNode(element, parent, key)
+			jestExpect(#parent:GetChildren()).toBe(1)
 
-		-- 	RobloxRenderer.mountHostNode(reconciler, node)
+			local rootInstance = parent:GetChildren()[1]
+			jestExpect(rootInstance.ClassName).toBe("Folder")
 
-		-- 	expect(#parent:GetChildren()).to.equal(1)
+			local boolValueInstance = rootInstance:FindFirstChildOfClass("BoolValue")
+			jestExpect(boolValueInstance).toBeDefined()
+			jestExpect(boolValueInstance.Name).toEqual(key)
+		end)
 
-		-- 	local root = parent:GetChildren()[1]
+		it("names instances with their key value (using props)", function()
+			local parent = Instance.new("Folder")
+			local key = "Some Key"
 
-		-- 	expect(root.ClassName).to.equal("StringValue")
-		-- 	expect(root.Value).to.equal(rootValue)
-		-- 	expect(root.Name).to.equal(key)
+			local element = React.createElement(
+				"Folder",
+				{},
+				React.createElement("BoolValue", {
+					key = key,
+				})
+			)
 
-		-- 	expect(#root:GetChildren()).to.equal(2)
+			local root = ReactRoblox.createRoot(parent)
+			root:render(element)
+			Scheduler.unstable_flushAllWithoutAsserting()
 
-		-- 	local childA = root.ChildA
-		-- 	local childB = root.ChildB
+			jestExpect(#parent:GetChildren()).toBe(1)
 
-		-- 	expect(childA).to.be.ok()
-		-- 	expect(childB).to.be.ok()
+			local rootInstance = parent:GetChildren()[1]
+			jestExpect(rootInstance.ClassName).toBe("Folder")
 
-		-- 	expect(childA.ClassName).to.equal("IntValue")
-		-- 	expect(childA.Value).to.equal(childValue)
+			local boolValueInstance = rootInstance:FindFirstChildOfClass("BoolValue")
+			jestExpect(boolValueInstance).toBeDefined()
+			jestExpect(boolValueInstance.Name).toEqual(key)
+		end)
 
-		-- 	expect(childB.ClassName).to.equal("Folder")
-		-- end)
+		it("names instances with their key value using legacy key syntax and updates them", function()
+			local parent = Instance.new("Folder")
+			local key = "Some Key"
+			local fnMock = jest:fn()
+			local ref = function(...)
+				return fnMock(...)
+			end
+
+			local element = React.createElement("Folder", {}, {
+				[key] = React.createElement("BoolValue", {
+					ref = ref,
+				}),
+			})
+
+			local root = ReactRoblox.createRoot(parent)
+			root:render(element)
+			Scheduler.unstable_flushAllWithoutAsserting()
+
+			jestExpect(fnMock).toHaveBeenCalledTimes(1)
+			local refValue = fnMock.mock.calls[1][1]
+			jestExpect(refValue.Name).toEqual(key)
+
+			local updatedKey = "Some other key"
+			local updatedElement = React.createElement("Folder", {}, {
+				[updatedKey] = React.createElement("BoolValue", {
+					ref = ref,
+				}),
+			})
+			root:render(updatedElement)
+			Scheduler.unstable_flushAllWithoutAsserting()
+
+			jestExpect(fnMock).toHaveBeenCalledTimes(3)
+			-- the second call should be nil
+			jestExpect(fnMock.mock.calls[2]).toHaveLength(0)
+
+			local lastRefValue = fnMock.mock.calls[3][1]
+			jestExpect(lastRefValue.Name).toEqual(updatedKey)
+		end)
+
+		it("should create children with correct names and props", function()
+			local parent = Instance.new("Folder")
+			local rootValue = "Hey there!"
+			local childValue = 173
+			local key = "Some Key"
+
+			local element = React.createElement("StringValue", {
+				key = key,
+				Value = rootValue,
+			}, {
+				ChildA = React.createElement("IntValue", {
+					Value = childValue,
+				}),
+
+				ChildB = React.createElement("Folder"),
+			})
+
+			local root = ReactRoblox.createRoot(parent)
+			root:render(element)
+			Scheduler.unstable_flushAllWithoutAsserting()
+
+			expect(#parent:GetChildren()).to.equal(1)
+
+			local rootInstance = parent:GetChildren()[1]
+
+			expect(rootInstance.ClassName).to.equal("StringValue")
+			expect(rootInstance.Value).to.equal(rootValue)
+			expect(rootInstance.Name).to.equal(key)
+
+			expect(#rootInstance:GetChildren()).to.equal(2)
+
+			local childA = rootInstance.ChildA
+			local childB = rootInstance.ChildB
+
+			expect(childA).to.be.ok()
+			expect(childB).to.be.ok()
+
+			expect(childA.ClassName).to.equal("IntValue")
+			expect(childA.Value).to.equal(childValue)
+
+			expect(childB.ClassName).to.equal("Folder")
+		end)
 
 		-- it("should attach Bindings to Roblox properties", function()
 		-- 	local parent = Instance.new("Folder")
