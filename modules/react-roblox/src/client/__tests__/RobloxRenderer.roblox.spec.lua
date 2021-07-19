@@ -185,6 +185,32 @@ return function()
 			expect(childB.ClassName).to.equal("Folder")
 		end)
 
+		it("names instances with their key value using legacy key syntax through function component", function()
+			local parent = Instance.new("Folder")
+			local key = "Some Key"
+
+			local function Foo()
+				return React.createElement("BoolValue")
+			end
+
+			local element = React.createElement("Folder", {}, {
+				[key] = React.createElement(Foo),
+			})
+
+			local root = ReactRoblox.createRoot(parent)
+			root:render(element)
+			Scheduler.unstable_flushAllWithoutAsserting()
+
+			jestExpect(#parent:GetChildren()).toBe(1)
+
+			local rootInstance = parent:GetChildren()[1]
+			jestExpect(rootInstance.ClassName).toBe("Folder")
+
+			local boolValueInstance = rootInstance:FindFirstChildOfClass("BoolValue")
+			jestExpect(boolValueInstance).toBeDefined()
+			jestExpect(boolValueInstance.Name).toEqual(key)
+		end)
+
 		-- it("should attach Bindings to Roblox properties", function()
 		-- 	local parent = Instance.new("Folder")
 		-- 	local key = "Some Key"
