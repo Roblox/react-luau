@@ -16,5 +16,6 @@ Shared = { path = "../shared" }
 [dev_dependencies]
 Promise = { workspace = true }
 JestRoblox = { workspace = true }
+ReactRoblox = { path = "../react-roblox" }
 RobloxJest = { path = "../roblox-jest" }
 JestReact = { path = "../jest-react" }
