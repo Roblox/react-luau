@@ -1,5 +1,6 @@
 local Packages = script.Parent.Parent
 local ReactRoblox = require(Packages.ReactRoblox)
+local inspect = require(Packages.Shared).inspect.inspect
 
 local warnOnce = require(script.Parent.warnOnce)
 
@@ -8,19 +9,19 @@ local function mount(element, parent, key)
 		warnOnce("mount", "Please use the createRoot API in ReactRoblox")
 	end
 
-	local rootInstance = Instance.new("Folder")
+	if parent ~= nil and typeof(parent) ~= "Instance" then
+		warnOnce("mount invalid argument", "Cannot mount into a parent that is not a Roblox Instance\n" .. inspect(parent))
+	end
+
+	local rootInstance = parent
+
+	if rootInstance == nil then
+		rootInstance = Instance.new("Folder")
+		rootInstance.Name = key or "ReactLegacyRoot"
+	end
 
 	local root = ReactRoblox.createLegacyRoot(rootInstance)
 	root:render(element)
-
-	if parent ~= nil then
-		rootInstance.Parent = parent
-	end
-	if key ~= nil then
-		rootInstance.Name = key
-	else
-		rootInstance.Name = "ReactLegacyRoot"
-	end
 
 	return root
 end

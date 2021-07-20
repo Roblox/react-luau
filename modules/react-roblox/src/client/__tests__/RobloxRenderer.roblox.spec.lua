@@ -1,11 +1,16 @@
 return function()
 	local Packages = script.Parent.Parent.Parent.Parent
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+
+	local JestRoblox = require(Packages.Dev.JestRoblox)
+	local jestExpect = JestRoblox.Globals.expect
+	local jest = JestRoblox.Globals.jest
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 
 	local React
 	local ReactRoblox
+	local reactRobloxRoot
 	local Scheduler
+	local parent
 
 	beforeEach(function()
 		RobloxJest.resetModules()
@@ -13,6 +18,8 @@ return function()
 
 		React = require(Packages.React)
 		ReactRoblox = require(Packages.ReactRoblox)
+		parent = Instance.new("Folder")
+		reactRobloxRoot = ReactRoblox.createRoot(parent)
 		Scheduler = require(Packages.Scheduler)
 	end)
 	-- local assertDeepEqual = require(script.Parent.assertDeepEqual)
@@ -30,7 +37,6 @@ return function()
 
 	describe("mounting instances", function()
 		it("should create instances with correct props", function()
-			local parent = Instance.new("Folder")
 			local value = "Hello!"
 			local key = "Some Key"
 
@@ -39,8 +45,7 @@ return function()
 				Value = value,
 			})
 
-			local root = ReactRoblox.createRoot(parent)
-			root:render(element)
+			reactRobloxRoot:render(element)
 			Scheduler.unstable_flushAllWithoutAsserting()
 
 			jestExpect(#parent:GetChildren()).toBe(1)
@@ -52,47 +57,151 @@ return function()
 			jestExpect(rootInstance.Name).toBe(key)
 		end)
 
-		-- it("should create children with correct names and props", function()
-		-- 	local parent = Instance.new("Folder")
-		-- 	local rootValue = "Hey there!"
-		-- 	local childValue = 173
-		-- 	local key = "Some Key"
+		it("names instances with their key value using legacy key syntax", function()
+			local key = "Some Key"
 
-		-- 	local element = createElement("StringValue", {
-		-- 		Value = rootValue,
-		-- 	}, {
-		-- 		ChildA = createElement("IntValue", {
-		-- 			Value = childValue,
-		-- 		}),
+			local element = React.createElement("Folder", {}, {
+				[key] = React.createElement("BoolValue"),
+			})
 
-		-- 		ChildB = createElement("Folder"),
-		-- 	})
+			reactRobloxRoot:render(element)
+			Scheduler.unstable_flushAllWithoutAsserting()
 
-		-- 	local node = reconciler.createVirtualNode(element, parent, key)
+			jestExpect(#parent:GetChildren()).toBe(1)
 
-		-- 	RobloxRenderer.mountHostNode(reconciler, node)
+			local rootInstance = parent:GetChildren()[1]
+			jestExpect(rootInstance.ClassName).toBe("Folder")
 
-		-- 	expect(#parent:GetChildren()).to.equal(1)
+			local boolValueInstance = rootInstance:FindFirstChildOfClass("BoolValue")
+			jestExpect(boolValueInstance).toBeDefined()
+			jestExpect(boolValueInstance.Name).toEqual(key)
+		end)
 
-		-- 	local root = parent:GetChildren()[1]
+		it("names instances with their key value (using props)", function()
+			local key = "Some Key"
 
-		-- 	expect(root.ClassName).to.equal("StringValue")
-		-- 	expect(root.Value).to.equal(rootValue)
-		-- 	expect(root.Name).to.equal(key)
+			local element = React.createElement(
+				"Folder",
+				{},
+				React.createElement("BoolValue", {
+					key = key,
+				})
+			)
 
-		-- 	expect(#root:GetChildren()).to.equal(2)
+			reactRobloxRoot:render(element)
+			Scheduler.unstable_flushAllWithoutAsserting()
 
-		-- 	local childA = root.ChildA
-		-- 	local childB = root.ChildB
+			jestExpect(#parent:GetChildren()).toBe(1)
 
-		-- 	expect(childA).to.be.ok()
-		-- 	expect(childB).to.be.ok()
+			local rootInstance = parent:GetChildren()[1]
+			jestExpect(rootInstance.ClassName).toBe("Folder")
 
-		-- 	expect(childA.ClassName).to.equal("IntValue")
-		-- 	expect(childA.Value).to.equal(childValue)
+			local boolValueInstance = rootInstance:FindFirstChildOfClass("BoolValue")
+			jestExpect(boolValueInstance).toBeDefined()
+			jestExpect(boolValueInstance.Name).toEqual(key)
+		end)
 
-		-- 	expect(childB.ClassName).to.equal("Folder")
-		-- end)
+		it("names instances with their key value using legacy key syntax and updates them", function()
+			local key = "Some Key"
+			local fnMock = jest:fn()
+			local ref = function(...)
+				return fnMock(...)
+			end
+
+			local element = React.createElement("Folder", {}, {
+				[key] = React.createElement("BoolValue", {
+					ref = ref,
+				}),
+			})
+
+			reactRobloxRoot:render(element)
+			Scheduler.unstable_flushAllWithoutAsserting()
+
+			jestExpect(fnMock).toHaveBeenCalledTimes(1)
+			local refValue = fnMock.mock.calls[1][1]
+			jestExpect(refValue.Name).toEqual(key)
+
+			local updatedKey = "Some other key"
+			local updatedElement = React.createElement("Folder", {}, {
+				[updatedKey] = React.createElement("BoolValue", {
+					ref = ref,
+				}),
+			})
+			reactRobloxRoot:render(updatedElement)
+			Scheduler.unstable_flushAllWithoutAsserting()
+
+			jestExpect(fnMock).toHaveBeenCalledTimes(3)
+			-- the second call should be nil
+			jestExpect(fnMock.mock.calls[2]).toHaveLength(0)
+
+			local lastRefValue = fnMock.mock.calls[3][1]
+			jestExpect(lastRefValue.Name).toEqual(updatedKey)
+		end)
+
+		it("should create children with correct names and props", function()
+			local rootValue = "Hey there!"
+			local childValue = 173
+			local key = "Some Key"
+
+			local element = React.createElement("StringValue", {
+				key = key,
+				Value = rootValue,
+			}, {
+				ChildA = React.createElement("IntValue", {
+					Value = childValue,
+				}),
+
+				ChildB = React.createElement("Folder"),
+			})
+
+			reactRobloxRoot:render(element)
+			Scheduler.unstable_flushAllWithoutAsserting()
+
+			expect(#parent:GetChildren()).to.equal(1)
+
+			local rootInstance = parent:GetChildren()[1]
+
+			expect(rootInstance.ClassName).to.equal("StringValue")
+			expect(rootInstance.Value).to.equal(rootValue)
+			expect(rootInstance.Name).to.equal(key)
+
+			expect(#rootInstance:GetChildren()).to.equal(2)
+
+			local childA = rootInstance.ChildA
+			local childB = rootInstance.ChildB
+
+			expect(childA).to.be.ok()
+			expect(childB).to.be.ok()
+
+			expect(childA.ClassName).to.equal("IntValue")
+			expect(childA.Value).to.equal(childValue)
+
+			expect(childB.ClassName).to.equal("Folder")
+		end)
+
+		it("names instances with their key value using legacy key syntax through function component", function()
+			local key = "Some Key"
+
+			local function Foo()
+				return React.createElement("BoolValue")
+			end
+
+			local element = React.createElement("Folder", {}, {
+				[key] = React.createElement(Foo),
+			})
+
+			reactRobloxRoot:render(element)
+			Scheduler.unstable_flushAllWithoutAsserting()
+
+			jestExpect(#parent:GetChildren()).toBe(1)
+
+			local rootInstance = parent:GetChildren()[1]
+			jestExpect(rootInstance.ClassName).toBe("Folder")
+
+			local boolValueInstance = rootInstance:FindFirstChildOfClass("BoolValue")
+			jestExpect(boolValueInstance).toBeDefined()
+			jestExpect(boolValueInstance.Name).toEqual(key)
+		end)
 
 		-- it("should attach Bindings to Roblox properties", function()
 		-- 	local parent = Instance.new("Folder")
@@ -194,7 +303,6 @@ return function()
 
 	describe("updating instances", function()
 		it("should update node props and children", function()
-			local parent = Instance.new("Folder")
 			local key = "updateHostNodeTest"
 			local firstValue = "foo"
 			local newValue = "bar"
@@ -223,8 +331,7 @@ return function()
 				})
 			})
 
-			local root = ReactRoblox.createRoot(parent)
-			root:render(element)
+			reactRobloxRoot:render(element)
 			Scheduler.unstable_flushAllWithoutAsserting()
 
 			-- Not testing mountHostNode's work here, only testing that the
@@ -255,7 +362,7 @@ return function()
 				}),
 			})
 
-			root:render(newElement)
+			reactRobloxRoot:render(newElement)
 			Scheduler.unstable_flushAllWithoutAsserting()
 
 			local rootInstance = parent[key]
@@ -568,149 +675,125 @@ return function()
 	-- 	end)
 	-- end)
 
-	-- describe("Portals", function()
-	-- 	it("should create and destroy instances as children of `target`", function()
-	-- 		local target = Instance.new("Folder")
+	describe("Portals", function()
+		it("should create and destroy instances as children of `target`", function()
+			local target = Instance.new("Folder")
 
-	-- 		local function FunctionComponent(props)
-	-- 			return createElement("IntValue", {
-	-- 				Value = props.value,
-	-- 			})
-	-- 		end
+			local function FunctionComponent(props)
+				return React.createElement("IntValue", {
+					Name = "intValueOne",
+					Value = props.value,
+				})
+			end
 
-	-- 		local element = createElement(Portal, {
-	-- 			target = target,
-	-- 		}, {
-	-- 			folderOne = createElement("Folder"),
-	-- 			folderTwo = createElement("Folder"),
-	-- 			intValueOne = createElement(FunctionComponent, {
-	-- 				value = 42,
-	-- 			}),
-	-- 		})
-	-- 		local hostParent = nil
-	-- 		local hostKey = "Some Key"
-	-- 		local node = reconciler.mountVirtualNode(element, hostParent, hostKey)
+			local element = ReactRoblox.createPortal({
+				React.createElement("Folder", {Name = "folderOne"}),
+				React.createElement("Folder", {Name = "folderTwo"}),
+				React.createElement(FunctionComponent, {
+					value = 42,
+				}),
+			}, target)
 
-	-- 		expect(#target:GetChildren()).to.equal(3)
+			reactRobloxRoot:render(element)
+			Scheduler.unstable_flushAllWithoutAsserting()
 
-	-- 		expect(target:FindFirstChild("folderOne")).to.be.ok()
-	-- 		expect(target:FindFirstChild("folderTwo")).to.be.ok()
-	-- 		expect(target:FindFirstChild("intValueOne")).to.be.ok()
-	-- 		expect(target:FindFirstChild("intValueOne").Value).to.equal(42)
+			jestExpect(#target:GetChildren()).toBe(3)
+			jestExpect(target:FindFirstChild("folderOne")).toBeDefined()
+			jestExpect(target:FindFirstChild("folderTwo")).toBeDefined()
+			jestExpect(target:FindFirstChild("intValueOne")).toBeDefined()
+			jestExpect(target:FindFirstChild("intValueOne").Value).toBe(42)
 
-	-- 		reconciler.unmountVirtualNode(node)
+			reactRobloxRoot:unmount()
+			Scheduler.unstable_flushAllWithoutAsserting()
 
-	-- 		expect(#target:GetChildren()).to.equal(0)
-	-- 	end)
+			jestExpect(#target:GetChildren()).toBe(0)
+		end)
 
-	-- 	it("should pass prop updates through to children", function()
-	-- 		local target = Instance.new("Folder")
+		it("should pass prop updates through to children", function()
+			local target = Instance.new("Folder")
 
-	-- 		local firstElement = createElement(Portal, {
-	-- 			target = target,
-	-- 		}, {
-	-- 			ChildValue = createElement("IntValue", {
-	-- 				Value = 1,
-	-- 			}),
-	-- 		})
+			local firstElement = ReactRoblox.createPortal({
+				ChildValue = React.createElement("IntValue", {Value = 1})
+			}, target)
 
-	-- 		local secondElement = createElement(Portal, {
-	-- 			target = target,
-	-- 		}, {
-	-- 			ChildValue = createElement("IntValue", {
-	-- 				Value = 2,
-	-- 			}),
-	-- 		})
+			local secondElement = ReactRoblox.createPortal({
+				ChildValue = React.createElement("IntValue", {Value = 2})
+			}, target)
 
-	-- 		local hostParent = nil
-	-- 		local hostKey = "A Host Key"
-	-- 		local node = reconciler.mountVirtualNode(firstElement, hostParent, hostKey)
+			reactRobloxRoot:render(firstElement)
+			Scheduler.unstable_flushAllWithoutAsserting()
 
-	-- 		expect(#target:GetChildren()).to.equal(1)
+			jestExpect(#target:GetChildren()).toBe(1)
+			jestExpect(target:GetChildren()[1].Value).toBe(1)
 
-	-- 		local firstValue = target.ChildValue
-	-- 		expect(firstValue.Value).to.equal(1)
+			reactRobloxRoot:render(secondElement)
+			Scheduler.unstable_flushAllWithoutAsserting()
 
-	-- 		node = reconciler.updateVirtualNode(node, secondElement)
+			jestExpect(#target:GetChildren()).toBe(1)
+			jestExpect(target:GetChildren()[1].Value).toBe(2)
 
-	-- 		expect(#target:GetChildren()).to.equal(1)
+			reactRobloxRoot:unmount()
+			Scheduler.unstable_flushAllWithoutAsserting()
 
-	-- 		local secondValue = target.ChildValue
-	-- 		expect(firstValue).to.equal(secondValue)
-	-- 		expect(secondValue.Value).to.equal(2)
+			jestExpect(#target:GetChildren()).toBe(0)
+		end)
 
-	-- 		reconciler.unmountVirtualNode(node)
+		-- ROBLOX TODO: Duplicated in ReactRobloxFiber. Should we delete here?
+		it("should throw if `target` is nil", function()
+			-- TODO: Relax this restriction?
+			jestExpect(function()
+				ReactRoblox.createPortal(React.createElement("IntValue", {Value = 1}), nil)
+			end).toThrow()
+		end)
 
-	-- 		expect(#target:GetChildren()).to.equal(0)
-	-- 	end)
+		-- ROBLOX TODO: Duplicated in ReactRobloxFiber. Should we delete here?
+		-- it("should throw if `target` is not a Roblox instance", function()
+		-- 	local element = createElement(Portal, {
+		-- 		target = {},
+		-- 	})
+		-- 	local hostParent = nil
+		-- 	local hostKey = "Unleash the keys!"
 
-	-- 	it("should throw if `target` is nil", function()
-	-- 		-- TODO: Relax this restriction?
-	-- 		local element = createElement(Portal)
-	-- 		local hostParent = nil
-	-- 		local hostKey = "Keys for Everyone"
+		-- 	expect(function()
+		-- 		reconciler.mountVirtualNode(element, hostParent, hostKey)
+		-- 	end).to.throw()
+		-- end)
 
-	-- 		expect(function()
-	-- 			reconciler.mountVirtualNode(element, hostParent, hostKey)
-	-- 		end).to.throw()
-	-- 	end)
+		it("should recreate instances if `target` changes in an update", function()
+			local firstTarget = Instance.new("Folder")
+			local secondTarget = Instance.new("Folder")
 
-	-- 	it("should throw if `target` is not a Roblox instance", function()
-	-- 		local element = createElement(Portal, {
-	-- 			target = {},
-	-- 		})
-	-- 		local hostParent = nil
-	-- 		local hostKey = "Unleash the keys!"
+			local firstElement = ReactRoblox.createPortal(
+				React.createElement("IntValue", {Value = 1}),
+				firstTarget
+			)
 
-	-- 		expect(function()
-	-- 			reconciler.mountVirtualNode(element, hostParent, hostKey)
-	-- 		end).to.throw()
-	-- 	end)
+			local secondElement = ReactRoblox.createPortal(
+				React.createElement("IntValue", {Value = 2}),
+				secondTarget
+			)
 
-	-- 	it("should recreate instances if `target` changes in an update", function()
-	-- 		local firstTarget = Instance.new("Folder")
-	-- 		local secondTarget = Instance.new("Folder")
+			reactRobloxRoot:render(firstElement)
+			Scheduler.unstable_flushAllWithoutAsserting()
 
-	-- 		local firstElement = createElement(Portal, {
-	-- 			target = firstTarget,
-	-- 		}, {
-	-- 			ChildValue = createElement("IntValue", {
-	-- 				Value = 1,
-	-- 			}),
-	-- 		})
+			jestExpect(#firstTarget:GetChildren()).toBe(1)
+			jestExpect(#secondTarget:GetChildren()).toBe(0)
+			jestExpect(firstTarget:GetChildren()[1].Value).toBe(1)
 
-	-- 		local secondElement = createElement(Portal, {
-	-- 			target = secondTarget,
-	-- 		}, {
-	-- 			ChildValue = createElement("IntValue", {
-	-- 				Value = 2,
-	-- 			}),
-	-- 		})
+			reactRobloxRoot:render(secondElement)
+			Scheduler.unstable_flushAllWithoutAsserting()
 
-	-- 		local hostParent = nil
-	-- 		local hostKey = "Some Key"
-	-- 		local node = reconciler.mountVirtualNode(firstElement, hostParent, hostKey)
+			jestExpect(#firstTarget:GetChildren()).toBe(0)
+			jestExpect(#secondTarget:GetChildren()).toBe(1)
+			jestExpect(secondTarget:GetChildren()[1].Value).toBe(2)
 
-	-- 		expect(#firstTarget:GetChildren()).to.equal(1)
-	-- 		expect(#secondTarget:GetChildren()).to.equal(0)
+			reactRobloxRoot:unmount()
+			Scheduler.unstable_flushAllWithoutAsserting()
 
-	-- 		local firstChild = firstTarget.ChildValue
-	-- 		expect(firstChild.Value).to.equal(1)
-
-	-- 		node = reconciler.updateVirtualNode(node, secondElement)
-
-	-- 		expect(#firstTarget:GetChildren()).to.equal(0)
-	-- 		expect(#secondTarget:GetChildren()).to.equal(1)
-
-	-- 		local secondChild = secondTarget.ChildValue
-	-- 		expect(secondChild.Value).to.equal(2)
-
-	-- 		reconciler.unmountVirtualNode(node)
-
-	-- 		expect(#firstTarget:GetChildren()).to.equal(0)
-	-- 		expect(#secondTarget:GetChildren()).to.equal(0)
-	-- 	end)
-	-- end)
+			jestExpect(#firstTarget:GetChildren()).toBe(0)
+			jestExpect(#secondTarget:GetChildren()).toBe(0)
+		end)
+	end)
 
 	-- describe("Fragments", function()
 	-- 	it("should parent the fragment's elements into the fragment's parent", function()
@@ -830,78 +913,65 @@ return function()
 	-- 	end)
 	-- end)
 
-	-- describe("Context", function()
-	-- 	it("should pass context values through Roblox host nodes", function()
-	-- 		local Consumer = Component:extend("Consumer")
+	describe("Context", function()
+		-- it("should pass context values through Roblox host nodes", function()
+		-- 	local Consumer = Component:extend("Consumer")
 
-	-- 		local capturedContext
-	-- 		function Consumer:init()
-	-- 			capturedContext = {
-	-- 				hello = self:__getContext("hello")
-	-- 			}
-	-- 		end
+		-- 	local capturedContext
+		-- 	function Consumer:init()
+		-- 		capturedContext = {
+		-- 			hello = self:__getContext("hello")
+		-- 		}
+		-- 	end
 
-	-- 		function Consumer:render()
-	-- 		end
+		-- 	function Consumer:render()
+		-- 	end
 
-	-- 		local element = createElement("Folder", nil, {
-	-- 			Consumer = createElement(Consumer)
-	-- 		})
-	-- 		local hostParent = nil
-	-- 		local hostKey = "Context Test"
-	-- 		local context = {
-	-- 			hello = "world",
-	-- 		}
-	-- 		local node = reconciler.mountVirtualNode(element, hostParent, hostKey, context)
+		-- 	local element = createElement("Folder", nil, {
+		-- 		Consumer = createElement(Consumer)
+		-- 	})
+		-- 	local hostParent = nil
+		-- 	local hostKey = "Context Test"
+		-- 	local context = {
+		-- 		hello = "world",
+		-- 	}
+		-- 	local node = reconciler.mountVirtualNode(element, hostParent, hostKey, context)
 
-	-- 		expect(capturedContext).never.to.equal(context)
-	-- 		assertDeepEqual(capturedContext, context)
+		-- 	expect(capturedContext).never.to.equal(context)
+		-- 	assertDeepEqual(capturedContext, context)
 
-	-- 		reconciler.unmountVirtualNode(node)
-	-- 	end)
+		-- 	reconciler.unmountVirtualNode(node)
+		-- end)
 
-	-- 	it("should pass context values through portal nodes", function()
-	-- 		local target = Instance.new("Folder")
+		it("should pass context values through portal nodes", function()
+			local target = Instance.new("Folder")
+			local Context = React.createContext(1)
 
-	-- 		local Provider = Component:extend("Provider")
+			local function App(props)
+				return React.createElement(
+					Context.Provider, {
+						value = props.value
+					}, {
+						Portal = ReactRoblox.createPortal({
+							Consumer = React.createElement(Context.Consumer, nil, function(value)
+								return React.createElement("TextLabel", {Text = "Result: " .. tostring(value)})
+							end)
+						}, target)
+					}
+				)
+			end
 
-	-- 		function Provider:init()
-	-- 			self:__addContext("foo", "bar")
-	-- 		end
+			reactRobloxRoot:render(React.createElement(App, {value = 2}))
+			Scheduler.unstable_flushAllWithoutAsserting()
+			jestExpect(#target:GetChildren()).toBe(1)
+			jestExpect(target:GetChildren()[1].Text).toBe("Result: 2")
 
-	-- 		function Provider:render()
-	-- 			return createElement("Folder", nil, self.props[Children])
-	-- 		end
-
-	-- 		local Consumer = Component:extend("Consumer")
-
-	-- 		local capturedContext
-	-- 		function Consumer:init()
-	-- 			capturedContext = {
-	-- 				foo = self:__getContext("foo"),
-	-- 			}
-	-- 		end
-
-	-- 		function Consumer:render()
-	-- 			return nil
-	-- 		end
-
-	-- 		local element = createElement(Provider, nil, {
-	-- 			Portal = createElement(Portal, {
-	-- 				target = target,
-	-- 			}, {
-	-- 				Consumer = createElement(Consumer),
-	-- 			})
-	-- 		})
-	-- 		local hostParent = nil
-	-- 		local hostKey = "Some Key"
-	-- 		reconciler.mountVirtualNode(element, hostParent, hostKey)
-
-	-- 		assertDeepEqual(capturedContext, {
-	-- 			foo = "bar"
-	-- 		})
-	-- 	end)
-	-- end)
+			reactRobloxRoot:render(React.createElement(App, {value = 3}))
+			Scheduler.unstable_flushAllWithoutAsserting()
+			jestExpect(#target:GetChildren()).toBe(1)
+			jestExpect(target:GetChildren()[1].Text).toBe("Result: 3")
+		end)
+	end)
 
 	-- describe("Legacy context", function()
 	-- 	it("should pass context values through Roblox host nodes", function()

@@ -306,56 +306,70 @@ exports.resetAfterCommit = function(containerInfo: Container)
 end
 
 exports.createInstance = function(
-  type_: string,
-  props: Props,
-  rootContainerInstance: Container,
-  hostContext: HostContext,
-  internalInstanceHandle: Object
+	type_: string,
+	props: Props,
+	rootContainerInstance: Container,
+	hostContext: HostContext,
+	internalInstanceHandle: Object
 ): HostInstance
-  -- local hostKey = virtualNode.hostKey
+	-- local hostKey = virtualNode.hostKey
 
-  local domElement = Instance.new(type_)
+	local domElement = Instance.new(type_)
+	-- ROBLOX deviation: compatibility with old Roact where instances have their name
+	-- set to the key value
+	if internalInstanceHandle.key then
+		domElement.Name = internalInstanceHandle.key
+	else
+		local currentHandle = internalInstanceHandle.return_
+		while currentHandle do
+			if currentHandle.key then
+				domElement.Name = currentHandle.key
+				break
+			end
+			currentHandle = currentHandle.return_
+		end
+	end
 
-  precacheFiberNode(internalInstanceHandle, domElement)
-  updateFiberProps(domElement, props)
+	precacheFiberNode(internalInstanceHandle, domElement)
+	updateFiberProps(domElement, props)
 
-  -- TODO: Support refs (does that actually happen here, or later?)
-  -- applyRef(element.props[Ref], instance)
+	-- TODO: Support refs (does that actually happen here, or later?)
+	-- applyRef(element.props[Ref], instance)
 
-  -- Will have to be managed outside of createInstance
-  -- if virtualNode.eventManager ~= nil then
-  --   virtualNode.eventManager:resume()
-  -- end
+	-- Will have to be managed outside of createInstance
+	-- if virtualNode.eventManager ~= nil then
+	--   virtualNode.eventManager:resume()
+	-- end
 
-  return domElement
+	return domElement
 
-  -- return Instance.new("Frame")
-  -- local parentNamespace: string
-  -- if __DEV__)
-  --   -- TODO: take namespace into account when validating.
-  --   local hostContextDev = ((hostContext: any): HostContextDev)
-  --   validateDOMNesting(type, nil, hostContextDev.ancestorInfo)
-  --   if
-  --     typeof props.children == 'string' or
-  --     typeof props.children == 'number'
-  --   )
-  --     local string = '' + props.children
-  --     local ownAncestorInfo = updatedAncestorInfo(
-  --       hostContextDev.ancestorInfo,
-  --       type,
-  --     )
-  --     validateDOMNesting(null, string, ownAncestorInfo)
-  --   end
-  --   parentNamespace = hostContextDev.namespace
-  -- } else {
-  --   parentNamespace = ((hostContext: any): HostContextProd)
-  -- end
-  -- local domElement: Instance = createElement(
-  --   type,
-  --   props,
-  --   rootContainerInstance,
-  --   parentNamespace,
-  -- )
+	-- return Instance.new("Frame")
+	-- local parentNamespace: string
+	-- if __DEV__)
+	--   -- TODO: take namespace into account when validating.
+	--   local hostContextDev = ((hostContext: any): HostContextDev)
+	--   validateDOMNesting(type, nil, hostContextDev.ancestorInfo)
+	--   if
+	--     typeof props.children == 'string' or
+	--     typeof props.children == 'number'
+	--   )
+	--     local string = '' + props.children
+	--     local ownAncestorInfo = updatedAncestorInfo(
+	--       hostContextDev.ancestorInfo,
+	--       type,
+	--     )
+	--     validateDOMNesting(null, string, ownAncestorInfo)
+	--   end
+	--   parentNamespace = hostContextDev.namespace
+	-- } else {
+	--   parentNamespace = ((hostContext: any): HostContextProd)
+	-- end
+	-- local domElement: Instance = createElement(
+	--   type,
+	--   props,
+	--   rootContainerInstance,
+	--   parentNamespace,
+	-- )
 end
 
 exports.appendInitialChild = function(

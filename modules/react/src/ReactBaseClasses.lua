@@ -98,14 +98,23 @@ local Component = {}
 setmetatable(Component, componentClassMetatable)
 Component.__componentName = "Component"
 
--- deviation: Lua doesn't expose inheritance in a class-syntax way
+-- ROBLOX deviation: Lua doesn't expose inheritance in a class-syntax way
 --[[
   A method called by consumers of Roact to create a new component class.
   Components can not be extended beyond this point, with the exception of
   PureComponent.
 ]]
 function Component:extend(name)
+  -- ROBLOX note: legacy Roact will accept nil here and default to empty string
+  -- ROBLOX TODO: if name in "" in ReactComponentStack frame, we should try and get the variable name it was assigned to
+  if name == nil then
+    console.warn("Component:extend() accepting no arguments is deprecated, and will "
+        .. "not be supported in a future version of Roact. Please provide an explicit name.")
+    name = ""
+  end
+
   assert(typeof(name) == "string", "Component class name must be a string")
+
 
   local class = {}
 
@@ -263,7 +272,10 @@ pureComponentClassPrototype.isPureReactComponent = true
 -- ROBLOX: FIXME: we should clean this up and align the implementations of
 -- Component and PureComponent more clearly and explicitly
 setmetatable(PureComponent, {
-  __index = pureComponentClassPrototype
+  __index = pureComponentClassPrototype,
+  __tostring = function(self)
+    return self.__componentName
+  end,
 })
 
 return {

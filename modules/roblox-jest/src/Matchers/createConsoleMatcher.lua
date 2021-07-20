@@ -9,12 +9,14 @@ local function shouldIgnoreConsoleError(format, args)
 	-- we use the __DEV__ global
 	if _G.__DEV__ then
 		if typeof(format) == "string" then
-			if format:find("Error: Uncaught [") == 0 then
+			if format:find("Error: Uncaught [") == 1 then
 				-- // This looks like an uncaught error from invokeGuardedCallback() wrapper
 				-- // in development that is reported by jsdom. Ignore because it's noisy.
 				return true
 			end
-			if format:find("The above error occurred") == 0 then
+			-- ROBLOX FIXME: The "Warning: " prefix is applied before the string
+			-- reaches this function, which appears to not be the case upstream
+			if format:find("Warning: The above error occurred") == 1 then
 				-- // This looks like an error addendum from ReactFiberErrorLogger.
 				-- // Ignore it too.
 				return true
