@@ -12,11 +12,20 @@ return function()
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 
 	local React
-	local ReactNoop
+	local ReactRoblox
 	local ReactFeatureFlags
 	-- ROBLOX deviation: the tests using these are currently SKIPped
 	local PropTypes = nil
-	local ReactTestUtils = nil
+	-- ROBLOX deviation: This function is a misnomer even in upstream; here, we
+	-- just render it into an orphaned root
+	local ReactTestUtils = {
+		renderIntoDocument = function(element)
+			local instance = Instance.new("Folder")
+			local root = ReactRoblox.createLegacyRoot(instance)
+			root:render(element)
+			return root
+		end
+	}
 
 	describe("ReactElementValidator", function()
 		local ComponentClass
@@ -28,9 +37,7 @@ return function()
 			ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 			ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback = false
 			React = require(script.Parent.Parent)
-			-- deviation: Use Noop to drive these tests instead of DOM renderer
-			ReactNoop = require(Packages.Dev.ReactNoopRenderer)
-			-- ReactDOM = require("react-dom")
+			ReactRoblox = require(Packages.Dev.ReactRoblox)
 			-- ReactTestUtils = require("react-dom/test-utils")
 			ComponentClass = React.Component:extend("ComponentClass")
 			function ComponentClass:render()
@@ -64,10 +71,7 @@ return function()
 			end
 
 			jestExpect(function()
-				-- ROBLOX deviation: Use Noop to drive these tests instead of DOM renderer
-				ReactNoop.act(function()
-					ReactNoop.render(React.createElement(ComponentWrapper))
-				end)
+				ReactTestUtils.renderIntoDocument(React.createElement(ComponentWrapper))
 			end).toErrorDev(
 				'Each child in a list should have a unique "key" prop.' ..
 					"\n\nCheck the render method of `InnerClass`. " ..
@@ -77,51 +81,45 @@ return function()
 
 		it("warns for keys for arrays with no owner or parent info", function()
 			local function Anonymous()
-				return React.createElement("div")
+				return React.createElement("Frame")
 			end
 			-- Object.defineProperty(Anonymous, "name", {value = nil})
 
 			local divs = {
-				React.createElement("div"),
-				React.createElement("div"),
+				React.createElement("Frame"),
+				React.createElement("Frame"),
 			}
 
 			jestExpect(function()
-			-- ROBLOX deviation: Use Noop to drive these tests instead of DOM renderer
-				ReactNoop.act(function()
-					ReactNoop.render(React.createElement(Anonymous, nil, divs))
-				end)
+				ReactTestUtils.renderIntoDocument(React.createElement(Anonymous, nil, divs))
 			end).toErrorDev(
 				"Warning: Each child in a list should have a unique " ..
 					'"key" prop. See https://reactjs.org/link/warning-keys for more information.\n' ..
-					"    in div (at **)"
+					"    in Frame (at **)"
 			)
 		end)
 
 		it("warns for keys for arrays of elements with no owner info", function()
 			local divs = {
-				React.createElement("div"),
-				React.createElement("div"),
+				React.createElement("Frame"),
+				React.createElement("Frame"),
 			}
 
 			jestExpect(function()
-				-- ROBLOX deviation: Use Noop to drive these tests instead of DOM renderer
-				ReactNoop.act(function()
-					ReactNoop.render(React.createElement("div", nil, divs))
-				end)
+				ReactTestUtils.renderIntoDocument(React.createElement("Frame", nil, divs))
 			end).toErrorDev(
 				"Warning: Each child in a list should have a unique " ..
-					'"key" prop.\n\nCheck the top-level render call using <div>. See ' ..
+					'"key" prop.\n\nCheck the top-level render call using <Frame>. See ' ..
 					"https://reactjs.org/link/warning-keys for more information.\n" ..
-					"    in div (at **)"
+					"    in Frame (at **)"
 			)
 		end)
 
 		it("warns for keys with component stack info", function()
 			local function Component()
-				return React.createElement("div", nil, {
-					React.createElement("div"),
-					React.createElement("div"),
+				return React.createElement("Frame", nil, {
+					React.createElement("Frame"),
+					React.createElement("Frame"),
 				})
 			end
 			local function Parent(props)
@@ -134,15 +132,12 @@ return function()
 			end
 
 			jestExpect(function()
-				-- ROBLOX deviation: Use Noop to drive these tests instead of DOM renderer
-				ReactNoop.act(function()
-					ReactNoop.render(React.createElement(GrandParent, nil))
-				end)
+				ReactTestUtils.renderIntoDocument(React.createElement(GrandParent, nil))
 			end).toErrorDev(
 				"Warning: Each child in a list should have a unique " ..
 					'"key" prop.\n\nCheck the render method of `Component`. See ' ..
 					"https://reactjs.org/link/warning-keys for more information.\n" ..
-					"    in div (at **)\n" ..
+					"    in Frame (at **)\n" ..
 					"    in Component (at **)\n" ..
 					"    in Parent (at **)\n" ..
 					"    in GrandParent (at **)"
@@ -155,24 +150,20 @@ return function()
 					"Frame",
 					nil,
 					props.children,
-					React.createElement('footer')
+					React.createElement("Frame")
 				)
 			end
 
-			-- ROBLOX deviation: Use Noop to drive these tests instead of DOM
-			-- renderer; additionally, add an expectation to make sure we get
-			-- _no_ errors
+			-- ROBLOX deviation: Add expectation to make sure we get _no_ errors
 			jestExpect(function()
-				ReactNoop.act(function()
-					ReactNoop.render(
-						React.createElement(
-							Wrapper,
-							nil,
-							React.createElement('span'),
-							React.createElement('span', nil)
-						)
+				ReactTestUtils.renderIntoDocument(
+					React.createElement(
+						Wrapper,
+						nil,
+						React.createElement("Frame"),
+						React.createElement("Frame", nil)
 					)
-				end)
+				)
 			end).toErrorDev({})
 		end)
 
@@ -182,14 +173,12 @@ return function()
 		it("does not warn for keys when providing keys via children tables", function()
 			-- ROBLOX FIXME: Expect coercion
 			jestExpect(function()
-				ReactNoop.act(function()
-					ReactNoop.render(
-						React.createElement("Frame", nil, {
-							ChildA = React.createElement('span'),
-							ChildB = React.createElement('span'),
-						})
-					)
-				end)
+				ReactTestUtils.renderIntoDocument(
+					React.createElement("Frame", nil, {
+						ChildA = React.createElement("Frame"),
+						ChildB = React.createElement("Frame"),
+					})
+				)
 			end).toErrorDev({})
 		end)
 
@@ -341,10 +330,13 @@ return function()
 			React.createElement("Frame")
 		end)
 
-		-- ROBLOX TODO: ReactTestUtils should be backed by react-test-renderer
-		itSKIP("includes the owner name when passing null, undefined, boolean, or number", function()
+		it("includes the owner name when passing null, undefined, boolean, or number", function()
 			local function ParentComp()
-				return React.createElement(nil)
+				-- ROBLOX DEVIATION: The test says "null, undefined, boolean, or
+				-- number", but uses `null`, which it treats differently from
+				-- `undefined`. Here, we're passing a number, which should have
+				-- behavior identical to upstream
+				return React.createElement(1)
 			end
 
 			jestExpect(function()
@@ -352,14 +344,39 @@ return function()
 					ReactTestUtils.renderIntoDocument(React.createElement(ParentComp))
 				end).toThrowError(
 					"Element type is invalid: expected a string (for built-in components) " ..
-						"or a class/function (for composite components) but got: null." ..
+						"or a class/function (for composite components) but got: number." ..
 						(_G.__DEV__ and "\n\nCheck the render method of `ParentComp`." or "")
 				)
 			end).toErrorDev(
 				"Warning: React.createElement: type is invalid -- expected a string " ..
 					"(for built-in components) or a class/function (for composite " ..
-					"components) but got: null." ..
-					"\n\nCheck the render method of `ParentComp`.\n    in ParentComp"
+					"components) but got: number."
+					-- ROBLOX FIXME: Error output differs
+					-- "\n\nCheck the render method of `ParentComp`.\n    in ParentComp",
+			)
+		end)
+
+		-- ROBLOX deviation: Regression test for error output issue
+		it("includes the owner name of a PureComponent", function()
+			local ParentPureComp = React.PureComponent:extend("ParentPureComp")
+			function ParentPureComp:render()
+				return React.createElement(1)
+			end
+
+			jestExpect(function()
+				jestExpect(function()
+					ReactTestUtils.renderIntoDocument(React.createElement(ParentPureComp))
+				end).toThrowError(
+					"Element type is invalid: expected a string (for built-in components) " ..
+						"or a class/function (for composite components) but got: number." ..
+						(_G.__DEV__ and "\n\nCheck the render method of `ParentPureComp`." or "")
+				)
+			end).toErrorDev(
+				"Warning: React.createElement: type is invalid -- expected a string " ..
+					"(for built-in components) or a class/function (for composite " ..
+					"components) but got: number."
+					-- ROBLOX FIXME: Error output differs
+					-- "\n\nCheck the render method of `ParentPureComp`.\n    in ParentPureComp"
 			)
 		end)
 
@@ -484,13 +501,12 @@ return function()
 		it("warns for fragments with illegal attributes", function()
 			local Foo = React.Component:extend("Foo")
 			function Foo:render()
-				return React.createElement(React.Fragment, {a = 1}, "123")
+				-- ROBLOX deviation: Use an actual child element instead of a
+				-- text instance, which is unsupported in ReactRoblox
+				return React.createElement(React.Fragment, {a = 1}, React.createElement("Frame"))
 			end
 			jestExpect(function()
-				-- ROBLOX deviation: Use Noop to drive these tests instead of DOM renderer
-				ReactNoop.act(function()
-					ReactNoop.render(React.createElement(Foo))
-				end)
+				ReactTestUtils.renderIntoDocument(React.createElement(Foo))
 			end).toErrorDev(
 				"Invalid prop `a` supplied to `React.Fragment`. React.Fragment " ..
 					"can only have `key` and `children` props."
@@ -603,23 +619,20 @@ return function()
 		it("warns when keys are provided via both the 'key' prop AND table keys", function()
 			local Component = React.Component:extend("Component")
 			function Component:render()
-				return React.createElement("div", nil, {
-					a = React.createElement("div", {key="a"}),
-					b = React.createElement("div", {key="b"}),
+				return React.createElement("Frame", nil, {
+					a = React.createElement("Frame", {key="a"}),
+					b = React.createElement("Frame", {key="b"}),
 				})
 			end
 
 			jestExpect(function()
-				-- ROBLOX deviation: Use Noop to drive these tests instead of DOM renderer
-				ReactNoop.act(function()
-					ReactNoop.render(React.createElement(Component))
-				end)
+				ReactTestUtils.renderIntoDocument(React.createElement(Component))
 			end).toErrorDev('Child element received a "key" prop in addition to a key in ' ..
 				'the "children" table of its parent. Please provide only ' ..
 				'one key definition. When both are present, the "key" prop ' ..
 				'will take precedence.\n\nCheck the render method of `Component`. ' ..
 				'See https://reactjs.org/link/warning-keys for more information.\n' ..
-				'    in div (at **)\n' ..
+				'    in Frame (at **)\n' ..
 				'    in Component (at **)'
 			)
 		end)

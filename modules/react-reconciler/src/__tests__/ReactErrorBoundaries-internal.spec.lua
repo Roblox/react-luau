@@ -2249,16 +2249,10 @@ return function()
 			-- deviation: ReactNoop runs with a StrictMode root and logs more warnings
 			jestExpect(function()
 				root.render(React.createElement(InvalidErrorBoundary, nil, React.createElement(Throws)))
-			end).toErrorDev({
-				"Warning: The above error occurred in the <Throws> component:\
-\
-    in Throws (at **)\
-    in InvalidErrorBoundary (at **)\
-\
-React will try to recreate this component tree from scratch using the error boundary you provided, InvalidErrorBoundary.\
-    in InvalidErrorBoundary (at **)",
-				"Warning: InvalidErrorBoundary: Error boundaries should implement getDerivedStateFromError(). In that method, return a state update to display an error message or fallback UI.",
-			})
+			end).toErrorDev(
+				"InvalidErrorBoundary: Error boundaries should implement getDerivedStateFromError(). " ..
+				"In that method, return a state update to display an error message or fallback UI."
+			)
 			jestExpect(textContent(root)).toEqual("")
 		end)
 		it("should call both componentDidCatch and getDerivedStateFromError if both exist on a component", function()

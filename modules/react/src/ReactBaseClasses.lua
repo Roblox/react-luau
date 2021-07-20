@@ -272,7 +272,10 @@ pureComponentClassPrototype.isPureReactComponent = true
 -- ROBLOX: FIXME: we should clean this up and align the implementations of
 -- Component and PureComponent more clearly and explicitly
 setmetatable(PureComponent, {
-  __index = pureComponentClassPrototype
+  __index = pureComponentClassPrototype,
+  __tostring = function(self)
+    return self.__componentName
+  end,
 })
 
 return {

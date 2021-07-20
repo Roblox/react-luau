@@ -580,22 +580,20 @@ local function createFiberFromTypeAndProps(
 					local ownerName
 					if owner then
 						ownerName = getComponentName(owner.type)
-					-- ROBLOX deviation: try harder to get the name of the component
-					elseif type ~= nil then
-						ownerName = type.__componentName
 					end
 					if ownerName then
 						info ..= "\n\nCheck the render method of `" .. ownerName .. "`."
-					else
-					-- ROBLOX deviation: print the raw table in readable form to give a clue, if no other info was gathered
-					info ..= inspect(type)
+					elseif owner then
+						-- ROBLOX deviation: print the raw table in readable
+						-- form to give a clue, if no other info was gathered
+						info ..= "\n" .. inspect(owner)
 					end
 				end
 				invariant(
 					false,
 					"Element type is invalid: expected a string (for built-in " ..
 						"components) or a class/function (for composite components) " ..
-						"but got: %s. %s",
+						"but got: %s.%s",
 					typeof(type),
 					info
 				)
