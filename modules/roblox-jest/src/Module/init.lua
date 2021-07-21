@@ -1,8 +1,11 @@
 --!strict
 local FakeTimers = require(script.Parent.FakeTimers)
 
+type CleanupFn = () -> any
+
 local requiredModules: { [ModuleScript]: any } = {}
-local mocks: { [ModuleScript]: (() -> any)? } = {}
+local moduleCleanup: { [ModuleScript]: (() -> any)? } = {}
+local mocks: { [ModuleScript]: CleanupFn } = {}
 
 if _G.__NO_LOADMODULE__ then
 	warn(
@@ -80,8 +83,8 @@ local function requireOverride(scriptInstance: ModuleScript): any
 	else
 		-- Narrowing this type here lets us appease the type checker while still
 		-- counting on types for the rest of this file
-		local loadmodule: (ModuleScript) -> (any, string) = debug["loadmodule"]
-		local moduleFunction, errorMessage = loadmodule(scriptInstance)
+		local loadmodule: (ModuleScript) -> (any, string, CleanupFn) = debug["loadmodule"]
+		local moduleFunction, errorMessage, cleanup = loadmodule(scriptInstance)
 		assert(moduleFunction ~= nil, errorMessage)
 
 		getfenv(moduleFunction).require = requireOverride
@@ -98,6 +101,7 @@ local function requireOverride(scriptInstance: ModuleScript): any
 				)
 			)
 		end
+		moduleCleanup[scriptInstance] = cleanup
 	end
 
 	-- Load normally into the require cache
@@ -109,6 +113,12 @@ end
 local function resetModules()
 	-- Clear all modules in the override require cache
 	requiredModules = {}
+
+	for script,cleanup in pairs(moduleCleanup) do
+		(cleanup :: CleanupFn)()
+	end
+
+	moduleCleanup = {}
 end
 
 local function mock(scriptInstance: ModuleScript, callback: () -> any)
@@ -116,6 +126,11 @@ local function mock(scriptInstance: ModuleScript, callback: () -> any)
 	-- will get the mock
 	if requiredModules[scriptInstance] ~= nil then
 		requiredModules[scriptInstance] = nil
+		local cleanup = moduleCleanup[scriptInstance]
+		if cleanup then
+			(cleanup :: CleanupFn)()
+			moduleCleanup[scriptInstance] = nil
+		end
 	end
 
 	-- Silence type errors
@@ -133,6 +148,11 @@ local function unmock(scriptInstance: ModuleScript)
 	-- get the mock
 	if requiredModules[scriptInstance] ~= nil then
 		requiredModules[scriptInstance] = nil
+		local cleanup = moduleCleanup[scriptInstance]
+		if cleanup then
+			(cleanup :: CleanupFn)()
+			moduleCleanup[scriptInstance] = nil
+		end
 	end
 
 	mocks[scriptInstance] = nil
