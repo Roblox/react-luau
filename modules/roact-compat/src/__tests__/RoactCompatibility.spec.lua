@@ -144,4 +144,50 @@ return function()
 			)
 		end)
 	end)
+
+	describe("handles unitialized state", function()
+		it("errors if unitialized state is assigned", function()
+			local ReactRoblox = require(Packages.ReactRoblox)
+			local Scheduler = require(Packages.Dev.Scheduler)
+			local parent = Instance.new("Folder")
+			local Component = RoactCompat.Component:extend("Component")
+
+			function Component:render()
+				self.state.foo = "bar"
+			end
+
+			local componentInstance = RoactCompat.createElement(Component)
+			local root = ReactRoblox.createRoot(parent)
+
+			jestExpect(function()
+				root:render(componentInstance)
+				Scheduler.unstable_flushAllWithoutAsserting()
+			end).toErrorDev("Attempted to directly mutate state. Use setState to assign new values to state.")
+		end)
+
+		it("warns if unitialized state is accessed", function()
+			local ReactRoblox = require(Packages.ReactRoblox)
+			local parent = Instance.new("Folder")
+			local Scheduler = require(Packages.Dev.Scheduler)
+			local Component = RoactCompat.Component:extend("Component")
+
+			local capturedBool = false
+
+			function Component:render()
+				if self.state.foo == nil then
+					capturedBool = true
+				end
+			end
+
+			local componentInstance = RoactCompat.createElement(Component)
+			local root = ReactRoblox.createRoot(parent)
+
+			jestExpect(function()
+				root:render(componentInstance)
+				Scheduler.unstable_flushAllWithoutAsserting()
+			end).toWarnDev("Attempted to access unitialized state. Use setState to initialize state")
+
+			jestExpect(capturedBool).toBe(true)
+		end)
+	end)
 end

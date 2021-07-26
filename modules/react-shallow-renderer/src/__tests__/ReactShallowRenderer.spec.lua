@@ -15,6 +15,7 @@ return function()
 	local LuauPolyfill = require(Packages.LuauPolyfill)
 	local Array = LuauPolyfill.Array
 	local Error = LuauPolyfill.Error
+	local UninitializedState = require(Packages.Shared).UninitializedState
 	-- local PropTypes = require(Dependencies.PropTypes)
 	local React = require(Packages.React)
 	local ReactShallowRenderer = require(script.Parent.Parent)
@@ -1590,7 +1591,8 @@ return function()
 		renderAndVerifyWarningAndError({}, "array")
 	end)
 
-	it("should have initial state of nil if not defined", function()
+	-- ROBLOX DEVIATION: We initialize state to a singleton for compatibility
+	it("should have initial state of UninitializedState if not defined", function()
 		local SomeComponent = React.Component:extend("Component")
 		function SomeComponent:render()
 			return React.createElement("Text")
@@ -1599,7 +1601,7 @@ return function()
 		local shallowRenderer = createRenderer()
 		shallowRenderer:render(React.createElement(SomeComponent))
 
-		jestExpect(shallowRenderer:getMountedInstance().state).toEqual(nil)
+		jestExpect(shallowRenderer:getMountedInstance().state).toBe(UninitializedState)
 	end)
 
 	it("should invoke both deprecated and new lifecycles if both are present", function()

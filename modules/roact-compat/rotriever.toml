@@ -15,3 +15,4 @@ Shared = { path = "../shared" }
 RobloxJest = { path = "../roblox-jest" }
 Roact = "github.com/roblox/roact@1.4.0"
 JestRoblox = { workspace = true }
+Scheduler = { path = "../scheduler" }

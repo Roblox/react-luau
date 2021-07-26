@@ -525,11 +525,10 @@
           ReactNoop.render(React.createElement(MyComponent))
         end)
       end).toErrorDev(
-        -- ROBLOX FIXME: This error message doesn't quite apply as written
-        "`MyComponent` uses `getDerivedStateFromProps` but its initial state is " ..
-          "nil. This is not recommended. Instead, define the initial state by " ..
-          "assigning an object to `self.state` in the `init` method of `MyComponent`. " ..
-          "This ensures that `getDerivedStateFromProps` arguments have a consistent shape."
+        "`MyComponent` uses `getDerivedStateFromProps` but its state has not been initialized. " ..
+      "This is not recommended. Instead, define the initial state by " ..
+      "passing an object to `self:setState` in the `init` method of `MyComponent`. " ..
+      "This ensures that `getDerivedStateFromProps` arguments have a consistent shape."
       )
 
       -- De-duped

@@ -63,5 +63,6 @@ return {
 	ReactSymbols = require(script.ReactSymbols),
 	ReactVersion = require(script.ReactVersion),
 	shallowEqual = require(script.shallowEqual),
+	UninitializedState = require(script["UninitializedState.roblox"]),
 	ReactTypes = ReactTypes,
 }

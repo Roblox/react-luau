@@ -175,9 +175,13 @@ return function()
 --     ])
 --   })
 
+  --[[ROBLOX DEVIATION: State is now automatically initialized to a singleton that gives warnings
+    on access if state has not been initialized with setState. The code in the test below will
+    no longer throw an error.
+  ]]
   -- You could assign state here, but not access members of it, unless you
-  -- had provided a getInitialState method.
-  it("throws when accessing state in componentWillMount", function()
+  -- had provided a getInitialState method.  
+  xit("throws when accessing state in componentWillMount", function()
     local StatefulComponent = React.Component:extend("StatefulComponent")
 
     function StatefulComponent:UNSAFE_componentWillMount()
@@ -1282,11 +1286,10 @@ xit('should not throw when updating an auxiliary component', function()
         ReactNoop.render(React.createElement(MyComponent))
       end)
     end).toErrorDev(
-      -- ROBLOX FIXME: This error message doesn't quite apply as written
-      "`MyComponent` uses `getDerivedStateFromProps` but its initial state is " ..
-        "nil. This is not recommended. Instead, define the initial state by " ..
-        "assigning an object to `self.state` in the `init` method of `MyComponent`. " ..
-        "This ensures that `getDerivedStateFromProps` arguments have a consistent shape."
+      "`MyComponent` uses `getDerivedStateFromProps` but its state has not been initialized. " ..
+      "This is not recommended. Instead, define the initial state by " ..
+      "passing an object to `self:setState` in the `init` method of `MyComponent`. " ..
+      "This ensures that `getDerivedStateFromProps` arguments have a consistent shape."
     )
 
     -- De-duped

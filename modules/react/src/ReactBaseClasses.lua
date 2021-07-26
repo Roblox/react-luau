@@ -19,6 +19,11 @@ if _G.__DEV__ then
   Object.freeze(emptyObject)
 end
 
+-- ROBLOX DEVIATION: Initialize state to a singleton that warns on access and errors on assignment
+-- initial state singleton
+local UninitializedState = require(Packages.Shared).UninitializedState
+
+
 --[[*
  * Base class helpers for the updating state of a component.
 ]]
@@ -135,6 +140,10 @@ function Component:extend(name)
 
     instance.props = props
     instance.context = context
+    -- ROBLOX DEVIATION: Initialize state to a singleton that warns on attempts
+    -- to access this pseudo-uninitialized state and errors on attempts to directly mutate
+    -- state.
+    instance.state = UninitializedState
     -- If a component has string refs, we will assign a different object later.
     instance.refs = emptyObject
     -- We initialize the default updater but the real one gets injected by the

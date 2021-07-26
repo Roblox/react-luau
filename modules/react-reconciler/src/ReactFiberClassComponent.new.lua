@@ -55,6 +55,7 @@ local getInstance = ReactInstanceMap.get
 local setInstance = ReactInstanceMap.set
 local shallowEqual = require(Packages.Shared).shallowEqual
 local getComponentName = require(Packages.Shared).getComponentName
+local UninitializedState = require(Packages.Shared).UninitializedState
 -- local invariant = require(Packages.Shared).invariant
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 local REACT_CONTEXT_TYPE = ReactSymbols.REACT_CONTEXT_TYPE
@@ -761,20 +762,21 @@ local function constructClassInstance(
   adoptClassInstance(workInProgress, instance)
 
   if _G.__DEV__ then
-    if typeof(ctor.getDerivedStateFromProps) == "function" and state == nil then
+    -- ROBLOX DEVIATION: Instead of checking if state is nil, we check if it is our 
+    -- UninitializedState singleton.
+    if typeof(ctor.getDerivedStateFromProps) == "function" and state == UninitializedState then
       local componentName = getComponentName(ctor) or "Component"
       if not didWarnAboutUninitializedState[componentName] then
         didWarnAboutUninitializedState[componentName] = true
         -- deviation: message adjusted for accuracy with Lua "class" components
         console.error(
-          "`%s` uses `getDerivedStateFromProps` but its initial state is " ..
-            "%s. This is not recommended. Instead, define the initial state by " ..
-            "assigning an object to `self.state` in the `init` method of `%s`. " ..
+          "`%s` uses `getDerivedStateFromProps` but its state has not been initialized. " ..
+            "This is not recommended. Instead, define the initial state by " ..
+            "passing an object to `self:setState` in the `init` method of `%s`. " ..
             "This ensures that `getDerivedStateFromProps` arguments have a consistent shape.",
           componentName,
           -- deviation: no need to worry about undefined
           -- instance.state == nil and 'nil' or 'undefined',
-          "nil",
           componentName
         )
       end
