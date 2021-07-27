@@ -972,7 +972,7 @@ mod.performConcurrentWorkOnRoot = function(root)
     -- The task node scheduled for this root is the same one that's
     -- currently executed. Need to return a continuation.
     return function()
-      mod.performConcurrentWorkOnRoot(root)
+      return mod.performConcurrentWorkOnRoot(root)
     end
   end
   return nil

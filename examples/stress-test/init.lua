@@ -6,7 +6,7 @@ return function()
 	local ReactRoblox = require(script.Parent.ProjectWorkspace.ReactRoblox)
 
 	local NODE_SIZE = 10
-	local GRID_SIZE = 50
+	local GRID_SIZE = 70
 
 	--[[
 		A frame that changes its background color according to time and position props
@@ -78,7 +78,7 @@ return function()
 	local rootInstance = Instance.new("Folder")
 	rootInstance.Parent = PlayerGui
 
-	local root = ReactRoblox.createBlockingRoot(rootInstance)
+	local root = ReactRoblox.createRoot(rootInstance)
 	root:render(app)
 
 	local function stop()

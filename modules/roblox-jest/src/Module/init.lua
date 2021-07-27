@@ -90,6 +90,7 @@ local function requireOverride(scriptInstance: ModuleScript): any
 		getfenv(moduleFunction).require = requireOverride
 		getfenv(moduleFunction).delay = FakeTimers.delayOverride
 		getfenv(moduleFunction).tick = FakeTimers.tickOverride
+		getfenv(moduleFunction).task = FakeTimers.taskOverride
 		moduleResult = moduleFunction()
 
 		if moduleResult == nil then

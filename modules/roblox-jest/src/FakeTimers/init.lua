@@ -1,4 +1,5 @@
 -- Mimicking https://github.com/facebook/jest/blob/4453901c0239939cc2c1c8b7c7d121447f6f5f52/packages/jest-fake-timers/src/legacyFakeTimers.ts#L506
+--!nolint UnknownGlobal
 
 type Timer = {
 	expiry: number,
@@ -7,6 +8,8 @@ type Timer = {
 
 local realDelay = delay
 local realTick = tick
+-- ROBLOX TODO: Remove when delay is fully released
+local realTaskDelay = task ~= nil and (task :: any).delay or function() end
 
 local timers: { [number]: Timer } = {}
 local now = 0
@@ -103,24 +106,34 @@ delayOverride.__call = realDelay
 local tickOverride = {}
 tickOverride.__call = realTick
 
+local taskDelayOverride = {}
+taskDelayOverride.__call = realTaskDelay
+
 local function useFakeTimers()
 	reset()
 	delayOverride.__call = mockDelay
 	tickOverride.__call = mockTick
+	taskDelayOverride.__call = mockDelay
 end
 
 local function useRealTimers()
 	delayOverride.__call = realDelay
 	tickOverride.__call = realTick
+	taskDelayOverride.__call = realTaskDelay
 end
 
 local function getTimerCount(): number
 	return #timers
 end
 
+local taskOverride = {
+	delay = setmetatable({}, taskDelayOverride),
+}
+
 return {
 	delayOverride = setmetatable({}, delayOverride),
 	tickOverride = setmetatable({}, tickOverride),
+	taskOverride = taskOverride,
 	runAllTimers = runAllTimers,
 	useFakeTimers = useFakeTimers,
 	useRealTimers = useRealTimers,

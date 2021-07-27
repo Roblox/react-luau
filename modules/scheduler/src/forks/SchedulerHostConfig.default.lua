@@ -1,4 +1,5 @@
 -- upstream: https://github.com/facebook/react/blob/5474a83e258b497584bed9df95de1d554bc53f89/packages/scheduler/src/forks/SchedulerHostConfig.default.js
+--!nolint UnknownGlobal
 --[[*
 * Copyright (c) Facebook, Inc. and its affiliates.
 *
@@ -9,90 +10,92 @@
 local Packages = script.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 
--- deviation: getCurrentTime will always map to `tick` in Luau
+local console = require(Packages.Shared).console
+
+-- ROBLOX deviation: getCurrentTime will always map to `tick` in Luau
 local getCurrentTime = function()
 	-- Return a result in milliseconds
-	return tick() * 1000
+	return os.clock() * 1000
 end
 
--- deviation: This implementation is converted from the "naive" implementation that
--- the React scheduler falls bak on in the absence of certain DOM APIs.
---
--- This is likely to be the implementation that React Native applications run
--- with, and should be considered sufficiently sophisticated. More research
--- needs to be done to verify this.
+-- ROBLOX deviation: The implementation below is the "naive" implementation,
+-- which is used in upstream when certain browser features are missing. It's
+-- insufficient for our use case, since it does not respect the frame time
+-- boundary
+
+-- local setTimeout = LuauPolyfill.setTimeout
+-- local clearTimeout = LuauPolyfill.clearTimeout
+
+-- local exports = {}
+-- exports.getCurrentTime = getCurrentTime
+
+-- local _callback = nil
+-- local _timeoutID = nil
+
+-- local function _flushCallback()
+-- 	if _callback ~= nil then
+-- 		-- ROBLOX deviation: YOLO flag for disabling pcall
+-- 		local ok, result
+-- 		if not _G.__YOLO__ then
+-- 			ok, result = pcall(function()
+-- 				local currentTime = getCurrentTime()
+-- 				local hasRemainingTime = true
+-- 				_callback(hasRemainingTime, currentTime)
+-- 				_callback = nil
+-- 			end)
+-- 		else
+-- 			ok = true
+-- 			local currentTime = getCurrentTime()
+-- 			local hasRemainingTime = true
+-- 			_callback(hasRemainingTime, currentTime)
+-- 			_callback = nil
+-- 		end
+
+-- 		if not ok then
+-- 			setTimeout(_flushCallback, 0)
+-- 			error(result)
+-- 		end
+-- 	end
+-- end
+
+-- local function requestHostCallback(cb)
+-- 	if _callback ~= nil then
+-- 		-- Protect against re-entrancy.
+-- 		setTimeout(requestHostCallback, 0, cb)
+-- 	else
+-- 		_callback = cb
+-- 		setTimeout(_flushCallback, 0)
+-- 	end
+-- end
+
+-- exports.requestHostCallback = requestHostCallback
+-- exports.cancelHostCallback = function()
+-- 	_callback = nil
+-- end
+-- exports.requestHostTimeout = function(cb, ms)
+-- 	_timeoutID = setTimeout(cb, ms)
+-- end
+-- exports.cancelHostTimeout = function()
+-- 	clearTimeout(_timeoutID)
+-- end
+-- exports.shouldYieldToHost = function()
+-- 	return false
+-- end
+-- exports.requestPaint = function()
+-- end
+-- exports.forceFrameRate = function()
+-- end
+
+-- return exports
+
+-- ROBLOX deviation: This module in React exports a different implementation if
+-- it detects certain APIs from the DOM interface. We instead attempt to
+-- approximate that behavior so that we can access features like dividing work
+-- according to frame time
+
+-- Capture local references to native APIs, in case a polyfill overrides them.
 local setTimeout = LuauPolyfill.setTimeout
 local clearTimeout = LuauPolyfill.clearTimeout
-
-local exports = {}
-exports.getCurrentTime = getCurrentTime
-
-local _callback = nil
-local _timeoutID = nil
-
-local function _flushCallback()
-	if _callback ~= nil then
-		-- ROBLOX deviation: YOLO flag for disabling pcall
-		local ok, result
-		if not _G.__YOLO__ then
-			ok, result = pcall(function()
-				local currentTime = getCurrentTime()
-				local hasRemainingTime = true
-				_callback(hasRemainingTime, currentTime)
-				_callback = nil
-			end)
-		else
-			ok = true
-			local currentTime = getCurrentTime()
-			local hasRemainingTime = true
-			_callback(hasRemainingTime, currentTime)
-			_callback = nil
-		end
-
-		if not ok then
-			setTimeout(_flushCallback, 0)
-			error(result)
-		end
-	end
-end
-
-local function requestHostCallback(cb)
-	if _callback ~= nil then
-		-- Protect against re-entrancy.
-		setTimeout(requestHostCallback, 0, cb)
-	else
-		_callback = cb
-		setTimeout(_flushCallback, 0)
-	end
-end
-
-exports.requestHostCallback = requestHostCallback
-exports.cancelHostCallback = function()
-	_callback = nil
-end
-exports.requestHostTimeout = function(cb, ms)
-	_timeoutID = setTimeout(cb, ms)
-end
-exports.cancelHostTimeout = function()
-	clearTimeout(_timeoutID)
-end
-exports.shouldYieldToHost = function()
-	return false
-end
-exports.requestPaint = function()
-end
-exports.forceFrameRate = function()
-end
-
-return exports
-
--- deviation: This module in React exports a different implementation if it
--- detects certain APIs from the DOM interface. For our purposes, these will
--- never be present. The DOM-dependent implementation is commented out below.
---[[
--- Capture local references to native APIs, in case a polyfill overrides them.
-local setTimeout = Timeout.setTimeout
-local clearTimeout = Timeout.clearTimeout
 
 local isMessageLoopRunning = false
 local scheduledHostCallback = nil
@@ -105,23 +108,21 @@ local taskTimeoutID = -1
 local yieldInterval = 5
 local deadline = 0
 
--- TODO(align): Restore enableIsInputPending flag if needed
--- `isInputPending` is not available. Since we have no way of knowing if
--- there's pending input, always yield at the end of the frame.
-shouldYieldToHost = function()
+
+
+-- ROBLOX deviation: Removed some logic around browser functionality that's not
+-- present in the roblox engine
+local function shouldYieldToHost()
 	return getCurrentTime() >= deadline
 end
 
--- TODO(align): With flagged logic removed, we no longer have any meaningful
--- implementations for this function. Should we remove it, and remove uses?
---
 -- Since we yield every frame regardless, `requestPaint` has no effect.
-requestPaint = function()
+local function requestPaint()
 end
 
-forceFrameRate = function(fps)
+local function forceFrameRate(fps)
 	if fps < 0 or fps > 125 then
-		warn(
+		console.warn(
 			"forceFrameRate takes a positive int between 0 and 125, " ..
 			"forcing frame rates higher than 125 fps is not supported"
 		)
@@ -134,9 +135,6 @@ forceFrameRate = function(fps)
 		yieldInterval = 5
 	end
 end
-
-local channel = new MessageChannel()
-local port = channel.port2
 
 local function performWorkUntilDeadline()
 	if scheduledHostCallback ~= nil then
@@ -157,41 +155,57 @@ local function performWorkUntilDeadline()
 			else
 				-- If there's more work, schedule the next message event at the end
 				-- of the preceding one.
-				port.postMessage(nil)
+
+				-- ROBLOX deviation: Use task api instead of message channel;
+				-- depending on whether or not we still have time to perform
+				-- more work, either yield and defer till later this frame, or
+				-- delay work till next frame
+
+				-- ROBLOX TODO: Use task api once it's stabilized
+				setTimeout(performWorkUntilDeadline, 0)
+				-- ROBLOX FIXME: What's the proper combination of task.defer and
+				-- task.delay that makes this optimal?
+				-- (task :: any).delay(0, performWorkUntilDeadline)
 			end
 		end)
 
 		if not ok then
 			-- If a scheduler task throws, exit the current browser task so the
 			-- error can be observed.
-			port.postMessage(nil)
+			-- ROBLOX TODO: Use task api once it's stabilized
+			setTimeout(performWorkUntilDeadline, 0)
+			-- ROBLOX deviation: Use task api instead of message channel
+			-- (task :: any).delay(0, performWorkUntilDeadline)
 			error(result)
 		end
 	else
 		isMessageLoopRunning = false
 	end
 end
-channel.port1.onmessage = performWorkUntilDeadline
 
-requestHostCallback = function(callback)
+local function requestHostCallback(callback)
 	scheduledHostCallback = callback
 	if not isMessageLoopRunning then
 		isMessageLoopRunning = true
-		port.postMessage(nil)
+
+		-- ROBLOX TODO: Use task api once it's stabilized
+		setTimeout(performWorkUntilDeadline, 0)
+		-- ROBLOX deviation: Use task api instead of message channel
+		-- (task :: any).delay(0, performWorkUntilDeadline)
 	end
 end
 
-cancelHostCallback = function()
+local function cancelHostCallback()
 	scheduledHostCallback = nil
 end
 
-requestHostTimeout = function(callback, ms)
+local function requestHostTimeout(callback, ms)
 	taskTimeoutID = setTimeout(function()
 		callback(getCurrentTime())
 	end, ms);
 end
 
-cancelHostTimeout = function()
+local function cancelHostTimeout()
 	clearTimeout(taskTimeoutID)
 	taskTimeoutID = -1
 end
@@ -206,4 +220,3 @@ return {
 	getCurrentTime = getCurrentTime,
 	forceFrameRate = forceFrameRate,
 }
-]]

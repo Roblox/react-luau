@@ -33,6 +33,7 @@ local RobloxJest = {
 		require = Module.requireOverride,
 		delay = FakeTimers.delayOverride,
 		tick = FakeTimers.tickOverride,
+		task = FakeTimers.taskOverride,
 	},
 }
 

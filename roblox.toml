@@ -10273,6 +10273,11 @@ type = "number"
 required = false
 type = "number"
 
+[[task.delay.args]]
+type = "number"
+[[task.delay.args]]
+type = "function"
+
 [tick]
 args = []
 
