@@ -1714,7 +1714,7 @@ end
 function mountOpaqueIdentifier()
   local makeId
   if _G.__DEV__ then
-    unimplemented("mountOpauqeIdentigier")
+    unimplemented("mountOpauqeIdentifier")
     -- makeId = makeClientIdInDEV.bind(
     --     nil,
     --     warnOnOpaqueIdentifierAccessInDEV.bind(null, currentlyRenderingFiber),

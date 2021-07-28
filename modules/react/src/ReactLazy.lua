@@ -10,7 +10,9 @@
 
 local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from shared
-local console = require(Packages.Shared).console
+local Shared = require(Packages.Shared)
+local console = Shared.console
+local inspect = Shared.inspect.inspect
 
 local ReactTypes = require(Packages.Shared)
 type Wakeable = ReactTypes.Wakeable
@@ -59,10 +61,10 @@ type Payload<T> =
 	| RejectedPayload
 
 export type LazyComponent<T, P> = {
-    [string]: number, -- ROBLOX deviation: we don't use Symbol for $$typeof
+	[string]: number, -- ROBLOX deviation: we don't use Symbol for $$typeof
 	_payload: P,
 	_init: (P) -> T,
---   ...
+	--   ...
 }
 
 -- ROBLOX TODO: function generics
@@ -83,12 +85,12 @@ function lazyInitializer(payload: Payload<any>): any
 					if defaultExport == nil then
 						console.error(
 							"lazy: Expected the result of a dynamic import() call. "
-								.. "Instead received: %s\n\nYour code should look like: \n  "
+								.. "Instead received: `%s`\n\nYour code should look like: \n  "
 								-- Break up imports to avoid accidentally parsing them as dependencies.
 								-- ROBLOX deviation: Lua syntax in message
 								.. "local MyComponent = lazy(function() return req"
 								.. "quire(script.Parent.MyComponent) end)",
-							moduleObject
+							inspect(moduleObject)
 						)
 					end
 				end

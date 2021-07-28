@@ -22,7 +22,10 @@ end
 
 local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from Shared
-local console = require(Packages.Shared).console
+local Shared = require(Packages.Shared)
+local console = Shared.console
+local inspect = Shared.inspect.inspect
+
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
@@ -602,8 +605,9 @@ function updateSimpleMemoComponent(
         local outerPropTypes
         local validateProps
         -- ROBLOX deviation: avoid accessing propTypes on a function, Lua doesn't support fields on functions
-        if typeof(type) == "table" then
+        if typeof(outerMemoType) == "table" then
           outerPropTypes = (outerMemoType :: any).propTypes
+          -- ROBLOX deviation: support legacy Roact's equivalent of propTypes
           validateProps = (outerMemoType :: any).validateProps
         end
 
@@ -834,9 +838,9 @@ updateFunctionComponent = function(
       local innerPropTypes
       local validateProps
       -- ROBLOX deviation: Roact won't support propTypes on functional components
-      if typeof(type) == "table" then
-        innerPropTypes = (type :: any).propTypes
-        validateProps = (type :: any).validateProps
+      if typeof(Component) == "table" then
+        innerPropTypes = (Component :: any).propTypes
+        validateProps = (Component :: any).validateProps
       end
 
       if innerPropTypes or validateProps then
@@ -1446,13 +1450,17 @@ local function mountLazyComponent(
   --   -- ROBLOX deviation: break
   end
   local hint = ''
-  if  _G.__DEV__ then
+  if _G.__DEV__ then
     if
       Component ~= nil and
       typeof(Component) == 'table' and
       Component["$$typeof"] == REACT_LAZY_TYPE
     then
       hint = ' Did you wrap a component in React.lazy() more than once?'
+    elseif typeof(Component) == 'table' and
+      Component["$$typeof"] == nil
+    then
+      hint = "\n" .. inspect(Component)
     end
   end
   -- This message intentionally doesn't mention ForwardRef or MemoComponent
@@ -3679,7 +3687,7 @@ exports.beginWork = function(
     false,
     "Unknown unit of work tag (%s). This error is likely caused by a bug in " ..
       "React. Please file an issue.",
-    workInProgress.tag
+    tostring(workInProgress.tag)
   )
   return nil
 end

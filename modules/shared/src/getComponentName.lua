@@ -57,11 +57,9 @@ local function getComponentName(type): string?
 	end
 
 	if typeofType == "function" then
-		-- ROBLOX FIXME: selene currently flags debug.info for not having field info
-		-- selene: allow(incorrect_standard_library_use)
-		-- ROBLOX FIXME: Luau flow analysis bug workaround
-		local name = debug.info(type :: (any) -> any, "n")
-		-- when name = (null) we want it to be treated as nil, not as an empty (truthy) string
+		-- ROBLOX deviation: we can't deref functions in Lua, so get the name of the function and move logic to table section
+		local name = debug.info(type, "n")
+		-- ROBLOX deviaton:when name = (null) we want it to be treated as nil, not as an empty (truthy) string
 		if name and #name > 0 then
 			return name
 		else
@@ -116,12 +114,20 @@ local function getComponentName(type): string?
 
 			return result
 		else
-			-- deviation: Normally, the `typeofType == "function"` check would
+			-- ROBLOX deviation: Normally, the `typeofType == "function"` check would
 			-- cover this case, but in Lua, class components are tables. We need
 			-- to check for that here and use the name the component was
 			-- assigned.
-			if type.isReactComponent then
-				return type.displayName or tostring(type)
+			if type.displayName then
+				return type.displayName
+			end
+			if type.name then
+				return type.name
+			end
+			-- ROBLOX note: only use tostring() if its overridden to avoid "table: 0xabcd9012"
+			local mt = getmetatable(type)
+			if mt and rawget(mt, "__tostring") then
+				return tostring(type)
 			end
 		end
 	end

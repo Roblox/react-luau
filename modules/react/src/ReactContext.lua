@@ -11,6 +11,9 @@ local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from shared
 local Shared = require(Packages.Shared)
 local console = Shared.console
+local inspect = Shared.inspect.inspect
+local LuauPolyfill = require(Packages.LuauPolyfill)
+local Array = LuauPolyfill.Array
 
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 local REACT_PROVIDER_TYPE = ReactSymbols.REACT_PROVIDER_TYPE
@@ -31,9 +34,25 @@ exports.createContext = function(
   if calculateChangedBits == nil then
     calculateChangedBits = nil
   else
+    -- ROBLOX deviation: align warnings across files. this should be upstreamed.
     if _G.__DEV__ then
       if calculateChangedBits ~= nil and typeof(calculateChangedBits) ~= 'function' then
-        console.error('createContext: Expected the optional second argument to be a ' .. 'function. Instead received: %s', calculateChangedBits)
+        local typeString
+        local info = ""
+        if Array.isArray(calculateChangedBits) then
+          typeString = "array"
+        else
+          typeString = typeof(calculateChangedBits)
+          -- ROBLOX deviation: print the table/string in readable form to give a clue, if no other info was gathered
+          info = "\n" .. inspect(calculateChangedBits)
+        end
+
+        console.error(
+          'createContext: Expected the optional second argument to be a '
+            .. 'function. Instead received: %s.%s',
+          typeString,
+          info
+        )
       end
     end
   end

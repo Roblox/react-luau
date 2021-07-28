@@ -2069,7 +2069,7 @@ return function()
 				end).toErrorDev(
 					"React.createElement: type is invalid -- expected a string "
 						.. "(for built-in components) or a class/function "
-						.. "(for composite components) but got: null."
+						.. "(for composite components) but got: nil."
 				)
 			end)
 			if not ok then
@@ -2082,7 +2082,7 @@ return function()
 				end).toErrorDev(
 					"React.createElement: type is invalid -- expected a string "
 						.. "(for built-in components) or a class/function "
-						.. "(for composite components) but got: null."
+						.. "(for composite components) but got: nil."
 				)
 			end)
 			if not ok then

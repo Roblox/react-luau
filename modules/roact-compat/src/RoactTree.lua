@@ -1,6 +1,7 @@
 local Packages = script.Parent.Parent
 local ReactRoblox = require(Packages.ReactRoblox)
-local inspect = require(Packages.Shared).inspect.inspect
+local Shared = require(Packages.Shared)
+local inspect = Shared.inspect.inspect
 
 local warnOnce = require(script.Parent.warnOnce)
 
@@ -10,7 +11,22 @@ local function mount(element, parent, key)
 	end
 
 	if parent ~= nil and typeof(parent) ~= "Instance" then
-		warnOnce("mount invalid argument", "Cannot mount into a parent that is not a Roblox Instance\n" .. inspect(parent))
+		error(string.format(
+			"Cannot mount element (`%s`) into a parent that is not a Roblox Instance (got type `%s`) \n%s",
+			(function()
+				if element then
+					return tostring(element.type)
+				end
+				return "<unknown>"
+			end)(),
+			typeof(parent),
+			(function()
+				if parent ~= nil then
+					return inspect(parent)
+				end
+				return ""
+			end)()
+		))
 	end
 
 	local rootInstance = parent

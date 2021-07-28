@@ -61,12 +61,12 @@ local function checkPropTypes(propTypes, validateProps, props, location, compone
 				))
 			else
 				local success, failureReason = validateProps(props)
-			
+
 				if not success then
 					failureReason = failureReason or "<Validator function did not supply a message>"
 					console.warn(("validateProps failed on a %s type in %s: %s"):format(
 						location,
-						componentName,
+						componentName or "<UNKNOWN Component>",
 						tostring(failureReason)))
 				end
 			end

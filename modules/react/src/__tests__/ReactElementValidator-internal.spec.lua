@@ -310,18 +310,18 @@ return function()
 					"Warning: React.createElement: type is invalid -- expected a string " ..
 						"(for built-in components) or a class/function (for composite " ..
 						"components) but got: <Frame />. Did you accidentally export a JSX literal " ..
-						"instead of a component?",
+						"or Element instead of a component?",
 					"Warning: React.createElement: type is invalid -- expected a string " ..
 						"(for built-in components) or a class/function (for composite " ..
 						"components) but got: <Foo />. Did you accidentally export a JSX literal " ..
-						"instead of a component?",
+						"or Element instead of a component?",
 					"Warning: React.createElement: type is invalid -- expected a string " ..
 						"(for built-in components) or a class/function (for composite " ..
 						"components) but got: <Context.Consumer />. Did you accidentally " ..
-						"export a JSX literal instead of a component?",
+						"export a JSX literal or Element instead of a component?",
 					"Warning: React.createElement: type is invalid -- expected a string " ..
 						"(for built-in components) or a class/function (for composite " ..
-						"components) but got: table.",
+						"components) but got: table.\n{",
 				},
 				{withoutStack = true}
 			)

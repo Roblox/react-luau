@@ -14,6 +14,7 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
 local console = require(Packages.Shared).console
+local inspect = require(Packages.Shared).inspect.inspect
 
 local isValidElementType = require(Packages.Shared).isValidElementType
 local getComponentName = require(Packages.Shared).getComponentName
@@ -338,15 +339,11 @@ local function jsxWithValidation(
 	-- // succeed and there will likely be errors in render.
 	if not validType then
 		local info = ""
-
 		if type == nil or
-			(
-				typeof(type) == "table"
-				and type ~= nil
-				and #Object.keys(type) == 0
-			)
+			(typeof(type) == "table" and
+				#Object.keys(type) == 0)
 		then
-			info = info .. (
+			info ..= (
 				" You likely forgot to export your component from the file " ..
 					"it's defined in, or you might have mixed up default and named imports."
 			)
@@ -354,9 +351,9 @@ local function jsxWithValidation(
 
 		local sourceInfo = getSourceInfoErrorAddendum(source)
 		if sourceInfo then
-			info = info .. sourceInfo
+			info ..= sourceInfo
 		else
-			info = info .. getDeclarationErrorAddendum()
+			info ..= getDeclarationErrorAddendum()
 		end
 
 		local typeString
@@ -364,11 +361,12 @@ local function jsxWithValidation(
 			typeString = "nil"
 		elseif Array.isArray(type) then
 			typeString = "array"
-		elseif type ~= nil and type["$$typeof"] == REACT_ELEMENT_TYPE then
+		elseif typeof(type) == "table" and type["$$typeof"] == REACT_ELEMENT_TYPE then
 			typeString = ("<%s />"):format(getComponentName(type.type) or "Unknown")
-			info = " Did you accidentally export a JSX literal instead of a component?"
+			info ..= " Did you accidentally export a JSX literal or Element instead of a component?"
 		else
 			typeString = typeof(type)
+			info ..= "\n" .. inspect(type)
 		end
 
 		if _G.__DEV__ then
@@ -462,22 +460,20 @@ end
 -- ROBLOX deviation: uses varargs to account for possibility of nil props argument
 local function createElementWithValidation(...)
 	-- ROBLOX deviation: assign first two arguments to type and props
-	local type, props = ...
+	local type_, props = ...
 
-	local validType = isValidElementType(type)
+	local validType = isValidElementType(type_)
 
 	-- // We warn in this case but don't throw. We expect the element creation to
 	-- // succeed and there will likely be errors in render.
 	if not validType then
 		local info = ""
-		if type == nil or
-			(
-				typeof(type) == "table" and
-				type ~= nil and
-				#Object.keys(type) == 0
-			)
+		if
+			type_ == nil or
+			(typeof(type_) == "table" and
+				#Object.keys(type_) == 0)
 		then
-			info = info .. (
+			info ..= (
 				" You likely forgot to export your component from the file " ..
 					"it's defined in, or you might have mixed up default and named imports."
 			)
@@ -485,21 +481,25 @@ local function createElementWithValidation(...)
 
 		local sourceInfo = getSourceInfoErrorAddendumForProps(props)
 		if sourceInfo then
-			info = info .. sourceInfo
+			info ..= sourceInfo
 		else
-			info = info .. getDeclarationErrorAddendum()
+			info ..= getDeclarationErrorAddendum()
 		end
 
 		local typeString
-		if type == nil then
+		if type_ == nil then
 			typeString = "nil"
-		elseif Array.isArray(type) then
+		elseif Array.isArray(type_) then
 			typeString = "array"
-		elseif type ~= nil and typeof(type) == "table" and type["$$typeof"] == REACT_ELEMENT_TYPE then
-			typeString = ("<%s />"):format(getComponentName(type.type) or "Unknown")
-			info = " Did you accidentally export a JSX literal instead of a component?"
+		elseif type_ ~= nil and typeof(type_) == "table" and type_["$$typeof"] == REACT_ELEMENT_TYPE then
+			typeString = ("<%s />"):format(getComponentName(type_.type) or "Unknown")
+			info ..= " Did you accidentally export a JSX literal or Element instead of a component?"
 		else
-			typeString = typeof(type)
+			typeString = typeof(type_)
+			if type_ ~= nil then
+				-- ROBLOX deviation: print the table/string in readable form to give a clue, if no other info was gathered
+				info ..= "\n" .. inspect(type_)
+			end
 		end
 
 		if _G.__DEV__ then
@@ -531,11 +531,11 @@ local function createElementWithValidation(...)
 		-- ROBLOX deviation: skips (1) type and (2) props - starts from 3 to the end varargs (iterate through children)
 		for i=3, select('#', ...) do
 			-- ROBLOX deviation: selects the ith child from this function's arguments to validate
-			validateChildKeys(select(i, ...), type)
+			validateChildKeys(select(i, ...), type_)
 		end
 	end
 
-	if type == REACT_FRAGMENT_TYPE then
+	if type_ == REACT_FRAGMENT_TYPE then
 		validateFragmentProps(element)
 	else
 		validatePropTypes(element)

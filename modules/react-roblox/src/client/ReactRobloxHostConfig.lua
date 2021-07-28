@@ -240,7 +240,7 @@ exports.getRootHostContext = function(
 end
 
 exports.getChildHostContext = function(
-  parentHostContext: any, -- HostContext
+  parentHostContext: HostContext,
   type: string,
   rootContainerInstance: Container
 ): HostContext

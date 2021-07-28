@@ -232,11 +232,7 @@ local function describeNativeComponentFrame(
 
 	-- ROBLOX deviation: Can't get displayName for functions
 	if typeof(fn) == "function" then
-		-- ROBLOX FIXME: selene currently flags debug.info for not having field info
-		-- selene: allow(incorrect_standard_library_use)
-		-- ROBLOX FIXME: Luau flow analysis bug workaround
-		name = debug.info(fn :: (any) -> any, "n")
-
+		name = debug.info(fn, "n")
 		-- ROBLOX deviation: since fn can be a class, we can get the class name here
 	elseif typeof(fn) == "table" then
 		name = tostring(fn)

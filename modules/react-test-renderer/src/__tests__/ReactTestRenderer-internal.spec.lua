@@ -820,9 +820,6 @@ return function()
 			)
 			cleanNodeOrArray(tree)
 
-			-- ROBLOX FIXME: set metatable value to nil to stop infinite recursion, should be removed once we
-			-- move to Roblox Jest
-			tree.type.__index = nil
 			jestExpect(tree).toEqual({
 				type = Foo,
 				nodeType = "component",
@@ -905,10 +902,6 @@ return function()
 			local tree = renderer.toTree()
 
 			cleanNodeOrArray(tree)
-
-			-- ROBLOX FIXME: set metatable value to nil to stop infinite recursion, should be removed once we
-			-- move to Roblox Jest
-			tree.rendered[1].type.__index = nil
 
 			-- ROBLOX deviation: no need to pretty format
 			jestExpect(tree).toEqual({
@@ -1115,11 +1108,6 @@ return function()
 			)
 
 			cleanNodeOrArray(tree)
-
-			-- ROBLOX FIXME: set metatable value to nil to stop infinite recursion, should be removed once we
-			-- move to Roblox Jest
-			tree.type.__index = nil
-			tree.rendered.type.__index = nil
 
 			jestExpect(tree).toEqual({
 				type = Bam,
@@ -1349,9 +1337,6 @@ return function()
 
 			cleanNodeOrArray(tree)
 
-			-- ROBLOX FIXME: set metatable value to nil to stop infinite recursion, should be removed once we
-			-- move to Roblox Jest
-			tree.type.__index = nil
 			-- ROBLOX deviation: no need to pretty format
 			jestExpect(tree).toEqual({
 				instance = nil,

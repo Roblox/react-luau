@@ -35,17 +35,18 @@ exports.forwardRef = function(render)
         typeof(render)
       )
     else
-      -- deviation: in Luau, we don't have a way to check how many arguments a
-      -- function takes at runtime
-
-      -- if render.length !== 0 && render.length !== 2 then
-      --   console.error(
-      --     'forwardRef render functions accept exactly two parameters: props and ref. %s',
-      --     render.length === 1
-      --       ? 'Did you forget to use the ref parameter?'
-      --       : 'Any additional parameter will be undefined.',
-      --   );
-      -- }
+      local argumentCount, _variadic = debug.info(render, "a")
+      if argumentCount ~= 0 and argumentCount ~= 2 then
+        console.error(
+          "forwardRef render functions accept exactly two parameters: props and ref. %s",
+          (function()
+            if argumentCount == 1 then
+              return "Did you forget to use the ref parameter?"
+            end
+            return "Any additional parameter will be undefined."
+          end)()
+        )
+      end
     end
 
     -- deviation: in Luau, functions cannot have fields; for now, we don't

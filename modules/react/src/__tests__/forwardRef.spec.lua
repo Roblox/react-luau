@@ -202,43 +202,46 @@ return function()
 			-- )
 		end)
 
-		-- ROBLOX deviation: Can't know function arity in lua
-		xit("should not warn if the render function provided does not use any parameter", function()
-			-- React.forwardRef(function arityOfZero()
-			--   return <div ref={arguments[1]} />
-			-- })
+		it("should not warn if the render function provided does not use any parameter", function()
+			-- ROBLOX deviation: remove the function name, and don't try to access arguments that don't exist
+			React.forwardRef(function()
+			  return React.createElement("div", {ref=""})
+			end)
 		end)
 
-		-- ROBLOX deviation: Can't know function arity in lua
-		xit("should warn if the render function provided does not use the forwarded ref parameter", function()
-			-- local arityOfOne = props => <div {...props} />
+		it("should warn if the render function provided does not use the forwarded ref parameter", function()
+			local function arityOfOne(props)
+				return React.createElement("div", props)
+			end
 
-			-- jestExpect(() =>
-			--   React.forwardRef(arityOfOne),
-			-- ).toErrorDev(
-			--   'forwardRef render functions accept exactly two parameters: props and ref. ' +
-			--     'Did you forget to use the ref parameter?',
-			--   {withoutStack: true},
-			-- )
+			jestExpect(function()
+			  React.forwardRef(arityOfOne)
+			end).toErrorDev(
+			  "forwardRef render functions accept exactly two parameters: props and ref. " ..
+			    "Did you forget to use the ref parameter?",
+			  {withoutStack = true}
+			)
 		end)
 
-		-- ROBLOX deviation: Can't know function arity in lua
-		xit("should not warn if the render function provided use exactly two parameters", function()
-			-- local arityOfTwo = (props, ref) => <div {...props} ref={ref} />
-			-- React.forwardRef(arityOfTwo)
+		it("should not warn if the render function provided use exactly two parameters", function()
+			local function arityOfTwo (_props, ref)
+				React.createElement("div", {ref=ref})
+			end
+			React.forwardRef(arityOfTwo)
 		end)
 
-		-- ROBLOX deviation: Can't know function arity in lua
-		xit("should warn if the render function provided expects to use more than two parameters", function()
-			-- local arityOfThree = (props, ref, x) => <div {...props} ref={ref} x={x} />
+		it("should warn if the render function provided expects to use more than two parameters", function()
+			local function arityOfThree(_props, ref, _x)
+				return React.createElement("div", {ref=ref})
+			end
 
-			-- jestExpect(() =>
-			--   React.forwardRef(arityOfThree),
-			-- ).toErrorDev(
-			--   "forwardRef render functions accept exactly two parameters: props and ref. " +
-			--     "Any additional parameter will be undefined.",
-			--   {withoutStack: true},
-			-- )
+			jestExpect(function()
+			  React.forwardRef(arityOfThree)
+			end).toErrorDev(
+			  "forwardRef render functions accept exactly two parameters: props and ref. " ..
+			    "Any additional parameter will be undefined.",
+			  {withoutStack = true}
+			)
 		end)
 
 		-- ROBLOX TODO: Support PropTypes

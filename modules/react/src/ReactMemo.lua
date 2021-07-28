@@ -8,10 +8,18 @@
 
 local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from shared
-local console = require(Packages.Shared).console
+local Shared = require(Packages.Shared)
+local console = Shared.console
+local inspect = Shared.inspect.inspect
+local LuauPolyfill = require(Packages.LuauPolyfill)
+local Array = LuauPolyfill.Array
+local Object = LuauPolyfill.Object
 
-local REACT_MEMO_TYPE = require(Packages.Shared).ReactSymbols.REACT_MEMO_TYPE
-local isValidElementType = require(Packages.Shared).isValidElementType
+local ReactSymbols = Shared.ReactSymbols
+local REACT_MEMO_TYPE = ReactSymbols.REACT_MEMO_TYPE
+local REACT_ELEMENT_TYPE = ReactSymbols.REACT_ELEMENT_TYPE
+local isValidElementType = Shared.isValidElementType
+local getComponentName = Shared.getComponentName
 
 local exports = {}
 
@@ -20,15 +28,48 @@ local exports = {}
 -- 	type: React$ElementType,
 -- 	compare?: (oldProps: Props, newProps: Props) => boolean,
 --   ) {
-exports.memo = function(
-	type_,
-	compare: ((any, any) -> boolean)?
-)
+exports.memo = function(type_, compare: ((any, any) -> boolean)?)
 	if _G.__DEV__ then
-		if not isValidElementType(type) then
+		local validType = isValidElementType(type_)
+
+		-- // We warn in this case but don't throw. We expect the element creation to
+		-- // succeed and there will likely be errors in render.
+		if not validType then
+			local info = ""
+			if
+				type_ == nil
+				or (typeof(type_) == "table" and #Object.keys(type_) == 0)
+			then
+				info = info
+					.. (
+						" You likely forgot to export your component from the file "
+						.. "it's defined in, or you might have mixed up default and named imports."
+					)
+			end
+			local typeString
+			if type_ == nil then
+				typeString = "nil"
+			elseif Array.isArray(type_) then
+				typeString = "array"
+			elseif
+				type_ ~= nil
+				and typeof(type_) == "table"
+				and type_["$$typeof"] == REACT_ELEMENT_TYPE
+			then
+				typeString = ("<%s />"):format(getComponentName(type_.type) or "UNKNOWN")
+				info =
+					" Did you accidentally export a JSX literal or Element instead of a component?"
+			else
+				typeString = typeof(type_)
+				if type_ ~= nil then
+					-- ROBLOX deviation: print the table/string in readable form to give a clue, if no other info was gathered
+					info = "\n" .. inspect(type_)
+				end
+			end
 			console.error(
-				"memo: The first argument must be a component. Instead " .. "received: ",
-				tostring(type)
+				"memo: The first argument must be a component. Instead received: `%s`.%s",
+				typeString,
+				info
 			)
 		end
 	end

@@ -109,8 +109,31 @@ return function()
 				RoactCompat.mount(
 					RoactCompat.createElement("TextLabel", { Text = "Foo" })
 				)
-			end).toWarnDev(
-				"Warning: The legacy Roact API 'mount' is deprecated",
+			end).toWarnDev({
+					"Warning: The legacy Roact API 'mount' is deprecated"
+				},
+				{ withoutStack = true }
+			)
+		end)
+
+		it("warns about mount with invalid instance", function()
+			jestExpect(function()
+				RoactCompat.mount(
+					RoactCompat.createElement("TextLabel", { Text = "Foo" }),
+					"I'm not an instance!"
+				)
+				end).toThrow(
+				"Cannot mount element (`TextLabel`) into a parent that is not a Roblox Instance (got type `string`)",
+				{ withoutStack = true }
+			)
+
+			jestExpect(function()
+				RoactCompat.mount(
+					RoactCompat.createElement("Frame"),
+					{ bogusParent = true }
+				)
+				end).toThrow(
+				"Cannot mount element (`Frame`) into a parent that is not a Roblox Instance (got type `table`) \n{\n  bogusParent",
 				{ withoutStack = true }
 			)
 		end)

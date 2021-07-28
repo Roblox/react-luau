@@ -9,7 +9,7 @@ local getDefaultInstanceProperty = require(script.Parent.getDefaultInstancePrope
 local ReactRobloxHostTypes = require(script.Parent.Parent["ReactRobloxHostTypes.roblox"])
 type HostInstance = ReactRobloxHostTypes.HostInstance;
 
--- deviation: Essentially a placeholder for dom-specific logic, taking the place
+-- ROBLOX deviation: Essentially a placeholder for dom-specific logic, taking the place
 -- of ReactDOMComponent. Most of the logic will differ pretty dramatically
 
 type Array<T> = { [number]: T }
@@ -149,13 +149,12 @@ local function setInitialProperties(
     applyProps(domElement, rawProps)
   end, identity)
 
+  -- ROBLOX deviation: Roblox renderer doesn't currently track where instances were created
   if not success then
-    -- TODO: support element tracebacks
-    local source = "<element tracebacks not supported>"
-    -- local source = element.source
+  --   local source = domElement.source
 
     -- if source == nil then
-    -- 	source = "<enable element tracebacks>"
+    local source = "<enable element tracebacks>"
     -- end
 
     -- ROBLOX FIXME: Does this error messaging play nicely with the error logic
@@ -193,12 +192,11 @@ local function updateProperties(
   end, identity)
 
   if not success then
-    -- TODO: support element tracebacks
-    local source = "<element tracebacks not supported>"
-    -- local source = element.source
+    -- ROBLOX deviation: Roblox renderer doesn't currently track where instances were created
+    -- local source = domElement.source
 
     -- if source == nil then
-    -- 	source = "<enable element tracebacks>"
+    local source = "<enable element tracebacks>"
     -- end
 
     -- ROBLOX FIXME: Does this error messaging play nicely with the error logic
