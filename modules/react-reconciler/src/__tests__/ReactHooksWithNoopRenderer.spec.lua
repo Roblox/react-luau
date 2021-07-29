@@ -1733,6 +1733,16 @@ return function()
 					local state, setState = React.useState(false)
 					React.useEffect(function()
 						Scheduler.unstable_yieldValue("Child passive create")
+						-- ROBLOX FIXME: Assigning to ref.current like this is
+						-- not allowed in legacy Roact, and it appears that it
+						-- was previously disallowed in React as well. There was
+						-- quite a bit of discussion about it here:
+						-- https://github.com/DefinitelyTyped/DefinitelyTyped/issues/31065
+						
+						-- For now, we've relaxed this restriction to maximize
+						-- compatibility. We should consider using a binding
+						-- here, which would be the idiomatic approach in legacy
+						-- Roact, and re-introducing the restriction.
 						updaterRef.current = setState
 					end, {})
 					return state

@@ -50,7 +50,11 @@ exports.typeOf = function(object)
 					return __typeof
 				end
 			end
-		elseif __typeof == ReactSymbols.REACT_PORTAL_TYPE then
+		elseif
+			__typeof == ReactSymbols.REACT_PORTAL_TYPE
+			-- ROBLOX deviation: Bindings are a feature migrated from Roact
+			or __typeof == ReactSymbols.REACT_BINDING_TYPE
+		then
 			return __typeof
 		end
 	end
@@ -69,6 +73,7 @@ exports.Portal = ReactSymbols.REACT_PORTAL_TYPE
 exports.Profiler = ReactSymbols.REACT_PROFILER_TYPE
 exports.StrictMode = ReactSymbols.REACT_STRICT_MODE_TYPE
 exports.Suspense = ReactSymbols.REACT_SUSPENSE_TYPE
+exports.Binding = ReactSymbols.REACT_BINDING_TYPE
 exports.isValidElementType = isValidElementType
 local hasWarnedAboutDeprecatedIsAsyncMode = false
 local hasWarnedAboutDeprecatedIsConcurrentMode = false -- AsyncMode should be deprecated
@@ -139,6 +144,10 @@ exports.isStrictMode = function(object)
 end
 exports.isSuspense = function(object)
 	return exports.typeOf(object) == ReactSymbols.REACT_SUSPENSE_TYPE
+end
+-- ROBLOX deviation: Bindings are a feature migrated from Roact
+exports.isBinding = function(object)
+	return exports.typeOf(object) == ReactSymbols.REACT_BINDING_TYPE
 end
 
 return exports

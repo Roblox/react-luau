@@ -41,6 +41,7 @@ exports.REACT_OPAQUE_ID_TYPE = 0xeae0
 exports.REACT_DEBUG_TRACING_MODE_TYPE = 0xeae1
 exports.REACT_OFFSCREEN_TYPE = 0xeae2
 exports.REACT_LEGACY_HIDDEN_TYPE = 0xeae3
+exports.REACT_BINDING_TYPE = 0xeae4
 
 -- ROBLOX TODO: Use Symbol again once jest-mock knows to exclude the LuauPolyfill module from being reset
 -- deviation: In Lua, Symbol will be a callable table, not a function

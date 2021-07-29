@@ -1,17 +1,17 @@
 return function()
-	local Packages = script.Parent.Parent.Parent.Parent.Parent
+	local Packages = script.Parent.Parent.Parent
 	local jestModule = require(Packages.Dev.JestRoblox)
 	local jestExpect = jestModule.Globals.expect
 	local jest = jestModule.Globals.jest
-	local Type = require(script.Parent.Parent.Type)
 
-	local Binding = require(script.Parent.Parent.Binding)
+	local Binding = require(script.Parent.Parent["ReactBinding.roblox"])
+	local ReactCreateRef = require(script.Parent.Parent.ReactCreateRef)
 
 	describe("Binding.create", function()
 		it("should return a Binding object and an update function", function()
 			local binding, update = Binding.create(1)
 
-			jestExpect(Type.of(binding)).toBe(Type.Binding)
+			jestExpect(typeof(binding)).toBe("table")
 			jestExpect(update).toEqual(jestExpect.any("function"))
 		end)
 
@@ -277,5 +277,18 @@ return function()
 				end).toThrow()
 			end)
 		end
+	end)
+
+	describe("createRef", function()
+		it("should print the contained value when coerced to a string", function()
+			local ref = ReactCreateRef.createRef()
+			jestExpect(tostring(ref)).toBe("Ref(nil)")
+			ref.current = "hello"
+			jestExpect(tostring(ref)).toBe("Ref(hello)")
+			ref.current = 123
+			jestExpect(tostring(ref)).toBe("Ref(123)")
+			ref.current = Instance.new("Folder")
+			jestExpect(tostring(ref)).toBe("Ref(Folder)")
+		end)
 	end)
 end

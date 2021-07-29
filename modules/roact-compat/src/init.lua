@@ -41,6 +41,6 @@ return {
 	Change = ReactRoblox.Change,
 
 	-- Binding interface entry-point for Roact-specific 'bindings' feature
-	createBinding = ReactRoblox.createBinding,
-	joinBindings = ReactRoblox.joinBindings,
+	createBinding = React.createBinding,
+	joinBindings = React.joinBindings,
 }

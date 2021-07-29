@@ -81,8 +81,6 @@ local getFiberCurrentPropsFromNode = ReactRobloxComponentTree.getFiberCurrentPro
 local Event = require(script.Parent.roblox.PropMarkers.Event)
 local Change = require(script.Parent.roblox.PropMarkers.Change)
 
-local Binding = require(script.Parent.roblox.Binding)
-
 -- setAttemptSynchronousHydration(attemptSynchronousHydration)
 -- setAttemptUserBlockingHydration(attemptUserBlockingHydration)
 -- setAttemptContinuousHydration(attemptContinuousHydration)
@@ -249,10 +247,6 @@ local exports = {
   -- to import `ReactRoblox` will need to do so in order to set events/change
   Event = Event,
   Change = Change,
-
-  -- ROBLOX FIXME: Move binding implementation to React and integrate with refs
-  createBinding = Binding.create,
-  joinBindings = Binding.join,
 }
 
 -- local foundDevTools = injectIntoDevTools({

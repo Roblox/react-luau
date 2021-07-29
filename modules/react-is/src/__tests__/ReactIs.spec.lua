@@ -269,5 +269,22 @@ return function()
 				ReactIs.isAsyncMode(nil)
 			end).toWarnDev("deprecated", { withoutStack = true })
 		end)
+
+		-- ROBLOX deviation: Bindings are a feature migrated from Roact
+		it("should identify bindings", function()
+			jestExpect(ReactIs.isBinding(React.createBinding(nil))).toBe(true)
+
+			local mappedBinding = React.createBinding(nil):map(tostring)
+			jestExpect(ReactIs.isBinding(mappedBinding)).toBe(true)
+
+			local joinedBinding = React.joinBindings({
+				X = React.createBinding(0),
+				Y = React.createBinding(0),
+			})
+			jestExpect(ReactIs.isBinding(joinedBinding)).toBe(true)
+
+			-- In Roact 17, `ref` objects are implemented in terms of bindings!
+			jestExpect(ReactIs.isBinding(React.createRef())).toBe(true)
+		end)
 	end)
 end

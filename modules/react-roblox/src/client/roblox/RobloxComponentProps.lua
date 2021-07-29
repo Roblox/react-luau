@@ -2,7 +2,8 @@ local Packages = script.Parent.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 
-local Binding = require(script.Parent.Binding)
+local React = require(Packages.React)
+local ReactSymbols = require(Packages.Shared).ReactSymbols
 local SingleEventManager = require(script.Parent.SingleEventManager)
 local Type = require(script.Parent.Type)
 local getDefaultInstanceProperty = require(script.Parent.getDefaultInstanceProperty)
@@ -78,18 +79,10 @@ local function attachBinding(hostInstance, key, newBinding)
     instanceToBindings[hostInstance] = {}
   end
 
-  instanceToBindings[hostInstance][key] = Binding.subscribe(newBinding, updateBoundProperty)
+  instanceToBindings[hostInstance][key] = React.__subscribeToBinding(newBinding, updateBoundProperty)
 
   updateBoundProperty(newBinding:getValue())
 end
-
--- local function detachAllBindings(virtualNode)
---   if virtualNode.bindings ~= nil then
---     for _, disconnect in pairs(virtualNode.bindings) do
---       disconnect()
---     end
---   end
--- end
 
 local function applyProp(hostInstance, key, newValue, oldValue)
   if key == "ref" or key == "children" then
@@ -117,8 +110,8 @@ local function applyProp(hostInstance, key, newValue, oldValue)
   end
 
   -- Handle bindings
-  local newIsBinding = Type.of(newValue) == Type.Binding
-  local oldIsBinding = Type.of(oldValue) == Type.Binding
+  local newIsBinding = typeof(newValue) == "table" and newValue["$$typeof"] == ReactSymbols.REACT_BINDING_TYPE
+  local oldIsBinding = typeof(oldValue) == "table" and oldValue["$$typeof"] == ReactSymbols.REACT_BINDING_TYPE
 
   if oldIsBinding then
     removeBinding(hostInstance, key)

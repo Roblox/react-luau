@@ -19,7 +19,7 @@ return function()
 	end
 
 	function BindingExample:init()
-		self.binding, self.updateBinding = ReactRoblox.createBinding({})
+		self.binding, self.updateBinding = React.createBinding({})
 	end
 
 	function BindingExample:render()

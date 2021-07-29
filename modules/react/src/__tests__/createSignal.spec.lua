@@ -1,7 +1,7 @@
 return function()
-	local createSignal = require(script.Parent.Parent.createSignal)
+	local createSignal = require(script.Parent.Parent["createSignal.roblox"])
 
-	local Packages = script.Parent.Parent.Parent.Parent.Parent
+	local Packages = script.Parent.Parent.Parent
 	local jestModule = require(Packages.Dev.JestRoblox)
 	local jestExpect = jestModule.Globals.expect
 	local jest = jestModule.Globals.jest
@@ -69,7 +69,7 @@ return function()
 		disconnectB()
 	end)
 
-	itSKIP("should stop firing a connection if disconnected mid-fire", function()
+	it("should stop firing a connection if disconnected mid-fire", function()
 		local signal = createSignal()
 
 		-- In this test, we'll connect two listeners that each try to disconnect

@@ -41,7 +41,6 @@ local exports = {}
 exports.useContext = function(
 	Context: ReactContext<any>,
 	unstable_observedBits: number | boolean | nil,
-	realContext,
 	... -- ROBLOX deviation: Lua must specify ... here to capture additional args
 )
 	local dispatcher = resolveDispatcher()

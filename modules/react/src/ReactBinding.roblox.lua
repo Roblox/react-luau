@@ -1,9 +1,12 @@
---!nocheck
-local createSignal = require(script.Parent.createSignal)
-local Symbol = require(script.Parent.Symbol)
-local Type = require(script.Parent.Type)
+local Packages = script.Parent.Parent
 
-local BindingImpl = Symbol.named("BindingImpl")
+local LuauPolyfill = require(Packages.LuauPolyfill)
+local ReactSymbols = require(Packages.Shared).ReactSymbols
+
+local Symbol = LuauPolyfill.Symbol
+local createSignal = require(script.Parent["createSignal.roblox"])
+
+local BindingImpl = Symbol("BindingImpl")
 
 local BindingInternalApi = {}
 
@@ -56,14 +59,18 @@ function BindingInternalApi.create(initialValue)
 	end
 
 	return setmetatable({
-		[Type] = Type.Binding,
+		["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
 		[BindingImpl] = impl,
 	}, BindingPublicMeta), impl.update
 end
 
 function BindingInternalApi.map(upstreamBinding, predicate)
 	if _G.__DEV__ then
-		assert(Type.of(upstreamBinding) == Type.Binding, "Expected arg #1 to be a binding")
+		-- ROBLOX TODO: More informative error messages here
+		assert(
+			typeof(upstreamBinding) == "table" and upstreamBinding["$$typeof"] == ReactSymbols.REACT_BINDING_TYPE,
+			"Expected `self` to be a binding"
+		)
 		assert(typeof(predicate) == "function", "Expected arg #1 to be a function")
 	end
 
@@ -84,7 +91,7 @@ function BindingInternalApi.map(upstreamBinding, predicate)
 	end
 
 	return setmetatable({
-		[Type] = Type.Binding,
+		["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
 		[BindingImpl] = impl,
 	}, BindingPublicMeta)
 end
@@ -94,7 +101,7 @@ function BindingInternalApi.join(upstreamBindings)
 		assert(typeof(upstreamBindings) == "table", "Expected arg #1 to be of type table")
 
 		for key, value in pairs(upstreamBindings) do
-			if Type.of(value) ~= Type.Binding then
+			if typeof(value) ~= "table" or value["$$typeof"] ~= ReactSymbols.REACT_BINDING_TYPE then
 				local message = (
 					"Expected arg #1 to contain only bindings, but key %q had a non-binding value"
 				):format(
@@ -148,7 +155,7 @@ function BindingInternalApi.join(upstreamBindings)
 	end
 
 	return setmetatable({
-		[Type] = Type.Binding,
+		["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
 		[BindingImpl] = impl,
 	}, BindingPublicMeta)
 end

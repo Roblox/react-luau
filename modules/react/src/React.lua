@@ -13,6 +13,8 @@ local ReactHooks = require(React.ReactHooks)
 local ReactMemo = require(React.ReactMemo)
 local ReactContext = require(React.ReactContext)
 local ReactLazy = require(React.ReactLazy)
+-- ROBLOX DEVIATION: Bindings
+local ReactBinding = require(React["ReactBinding.roblox"])
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 
 local createElement = _G.__DEV__ and
@@ -69,4 +71,11 @@ return {
 	-- ROBLOX TODO: REACT_SCOPE_TYPE as unstable_Scope,
 	-- ROBLOX TODO: useOpaqueIdentifier as unstable_useOpaqueIdentifier,
 
+	-- ROBLOX DEVIATION: Bindings
+	createBinding = ReactBinding.create,
+	joinBindings = ReactBinding.join,
+
+	-- ROBLOX FIXME: These aren't supposed to be exposed, but they're needed by
+	-- the renderer in order to update properly
+	__subscribeToBinding = ReactBinding.subscribe,
 }
