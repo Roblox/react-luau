@@ -7,8 +7,6 @@
  *
  * @flow
 ]]
---!nocheck
--- ROBLOX FIXME: remove above nocheck once Luau circular dependencies are resolved
 
 -- FIXME (roblox): remove this when our unimplemented
 local function unimplemented(message)

@@ -79,10 +79,10 @@ function stopProfilerTimerIfRunningAndRecordDelta(
   end
 
   if profilerStartTime >= 0 then
-    local elapsedTime = now() - profilerStartTime
-    fiber.actualDuration += elapsedTime
+    local elapsedTime_ = now() - profilerStartTime
+    fiber.actualDuration += elapsedTime_
     if overrideBaseTime then
-      fiber.selfBaseDuration = elapsedTime
+      fiber.selfBaseDuration = elapsedTime_
     end
     profilerStartTime = -1
   end
@@ -94,7 +94,7 @@ function recordLayoutEffectDuration(fiber: Fiber): ()
   end
 
   if layoutEffectStartTime >= 0 then
-    local elapsedTime = now() - layoutEffectStartTime
+    local elapsedTime_ = now() - layoutEffectStartTime
 
     layoutEffectStartTime = -1
 
@@ -103,7 +103,7 @@ function recordLayoutEffectDuration(fiber: Fiber): ()
     while parentFiber ~= nil do
       if parentFiber.tag == Profiler then
         local parentStateNode = parentFiber.stateNode
-        parentStateNode.effectDuration += elapsedTime
+        parentStateNode.effectDuration += elapsedTime_
         break
       end
       parentFiber = parentFiber.return_
@@ -117,7 +117,7 @@ function recordPassiveEffectDuration(fiber: Fiber): ()
   end
 
   if passiveEffectStartTime >= 0 then
-    local elapsedTime = now() - passiveEffectStartTime
+    local elapsedTime_ = now() - passiveEffectStartTime
 
     passiveEffectStartTime = -1
 
@@ -130,7 +130,7 @@ function recordPassiveEffectDuration(fiber: Fiber): ()
           -- Detached fibers have their state node cleared out.
           -- In this case, the return pointer is also cleared out,
           -- so we won't be able to report the time spent in this Profiler's subtree.
-          parentStateNode.passiveEffectDuration += elapsedTime
+          parentStateNode.passiveEffectDuration += elapsedTime_
         end
         break
       end

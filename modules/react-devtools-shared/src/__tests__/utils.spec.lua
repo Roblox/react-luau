@@ -8,14 +8,13 @@
 --  * @flow
 --  */
 return function()
-	local Workspace = script.Parent.Parent
-	local Packages = Workspace.Parent
+	local Packages = script.Parent.Parent.Parent
 	local jest = require(Packages.Dev.JestRoblox)
 	local jestExpect = jest.Globals.expect
 	local LuauPolyfill = require(Packages.LuauPolyfill)
 	local Symbol = LuauPolyfill.Symbol
 
-	local utils = require(Workspace.utils)
+	local utils = require(script.Parent.Parent.utils)
 	local getDisplayName = utils.getDisplayName
 	local getDisplayNameForReactElement = utils.getDisplayNameForReactElement
 	local ReactSymbols = require(Packages.Shared).ReactSymbols

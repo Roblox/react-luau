@@ -840,7 +840,7 @@ function readFromUnsubcribedMutableSource(
   end
 
   local getVersion = source._getVersion
-  local version = getVersion(source._source)
+  local version_ = getVersion(source._source)
 
   -- Is it safe for this component to read from this source during the current render?
   local isSafeToReadFromSource = false
@@ -852,7 +852,7 @@ function readFromUnsubcribedMutableSource(
   if currentRenderVersion ~= nil then
     -- It's safe to read if the store hasn't been mutated since the last time
     -- we read something.
-    isSafeToReadFromSource = currentRenderVersion == version
+    isSafeToReadFromSource = currentRenderVersion == version_
   else
     -- If there's no version, then this is the first time we've read from the
     -- source during the current render pass, so we need to do a bit more work.
@@ -877,7 +877,7 @@ function readFromUnsubcribedMutableSource(
       -- If it's safe to read from this source during the current render,
       -- store the version in case other components read from it.
       -- A changed version number will local those components know to throw and restart the render.
-      setWorkInProgressVersion(source, version)
+      setWorkInProgressVersion(source, version_)
     end
   end
 
@@ -933,7 +933,7 @@ function useMutableSource(
   )
 
   local getVersion = source._getVersion
-  local version = getVersion(source._source)
+  local version_ = getVersion(source._source)
 
   local dispatcher = ReactCurrentDispatcher.current
 
@@ -978,7 +978,7 @@ function useMutableSource(
 
     -- Check for a possible change between when we last rendered now.
     local maybeNewVersion = getVersion(source._source)
-    if not is(version, maybeNewVersion) then
+    if not is(version_, maybeNewVersion) then
       local maybeNewSnapshot = getSnapshot(source._source)
       if _G.__DEV__ then
         if typeof(maybeNewSnapshot) == 'function' then

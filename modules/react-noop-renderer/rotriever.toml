@@ -4,6 +4,7 @@ version = { workspace = true }
 authors = { workspace = true }
 publish = false
 content_root = "src"
+files = ["*", "!**/__tests__/**"]
 
 [dependencies]
 LuauPolyfill = { workspace = true }

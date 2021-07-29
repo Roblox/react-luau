@@ -263,7 +263,7 @@ return function(consoleMethod, matcherName)
 					return {
 						message = function()
 							return (
-								"Expected %s warnings without a component stack but received %s:\n"
+								"Expected %d warnings without a component stack but received %d:\n"
 							):format(withoutStack, #warningsWithoutComponentStack) .. table.concat(
 								warnings,
 								"\n"
@@ -286,9 +286,8 @@ return function(consoleMethod, matcherName)
 								.. (
 									"warnings with and without stack in one %s() call, pass "
 								):format(matcherName)
-								.. (
-									"{withoutStack: N} where N is the number of warnings without stacks."
-								):format(matcherName)
+								.. "{withoutStack: N} where N is the number of warnings without stacks."
+
 						end,
 						pass = false,
 					}
@@ -324,7 +323,7 @@ return function(consoleMethod, matcherName)
 				return {
 					message = function()
 						return (
-							"Received %s arguments for a message with %s placeholders:\n  %s"
+							"Received %d arguments for a message with %s placeholders:\n  %s"
 						):format(
 							#lastWarningWithMismatchingFormat.args,
 							lastWarningWithMismatchingFormat.expectedArgCount,

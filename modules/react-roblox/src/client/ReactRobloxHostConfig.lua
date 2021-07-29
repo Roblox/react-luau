@@ -244,9 +244,9 @@ exports.getChildHostContext = function(
   type: string,
   rootContainerInstance: Container
 ): HostContext
-  -- deviation: unclear on the purpose here just yet, might be fine to just
-  -- return parent's for now
-  return tostring(parentHostContext.ClassName)
+  -- ROBLOX deviation: unclear on the purpose here just yet, might be fine to
+  -- just return parent's hostContext for now
+  return parentHostContext
   -- if _G.__DEV__ then
   --   local parentHostContextDev = ((parentHostContext: any): HostContextDev)
   --   local namespace = getChildNamespace(parentHostContextDev.namespace, type)

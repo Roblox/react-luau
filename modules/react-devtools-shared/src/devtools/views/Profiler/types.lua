@@ -8,12 +8,11 @@
 --  * @flow
 --  */
 
-local Workspace = script.Parent.Parent.Parent.Parent
 type Array<T> = { [number]: T }
 type Map<K, V> = { [K]: V }
 local exports = {}
 
-local ReactDevToolsSharedTypes = require(Workspace.types)
+local ReactDevToolsSharedTypes = require(script.Parent.Parent.Parent.Parent.types)
 
 type ElementType = ReactDevToolsSharedTypes.ElementType
 

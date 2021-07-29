@@ -125,7 +125,8 @@ function BindingInternalApi.join(upstreamBindings)
 	end
 
 	function impl.subscribe(callback)
-		local disconnects = {}
+		-- ROBLOX FIXME: type refinements
+		local disconnects: any = {}
 
 		for key, upstream in pairs(upstreamBindings) do
 			disconnects[key] = BindingInternalApi.subscribe(upstream, function(newValue)

@@ -8,12 +8,11 @@
 --  * @flow
 --  */
 local Packages = script.Parent.Parent.Parent
-local Workspace = script.Parent.Parent.Parent
-local RobloxJest = require(Workspace.Dev.RobloxJest)
-local JestRoblox = require(Workspace.Dev.JestRoblox)
+local RobloxJest = require(Packages.Dev.RobloxJest)
+local JestRoblox = require(Packages.Dev.JestRoblox)
 local jestExpect = JestRoblox.Globals.expect
 local jest = JestRoblox.Globals.jest
-local LuauPolyfill = require(Workspace.LuauPolyfill)
+local LuauPolyfill = require(Packages.LuauPolyfill)
 local Set = LuauPolyfill.Set
 
 return function()
@@ -52,7 +51,7 @@ describe("TracingSubscriptions", function()
 
 		currentTime = 0
 
-		ReactFeatureFlags = require(Workspace.Shared).ReactFeatureFlags
+		ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 		ReactFeatureFlags.enableSchedulerTracing = enableSchedulerTracing
 
 		SchedulerTracing = require(Packages.Scheduler).tracing

@@ -5,8 +5,7 @@
 --  * This source code is licensed under the MIT license found in the
 --  * LICENSE file in the root directory of this source tree.
 --  */
-local Workspace = script.Parent
-local Packages = Workspace.Parent
+local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local console = require(Packages.Shared).console
 type Array<T> = { [number]: T }

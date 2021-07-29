@@ -232,7 +232,8 @@ local function describeNativeComponentFrame(
 
 	-- ROBLOX deviation: Can't get displayName for functions
 	if typeof(fn) == "function" then
-		name = debug.info(fn, "n")
+		-- ROBLOX FIXME: type refinement
+		name = debug.info((fn :: ((any) -> any)), "n")
 		-- ROBLOX deviation: since fn can be a class, we can get the class name here
 	elseif typeof(fn) == "table" then
 		name = tostring(fn)

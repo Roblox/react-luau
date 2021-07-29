@@ -24,7 +24,7 @@ type FiberRoot = ReactInternalTypes.FiberRoot
 
 local isPrimaryRenderer = require(script.Parent.ReactFiberHostConfig).isPrimaryRenderer
 
--- Work in progress version numbers only apply to a single render,
+-- Work in progress version_ numbers only apply to a single render,
 -- and should be reset before starting a new render.
 -- This tracks which mutable sources need to be reset after a render.
 local workInProgressSources: Array<MutableSource<any>> = {}
@@ -62,12 +62,12 @@ end
 
 exports.setWorkInProgressVersion = function(
   mutableSource: MutableSource<any>,
-  version: MutableSourceVersion
+  version_: MutableSourceVersion
 )
   if isPrimaryRenderer then
-    mutableSource._workInProgressVersionPrimary = version
+    mutableSource._workInProgressVersionPrimary = version_
   else
-    mutableSource._workInProgressVersionSecondary = version
+    mutableSource._workInProgressVersionSecondary = version_
   end
   table.insert(workInProgressSources, mutableSource)
 end
@@ -107,16 +107,16 @@ exports.registerMutableSourceForHydration = function(
   mutableSource: MutableSource<any>
 )
   local getVersion = mutableSource._getVersion
-  local version = getVersion(mutableSource._source)
+  local version_ = getVersion(mutableSource._source)
 
   -- TODO Clear this data once all pending hydration work is finished.
   -- Retaining it forever may interfere with GC.
   if root.mutableSourceEagerHydrationData == nil then
-    root.mutableSourceEagerHydrationData = {mutableSource, version}
+    root.mutableSourceEagerHydrationData = {mutableSource, version_}
   else
     -- ROBLOX FIXME: having trouble with type coercion in this case
     -- table.insert(root.mutableSourceEagerHydrationData, mutableSource)
-    -- table.insert(root.mutableSourceEagerHydrationData, version)
+    -- table.insert(root.mutableSourceEagerHydrationData, version_)
   end
 end
 

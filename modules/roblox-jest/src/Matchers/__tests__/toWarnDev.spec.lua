@@ -7,7 +7,6 @@
  *
  * @emails react-core
  ]]
---!nocheck
 return function()
 	local RobloxJest = script.Parent.Parent.Parent
 	local Packages = RobloxJest.Parent

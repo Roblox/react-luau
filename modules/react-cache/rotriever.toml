@@ -3,6 +3,7 @@ name = "ReactCache"
 version = { workspace = true }
 authors = { workspace = true }
 content_root = "src"
+files = ["*", "!**/__tests__/**"]
 
 [dependencies]
 Scheduler = { path = "../scheduler" }

@@ -6,8 +6,7 @@
  * LICENSE file in the root directory of this source tree.
 ]]
 return function()
-	local Workspace = script.Parent.Parent
-	local Packages = Workspace.Parent
+	local Packages = script.Parent.Parent.Parent
 	local jestModule = require(Packages.Dev.JestRoblox)
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 	local jestExpect = jestModule.Globals.expect

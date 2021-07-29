@@ -8,8 +8,7 @@
 --  * @flow
 --  */
 
-local Workspace = script.Parent.Parent
-local Packages = Workspace.Parent
+local Packages = script.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 type Object = { [string]: any }
 type Array<T> = { [number]: T }
@@ -25,11 +24,11 @@ type ReactContext<T> = ReactShared.ReactContext<T>
 type Source = ReactShared.Source
 local ReactInternalTypes = require(Packages.ReactReconciler)
 type Fiber = ReactInternalTypes.Fiber
-local Types = require(Workspace.types)
+local Types = require(script.Parent.Parent.types)
 type ComponentFilter = Types.ComponentFilter
 type ElementType = Types.ElementType
 
-local DevToolsViewsProfilerTypes = require(Workspace.devtools.views.Profiler.types)
+local DevToolsViewsProfilerTypes = require(script.Parent.Parent.devtools.views.Profiler.types)
 type Interaction = DevToolsViewsProfilerTypes.Interaction
 
 type ResolveNativeStyle = (any) -> Object?

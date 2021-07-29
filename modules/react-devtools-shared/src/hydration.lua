@@ -6,8 +6,7 @@
 --  * LICENSE file in the root directory of this source tree.
 --  */
 
-local Workspace = script.Parent
-local Packages = Workspace.Parent
+local Packages = script.Parent.Parent
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Symbol = LuauPolyfill.Symbol

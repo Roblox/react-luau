@@ -1,6 +1,6 @@
 -- upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react/src/__tests__/ReactProfiler-test.internal.js
-local Workspace = script.Parent.Parent.Parent
-local RobloxJest = require(Workspace.Dev.RobloxJest)
+local Packages = script.Parent.Parent.Parent
+local RobloxJest = require(Packages.Dev.RobloxJest)
 local React
 local ReactFeatureFlags
 local ReactNoop
@@ -16,11 +16,11 @@ local _Text
 local TextResource
 local resourcePromise
 
-local JestRoblox = require(Workspace.Dev.JestRoblox)
+local JestRoblox = require(Packages.Dev.JestRoblox)
 local jestExpect = JestRoblox.Globals.expect
 local jest = JestRoblox.Globals.jest
-local Promise = require(Workspace.Dev.Promise)
-local LuauPolyfill = require(Workspace.LuauPolyfill)
+local Promise = require(Packages.Dev.Promise)
+local LuauPolyfill = require(Packages.LuauPolyfill)
 local setTimeout = LuauPolyfill.setTimeout
 local Set = LuauPolyfill.Set
 
@@ -56,7 +56,7 @@ return function()
 			end
 			return false
 		end)()
-		ReactFeatureFlags = require(Workspace.Shared).ReactFeatureFlags
+		ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 
 		ReactFeatureFlags.enableProfilerTimer = enableProfilerTimer
 		ReactFeatureFlags.enableProfilerCommitHooks = enableProfilerCommitHooks
@@ -65,17 +65,17 @@ return function()
 			replayFailedUnitOfWorkWithInvokeGuardedCallback
 
 		React = require(script.Parent.Parent)
-		Scheduler = require(Workspace.Dev.Scheduler)
+		Scheduler = require(Packages.Dev.Scheduler)
 		_SchedulerTracing = Scheduler.tracing
-		ReactCache = require(Workspace.Dev.ReactCache)
+		ReactCache = require(Packages.Dev.ReactCache)
 
 		if useNoopRenderer then
-			ReactNoop = require(Workspace.Dev.ReactNoopRenderer)
+			ReactNoop = require(Packages.Dev.ReactNoopRenderer)
 			ReactTestRenderer = nil
 			ReactTestRendererAct = nil
 		else
 			ReactNoop = nil
-			ReactTestRenderer = require(Workspace.Dev.ReactTestRenderer)
+			ReactTestRenderer = require(Packages.Dev.ReactTestRenderer)
 			ReactTestRendererAct = ReactTestRenderer.unstable_concurrentAct
 		end
 

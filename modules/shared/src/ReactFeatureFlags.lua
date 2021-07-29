@@ -9,8 +9,6 @@
  ]]
 -- Unknown globals fail type checking (see "Unknown symbols" section of
 -- https://roblox.github.io/luau/typecheck.html)
---!nolint UnknownGlobal
---!nocheck
 local exports = {}
 
 -- Filter certain DOM attributes (e.g. src, href) if their values are empty strings.
