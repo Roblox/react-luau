@@ -66,7 +66,7 @@ return function()
             function Component:_isMounted()
                 -- No longer a public API, but we can test that it works internally by
                 -- reaching into the updater.
-                return self.updater.isMounted(self)
+                return self.__updater.isMounted(self)
             end
             function Component:UNSAFE_componentWillMount()
                 table.insert(instances, self)
@@ -109,7 +109,7 @@ return function()
             end
 
             function Component:_isMounted()
-                return self.updater.isMounted(self)
+                return self.__updater.isMounted(self)
             end
             function Component:UNSAFE_componentWillMount()
                 table.insert(instances, self)

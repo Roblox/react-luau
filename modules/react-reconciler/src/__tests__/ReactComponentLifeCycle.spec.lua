@@ -87,7 +87,7 @@ return function()
   type ComponentLifeCycle = string
 
   local function getLifeCycleState(instance): ComponentLifeCycle
-    return instance.updater.isMounted(instance) and "MOUNTED" or "UNMOUNTED"
+    return instance.__updater.isMounted(instance) and "MOUNTED" or "UNMOUNTED"
   end
 
   beforeEach(function()
@@ -285,7 +285,7 @@ return function()
       isMounted = function()
         -- No longer a public API, but we can test that it works internally by
         -- reaching into the updater.
-        return self.updater.isMounted(self)
+        return self.__updater.isMounted(self)
       end
     end
     function Component:UNSAFE_componentWillMount()
@@ -325,7 +325,7 @@ return function()
       isMounted = function()
         -- No longer a public API, but we can test that it works internally by
         -- reaching into the updater.
-        return self.updater.isMounted(self)
+        return self.__updater.isMounted(self)
       end
     end
     function Component:UNSAFE_componentWillMount()
@@ -360,7 +360,7 @@ return function()
     local Component = React.Component:extend("Component")
     function Component:init()
       isMounted = function()
-        return self.updater.isMounted(self)
+        return self.__updater.isMounted(self)
       end
     end
     function Component:render()

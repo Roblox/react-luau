@@ -746,7 +746,7 @@ function ReactShallowRenderer:_mountClassComponent(elementType, element, context
 	self._instance.context = context
 	self._instance.props = element.props
 	self._instance.state = self._instance.state or nil
-	self._instance.updater = self._updater
+	self._instance.__updater = self._updater
 
 	if
 		typeof(self._instance.UNSAFE_componentWillMount) == "function"

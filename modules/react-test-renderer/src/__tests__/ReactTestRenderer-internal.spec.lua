@@ -398,7 +398,7 @@ return function()
 
 			function Foo:render()
 				return React.createElement(Bar, {
-					ref = "foo",
+					ref = React.createRef(),
 				})
 			end
 
@@ -406,7 +406,7 @@ return function()
 
 			function Baz:render()
 				return React.createElement("div", {
-					ref = "baz",
+					ref = React.createRef(),
 				})
 			end
 
@@ -602,12 +602,12 @@ return function()
 				return (function()
 					if self.props.useDiv then
 						return React.createElement("div", {
-							ref = "foo",
+							ref = React.createRef(),
 						})
 					end
 
 					return React.createElement("span", {
-						ref = "foo",
+						ref = React.createRef(),
 					})
 				end)()
 			end

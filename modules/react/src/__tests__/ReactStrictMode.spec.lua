@@ -748,7 +748,8 @@ Please update the following components: Parent]],
             Scheduler = require(Packages.Dev.Scheduler)
         end)
 
-        it('should warn within a strict tree', function()
+        -- ROBLOX deviation: we removed support for string refs, so skip test
+        xit('should warn within a strict tree', function()
             local StrictMode = React.StrictMode
             local OuterComponent = React.Component:extend("OuterComponent")
 
@@ -785,8 +786,9 @@ Please update the following components: Parent]],
             end)
         end)
 
+        -- ROBLOX deviation: we removed support for string refs, so skip test
         -- ROBLOX deviation: upstream uses test name twice
-        it('should warn within a strict tree 2', function()
+        xit('should warn within a strict tree 2', function()
             local StrictMode = React.StrictMode
 
             local MiddleComponent = React.Component:extend("MiddleComponent")

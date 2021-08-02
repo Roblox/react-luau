@@ -150,7 +150,7 @@ return function()
                     b = "b",
                 })
                 ReactNoop.deferredUpdates(function()
-                    instance.updater.enqueueReplaceState(instance, {
+                    instance.__updater.enqueueReplaceState(instance, {
                         c = "c",
                     })
                     instance:setState({
@@ -294,7 +294,7 @@ return function()
             instance:setState(createUpdate("d"))
             ReactNoop.flushSync(function()
                 instance:setState(createUpdate("e"))
-                instance.updater.enqueueReplaceState(instance, createUpdate("f"))
+                instance.__updater.enqueueReplaceState(instance, createUpdate("f"))
             end)
             instance:setState(createUpdate("g"))
 
@@ -340,7 +340,7 @@ return function()
             instance:setState({ b = "b" })
             -- No longer a public API, but we can test that it works internally by
             -- reaching into the updater.
-            instance.updater.enqueueReplaceState(instance, function(_, previousState)
+            instance.__updater.enqueueReplaceState(instance, function(_, previousState)
                 return { previousState = previousState }
             end)
             jestExpect(Scheduler).toFlushWithoutYielding()

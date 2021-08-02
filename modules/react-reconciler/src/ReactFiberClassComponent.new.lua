@@ -106,7 +106,9 @@ local fakeInternalInstance = {}
 
 -- React.Component uses a shared frozen object by default.
 -- We'll use it to determine whether we need to initialize legacy refs.
-local emptyRefsObject = React.Component:extend("").refs
+-- ROBLOX deviation: Uses __refs instead of refs to avoid conflicts
+-- local emptyRefsObject = React.Component:extend("").refs
+local emptyRefsObject = React.Component:extend("").__refs
 
 local didWarnAboutStateAssignmentForComponent
 local didWarnAboutUninitializedState
@@ -652,7 +654,7 @@ local function checkClassInstance(workInProgress: Fiber, ctor: any, newProps: an
 end
 
 local function adoptClassInstance(workInProgress: Fiber, instance: any)
-  instance.updater = getClassComponentUpdater()
+  instance.__updater = getClassComponentUpdater()
   workInProgress.stateNode = instance
   -- The instance needs access to the fiber so that it can schedule updates
   setInstance(instance, workInProgress)
@@ -760,7 +762,7 @@ local function constructClassInstance(
   adoptClassInstance(workInProgress, instance)
 
   if _G.__DEV__ then
-    -- ROBLOX DEVIATION: Instead of checking if state is nil, we check if it is our 
+    -- ROBLOX DEVIATION: Instead of checking if state is nil, we check if it is our
     -- UninitializedState singleton.
     if typeof(ctor.getDerivedStateFromProps) == "function" and state == UninitializedState then
       local componentName = getComponentName(ctor) or "Component"
@@ -954,7 +956,9 @@ local function mountClassInstance(
   local instance = workInProgress.stateNode
   instance.props = newProps
   instance.state = workInProgress.memoizedState
-  instance.refs = emptyRefsObject
+  -- ROBLOX deviation: Uses __refs instead of refs to avoid conflicts
+  -- instance.refs = emptyRefsObject
+  instance.__refs = emptyRefsObject
 
   initializeUpdateQueue(workInProgress)
 

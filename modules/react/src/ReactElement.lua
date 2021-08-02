@@ -130,17 +130,18 @@ end
 local function warnIfStringRefCannotBeAutoConverted(config)
 	if _G.__DEV__ then
 		if
+			-- ROBLOX deviation: We removed support for string refs, so all stringrefs cannot be auto-converted regardless
 			typeof(config.ref) == "string" and
-			ReactCurrentOwner.current and
-			config.__self and
-			ReactCurrentOwner.current.stateNode ~= config.__self
+			ReactCurrentOwner.current
+			-- and config.__self
+			-- and ReactCurrentOwner.current.stateNode ~= config.__self
 		then
 			local componentName = getComponentName(ReactCurrentOwner.current.type)
 
 			if not didWarnAboutStringRefs[componentName] then
 				console.error(
 					'Component "%s" contains the string ref "%s". ' ..
-						"Support for string refs will be removed in a future major release. " ..
+						"Support for string refs has been removed. " ..
 						"This case cannot be automatically converted to an arrow function. " ..
 						"We ask you to manually fix this case by using useRef() or createRef() instead. " ..
 						"Learn more about using refs safely here: " ..

@@ -1129,7 +1129,7 @@ return function()
 			instance:setState({
 				c = "c",
 			})
-			instance.updater.enqueueReplaceState(instance, {
+			instance.__updater.enqueueReplaceState(instance, {
 				d = "d",
 			})
 			jestExpect(Scheduler).toFlushWithoutYielding()

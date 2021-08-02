@@ -88,7 +88,7 @@
     type ComponentLifeCycle = string
 
     local function getLifeCycleState(instance): ComponentLifeCycle
-      return instance.updater.isMounted(instance) and "MOUNTED" or "UNMOUNTED"
+      return instance.__updater.isMounted(instance) and "MOUNTED" or "UNMOUNTED"
     end
 
     beforeEach(function()
@@ -115,7 +115,7 @@
         isMounted = function()
           -- No longer a public API, but we can test that it works internally by
           -- reaching into the updater.
-          return self.updater.isMounted(self)
+          return self.__updater.isMounted(self)
         end
       end
       function Component:UNSAFE_componentWillMount()
@@ -155,7 +155,7 @@
         isMounted = function()
           -- No longer a public API, but we can test that it works internally by
           -- reaching into the updater.
-          return self.updater.isMounted(self)
+          return self.__updater.isMounted(self)
         end
       end
       function Component:UNSAFE_componentWillMount()

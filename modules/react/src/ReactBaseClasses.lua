@@ -145,10 +145,12 @@ function Component:extend(name)
     -- state.
     instance.state = UninitializedState
     -- If a component has string refs, we will assign a different object later.
-    instance.refs = emptyObject
+    -- ROBLOX deviation: Uses __refs instead of refs to avoid conflicts
+    -- instance.refs = emptyObject
+    instance.__refs = emptyObject
     -- We initialize the default updater but the real one gets injected by the
     -- renderer.
-    instance.updater = updater or ReactNoopUpdateQueue
+    instance.__updater = updater or ReactNoopUpdateQueue
 
     -- ROBLOX TODO: We should consider using a more idiomatic Lua approach for
     -- warning/blocking lifecycle calls during initialization. For now,
@@ -209,7 +211,7 @@ function Component:setState(partialState, callback)
     typeof(partialState) == 'table' or typeof(partialState) == 'function' or partialState == nil,
     'setState(...): takes an object of state variables to update or a ' .. 'function which returns an object of state variables.'
   )
-  self.updater.enqueueSetState(self, partialState, callback, 'setState')
+  self.__updater.enqueueSetState(self, partialState, callback, 'setState')
 end
 
 --[[*
@@ -229,7 +231,7 @@ end
 
 
 function Component:forceUpdate(callback)
-  self.updater.enqueueForceUpdate(self, callback, 'forceUpdate')
+  self.__updater.enqueueForceUpdate(self, callback, 'forceUpdate')
 end
 --[[*
  * Deprecated APIs. These APIs used to exist on classic React classes but since
