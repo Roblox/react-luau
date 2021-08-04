@@ -6,7 +6,6 @@ return function()
     local PureComponent = ReactBaseClasses.Component
     local component
 
-
     describe("Component", function()
         it("should prevent extending a second time", function()
             component = Component:extend("Sheev")

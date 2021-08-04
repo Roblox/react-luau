@@ -4,3 +4,4 @@ rojo = { source = "rojo-rbx/rojo", version = "6.0.1" }
 selene = { source = "Kampfkarren/selene", version = "0.13" }
 stylua = { source = "JohnnyMorganz/StyLua", version = "0.9.3" }
 testez = { source = "roblox/testez", version = "0.3.2" }
+run-in-roblox = { source = "rojo-rbx/run-in-roblox", version = "0.3.0" }

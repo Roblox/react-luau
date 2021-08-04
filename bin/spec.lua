@@ -1,5 +1,11 @@
-local Packages = script.Parent.RoactAlignment
-local ProcessService = game:GetService("ProcessService")
+local processServiceExists, ProcessService = pcall(function()
+	return game:GetService("ProcessService")
+end)
+
+local Packages = script.Parent:FindFirstChild("RoactAlignment") or game:FindFirstChild("RoactAlignment", true)
+if not Packages then
+	error("Packages not found")
+end
 
 local RotrieverWorkspace = Packages._Workspace
 
@@ -24,9 +30,13 @@ local result = JestRoblox.TestBootstrap:run(
 )
 
 if result.failureCount == 0 and #result.errors == 0 then
-	ProcessService:ExitAsync(0)
+	if processServiceExists then
+		ProcessService:ExitAsync(0)
+	end
 end
 
-ProcessService:ExitAsync(1)
+if processServiceExists then
+	ProcessService:ExitAsync(1)
+end
 
 return nil
