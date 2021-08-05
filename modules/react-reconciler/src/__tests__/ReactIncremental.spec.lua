@@ -1054,7 +1054,7 @@ return function()
 			end
 
 			-- deviation: Roact requires first arg of updater to be self
-			local function updater(self, state, props)
+			local function updater(state, props)
 				return {
 					num = state.num * props.multiplier,
 				}
@@ -1090,7 +1090,7 @@ return function()
 			end
 
 			-- deviation: Roact requires first arg of updater to be self
-			local function updater(self, state, props)
+			local function updater(state, props)
 				return {
 					num = state.num * props.multiplier,
 				}
@@ -1887,7 +1887,7 @@ return function()
 			ReactNoop.render(React.createElement(Foo, nil))
 			jestExpect(Scheduler).toFlushWithoutYielding()
 
-			local function updater(self, prevState)
+			local function updater(prevState)
 				local n = prevState.n
 
 				return {

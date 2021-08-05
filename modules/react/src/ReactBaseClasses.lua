@@ -58,10 +58,12 @@ local function warnAboutExistingLifecycle(componentName, newName, existingName)
 end
 
 local function warnAboutDeprecatedLifecycleName(componentName, newName, existingName)
-  local path, linenum = debug.info(3, "sln")
-  console.warn(
-    "%s is using method '%s', which is no longer supported and should be updated to '%s'\nFile: %s:%s",
-    componentName, newName, existingName, trimPath(path), tostring(linenum))
+  if _G.__DEV__ then
+    local path, linenum = debug.info(3, "sln")
+    console.warn(
+      "%s is using method '%s', which is no longer supported and should be updated to '%s'\nFile: %s:%s",
+      componentName, newName, existingName, trimPath(path), tostring(linenum))
+  end
 end
 
 local lifecycleNames = {
@@ -283,6 +285,7 @@ pureComponentClassPrototype.isPureReactComponent = true
 -- ROBLOX: FIXME: we should clean this up and align the implementations of
 -- Component and PureComponent more clearly and explicitly
 setmetatable(PureComponent, {
+  __newindex = handleNewLifecycle,
   __index = pureComponentClassPrototype,
   __tostring = function(self)
     return self.__componentName

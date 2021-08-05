@@ -125,7 +125,7 @@ return function()
             })
 
             ReactNoop.act(function()
-                capturedSetState(function(self, state, props)
+                capturedSetState(function(state, props)
                     return {
                         count = state.count + 1
                     }

@@ -18,6 +18,7 @@ Upstream naming and logic has some deviations and incompatibilities with existin
   * [Functional setState](#functional-setstate)
   * [Roact.Portal](#roactportal) ✔️
   * [State Initialization](#state-initialization)
+  * [Functional setState Signature](#functional-setstate-signature) ✔️
 
 ## Naming
 
@@ -580,6 +581,38 @@ It's difficult to find where this is relied upon in production!
 
 #### Proposed Alignment Strategy
 We should adopt Roact's behavior to provide less likelihood of runtime surprises.
+
+### Functional setState Signature
+**Status:** ✔️ Resolved (minor deviation from upstream)
+<details>
+
+In both [React](https://reactjs.org/docs/react-component.html#setstate) and [Roact](https://roblox.github.io/roact/api-reference/#setstate), class components can call `setState` with a function instead of a partial state table. When state updates rely on previous state, this can make them more resilient to multiple queued updates. This approach is favored by upstream documentation for this reason, and encouraged in Roact's documentation as well (in anticipation of async rendering).
+
+In React, the updater function is called with `this` in scope, using JavaScript's `bind` function. This poses a problem for the translation: if we want to align this behavior, we need to change the signature of the state updater from `(state, props) -> partialState` to `(self, state, props) -> partialState`. This would be a backwards-incompatible change
+
+#### Example
+React (adapted from the React documentation):
+```js
+this.setState((state, props) => {
+  // `this` is in scope here and can be read from
+  return {counter: state.counter + props.step};
+});
+```
+
+Roact:
+```lua
+self:setState(function(state, props)
+  -- `self` is NOT in scope here
+  return { counter = state.counter + props.step }
+end);
+```
+
+#### In Production Code
+This functionality is used relatively sparingly in the lua-apps code base (including dependencies), only ~15 confirmed usages and ~45 more possible ones (more investigation needed to confirm). 
+
+#### Proposed Alignment Strategy
+While it's possible to adapt to the upstream behavior, I was not able to find _any_ idiomatic usages of `this` in the body of a `setState` updater function. We should keep Roact's current behavior, which encourages function purity and serves all known use cases without issue.
+</details>
 
 # Unique Features
 Roact has a couple of unique features that are not present in upstream, while a number of new features from upstream will be introduced by the alignment effort.

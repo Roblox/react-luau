@@ -380,7 +380,10 @@ local function getStateFromUpdate(
 				warn("Skip `enterDisallowedContextReadInDEV` (cycles)")
 				-- enterDisallowedContextReadInDEV()
 			end
-			local nextState = payload(instance, prevState, nextProps)
+			-- ROBLOX deviation: Upstream binds this callback to the instance;
+			-- in order for us to get the same behavior, we'd need to change the
+			-- signature of the updater, which doesn't make sense for our case
+			local nextState = payload(prevState, nextProps)
 			if _G.__DEV__ then
 				if
 					debugRenderPhaseSideEffectsForStrictMode and
@@ -391,11 +394,11 @@ local function getStateFromUpdate(
 					local ok, result
 					if not _G.__YOLO__ then
 						ok, result = pcall(function()
-							payload(instance, prevState, nextProps)
+							payload(prevState, nextProps)
 						end)
 					else
 						ok = true
-						payload(instance, prevState, nextProps)
+						payload(prevState, nextProps)
 					end
 					-- finally
 					reenableLogs()
@@ -425,7 +428,10 @@ local function getStateFromUpdate(
 				warn("Skip `enterDisallowedContextReadInDEV` (cycles)")
 				-- enterDisallowedContextReadInDEV()
 			end
-			partialState = payload(instance, prevState, nextProps)
+			-- ROBLOX deviation: Upstream binds this callback to the instance;
+			-- in order for us to get the same behavior, we'd need to change the
+			-- signature of the updater, which doesn't make sense for our case
+			partialState = payload(prevState, nextProps)
 			if _G.__DEV__ then
 				if
 					debugRenderPhaseSideEffectsForStrictMode and
@@ -436,11 +442,11 @@ local function getStateFromUpdate(
 					local ok, result
 					if not _G.__YOLO__ then
 						ok, result = pcall(function()
-							payload(instance, prevState, nextProps)
+							payload(prevState, nextProps)
 						end)
 					else
 						ok = true
-						payload(instance, prevState, nextProps)
+						payload(prevState, nextProps)
 					end
 					-- finally
 					reenableLogs()

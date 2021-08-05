@@ -192,7 +192,7 @@ return function()
 
             -- ROBLOX deviation: using ReactNoop in place of ReactDOM, needs flushSync
             ReactNoop.flushSync(function()
-                instance:setState(function(self, state: {count: number})
+                instance:setState(function(state: {count: number})
 
                     setStateCount = setStateCount + 1
                     return {
@@ -351,7 +351,7 @@ return function()
 
             -- ROBLOX deviation: using ReactNoop in place of ReactDOM
             ReactNoop.flushSync(function()
-                instance:setState(function(self, state: {count: number})
+                instance:setState(function(state: {count: number})
                     setStateCount = setStateCount + 1
 
                     return {

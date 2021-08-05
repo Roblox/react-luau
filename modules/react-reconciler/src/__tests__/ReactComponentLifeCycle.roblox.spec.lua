@@ -679,76 +679,84 @@
         ReactNoop.render(React.createElement(MyComponent))
       end)
     end)
-    it("should warn if using old Roact didMount naming", function()
-        local Foo = React.Component:extend("Foo")
+
+    local function testWithComponentKind(component)
+      it("should warn if using old Roact didMount naming in " .. component, function()
+        local Foo = React[component]:extend("Foo")
         jestExpect(function()
             function Foo:didMount() end
         end).toWarnDev("Foo is using method 'didMount', which is no longer supported and should be updated to 'componentDidMount'\nFile: ReactComponentLifeCycle.roblox.spec:", {withoutStack = true})
-    end)
-    it("should warn if using old Roact shouldUpdate naming", function()
-        local Foo = React.Component:extend("Foo")
-        jestExpect(function()
-            function Foo:shouldUpdate() end
-        end).toWarnDev("Foo is using method 'shouldUpdate', which is no longer supported and should be updated to 'shouldComponentUpdate'\nFile: ReactComponentLifeCycle.roblox.spec:", {withoutStack = true})
-    end)
-    it("should warn if using old Roact willUpdate naming", function()
-        local Foo = React.Component:extend("Foo")
-        jestExpect(function()
-            function Foo:willUpdate() end
-        end).toWarnDev("Foo is using method 'willUpdate', which is no longer supported and should be updated to 'UNSAFE_componentWillUpdate'\nFile: ReactComponentLifeCycle.roblox.spec:", {withoutStack = true})
-    end)
-    it("should warn if using old Roact didUpdate naming", function()
-        local Foo = React.Component:extend("Foo")
-        jestExpect(function()
-            function Foo:didUpdate() end
-        end).toWarnDev("Foo is using method 'didUpdate', which is no longer supported and should be updated to 'componentDidUpdate'\nFile: ReactComponentLifeCycle.roblox.spec:", {withoutStack = true})
-    end)
-    it("should warn if using old Roact willUnmount naming", function()
-        local Foo = React.Component:extend("Foo")
-        jestExpect(function()
-            function Foo:willUnmount() end
-        end).toWarnDev("Foo is using method 'willUnmount', which is no longer supported and should be updated to 'componentWillUnmount'\nFile: ReactComponentLifeCycle.roblox.spec:", {withoutStack = true})
-    end)
-    it("should warn if both didMount and componentDidMount are both defined within the same class", function()
-        local Foo = React.Component:extend("Foo")
-        function Foo:componentDidMount() end
-        jestExpect(function()
-            function Foo:didMount() end
-        end).toWarnDev("Warning: Foo already defined 'componentDidMount', but it also defining the deprecated Roact method 'didMount'. Foo should only implement one of these methods, preferably using the non-deprecated name.", {withoutStack = true})
-    end)
-    it("should warn if both shouldUpdate and shouldComponentUpdate are both defined within the same class", function()
-        local Foo = React.Component:extend("Foo")
-        function Foo:shouldComponentUpdate() end
-        jestExpect(function()
-            function Foo:shouldUpdate() end
-        end).toWarnDev("Warning: Foo already defined 'shouldComponentUpdate', but it also defining the deprecated Roact method 'shouldUpdate'. Foo should only implement one of these methods, preferably using the non-deprecated name.", {withoutStack = true})
-    end)
-    it("should warn if both willUpdate and componentWillUpdate are both defined within the same class", function()
-        local Foo = React.Component:extend("Foo")
-        function Foo:componentWillUpdate() end
-        jestExpect(function()
-            function Foo:willUpdate() end
-        end).toWarnDev("Warning: Foo already defined 'UNSAFE_componentWillUpdate', but it also defining the deprecated Roact method 'willUpdate'. Foo should only implement one of these methods, preferably using the non-deprecated name.", {withoutStack = true})
+      end)
+      it("should warn if using old Roact shouldUpdate naming in " .. component, function()
+          local Foo = React[component]:extend("Foo")
+          jestExpect(function()
+              function Foo:shouldUpdate() end
+          end).toWarnDev("Foo is using method 'shouldUpdate', which is no longer supported and should be updated to 'shouldComponentUpdate'\nFile: ReactComponentLifeCycle.roblox.spec:", {withoutStack = true})
+      end)
+      it("should warn if using old Roact willUpdate naming in " .. component, function()
+          local Foo = React[component]:extend("Foo")
+          jestExpect(function()
+              function Foo:willUpdate() end
+          end).toWarnDev("Foo is using method 'willUpdate', which is no longer supported and should be updated to 'UNSAFE_componentWillUpdate'\nFile: ReactComponentLifeCycle.roblox.spec:", {withoutStack = true})
+      end)
+      it("should warn if using old Roact didUpdate naming in " .. component, function()
+          local Foo = React[component]:extend("Foo")
+          jestExpect(function()
+              function Foo:didUpdate() end
+          end).toWarnDev("Foo is using method 'didUpdate', which is no longer supported and should be updated to 'componentDidUpdate'\nFile: ReactComponentLifeCycle.roblox.spec:", {withoutStack = true})
+      end)
+      it("should warn if using old Roact willUnmount naming in " .. component, function()
+          local Foo = React[component]:extend("Foo")
+          jestExpect(function()
+              function Foo:willUnmount() end
+          end).toWarnDev("Foo is using method 'willUnmount', which is no longer supported and should be updated to 'componentWillUnmount'\nFile: ReactComponentLifeCycle.roblox.spec:", {withoutStack = true})
+      end)
+      it("should warn if both didMount and componentDidMount are defined on the same " .. component, function()
+          local Foo = React[component]:extend("Foo")
+          function Foo:componentDidMount() end
+          jestExpect(function()
+              function Foo:didMount() end
+          end).toWarnDev("Warning: Foo already defined 'componentDidMount', but it also defining the deprecated Roact method 'didMount'. Foo should only implement one of these methods, preferably using the non-deprecated name.", {withoutStack = true})
+      end)
+      it("should warn if both shouldUpdate and shouldComponentUpdate are defined on the same " .. component, function()
+          local Foo = React[component]:extend("Foo")
+          function Foo:shouldComponentUpdate() end
+          jestExpect(function()
+              function Foo:shouldUpdate() end
+          end).toWarnDev("Warning: Foo already defined 'shouldComponentUpdate', but it also defining the deprecated Roact method 'shouldUpdate'. Foo should only implement one of these methods, preferably using the non-deprecated name.", {withoutStack = true})
+      end)
+      it("should warn if both willUpdate and componentWillUpdate are defined on the same " .. component, function()
+          local Foo = React[component]:extend("Foo")
+          function Foo:componentWillUpdate() end
+          jestExpect(function()
+              function Foo:willUpdate() end
+          end).toWarnDev("Warning: Foo already defined 'UNSAFE_componentWillUpdate', but it also defining the deprecated Roact method 'willUpdate'. Foo should only implement one of these methods, preferably using the non-deprecated name.", {withoutStack = true})
 
-        -- tests same thing but with UNSAFE_componentWillUpdate() which is the prefered name starting from Roact 16.x
-        local Bar = React.Component:extend("Bar")
-        function Foo:UNSAFE_componentWillUpdate() end
-        jestExpect(function()
-            function Foo:willUpdate() end
-        end).toWarnDev("Warning: Foo already defined 'UNSAFE_componentWillUpdate', but it also defining the deprecated Roact method 'willUpdate'. Foo should only implement one of these methods, preferably using the non-deprecated name.", {withoutStack = true})
-    end)
-    it("should worn if both didUpdate and componentDidUpdate are both defined within the same class", function()
-        local Foo = React.Component:extend("Foo")
-        function Foo:componentDidUpdate() end
-        jestExpect(function()
-            function Foo:didUpdate() end
-        end).toWarnDev("Warning: Foo already defined 'componentDidUpdate', but it also defining the deprecated Roact method 'didUpdate'. Foo should only implement one of these methods, preferably using the non-deprecated name.", {withoutStack = true})
-    end)
-    it("should warn if both willUnmount and componentWillUnmount are both defined within the same class", function()
-        local Foo = React.Component:extend("Foo")
-        function Foo:componentWillUnmount() end
-        jestExpect(function()
-            function Foo:willUnmount() end
-        end).toWarnDev("Warning: Foo already defined 'componentWillUnmount', but it also defining the deprecated Roact method 'willUnmount'. Foo should only implement one of these methods, preferably using the non-deprecated name", {withoutStack = true})
+          -- tests same thing but with UNSAFE_componentWillUpdate() which is the preferred name starting from Roact 16.x
+          local Bar = React[component]:extend("Bar")
+          function Foo:UNSAFE_componentWillUpdate() end
+          jestExpect(function()
+              function Foo:willUpdate() end
+          end).toWarnDev("Warning: Foo already defined 'UNSAFE_componentWillUpdate', but it also defining the deprecated Roact method 'willUpdate'. Foo should only implement one of these methods, preferably using the non-deprecated name.", {withoutStack = true})
+      end)
+      it("should worn if both didUpdate and componentDidUpdate are defined on the same " .. component, function()
+          local Foo = React[component]:extend("Foo")
+          function Foo:componentDidUpdate() end
+          jestExpect(function()
+              function Foo:didUpdate() end
+          end).toWarnDev("Warning: Foo already defined 'componentDidUpdate', but it also defining the deprecated Roact method 'didUpdate'. Foo should only implement one of these methods, preferably using the non-deprecated name.", {withoutStack = true})
+      end)
+      it("should warn if both willUnmount and componentWillUnmount are defined on the same " .. component, function()
+          local Foo = React[component]:extend("Foo")
+          function Foo:componentWillUnmount() end
+          jestExpect(function()
+              function Foo:willUnmount() end
+          end).toWarnDev("Warning: Foo already defined 'componentWillUnmount', but it also defining the deprecated Roact method 'willUnmount'. Foo should only implement one of these methods, preferably using the non-deprecated name", {withoutStack = true})
+      end)
+    end
+
+    describe("Naming conventions", function()
+      testWithComponentKind("Component")
+      testWithComponentKind("PureComponent")
     end)
   end

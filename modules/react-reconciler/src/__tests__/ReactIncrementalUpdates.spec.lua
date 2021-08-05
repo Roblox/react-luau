@@ -340,7 +340,7 @@ return function()
             instance:setState({ b = "b" })
             -- No longer a public API, but we can test that it works internally by
             -- reaching into the updater.
-            instance.__updater.enqueueReplaceState(instance, function(_, previousState)
+            instance.__updater.enqueueReplaceState(instance, function(previousState)
                 return { previousState = previousState }
             end)
             jestExpect(Scheduler).toFlushWithoutYielding()
@@ -840,7 +840,7 @@ return function()
 
             ReactNoop.act(function()
                 root.render(React.createElement(App, { prop = "A" }))
-                app:setState(function(_, state)
+                app:setState(function(state)
                     return {
                         count = state.count + 1,
                     }
