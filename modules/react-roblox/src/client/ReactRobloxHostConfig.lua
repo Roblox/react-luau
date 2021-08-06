@@ -90,7 +90,7 @@ local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 -- local enableFundamentalAPI = ReactFeatureFlags.enableFundamentalAPI
 local enableCreateEventHandleAPI = ReactFeatureFlags.enableCreateEventHandleAPI
 -- local enableScopeAPI = ReactFeatureFlags.enableScopeAPI
-local enableEagerRootListeners = ReactFeatureFlags.enableEagerRootListeners
+-- local enableEagerRootListeners = ReactFeatureFlags.enableEagerRootListeners
 
 -- local {HostComponent, HostText} = require(Packages.react-reconciler/src/ReactWorkTags'
 -- local {
@@ -1175,13 +1175,11 @@ end
 
 exports.preparePortalMount = function(portalInstance: Instance): ()
   -- ROBLOX TODO: Revisit this logic and see if any of it applies
-  if enableEagerRootListeners then
-    warn("Skip unimplemented: Portal event handling with `eagerRootListener` flag enabled")
+  -- if enableEagerRootListeners then
   --   listenToAllSupportedEvents(portalInstance)
-  else
-    warn("Skip unimplemented: Portal event handling with `eagerRootListener` flag disabled")
+  -- else
   --   listenToReactEvent('onMouseEnter', portalInstance, nil)
-  end
+  -- end
 end
 
 -- exports.prepareScopeUpdate(
