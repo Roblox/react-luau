@@ -1,7 +1,14 @@
 [workspace]
-version = "17.0.1-rc.0"
+version = "17.0.1-rc.1"
 members = ["modules/*"]
-authors = ["Paul Doyle <pdoyle@roblox.com>", "Matt Hargett <mharget@roblox.com>", "Max Mines <mmines@roblox.com>", "Carlo Conte <cconte@roblox.com>"]
+authors = [
+	"Paul Doyle <pdoyle@roblox.com>",
+	"Matt Hargett <mharget@roblox.com>",
+	"Max Mines <mmines@roblox.com>",
+	"Carlo Conte <cconte@roblox.com>",
+	"Henry Allen <hallen@roblox.com>",
+	"Olivier Trepanier <otrepanier@roblox.com>"
+]
 
 [workspace.dependencies]
 Promise = "github.com/evaera/roblox-lua-promise@3.1.0"
