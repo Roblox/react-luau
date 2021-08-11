@@ -587,6 +587,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 	local function assignStableKey(tableKey: any?, newChild: Object): ()
 		-- If there's no assigned key in the element, and the table key is valid,
 		-- assign it as the element's key.
+		-- If the key is a table, convert it to a string.
 
 		-- ROBLOX TODO: Investigate if this is safe; maybe we need to shallow-copy
 		-- the object if we have a new key, to preserve immutability, but that cost
@@ -596,6 +597,8 @@ local function ChildReconciler(shouldTrackSideEffects)
 			and (typeof(tableKey) == "string" or typeof(tableKey) == "number")
 		then
 			newChild.key = tableKey
+		elseif newChild.key == nil and typeof(tableKey) == "table" then
+			newChild.key = tostring(tableKey)
 		end
 	end
 
