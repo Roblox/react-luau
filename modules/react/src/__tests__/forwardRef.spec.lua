@@ -450,5 +450,17 @@ return function()
 				withoutStack = true,
 			})
 		end)
+
+		-- ROBLOX deviation: Regression test for bad metatable logic
+		it("allows new fields to be assigned on it", function()
+			local MyComponent = React.forwardRef(function(_props, _ref)
+				return nil
+			end)
+			MyComponent.SomeEnum = {ValueA = 1, ValueB = 2}
+
+			jestExpect(MyComponent.SomeEnum).never.toBeNil()
+			jestExpect(MyComponent.SomeEnum.ValueA).toBe(1)
+			jestExpect(MyComponent.SomeEnum.ValueB).toBe(2)
+		end)
 	end)
 end

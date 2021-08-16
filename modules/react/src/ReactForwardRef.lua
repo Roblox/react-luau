@@ -84,6 +84,8 @@ exports.forwardRef = function(render)
           -- if (render.displayName == null) {
           --   render.displayName = name;
           -- }
+        else
+          rawset(self, key, value)
         end
       end,
     })
