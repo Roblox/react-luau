@@ -12,6 +12,7 @@ Cryo = { workspace = true }
 Shared = { path = "../shared" }
 
 [dev_dependencies]
+PerformanceBenchmarks = { git = "https://github.com/Roblox/performance-benchmarking-lua.git", rev = "main"}
 JestReact = { path = "../jest-react" }
 JestRoblox = { workspace = true }
 Promise = { workspace = true}
