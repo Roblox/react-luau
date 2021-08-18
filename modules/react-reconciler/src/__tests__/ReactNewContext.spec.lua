@@ -1063,6 +1063,7 @@ return function()
 				jestExpect(Scheduler).toFlushWithoutYielding()
 				jestExpect(ReactNoop.getChildren()).toEqual({ span("Result: 3") })
 			end)
+
 			it("propagates through shouldComponentUpdate false", function()
 				local Context = React.createContext(1)
 				local ContextConsumer = Context.Consumer
@@ -1409,18 +1410,21 @@ return function()
 		end)
 
 		-- ROBLOX deviation: tests legacy Roact compatibility feature
-		it("warns if using legacy Roact render prop", function()
+		it("warns once if using legacy Roact render prop", function()
 			local Context = React.createContext()
 
-			ReactNoop.render(
-				React.createElement(
-						Context.Provider,
-						{ value = 1 },
-						React.createElement(Context.Consumer, {render = function(value)
-								return React.createElement("span", { prop = "Result: " .. tostring(value) })
-						end}))
-			)
+			local function renderContext()
+				ReactNoop.render(
+					React.createElement(
+							Context.Provider,
+							{ value = 1 },
+							React.createElement(Context.Consumer, {render = function(value)
+									return React.createElement("span", { prop = "Result: " .. tostring(value) })
+							end}))
+				)
+			end
 
+			renderContext()
 			jestExpect(function()
 				jestExpect(Scheduler).toFlushWithoutYielding()
 			end).toWarnDev("Warning: Your Context.Consumer component is using legacy Roact syntax, which won't be supported in future versions of Roact. \n" ..
@@ -1430,6 +1434,20 @@ return function()
 				"       createElement(ContextConsumer, nil, function(...) end)\n" ..
 				"For more info, reference the React documentation here: \n" ..
 				"https://reactjs.org/docs/context.html#contextconsumer", {withoutStack = true})
+				ReactNoop.render(
+					React.createElement(
+							Context.Provider,
+							{ value = 1 },
+							React.createElement(Context.Consumer, {render = function(value)
+									return React.createElement("span", { prop = "Result: " .. tostring(value) })
+							end}))
+				)
+
+			-- Does not warn a second time
+			renderContext()
+			jestExpect(function()
+				jestExpect(Scheduler).toFlushWithoutYielding()
+			end).toWarnDev({})
 		end)
 
 		it("can read other contexts inside consumer render prop", function()

@@ -3109,7 +3109,11 @@ local function updateContextProvider(
   return workInProgress.child
 end
 
-local hasWarnedAboutUsingContextAsConsumer = false
+-- ROBLOX deviation: combine two warning flags to dodge the registers limit
+local hasWarnedAbout = {
+  usingContextAsConsumer = false,
+  usingLegacyConsumer = false,
+}
 
 function updateContextConsumer(
   current: Fiber | nil,
@@ -3130,8 +3134,8 @@ function updateContextConsumer(
       -- Or it may be because it's older React where they're the same thing.
       -- We only want to warn if we're sure it's a new React.
       if context ~= context.Consumer then
-        if not hasWarnedAboutUsingContextAsConsumer then
-          hasWarnedAboutUsingContextAsConsumer = true
+        if not hasWarnedAbout.usingContextAsConsumer then
+          hasWarnedAbout.usingContextAsConsumer = true
           console.error(
             'Rendering <Context> directly is not supported and will be removed in ' ..
               'a future major release. Did you mean to render <Context.Consumer> instead?'
@@ -3148,13 +3152,16 @@ function updateContextConsumer(
   local render
   if newProps.render then
     if _G.__DEV__ then
-      console.warn("Your Context.Consumer component is using legacy Roact syntax, which won't be supported in future versions of Roact. \n" ..
-        "Please provide no props and supply the 'render' function as a child (the 3rd argument of createElement). For example: \n" ..
-        "       createElement(ContextConsumer, {render = function(...) end})\n" ..
-        "becomes:\n" ..
-        "       createElement(ContextConsumer, nil, function(...) end)\n" ..
-        "For more info, reference the React documentation here: \n" ..
-        "https://reactjs.org/docs/context.html#contextconsumer")
+      if not hasWarnedAbout.usingLegacyConsumer then
+        hasWarnedAbout.usingLegacyConsumer = true
+        console.warn("Your Context.Consumer component is using legacy Roact syntax, which won't be supported in future versions of Roact. \n" ..
+          "Please provide no props and supply the 'render' function as a child (the 3rd argument of createElement). For example: \n" ..
+          "       createElement(ContextConsumer, {render = function(...) end})\n" ..
+          "becomes:\n" ..
+          "       createElement(ContextConsumer, nil, function(...) end)\n" ..
+          "For more info, reference the React documentation here: \n" ..
+          "https://reactjs.org/docs/context.html#contextconsumer")
+        end
       end
     render = newProps.render
   else
