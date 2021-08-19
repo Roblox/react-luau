@@ -15,6 +15,7 @@ nav:
   - Adoption: migrating-from-roact.md
   - Deviations: deviations.md
   - API Reference: api-reference.md
+  - Benchmarks: bench.md
 
 extra_css:
   - extra.css

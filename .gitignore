@@ -9,3 +9,4 @@ Packages/_Workspace/*
 .vscode
 **/luacov.*
 .idea/
+site/

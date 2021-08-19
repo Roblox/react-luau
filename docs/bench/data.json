@@ -1,0 +1,60 @@
+{
+    "lastUpdate": 1629145682084,
+    "repoUrl": "https://github.com/Roblox/roact-alignment",
+    "entries": {
+      "Concurrent Benchmark": [
+        {
+          "commit": {
+            "author": {
+              "email": "37384169+ZoteTheMighty@users.noreply.github.com",
+              "name": "Paul Doyle",
+              "username": "ZoteTheMighty"
+            },
+            "committer": {
+              "email": "noreply@github.com",
+              "name": "GitHub",
+              "username": "web-flow"
+            },
+            "distinct": true,
+            "id": "d46e91e5737cb82041f6086f13eb27fa2766a2a1",
+            "message": "LUAFDN-461 - Fix forward ref in dev (#177)\n\nLUAFDN-461\r\n\r\nFixes an issue where forwardRef objects did not allow fields to be assigned to them, which will break certain use cases in the wild.",
+            "timestamp": "2021-08-16T13:26:12-07:00",
+            "tree_id": "993e932ceffdeee799c21dc5224dab05cd1a6087",
+            "url": "https://github.com/Roblox/roact-alignment/commit/d46e91e5737cb82041f6086f13eb27fa2766a2a1"
+          },
+          "date": 1629145682083,
+          "tool": "roblox",
+          "benches": [
+            {
+              "name": "FrameRate#FPS1",
+              "value": 43.933,
+              "range": "±10.14%",
+              "unit": "ops/sec",
+              "extra": "617 samples\nroblox-cli version: ?"
+            },
+            {
+              "name": "FrameRate#FPS2",
+              "value": 61.5777,
+              "range": "±7.80%",
+              "unit": "ops/sec",
+              "extra": "617 samples\nroblox-cli version: ?"
+            },
+            {
+              "name": "FrameRate#Δt",
+              "value": 22.7619,
+              "range": "±31.19%",
+              "unit": "ms/op",
+              "extra": "617 samples\nroblox-cli version: ?"
+            },
+            {
+              "name": "FirstRendert#Δt",
+              "value": 115.5126,
+              "range": "±4.92%",
+              "unit": "sec/op",
+              "extra": "200 samples\nroblox-cli version: ?"
+            }
+          ]
+        }
+      ]
+    }
+  }
