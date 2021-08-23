@@ -2,7 +2,8 @@ local processServiceExists, ProcessService = pcall(function()
 	return game:GetService("ProcessService")
 end)
 
-local Packages = script.Parent:FindFirstChild("RoactAlignment") or game:FindFirstChild("RoactAlignment", true)
+local Packages = script.Parent:FindFirstChild("RoactAlignment")
+	or game:FindFirstChild("RoactAlignment", true)
 if not Packages then
 	error("Packages not found")
 end
