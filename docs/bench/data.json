@@ -26,14 +26,7 @@
         "tool": "roblox",
         "benches": [
           {
-            "name": "FrameRate#FPS1",
-            "value": 43.933,
-            "range": "±10.14%",
-            "unit": "ops/sec",
-            "extra": "617 samples\nroblox-cli version: ?"
-          },
-          {
-            "name": "FrameRate#FPS2",
+            "name": "FrameRate#FPS",
             "value": 61.5777,
             "range": "±7.80%",
             "unit": "ops/sec",
@@ -47,7 +40,7 @@
             "extra": "617 samples\nroblox-cli version: ?"
           },
           {
-            "name": "FirstRendert#Δt",
+            "name": "FirstRender#Δt",
             "value": 115.5126,
             "range": "±4.92%",
             "unit": "sec/op",
@@ -74,14 +67,7 @@
         "tool": "roblox",
         "benches": [
           {
-            "name": "FrameRate#FPS1",
-            "value": 43.7273,
-            "range": "±10.16%",
-            "unit": "ops/sec",
-            "extra": "613 samples\nroblox-cli version: 0.492.0.428906"
-          },
-          {
-            "name": "FrameRate#FPS2",
+            "name": "FrameRate#FPS",
             "value": 61.9574,
             "range": "±7.81%",
             "unit": "ops/sec",
@@ -95,7 +81,7 @@
             "extra": "613 samples\nroblox-cli version: 0.492.0.428906"
           },
           {
-            "name": "FirstRendert#Δt",
+            "name": "FirstRender#Δt",
             "value": 114.1414,
             "range": "±4.97%",
             "unit": "sec/op",
@@ -124,14 +110,7 @@
         "tool": "roblox",
         "benches": [
           {
-            "name": "FrameRate#FPS1",
-            "value": 20.2099,
-            "range": "±33.90%",
-            "unit": "ops/sec",
-            "extra": "49 samples\nroblox-cli version: 0.492.0.428906"
-          },
-          {
-            "name": "FrameRate#FPS2",
+            "name": "FrameRate#FPS",
             "value": 49.4806,
             "range": "±13.85%",
             "unit": "ops/sec",
@@ -167,14 +146,7 @@
         "tool": "roblox",
         "benches": [
           {
-            "name": "FrameRate#FPS1",
-            "value": 15.3659,
-            "range": "±57.18%",
-            "unit": "ops/sec",
-            "extra": "49 samples\nroblox-cli version: 0.492.0.428906"
-          },
-          {
-            "name": "FrameRate#FPS2",
+            "name": "FrameRate#FPS",
             "value": 65.079,
             "range": "±13.50%",
             "unit": "ops/sec",
@@ -210,14 +182,7 @@
         "tool": "roblox",
         "benches": [
           {
-            "name": "FrameRate#FPS1",
-            "value": 88.494,
-            "range": "±0.70%",
-            "unit": "ops/sec",
-            "extra": "49 samples\nroblox-cli version: 0.492.0.428906"
-          },
-          {
-            "name": "FrameRate#FPS2",
+            "name": "FrameRate#FPS",
             "value": 11.3002,
             "range": "±5.51%",
             "unit": "ops/sec",
