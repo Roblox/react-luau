@@ -8,11 +8,9 @@ files = ["*", "!**/__tests__/**"]
 
 [dependencies]
 LuauPolyfill = { workspace = true }
-Cryo = { workspace = true }
 React = { path = "../react" }
 ReactIs = { path = "../react-is" }
 Shared = { path = "../shared" }
 
 [dev_dependencies]
 JestRoblox = { workspace = true }
-RobloxJest = { path = "../roblox-jest" }

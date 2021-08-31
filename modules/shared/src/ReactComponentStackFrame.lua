@@ -8,6 +8,7 @@
  * @flow
 ]]
 
+type Object = { [string]: any }
 --!nolint LocalShadowPedantic
 
 local ReactElementType = require(script.Parent.ReactElementType)
@@ -78,7 +79,7 @@ if _G.__DEV__ then
 end
 
 local function describeNativeComponentFrame(
-	fn: ((any) -> any)?,
+	fn: ((any) -> any)? | Object, -- ROBLOX TODO: only accept tables with __tostring metamethod overridden
 	construct: boolean
 ): string
 	-- // If something asked for a stack inside a fake render, it should get ignored.
@@ -196,9 +197,7 @@ local function describeNativeComponentFrame(
 							local frame = "\n" .. prefix .. sampleLines[sampleIndex]
 
 							if _G.__DEV__ then
-								if typeof(fn) == "function" then
-									componentFrameCache[fn] = frame
-								end
+								componentFrameCache[fn] = frame
 							end
 							-- // Return the line we found.
 							-- deviation: to mimic the behavior of the try-catch-finally
@@ -245,9 +244,7 @@ local function describeNativeComponentFrame(
 	end
 
 	if _G.__DEV__ then
-		if typeof(fn) == "function" then
-			componentFrameCache[fn] = syntheticFrame
-		end
+		componentFrameCache[fn] = syntheticFrame
 	end
 
 	return syntheticFrame
