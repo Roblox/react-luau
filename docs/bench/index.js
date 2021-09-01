@@ -8,6 +8,7 @@
     pytest: "#3572a5",
     googlecpp: "#f34b7d",
     catch2: "#f34b7d",
+    roblox: "#000080",
     _: "#333333",
   };
 
