@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1629723306186,
+  "lastUpdate": 1630616943116,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -88,6 +88,47 @@
             "extra": "200 samples\nroblox-cli version: 0.492.0.428906"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b05ed983ec8a2bfb8183ac394532cdf26fd396c4",
+          "message": "LUAFDN-496 Wrong Instance Names in Array of Children",
+          "timestamp": "2021-09-01T22:45:36Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/187/commits/b05ed983ec8a2bfb8183ac394532cdf26fd396c4"
+        },
+        "date": 1630616941031,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 61.7646,
+            "range": "±34.74%",
+            "unit": "ops/sec",
+            "extra": "600 samples\nroblox-cli version: 0.493.1.4930375"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.6675,
+            "range": "±226.93%",
+            "unit": "ms/op",
+            "extra": "600 samples\nroblox-cli version: 0.493.1.4930375"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 120.3817,
+            "range": "±24.80%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.493.1.4930375"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -115,6 +156,40 @@
             "range": "±13.85%",
             "unit": "ms/op",
             "extra": "49 samples\nroblox-cli version: 0.492.0.428906"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b05ed983ec8a2bfb8183ac394532cdf26fd396c4",
+          "message": "LUAFDN-496 Wrong Instance Names in Array of Children",
+          "timestamp": "2021-09-01T22:45:36Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/187/commits/b05ed983ec8a2bfb8183ac394532cdf26fd396c4"
+        },
+        "date": 1630616941723,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 19.1426,
+            "range": "±13.01%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.493.1.4930375"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 53.3119,
+            "range": "±16.90%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.493.1.4930375"
           }
         ]
       }
@@ -146,6 +221,40 @@
             "extra": "49 samples\nroblox-cli version: 0.492.0.428906"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b05ed983ec8a2bfb8183ac394532cdf26fd396c4",
+          "message": "LUAFDN-496 Wrong Instance Names in Array of Children",
+          "timestamp": "2021-09-01T22:45:36Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/187/commits/b05ed983ec8a2bfb8183ac394532cdf26fd396c4"
+        },
+        "date": 1630616942363,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 14.8802,
+            "range": "±16.05%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.493.1.4930375"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 68.8792,
+            "range": "±16.53%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.493.1.4930375"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -173,6 +282,40 @@
             "range": "±5.51%",
             "unit": "ms/op",
             "extra": "49 samples\nroblox-cli version: 0.492.0.428906"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b05ed983ec8a2bfb8183ac394532cdf26fd396c4",
+          "message": "LUAFDN-496 Wrong Instance Names in Array of Children",
+          "timestamp": "2021-09-01T22:45:36Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/187/commits/b05ed983ec8a2bfb8183ac394532cdf26fd396c4"
+        },
+        "date": 1630616943115,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 102.9753,
+            "range": "±15.52%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.493.1.4930375"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 9.9321,
+            "range": "±14.53%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.493.1.4930375"
           }
         ]
       }

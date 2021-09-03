@@ -204,7 +204,7 @@ This is likely the biggest refactor effort that the Lua Apps adoption is conting
 **Status:** ✔️ Resolved
 <details>
   <summary>Details</summary>
- 
+
 The context consumer api doesn't match that of Roact's createContext context consumer.
 * Roact's implementation accepts a single prop, which is a render functions `render(contextObject) -> ReactElement`
 * React's implementation accepts no props, and a single child, which is a `render` function with the same signature as above
@@ -273,7 +273,7 @@ This would be a simple compatibility layer that should require very little maint
 #### Implemented Alignment
 The `createFragment` function described above was added to React.lua in [#92](https://github.com/Roblox/roact-alignment/pull/92/files).
 </details>
- 
+
 ### Ref Forwarding
 **Status:** 🔨 In Progress (updating consumers to comply)
 
@@ -394,6 +394,107 @@ Any time children are provided as a table (including mixed tables or sparse arra
 In the event that both a table key and the `key` prop are provided to the same element, we should through a warning in DEV mode that aligns with similar warnings for un-keyed children.
 
 An implementation of this approach was merged in [#68](https://github.com/Roblox/roact-alignment/pull/68).
+</details>
+
+### Child Array Default Keys
+**Status:** ✔️ Resolved (backwards compatible)
+<details>
+<summary>Details</summary>
+In React 17, keys are not applied to children in an array. However, Legacy Roact automatically set a child's key in an array of children to that child's index in the array. Some downstream behavior relies on this legacy roact behavior, so Roact 17 automatically applies a child's index as its stable key if it is in an array and not passed a key prop.
+
+
+#### Example
+React:
+```jsx
+function ChildrenArrayComponent(props) {
+  // The children of div are not given keys. Order is preservered inherently in the DOM.
+  return (
+    <div>
+      <foo />
+      <foo />
+      <bar />
+    </div>
+  )
+}
+```
+
+Roact 17:
+```lua
+function ChildrenArrayComponent(props)
+  return Roact.createElement("Frame", nil, {
+    -- These children receive keys 1, 2, and 3, respectively
+    Roact.createElement(Foo),
+    Roact.createElement(Foo),
+    Roact.createElement(Bar),
+  })
+end
+```
+
+Equivalent Roact 17 with Lua Table Keys:
+```lua
+function ChildrenArrayComponent(props)
+  return Roact.createElement("Frame", nil, {
+    -- These children receive keys 1, 2, and 3, respectively
+    [1] = Roact.createElement(Foo),
+    [2] = Roact.createElement(Foo),
+    [3] = Roact.createElement(Bar),
+  })
+end
+```
+
+Equivalent Roact 17 with prop keys:
+```lua
+function ChildrenArrayComponent(props)
+  return Roact.createElement("Frame", nil, {
+    -- These children receive keys 1, 2, and 3, respectively
+    Roact.createElement(Foo, { key = 1 }),
+    Roact.createElement(Foo, { key = 2 }),
+    Roact.createElement(Bar, { key = 3 }),
+  })
+end
+```
+
+#### Proposed Alignment Strategy
+This change is fully backwards compatible with Legacy Roact. However, users should be wary of elements potentially re-mounting on render when children are not given keys. This case can occur when a user switches from rendering multiple child elements in an array to rendering a single child element. Re-mounting is inefficient in comparison to updating an element on render. To avoid this case, a single child element should be given a key. The particular case is shown below:
+
+Re-mounting Case (inefficient):
+```lua
+local root = Roact.createLegacyRoot(container)
+
+-- Initial Render
+root.render(Roact.createElement(Foo, nil, {
+  Roact.createElement(Bar),
+  Roact.createElement(Bar),
+  Roact.createElement(FooBar),
+}))
+
+-- Re-Render
+-- Bar will be remounted here. Roact 17 cannot discern if this is
+-- the same Bar as above, so it remounts it.
+root.render(Roact.createElement(Foo, nil, Roact.createElement(Bar)))
+```
+
+Update Case (efficient):
+```lua
+local root = Roact.createLegacyRoot(container)
+
+-- Initial Render
+-- Keys are not necessary here, they are applied by default
+-- as { 1 = Bar, 2 = Bar, 3 = FooBar }
+root.render(Roact.createElement(Foo, nil, {
+  Roact.createElement(Bar),
+  Roact.createElement(Bar),
+  Roact.createElement(FooBar),
+}))
+
+-- Re-Render
+-- Bar will be updated here, as the key allows Roact 17 to match
+-- this Bar to the first Bar above. If we instead set key to 2, it
+-- would match the second Bar above
+root.render(Roact.createElement(Foo, nil,
+  Roact.createElement(Bar, { key = 1 })
+))
+```
 </details>
 
 ### Use of setState
@@ -570,7 +671,7 @@ end
 function ShowCount:render()
   return Roact.createElement("TextLabel", {
     -- `self.state` is an empty table, and `self.state.count` is nil.
-    -- Text will be left as its default value for a TextLabel 
+    -- Text will be left as its default value for a TextLabel
     Text = self.state.count,
   })
 end
@@ -608,7 +709,7 @@ end);
 ```
 
 #### In Production Code
-This functionality is used relatively sparingly in the lua-apps code base (including dependencies), only ~15 confirmed usages and ~45 more possible ones (more investigation needed to confirm). 
+This functionality is used relatively sparingly in the lua-apps code base (including dependencies), only ~15 confirmed usages and ~45 more possible ones (more investigation needed to confirm).
 
 #### Proposed Alignment Strategy
 While it's possible to adapt to the upstream behavior, I was not able to find _any_ idiomatic usages of `this` in the body of a `setState` updater function. We should keep Roact's current behavior, which encourages function purity and serves all known use cases without issue.

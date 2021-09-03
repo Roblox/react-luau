@@ -921,7 +921,21 @@ local function ChildReconciler(shouldTrackSideEffects)
 			else
 				nextOldFiber = oldFiber.sibling
 			end
-			local newFiber = updateSlot(returnFiber, oldFiber, newChildren[newIdx], lanes)
+			--[[
+				ROBLOX DEVIATION: We pass newIdx to createChild to ensure that children are
+				assigned a key, assuming the child is not an array itself. We only need to
+				pass newIdx if the child is actually a React element. If the child is a
+				string or number, a key is never assigned, so we do not pass newIdx as a key.
+			]]
+			local newFiber
+			if
+				typeof(newChildren[newIdx]) == "table" and
+				newChildren[newIdx]["$$typeof"] ~= nil
+			then
+				newFiber = updateSlot(returnFiber, oldFiber, newChildren[newIdx], lanes, newIdx)
+			else
+				newFiber = updateSlot(returnFiber, oldFiber, newChildren[newIdx], lanes)
+			end
 			if newFiber == nil then
 				-- TODO: This breaks on empty slots like nil children. That's
 				-- unfortunate because it triggers the slow path all the time. We need
@@ -967,7 +981,21 @@ local function ChildReconciler(shouldTrackSideEffects)
 			-- since the rest will all be insertions.
 			-- deviation: use while loop in place of modified for loop
 			while newIdx <= #newChildren do
-				local newFiber = createChild(returnFiber, newChildren[newIdx], lanes)
+				--[[
+					ROBLOX DEVIATION: We pass newIdx to createChild to ensure that children are
+					assigned a key, assuming the child is not an array itself. We only need to
+					pass newIdx if the child is actually a React element. If the child is a
+					string or number, a key is never assigned, so we do not pass newIdx as a key.
+				]]
+				local newFiber
+				if
+					typeof(newChildren[newIdx]) == "table" and
+					newChildren[newIdx]["$$typeof"] ~= nil
+				then
+					newFiber = createChild(returnFiber, newChildren[newIdx], lanes, newIdx)
+				else
+					newFiber = createChild(returnFiber, newChildren[newIdx], lanes)
+				end
 				if newFiber == nil then
 					-- deviation: increment manually since we're not using a modified for loop
 					newIdx += 1

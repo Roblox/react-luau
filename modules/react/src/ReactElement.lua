@@ -362,8 +362,13 @@ exports.createElement = function(type_, config, ...)
 
 		if hasValidKey(config) then
 			-- ROBLOX deviation: call tostring instead of concatenating with an
-			-- empty string, which can throw in luau
-			key = tostring(config.key)
+			-- empty string, which can throw in luau. If the string is a number,
+			-- then do not use tostring
+			if typeof(config.key) == "number" then
+				key = config.key
+			else
+				key = tostring(config.key)
+			end
 		end
 
 		if config.__self == nil then

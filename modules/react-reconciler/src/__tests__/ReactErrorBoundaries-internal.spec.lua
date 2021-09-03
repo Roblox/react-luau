@@ -1409,7 +1409,13 @@ return function()
 				React.createElement(Normal)
 			))
 			Scheduler.unstable_clearYields()
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(BrokenComponentWillUnmount)))
+			-- ROBLOX DEVIATION: Pass a key to the "BrokenWillUnmount" element. This allows for
+			-- compatibility when we go from rendering multiple children to rendering a single
+			-- child, as we apply keys to children in an array by default, but not to a single
+			-- element
+			root.render(React.createElement(ErrorBoundary, nil,
+				React.createElement(BrokenComponentWillUnmount, { key = 1 }))
+			)
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
 				"ErrorBoundary componentWillReceiveProps",
@@ -1457,10 +1463,15 @@ return function()
 				React.createElement(BrokenComponentWillUnmount)
 			))
 			Scheduler.unstable_clearYields()
+			-- ROBLOX DEVIATION: Pass a key to the "Normal" element. This allows for compatibility
+			-- when we go from rendering multiple children to rendering a single child, as we
+			-- apply keys to children in an array by default, but not to a single element
 			root.render(React.createElement(
 				ErrorBoundary,
 				nil,
-				React.createElement(Normal, nil, React.createElement(BrokenComponentWillUnmount))
+				React.createElement(Normal, { key = 1 },
+					React.createElement(BrokenComponentWillUnmount)
+				)
 			))
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({

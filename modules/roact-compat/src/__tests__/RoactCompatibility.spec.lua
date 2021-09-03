@@ -213,4 +213,40 @@ return function()
 			jestExpect(capturedBool).toBe(true)
 		end)
 	end)
+
+	describe("ChildArray Keys", function()
+		it("Should assign keys to children in an array", function()
+			local ReactRoblox = require(Packages.ReactRoblox)
+			local parent = Instance.new("Folder")
+			local Scheduler = require(Packages.Dev.Scheduler)
+			local Component = RoactCompat.Component:extend("Component")
+
+			function Component:render()
+				return RoactCompat.createElement("Frame", {}, {
+					RoactCompat.createElement("TextLabel", { Text = "one" }),
+					RoactCompat.createElement("TextLabel", { Text = "two" }),
+					RoactCompat.createElement("TextLabel", { Text = "three" }),
+				})
+			end
+
+			local componentInstance = RoactCompat.createElement(Component)
+
+			local root = ReactRoblox.createRoot(parent)
+
+			root:render(componentInstance)
+			Scheduler.unstable_flushAllWithoutAsserting()
+
+			local firstChild = parent:FindFirstChild(1, true)
+			jestExpect(firstChild).toBeDefined()
+			jestExpect(firstChild.Text).toEqual("one")
+
+			local secondChild = parent:FindFirstChild(2, true)
+			jestExpect(secondChild).toBeDefined()
+			jestExpect(secondChild.Text).toEqual("two")
+
+			local thirdChild = parent:FindFirstChild(3, true)
+			jestExpect(thirdChild).toBeDefined()
+			jestExpect(thirdChild.Text).toEqual("three")
+		end)
+	end)
 end
