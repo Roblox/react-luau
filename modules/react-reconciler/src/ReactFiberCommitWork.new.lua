@@ -18,6 +18,12 @@ local function unimplemented(message)
   error("FIXME (roblox): " .. message .. " is unimplemented", 2)
 end
 
+-- ROBLOX DEVIATION: keep track of the pcall run depth and whether or not we have
+-- warned the user about hitting a pcall depth of over 200.
+local runDepth = 0
+local warnedRunDepth = false
+local MAX_RUN_DEPTH = 180
+
 local function isCallable(value)
   if typeof(value) == "function" then
     return true
@@ -703,19 +709,37 @@ local function recursivelyCommitLayoutEffects(
         if _G.__DEV__ then
           local prevCurrentFiberInDEV = ReactCurrentFiber.current
           setCurrentDebugFiberInDEV(child)
-          invokeGuardedCallback(
-            nil,
-            recursivelyCommitLayoutEffects,
-            nil,
-            child,
-            finishedRoot,
-            -- ROBLOX deviation: pass in this function to avoid dependency cycle
-            captureCommitPhaseError,
-            schedulePassiveEffectCallback
-          )
-          if hasCaughtError() then
-            local error_ = clearCaughtError()
-            captureCommitPhaseError(child, finishedWork, error_)
+          --[[
+              ROBLOX DEVIATION: In DEV, After 200 pcalls, do not wrap recursive calls in pcall. Otherwise,
+              we hit the stack limit and get a stack overflow error.
+            ]]
+          if runDepth < MAX_RUN_DEPTH then
+            runDepth += 1
+            invokeGuardedCallback(
+              nil,
+              recursivelyCommitLayoutEffects,
+              nil,
+              child,
+              finishedRoot,
+              -- ROBLOX deviation: pass in this function to avoid dependency cycle
+              captureCommitPhaseError,
+              schedulePassiveEffectCallback
+            )
+            runDepth -= 1
+
+            if hasCaughtError() then
+              local error_ = clearCaughtError()
+              captureCommitPhaseError(child, finishedWork, error_)
+            end
+          else
+            -- ROBLOX DEVIATION: Warn the first time we go over the pcall limit.
+            if not warnedRunDepth and runDepth == MAX_RUN_DEPTH then
+              warnedRunDepth = true
+              console.warn("Hit maximum pcall depth of " .. MAX_RUN_DEPTH .. ", entering UNSAFE call mode. Suspense and Error "..
+                           "Boundaries will no longer work correctly. This will be resolved in React 18.")
+            end
+
+            recursivelyCommitLayoutEffects(child, finishedRoot, captureCommitPhaseError, schedulePassiveEffectCallback)
           end
           if prevCurrentFiberInDEV ~= nil then
             setCurrentDebugFiberInDEV(prevCurrentFiberInDEV)
@@ -726,10 +750,30 @@ local function recursivelyCommitLayoutEffects(
           -- ROBLOX deviation: YOLO flag for disabling pcall
           local ok, error_
           if not _G.__YOLO__ then
-            ok, error_ = pcall(function()
-            -- ROBLOX deviation: pass in this function to avoid dependency cycle
+            --[[
+              ROBLOX DEVIATION: After 200 pcalls, do not wrap recursive calls in pcall. Otherwise, we hit the
+              stack limit and get a stack overflow error.
+            ]]
+            if runDepth < 180 then
+              runDepth += 1
+
+              ok, error_ = pcall(function()
+              -- ROBLOX deviation: pass in this function to avoid dependency cycle
+                recursivelyCommitLayoutEffects(child, finishedRoot, captureCommitPhaseError, schedulePassiveEffectCallback)
+              end)
+
+              runDepth -= 1
+            else
+              -- ROBLOX DEVIATION: Warn the first time we go over the pcall limit.
+              if not warnedRunDepth and runDepth == 180 then
+                warnedRunDepth = true
+                console.warn("Hit maximum pcall depth of " .. MAX_RUN_DEPTH .. ", entering UNSAFE call mode. Suspense and Error "..
+                             "Boundaries will no longer work correctly. This will be resolved in React 18.")
+              end
+
+              ok = true
               recursivelyCommitLayoutEffects(child, finishedRoot, captureCommitPhaseError, schedulePassiveEffectCallback)
-            end)
+            end
           else
             ok = true
             recursivelyCommitLayoutEffects(child, finishedRoot, captureCommitPhaseError, schedulePassiveEffectCallback)

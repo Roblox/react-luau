@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1630616943116,
+  "lastUpdate": 1630696319325,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -129,6 +129,47 @@
             "extra": "200 samples\nroblox-cli version: 0.493.1.4930375"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "0960cb8107c7599e71e7411d967065bc9fd8d9ad",
+          "message": "LUAFDN-540 Limit pcalls in recursivelyCommitLayoutEffects",
+          "timestamp": "2021-09-03T16:54:44Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/190/commits/0960cb8107c7599e71e7411d967065bc9fd8d9ad"
+        },
+        "date": 1630696317433,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 62.784,
+            "range": "±40.74%",
+            "unit": "ops/sec",
+            "extra": "600 samples\nroblox-cli version: 0.494.0.4940337"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.776,
+            "range": "±224.20%",
+            "unit": "ms/op",
+            "extra": "600 samples\nroblox-cli version: 0.494.0.4940337"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 106.46,
+            "range": "±21.91%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.494.0.4940337"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -190,6 +231,40 @@
             "range": "±16.90%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.493.1.4930375"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "0960cb8107c7599e71e7411d967065bc9fd8d9ad",
+          "message": "LUAFDN-540 Limit pcalls in recursivelyCommitLayoutEffects",
+          "timestamp": "2021-09-03T16:54:44Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/190/commits/0960cb8107c7599e71e7411d967065bc9fd8d9ad"
+        },
+        "date": 1630696318070,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 25.1691,
+            "range": "±10.22%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.494.0.4940337"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 40.1717,
+            "range": "±10.99%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.494.0.4940337"
           }
         ]
       }
@@ -255,6 +330,40 @@
             "extra": "50 samples\nroblox-cli version: 0.493.1.4930375"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "0960cb8107c7599e71e7411d967065bc9fd8d9ad",
+          "message": "LUAFDN-540 Limit pcalls in recursivelyCommitLayoutEffects",
+          "timestamp": "2021-09-03T16:54:44Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/190/commits/0960cb8107c7599e71e7411d967065bc9fd8d9ad"
+        },
+        "date": 1630696318737,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 17.8774,
+            "range": "±12.05%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.494.0.4940337"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 57.0225,
+            "range": "±16.26%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.494.0.4940337"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -316,6 +425,40 @@
             "range": "±14.53%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.493.1.4930375"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "0960cb8107c7599e71e7411d967065bc9fd8d9ad",
+          "message": "LUAFDN-540 Limit pcalls in recursivelyCommitLayoutEffects",
+          "timestamp": "2021-09-03T16:54:44Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/190/commits/0960cb8107c7599e71e7411d967065bc9fd8d9ad"
+        },
+        "date": 1630696319324,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 100.4906,
+            "range": "±11.55%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.494.0.4940337"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 10.0745,
+            "range": "±10.68%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.494.0.4940337"
           }
         ]
       }
