@@ -16,6 +16,7 @@ return function()
         local SchedulerTracing
         local AdvanceTime
         local hook
+		local originalDevtoolsState
 
         beforeEach(function()
             hook = {
@@ -24,6 +25,7 @@ return function()
                 onCommitFiberUnmount = function() end,
                 supportsFiber = true,
             }
+			originalDevtoolsState = _G.__REACT_DEVTOOLS_GLOBAL_HOOK__
             _G.__REACT_DEVTOOLS_GLOBAL_HOOK__ = hook
 
             RobloxJest.resetModules()
@@ -52,6 +54,11 @@ return function()
             end
 
         end)
+
+		afterEach(function()
+			_G.__REACT_DEVTOOLS_GLOBAL_HOOK__ = originalDevtoolsState
+		end)
+
         it('should auto-Profile all fibers if the DevTools hook is detected', function()
             -- ROBLOX deviation: hoist declaration so the value is captured correctly
             local onRender = jest:fn(function() end)

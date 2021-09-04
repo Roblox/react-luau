@@ -29,6 +29,8 @@ type FiberRoot = ReactInternalTypes.FiberRoot;
 local ReactRootTags = require(script.Parent.ReactRootTags)
 type RootTag = ReactRootTags.RootTag;
 
+local ReactFiberFlags = require(script.Parent.ReactFiberFlags)
+
 local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
 -- type Instance = ReactFiberHostConfig.Instance;
 type TextInstance = ReactFiberHostConfig.TextInstance;
@@ -120,6 +122,11 @@ local exports = {}
 exports.ReactRootTags = ReactRootTags
 -- ROBLOX deviation: export internals used by the test renderer
 exports.ReactWorkTags = ReactWorkTags
+-- ROBLOX deviation: export internals used by the dev tools
+exports.ReactTypeOfMode = ReactTypeOfMode
+-- ROBLOX deviation: export internals used by the dev tools
+exports.ReactFiberFlags = ReactFiberFlags
+
 exports.findCurrentFiberUsingSlowPath = ReactFiberTreeReflection.findCurrentFiberUsingSlowPath
 
 -- exports.registerMutableSourceForHydration = require(script.Parent["ReactMutableSource.new"]).registerMutableSourceForHydration

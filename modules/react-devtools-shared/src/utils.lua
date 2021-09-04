@@ -12,12 +12,10 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
 local Number = LuauPolyfill.Number
-local String = LuauPolyfill.String
 type Map<K, V> = { [K]: V }
 type Function = (...any) -> any
 type Object = { [string]: any }
 type Array<T> = { [number]: T }
-local console = require(Packages.Shared).console
 local JSON = game:GetService("HttpService")
 
 local exports = {}
@@ -129,16 +127,14 @@ exports.getUID = function()
 	return uidCounter
 end
 
-exports.utfDecodeString = function(str): string
-	-- ROBLOX FIXME? this appears to be done to make sure proper escaping happens, appears web-specific
-	return str
-end
-exports.utfEncodeString = function(str): string
-	-- ROBLOX FIXME? this appears to be done to make sure proper escaping happens, appears web-specific
-	return str
-end
+-- ROBLOX deviation: string encoding not required
+-- exports.utfDecodeString = function(str): string
+-- end
+-- exports.utfEncodeString = function(str): string
+-- end
 
-exports.printOperationsArray = function(operations: Array<number>)
+-- ROBLOX deviation: don't binary encode strings, so operations Array can include strings
+exports.printOperationsArray = function(operations: Array<number | string>)
 	-- The first two values are always rendererID and rootID
 	local rendererID = operations[1]
 	local rootID = operations[2]
@@ -158,28 +154,27 @@ exports.printOperationsArray = function(operations: Array<number>)
 
 	-- Reassemble the string table.
 	local stringTable = {
-		-- ROBLOX deviation: we can't store nil, so use None placeholder
-		Object.None, -- ID = 0 corresponds to the null string.
+		-- ROBLOX deviation: Use the empty string
+		"", -- ID = 0 corresponds to the empty string.
 	}
 	local stringTableSize = operations[POSTFIX_INCREMENT()]
 	local stringTableEnd = i + stringTableSize
 
 	-- ROBLOX deviation: adjust bounds due to 1-based indexing
-	while i <= stringTableEnd do
-		local nextLength = operations[POSTFIX_INCREMENT()]
-		local nextString = exports.utfDecodeString(
-			Array.slice(operations, i, i + nextLength)
-		)
-		stringTable.push(nextString)
-		i += nextLength
+	while i < stringTableEnd do
+		-- ROBLOX deviation: don't binary encode strings, so store string directly rather than length
+		-- local nextLength = operations[POSTFIX_INCREMENT()]
+		-- local nextString = exports.utfDecodeString(Array.slice(operations, i, i + nextLength)
+		local nextString = operations[POSTFIX_INCREMENT()]
+		table.insert(stringTable, nextString)
 	end
 
 	while i < #operations do
 		local operation = operations[i]
 
 		if operation == TREE_OPERATION_ADD then
-			local id: number = operations[i + 1]
-			local type_: ElementType = operations[i + 2]
+			local id: number = operations[i + 1] :: number
+			local type_: ElementType = operations[i + 2] :: number
 
 			i += 3
 
@@ -189,13 +184,13 @@ exports.printOperationsArray = function(operations: Array<number>)
 				i += 1 -- supportsProfiling
 				i += 1 -- hasOwnerMetadata
 			else
-				local parentID: number = operations[i]
+				local parentID = operations[i] :: number
 				i += 1
 
 				i += 1 -- ownerID
 
 				local displayNameStringID = operations[i]
-				local displayName = stringTable[displayNameStringID]
+				local displayName = stringTable[displayNameStringID + 1]
 				i += 1
 
 				i += 1 -- key
@@ -210,11 +205,11 @@ exports.printOperationsArray = function(operations: Array<number>)
 				)
 			end
 		elseif operation == TREE_OPERATION_REMOVE then
-			local removeLength: number = operations[i + 1]
+			local removeLength = operations[i + 1] :: number
 			i += 2
 
 			for removeIndex = 1, removeLength do
-				local id: number = operations[i]
+				local id = operations[i] :: number
 				i += 1
 
 				table.insert(logs, ("Remove node %d"):format(id))
@@ -240,7 +235,7 @@ exports.printOperationsArray = function(operations: Array<number>)
 		end
 	end
 
-	console.log(logs.join("\n  "))
+	print(table.concat(logs, "\n  "))
 end
 
 exports.getDefaultComponentFilters = function(): Array<ComponentFilter>
@@ -312,7 +307,7 @@ end
 exports.separateDisplayNameAndHOCs = function(
 	displayName: string | nil,
 	type_: ElementType
-): any -- ROBLOX TODO: can Luau express this? [string | null, Array<string> | null]
+): Array<string | Array<string> | nil> -- ROBLOX TODO: can Luau express this? [string | null, Array<string> | null]
 	if displayName == nil then
 		return { nil, nil }
 	end
@@ -325,13 +320,14 @@ exports.separateDisplayNameAndHOCs = function(
 		or type_ == ElementTypeFunction
 		or type_ == ElementTypeMemo
 	then
-		if String.indexOf(displayName, "(") >= 1 then
+		-- ROBLOX deviation: use match instead of indexOf
+		if (displayName :: string):match("%(") then
 			-- ROBLOX deviation: use gmatch instead of /[^()]+/g
 			local matches = (displayName :: string):gmatch("[^()]+")
 			local nextMatch = matches()
 			if nextMatch then
 				displayName = nextMatch
-				-- deviation: loop through matches to populate array
+				-- ROBLOX deviation: loop through matches to populate array
 				hocDisplayNames = {}
 				while nextMatch ~= nil do
 					nextMatch = matches()
@@ -674,7 +670,7 @@ function exports.formatDataForPreview(data, showFormattedValue: boolean): string
 			end)()
 			return ("Array(%s)"):format(length)
 		end
-		-- deviation: don't implement web-specifics
+		-- ROBLOX deviation: don't implement web-specifics
 		-- elseif type_ == 'typed_array' then
 		-- elseif type_ == 'iterator' then
 		-- elseif type_ == 'opaque_iterator' then

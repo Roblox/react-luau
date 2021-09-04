@@ -22,7 +22,15 @@ end
 
 local exports = {}
 
-type DehydratedData = any
+--ROBLOX TODO: circular dependency, inline for now and submit PR to fix upstream
+--local ComponentsTypes = require(script.Parent.devtools.views.Components.types)
+export type DehydratedData = {
+	cleaned: Array<Array<string | number>>,
+	data: string | Dehydrated | Unserializable | Array<Dehydrated> | Array<Unserializable> | {
+		[string]: string | Dehydrated | Unserializable,
+	},
+	unserializable: Array<Array<string | number>>,
+}
 
 exports.meta = {
 	inspectable = Symbol("inspectable"),

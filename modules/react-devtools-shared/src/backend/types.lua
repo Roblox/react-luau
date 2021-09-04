@@ -1,4 +1,4 @@
--- ROBLOX upstream: https:--github.com/facebook/react/blob/v17.0.1/packages/react-devtools-shared/src/backend/types.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react-devtools-shared/src/backend/types.js
 -- /**
 --  * Copyright (c) Facebook, Inc. and its affiliates.
 --  *
@@ -28,7 +28,9 @@ local Types = require(script.Parent.Parent.types)
 type ComponentFilter = Types.ComponentFilter
 type ElementType = Types.ElementType
 
-local DevToolsViewsProfilerTypes = require(script.Parent.Parent.devtools.views.Profiler.types)
+local DevToolsViewsProfilerTypes = require(
+	script.Parent.Parent.devtools.views.Profiler.types
+)
 type Interaction = DevToolsViewsProfilerTypes.Interaction
 
 type ResolveNativeStyle = (any) -> Object?
@@ -98,26 +100,27 @@ export type ReactProviderType<T> = {
 	--   ...
 }
 
+-- ROBLOX deviation: most of the instance methods are nil-able upstream, but we can't typecheck inline when using the colon call operator
 export type ReactRenderer = {
 	findFiberByHostInstance: (NativeType) -> Fiber?,
 	version: string,
 	rendererPackageName: string,
 	bundleType: BundleType,
 	-- 16.9+
-	overrideHookState: ((Object, number, Array<string | number>, any) -> ())?,
+	overrideHookState: ((self: ReactRenderer, Object, number, Array<string | number>, any) -> ()),
 	-- 17+
-	overrideHookStateDeletePath: ((Object, number, Array<string | number>) -> ())?,
+	overrideHookStateDeletePath: ((self: ReactRenderer, Object, number, Array<string | number>) -> ()),
 	-- 17+
-	overrideHookStateRenamePath: ((Object, number, Array<string | number>, Array<string | number>) -> ())?,
+	overrideHookStateRenamePath: ((self: ReactRenderer, Object, number, Array<string | number>, Array<string | number>) -> ()),
 	-- 16.7+
-	overrideProps: ((Object, Array<string | number>, any) -> ())?,
+	overrideProps: ((self: ReactRenderer, Object, Array<string | number>, any) -> ()),
 	-- 17+
-	overridePropsDeletePath: ((Object, Array<string | number>) -> ())?,
+	overridePropsDeletePath: ((self: ReactRenderer, Object, Array<string | number>) -> ()),
 	-- 17+
-	overridePropsRenamePath: ((Object, Array<string | number>, Array<string | number>) -> ())?,
+	overridePropsRenamePath: ((self: ReactRenderer, Object, Array<string | number>, Array<string | number>) -> ()),
 	-- 16.9+
-	scheduleUpdate: ((Object) -> ())?,
-	setSuspenseHandler: (((Object) -> boolean) -> ())?,
+	scheduleUpdate: ((self: ReactRenderer, Object) -> ()),
+	setSuspenseHandler: (self: ReactRenderer, shouldSuspend: (fiber: Object) -> boolean) -> (),
 	-- Only injected by React v16.8+ in order to support hooks inspection.
 	currentDispatcherRef: CurrentDispatcherRef?,
 	-- Only injected by React v16.9+ in DEV mode.
@@ -234,7 +237,7 @@ export type InspectedElement = {
 	-- Location of component in source code.
 	source: Source | nil,
 
-	type: ElementType,
+	type_: ElementType,
 
 	-- Meta information about the root this element belongs to.
 	rootType: string | nil,
@@ -342,7 +345,7 @@ export type DevToolsHook = {
 	on: (string, Handler) -> (),
 	off: (string, Handler) -> (),
 	reactDevtoolsAgent: Object?,
-	sub: ((string, Handler) -> ()) -> (),
+	sub: (string, Handler) -> (),
 
 	-- Used by react-native-web and Flipper/Inspector
 	resolveRNStyle: ResolveNativeStyle?,

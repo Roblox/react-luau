@@ -12,9 +12,9 @@ type Array<T> = { [number]: T }
 type Map<K, V> = { [K]: V }
 local exports = {}
 
-local ReactDevToolsSharedTypes = require(script.Parent.Parent.Parent.Parent.types)
+local ReactDevtoolsSharedTypes = require(script.Parent.Parent.Parent.Parent.types)
 
-type ElementType = ReactDevToolsSharedTypes.ElementType
+type ElementType = ReactDevtoolsSharedTypes.ElementType
 
 export type CommitTreeNode = {
 	id: number,

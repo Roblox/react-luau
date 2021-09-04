@@ -131,7 +131,8 @@ type BackendEvents = {
 	extensionBackendInitialized: () -> (),
 	inspectedElement: (InspectedElementPayload) -> (),
 	isBackendStorageAPISupported: (boolean) -> (),
-	operations: (Array<number>) -> (),
+	-- ROBLOX deviation: don't binary encode strings
+	operations: (Array<number | string>) -> (),
 	ownersList: (OwnersList) -> (),
 	overrideComponentFilters: (Array<ComponentFilter>) -> (),
 	profilingData: (ProfilingDataBackend) -> (),
@@ -199,8 +200,10 @@ type FrontendEvents = {
 	overrideState: (OverrideValue) -> (),
 }
 
--- ROBLOX TODO: Luau can't spread keys of a type as string
+-- ROBLOX deviation: Luau can't spread keys of a type as string
 type EventName = string -- $Keys<OutgoingEvents>
+-- ROBLOX deviation: Luau can't express
+-- type $ElementType<T, K extends keyof T> = T[K];
 type ElementType<T, U> = any
 
 export type Bridge<
@@ -216,7 +219,7 @@ export type Bridge<
 	_flush: () -> (),
 }
 
--- ROBLOX TODO? not sure where TimeoutID comes from in upstream
+-- ROBLOX deviation: not sure where TimeoutID comes from in upstream
 type TimeoutID = any
 local Bridge = setmetatable({}, { __index = EventEmitter })
 local BridgeMetatable = { __index = Bridge }

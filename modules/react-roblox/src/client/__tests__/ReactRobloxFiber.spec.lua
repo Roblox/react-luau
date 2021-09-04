@@ -233,13 +233,13 @@ return function()
 
   --   ReactDOM.render(tree, testContainer)
   --   svgEls.forEach(el => {
-  --     expect(el.namespaceURI).toBe('http:--www.w3.org/2000/svg')
+  --     expect(el.namespaceURI).toBe('http://www.w3.org/2000/svg')
   --   })
   --   htmlEls.forEach(el => {
-  --     expect(el.namespaceURI).toBe('http:--www.w3.org/1999/xhtml')
+  --     expect(el.namespaceURI).toBe('http://www.w3.org/1999/xhtml')
   --   })
   --   mathEls.forEach(el => {
-  --     expect(el.namespaceURI).toBe('http:--www.w3.org/1998/Math/MathML')
+  --     expect(el.namespaceURI).toBe('http://www.w3.org/1998/Math/MathML')
   --   })
 
   --   ReactDOM.unmountComponentAtNode(testContainer)
@@ -495,7 +495,7 @@ return function()
     jestExpect(childrenParent[2].Text).toBe("normal[1]")
 
     reactRobloxRoot:unmount()
-    
+
     Scheduler.unstable_flushAllWithoutAsserting()
 
     jestExpect(#portalContainer1:GetChildren()).toBe(0)
@@ -633,7 +633,7 @@ return function()
     children = parent:GetChildren()[1]:GetChildren()
     jestExpect(#children).toBe(1)
     jestExpect(children[1].Text).toBe("parent")
-    
+
   end)
 
   -- ROBLOX DEVIATION: Roblox does not have the same concept of namespaces as upstream React
@@ -916,7 +916,7 @@ return function()
     jestExpect(#parent:GetChildren()).toBe(0)
     jestExpect(#portalContainer:GetChildren()).toBe(1)
     jestExpect(portalContainer:GetChildren()[1].Text).toBe("bar")
-    
+
   end)
 
   it('should update portal context if it changes due to setState', function()
