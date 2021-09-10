@@ -1,4 +1,3 @@
---!nonstrict
 return function()
 	local Packages = script.Parent.Parent.Parent
 	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect

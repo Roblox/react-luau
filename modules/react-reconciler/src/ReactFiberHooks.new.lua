@@ -122,7 +122,7 @@ local setWorkInProgressVersion = ReactMutableSource.setWorkInProgressVersion
 local markSourceAsDirty = ReactMutableSource.markSourceAsDirty
 
 -- local getIsRendering = require(script.Parent.ReactCurrentFiber).getIsRendering
--- local logStateUpdateScheduled = require(script.Parent.DebugTracing)
+local logStateUpdateScheduled = require(script.Parent.DebugTracing).logStateUpdateScheduled
 local markStateUpdateScheduled = require(script.Parent.SchedulingProfiler).markStateUpdateScheduled
 
 local ReactCurrentDispatcher = ReactSharedInternals.ReactCurrentDispatcher
@@ -1908,9 +1908,8 @@ function dispatchAction(
   if _G.__DEV__ then
     if enableDebugTracing then
       if bit32.band(fiber.mode, DebugTracingMode) ~= 0 then
-        local _name = getComponentName(fiber.type) or 'Unknown'
-        warn("Skip unimplemented: logStateUpdateScheduled")
-        -- logStateUpdateScheduled(name, lane, action)
+        local name = getComponentName(fiber.type) or 'Unknown'
+        logStateUpdateScheduled(name, lane, action)
       end
     end
   end

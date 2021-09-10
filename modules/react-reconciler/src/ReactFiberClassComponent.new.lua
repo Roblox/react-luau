@@ -8,16 +8,6 @@
  * @flow
 ]]
 
--- FIXME (roblox): remove this when our unimplemented
-local function unimplemented(message)
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("UNIMPLEMENTED ERROR: " .. tostring(message))
-  error("FIXME (roblox): " .. message .. " is unimplemented", 2)
-end
-
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
@@ -89,7 +79,9 @@ local readContext = ReactFiberNewContext.readContext
 -- local requestEventTime = ReactFiberWorkLoop.requestEventTime
 -- local requestUpdateLane = ReactFiberWorkLoop.requestUpdateLane
 -- local scheduleUpdateOnFiber = ReactFiberWorkLoop.scheduleUpdateOnFiber
--- local {logForceUpdateScheduled, logStateUpdateScheduled} = require(script.Parent.DebugTracing)
+local DebugTracing = require(script.Parent.DebugTracing)
+local logForceUpdateScheduled = DebugTracing.logForceUpdateScheduled
+local logStateUpdateScheduled = DebugTracing.logStateUpdateScheduled
 
 local ConsolePatchingDev = require(Packages.Shared).ConsolePatchingDev
 local disableLogs = ConsolePatchingDev.disableLogs
@@ -271,9 +263,8 @@ local function initializeClassComponentUpdater()
       if _G.__DEV__ then
         if enableDebugTracing then
           if bit32.band(fiber.mode, DebugTracingMode) ~= 0 then
-            local _name = getComponentName(fiber.type) or "Unknown"
-            unimplemented("logStateUpdateScheduled")
-            -- logStateUpdateScheduled(name, lane, payload)
+            local name = getComponentName(fiber.type) or "Unknown"
+            logStateUpdateScheduled(name, lane, payload)
           end
         end
       end
@@ -304,9 +295,8 @@ local function initializeClassComponentUpdater()
       if _G.__DEV__ then
         if enableDebugTracing then
           if bit32.band(fiber.mode, DebugTracingMode) ~= 0 then
-            local _name = getComponentName(fiber.type) or "Unknown"
-            warn("Skip unimplemented: logStateUpdateScheduled")
-            -- logStateUpdateScheduled(name, lane, payload)
+            local name = getComponentName(fiber.type) or "Unknown"
+            logStateUpdateScheduled(name, lane, payload)
           end
         end
       end
@@ -336,9 +326,8 @@ local function initializeClassComponentUpdater()
       if _G.__DEV__ then
         if enableDebugTracing then
           if bit32.band(fiber.mode, DebugTracingMode) ~= 0 then
-            local _name = getComponentName(fiber.type) or "Unknown"
-            warn("Skip unimplemented: logStateUpdateScheduled")
-            -- logForceUpdateScheduled(name, lane)
+            local name = getComponentName(fiber.type) or "Unknown"
+            logForceUpdateScheduled(name, lane)
           end
         end
       end

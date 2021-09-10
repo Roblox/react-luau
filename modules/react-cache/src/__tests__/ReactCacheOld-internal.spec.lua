@@ -23,7 +23,7 @@ local textResourceShouldFail
 
 return function()
 	local Packages = script.Parent.Parent.Parent
-	local LuauPolyfill = require(Packages.Dev.LuauPolyfill)
+	local LuauPolyfill = require(Packages.LuauPolyfill)
 	local Promise = require(Packages.Dev.Promise)
 	local setTimeout = LuauPolyfill.setTimeout
 	local jest = require(Packages.Dev.JestRoblox)

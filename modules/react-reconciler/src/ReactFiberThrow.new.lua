@@ -11,9 +11,9 @@
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
-
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
+type Set<T> = { [T]: boolean }
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber;
@@ -107,7 +107,7 @@ local isAlreadyFailedLegacyErrorBoundary = function(...)
 end
 
 local logCapturedError = require(script.Parent.ReactFiberErrorLogger).logCapturedError
--- local {logComponentSuspended} = require(Packages../DebugTracing'
+local logComponentSuspended = require(script.Parent.DebugTracing).logComponentSuspended
 local markComponentSuspended = require(script.Parent.SchedulingProfiler).markComponentSuspended
 
 local SyncLane = ReactFiberLane.SyncLane
@@ -118,17 +118,6 @@ local pickArbitraryLane = ReactFiberLane.pickArbitraryLane
 
 -- local PossiblyWeakMap = typeof WeakMap == 'function' ? WeakMap : Map
 
--- FIXME (roblox): remove this when our unimplemented
-local function unimplemented(message)
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("UNIMPLEMENTED ERROR: " .. tostring(message))
-  error("FIXME (roblox): " .. message .. " is unimplemented", 2)
-end
-
-type Set<T> = { [T]: boolean }
 
 function createRootErrorUpdate(
   fiber: Fiber,
@@ -268,9 +257,8 @@ function throwException(
     if _G.__DEV__ then
       if enableDebugTracing then
         if bit32.band(sourceFiber.mode, DebugTracingMode) ~= 0 then
-          local _name = getComponentName(sourceFiber.type) or 'Unknown'
-          unimplemented("logComponentSuspended")
-          -- logComponentSuspended(name, wakeable)
+          local name = getComponentName(sourceFiber.type) or 'Unknown'
+          logComponentSuspended(name, wakeable)
         end
       end
     end

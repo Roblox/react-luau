@@ -807,7 +807,7 @@ return function()
         -- ROBLOX TODO: jest.fn
         -- @gate experimental
         it("does not schedule an update for subscriptions that fire with an unchanged snapshot", function()
-            -- ROBLOX TODO: jest.fn, temporarily uses Component in place of jest.fn(Component)
+            -- ROBLOX TODO: jest.fn, temporarily uses Component in place of jest:fn(Component)
             local MockComponent = Component
             local source = createSource("one")
             local mutableSource = createMutableSource(source, function(param)

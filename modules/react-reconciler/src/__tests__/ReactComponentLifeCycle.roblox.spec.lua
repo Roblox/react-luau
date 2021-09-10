@@ -15,7 +15,6 @@
  * is *reused*, then that won't be the case and things will appear to work in
  * some cases. Better to just block all updates in initialization.
  ]]
- --!nolint
 
  return function()
     local HttpService = game:GetService("HttpService")
@@ -526,9 +525,9 @@
         end)
       end).toErrorDev(
         "`MyComponent` uses `getDerivedStateFromProps` but its initial state has not been initialized. " ..
-      "This is not recommended. Instead, define the initial state by " ..
-      "passing an object to `self:setState` in the `init` method of `MyComponent`. " ..
-      "This ensures that `getDerivedStateFromProps` arguments have a consistent shape."
+        "This is not recommended. Instead, define the initial state by " ..
+        "passing an object to `self:setState` in the `init` method of `MyComponent`. " ..
+        "This ensures that `getDerivedStateFromProps` arguments have a consistent shape."
       )
 
       -- De-duped
@@ -734,10 +733,10 @@
 
           -- tests same thing but with UNSAFE_componentWillUpdate() which is the preferred name starting from Roact 16.x
           local Bar = React[component]:extend("Bar")
-          function Foo:UNSAFE_componentWillUpdate() end
+          function Bar:UNSAFE_componentWillUpdate() end
           jestExpect(function()
-              function Foo:willUpdate() end
-          end).toWarnDev("Warning: Foo already defined 'UNSAFE_componentWillUpdate', but it also defining the deprecated Roact method 'willUpdate'. Foo should only implement one of these methods, preferably using the non-deprecated name.", {withoutStack = true})
+              function Bar:willUpdate() end
+          end).toWarnDev("Warning: Bar already defined 'UNSAFE_componentWillUpdate', but it also defining the deprecated Roact method 'willUpdate'. Bar should only implement one of these methods, preferably using the non-deprecated name.", {withoutStack = true})
       end)
       it("should worn if both didUpdate and componentDidUpdate are defined on the same " .. component, function()
           local Foo = React[component]:extend("Foo")

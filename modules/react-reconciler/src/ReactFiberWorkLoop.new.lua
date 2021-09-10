@@ -7,6 +7,7 @@
  *
  * @flow
 ]]
+
 -- FIXME (roblox): remove this when our unimplemented
 local function unimplemented(message)
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -85,7 +86,7 @@ local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 -- local deferRenderPhaseUpdateToNextBatch = ReactFeatureFlags.ReactFeatureFlags.deferRenderPhaseUpdateToNextBatch
 -- local decoupleUpdatePriorityFromScheduler = ReactFeatureFlags.ReactFeatureFlags.decoupleUpdatePriorityFromScheduler
 -- local enableDebugTracing = ReactFeatureFlags.enableDebugTracing
-local enableSchedulingProfiler = ReactFeatureFlags.enableSchedulingProfiler
+-- local enableSchedulingProfiler = ReactFeatureFlags.enableSchedulingProfiler
 local skipUnmountedBoundaries = ReactFeatureFlags.skipUnmountedBoundaries
 local enableDoubleInvokingEffects = ReactFeatureFlags.enableDoubleInvokingEffects
 local ReactSharedInternals = require(Packages.Shared).ReactSharedInternals
@@ -110,15 +111,15 @@ local ReactHookEffectTags = require(script.Parent.ReactHookEffectTags)
 -- local NoHookEffect = ReactHookEffectTags.NoFlags
 -- local HookPassive = ReactHookEffectTags.Passive
 -- local {
---   logCommitStarted,
---   logCommitStopped,
---   logLayoutEffectsStarted,
---   logLayoutEffectsStopped,
+--   DebugTracing.logCommitStarted,
+--   DebugTracing.logCommitStopped,
+--   DebugTracing.logLayoutEffectsStarted,
+--   DebugTracing.logLayoutEffectsStopped,
 --   logPassiveEffectsStarted,
---   logPassiveEffectsStopped,
---   logRenderStarted,
---   logRenderStopped,
--- } = require(script.Parent.DebugTracing)
+--   DebugTracing.logPassiveEffectsStopped,
+--   DebugTracing.logRenderStarted,
+--   DebugTracing.logRenderStopped,
+local DebugTracing = require(script.Parent.DebugTracing)
 -- local {
 --   SchedulingProfiler.markCommitStarted,
 --   SchedulingProfiler.markCommitStopped,
@@ -549,6 +550,7 @@ exports.requestUpdateLane = function(fiber: Fiber): Lane
   if isTransition then
     if currentEventPendingLanes ~= ReactFiberLane.NoLanes then
       if mostRecentlyUpdatedRoot ~= nil then
+        -- ROBLOX TODO: remove Luau narrowing workaround
         currentEventPendingLanes = (mostRecentlyUpdatedRoot :: ReactInternalTypes.FiberRoot).pendingLanes
       else
         currentEventPendingLanes = ReactFiberLane.NoLanes
@@ -1594,6 +1596,7 @@ mod.prepareFreshStack = function(root: ReactInternalTypes.FiberRoot, lanes: Lane
   end
 
   if workInProgress ~= nil then
+    -- ROBLOX TODO: Remove Luau narrowing workaround
     local interruptedWork = (workInProgress :: Fiber).return_
     while interruptedWork ~= nil do
       unwindInterruptedWork(interruptedWork)
@@ -1792,12 +1795,11 @@ mod.renderRootSync = function(root: ReactInternalTypes.FiberRoot, lanes: Lanes)
 
   if _G.__DEV__ then
     if ReactFeatureFlags.enableDebugTracing then
-      unimplemented("debug tracing logic")
-      -- logRenderStarted(lanes)
+      DebugTracing.logRenderStarted(lanes)
     end
   end
 
-  if enableSchedulingProfiler then
+  if ReactFeatureFlags.enableSchedulingProfiler then
     SchedulingProfiler.markRenderStarted(lanes)
   end
 
@@ -1838,12 +1840,11 @@ mod.renderRootSync = function(root: ReactInternalTypes.FiberRoot, lanes: Lanes)
 
   if _G.__DEV__ then
     if ReactFeatureFlags.enableDebugTracing then
-      unimplemented("debug tracing logic")
-      -- logRenderStopped()
+      DebugTracing.logRenderStopped()
     end
   end
 
-  if enableSchedulingProfiler then
+  if ReactFeatureFlags.enableSchedulingProfiler then
     SchedulingProfiler.markRenderStopped()
   end
 
@@ -1880,12 +1881,11 @@ mod.renderRootConcurrent = function(root: ReactInternalTypes.FiberRoot, lanes: L
 
   if _G.__DEV__ then
     if ReactFeatureFlags.enableDebugTracing then
-      unimplemented("debug tracing logic")
-      -- logRenderStarted(lanes)
+      DebugTracing.logRenderStarted(lanes)
     end
   end
 
-  if enableSchedulingProfiler then
+  if ReactFeatureFlags.enableSchedulingProfiler then
     SchedulingProfiler.markRenderStarted(lanes)
   end
 
@@ -1921,21 +1921,20 @@ mod.renderRootConcurrent = function(root: ReactInternalTypes.FiberRoot, lanes: L
 
   if _G.__DEV__ then
     if ReactFeatureFlags.enableDebugTracing then
-      unimplemented("debug tracing logic")
-      -- logRenderStopped()
+      DebugTracing.logRenderStopped()
     end
   end
 
   -- Check if the tree has completed.
   if workInProgress ~= nil then
     -- Still work remaining.
-    if enableSchedulingProfiler then
+    if ReactFeatureFlags.enableSchedulingProfiler then
       SchedulingProfiler.markRenderYielded()
     end
     return RootExitStatus.Incomplete
   else
     -- Completed the tree.
-    if enableSchedulingProfiler then
+    if ReactFeatureFlags.enableSchedulingProfiler then
       SchedulingProfiler.markRenderStopped()
     end
 
@@ -2111,24 +2110,22 @@ mod.commitRootImpl = function(root, renderPriorityLevel)
 
   if _G.__DEV__ then
     if ReactFeatureFlags.enableDebugTracing then
-      unimplemented("debug tracing logic")
-      -- logCommitStarted(lanes)
+      DebugTracing.logCommitStarted(lanes)
     end
   end
 
-  if enableSchedulingProfiler then
+  if ReactFeatureFlags.enableSchedulingProfiler then
     SchedulingProfiler.markCommitStarted(lanes)
   end
 
   if finishedWork == nil then
     if _G.__DEV__ then
       if ReactFeatureFlags.enableDebugTracing then
-        unimplemented("debug tracing logic")
-        -- logCommitStopped()
+        DebugTracing.logCommitStopped()
       end
     end
 
-    if enableSchedulingProfiler then
+    if ReactFeatureFlags.enableSchedulingProfiler then
       SchedulingProfiler.markCommitStopped()
     end
 
@@ -2251,11 +2248,10 @@ mod.commitRootImpl = function(root, renderPriorityLevel)
     -- layout, but class component lifecycles also fire here for legacy reasons.
     if _G.__DEV__ then
       if ReactFeatureFlags.enableDebugTracing then
-        unimplemented("debug tracing logic")
-        -- logLayoutEffectsStarted(lanes)
+        DebugTracing.logLayoutEffectsStarted(lanes)
       end
     end
-    if enableSchedulingProfiler then
+    if ReactFeatureFlags.enableSchedulingProfiler then
       SchedulingProfiler.markLayoutEffectsStarted(lanes)
     end
 
@@ -2296,11 +2292,10 @@ mod.commitRootImpl = function(root, renderPriorityLevel)
 
     if _G.__DEV__ then
       if ReactFeatureFlags.enableDebugTracing then
-        unimplemented("debug tracing logic")
-        -- logLayoutEffectsStopped()
+        DebugTracing.logLayoutEffectsStopped()
       end
     end
-    if enableSchedulingProfiler then
+    if ReactFeatureFlags.enableSchedulingProfiler then
       SchedulingProfiler.markLayoutEffectsStopped()
     end
 
@@ -2427,12 +2422,11 @@ mod.commitRootImpl = function(root, renderPriorityLevel)
   if bit32.band(executionContext, LegacyUnbatchedContext) ~= NoContext then
     if _G.__DEV__ then
       if ReactFeatureFlags.enableDebugTracing then
-        unimplemented("debug tracing logic")
-        -- logCommitStopped()
+        DebugTracing.logCommitStopped()
       end
     end
 
-    if enableSchedulingProfiler then
+    if ReactFeatureFlags.enableSchedulingProfiler then
       SchedulingProfiler.markCommitStopped()
     end
 
@@ -2448,12 +2442,11 @@ mod.commitRootImpl = function(root, renderPriorityLevel)
 
   if _G.__DEV__ then
     if ReactFeatureFlags.enableDebugTracing then
-      unimplemented("debug tracing logic")
-      -- logCommitStopped()
+      DebugTracing.logCommitStopped()
     end
   end
 
-  if enableSchedulingProfiler then
+  if ReactFeatureFlags.enableSchedulingProfiler then
     SchedulingProfiler.markCommitStopped()
   end
 
@@ -2920,7 +2913,7 @@ flushPassiveEffectsImpl = function()
   end
 
   local root = rootWithPendingPassiveEffects
-  local _lanes = pendingPassiveEffectsLanes
+  local lanes = pendingPassiveEffectsLanes
   rootWithPendingPassiveEffects = nil
   pendingPassiveEffectsLanes = ReactFiberLane.NoLanes
 
@@ -2931,14 +2924,12 @@ flushPassiveEffectsImpl = function()
 
   if _G.__DEV__ then
     if ReactFeatureFlags.enableDebugTracing then
-      unimplemented("debug tracing")
-      -- FIXME (roblox): enable tracing logic
-      -- logPassiveEffectsStarted(lanes)
+      DebugTracing.logPassiveEffectsStarted(lanes)
     end
   end
 
-  if enableSchedulingProfiler then
-    SchedulingProfiler.markPassiveEffectsStarted(_lanes)
+  if ReactFeatureFlags.enableSchedulingProfiler then
+    SchedulingProfiler.markPassiveEffectsStarted(lanes)
   end
 
   if _G.__DEV__ then
@@ -2960,12 +2951,11 @@ flushPassiveEffectsImpl = function()
 
   if _G.__DEV__ then
     if ReactFeatureFlags.enableDebugTracing then
-      unimplemented("debug tracing logic")
-      -- logPassiveEffectsStopped()
+      DebugTracing.logPassiveEffectsStopped()
     end
   end
 
-  if enableSchedulingProfiler then
+  if ReactFeatureFlags.enableSchedulingProfiler then
     SchedulingProfiler.markPassiveEffectsStopped()
   end
 
@@ -2979,7 +2969,7 @@ flushPassiveEffectsImpl = function()
 
   if ReactFeatureFlags.enableSchedulerTracing then
     mod.popInteractions(prevInteractions)
-    mod.finishPendingInteractions(root, _lanes)
+    mod.finishPendingInteractions(root, lanes)
   end
 
   executionContext = prevExecutionContext
@@ -3183,7 +3173,7 @@ exports.resolveRetryWakeable = function(boundaryFiber: Fiber, wakeable: Wakeable
         retryCache = boundaryFiber.stateNode
         local suspenseState: nil | SuspenseState = boundaryFiber.memoizedState
         if suspenseState ~= nil then
-          -- ROBLOX FIXME: remove recast
+          -- ROBLOX TODO: Remove Luau narrowing workaround
           retryLane = (suspenseState :: SuspenseState).retryLane
         end
       elseif boundaryFiber.tag == ReactWorkTags.SuspenseListComponent then
@@ -3789,8 +3779,8 @@ exports.markSpawnedWork = function(lane: Lane | Lanes)
   if spawnedWorkDuringRender == nil then
     spawnedWorkDuringRender = {lane}
   else
-    -- ROBLOX TODO: Luau type narrowing workaround
-    table.insert(spawnedWorkDuringRender :: Array<Lane | Lanes>, lane)
+    -- ROBLOX TODO: Remove Luau narrowing workaround
+    table.insert((spawnedWorkDuringRender :: Array<number>), lane)
   end
 end
 

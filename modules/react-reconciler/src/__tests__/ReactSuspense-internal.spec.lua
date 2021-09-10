@@ -1692,12 +1692,12 @@ return function()
         --     end)
         --     it('should call onInteractionScheduledWorkCompleted after suspending', function()
         --         local subscriber = {
-        --             onInteractionScheduledWorkCompleted = jest.fn(),
-        --             onInteractionTraced = jest.fn(),
-        --             onWorkCanceled = jest.fn(),
-        --             onWorkScheduled = jest.fn(),
-        --             onWorkStarted = jest.fn(),
-        --             onWorkStopped = jest.fn(),
+        --             onInteractionScheduledWorkCompleted = jest:fn(),
+        --             onInteractionTraced = jest:fn(),
+        --             onWorkCanceled = jest:fn(),
+        --             onWorkScheduled = jest:fn(),
+        --             onWorkStarted = jest:fn(),
+        --             onWorkStopped = jest:fn(),
         --         }
 
         --         SchedulerTracing.unstable_subscribe(subscriber)

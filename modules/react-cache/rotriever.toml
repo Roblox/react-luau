@@ -9,10 +9,10 @@ files = ["*", "!**/__tests__/**"]
 Scheduler = { path = "../scheduler" }
 Shared = { path = "../shared" }
 React = { path = "../react" }
+LuauPolyfill = { workspace = true }
 
 [dev_dependencies]
 JestRoblox = { workspace = true }
-LuauPolyfill = { workspace = true }
 Promise = { workspace = true }
 JestReact = { path = "../jest-react" }
 ReactTestRenderer = { path = "../react-test-renderer" }

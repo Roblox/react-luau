@@ -25,26 +25,29 @@ local createLRU = require(script.Parent.LRU).createLRU
 
 -- ROBLOX deviation: use andThen convention, extra parameter for self
 type Suspender = {
-	andThen: (Object, () -> any, () -> any) -> any,
+	andThen: (Object, () -> any, () -> any) -> any
 }
 
 type PendingResult = {
 	status: number,
-	value: Suspender,
+	value: Suspender
 }
 
-type ResolvedResult<V> = { status: number, value: V }
+type ResolvedResult<V> = {
+	status: number,
+	value: V
+}
 
 type RejectedResult = {
 	status: number,
-	value: any,
+	value: any
 }
 
 type Result<V> = PendingResult | ResolvedResult<V> | RejectedResult
 
 type Resource<I, V> = {
 	read: (I) -> V,
-	preload: (I) -> (),
+	preload: (I) -> ()
 }
 
 local Pending = 0

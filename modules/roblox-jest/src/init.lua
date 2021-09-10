@@ -10,6 +10,7 @@ local RobloxJest = {
 	Matchers = {
 		toErrorDev = require(script.Matchers.toErrorDev),
 		toWarnDev = require(script.Matchers.toWarnDev),
+		toLogDev = require(script.Matchers.toLogDev),
 		toContainNoInteractions = InteractionTracingMatchers.toContainNoInteractions,
 		toHaveBeenLastNotifiedOfInteraction = InteractionTracingMatchers.toHaveBeenLastNotifiedOfInteraction,
 		toHaveBeenLastNotifiedOfWork = InteractionTracingMatchers.toHaveBeenLastNotifiedOfWork,

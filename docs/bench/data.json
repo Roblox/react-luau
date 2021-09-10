@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1631297859446,
+  "lastUpdate": 1631306412074,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -252,6 +252,47 @@
             "extra": "200 samples\nroblox-cli version: 0.495.0.4950265"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "cdad9e14ed240e308df8ed82ea6913545d5c14da",
+          "message": "LUAFDN-56: Debug tracing API and tests",
+          "timestamp": "2021-09-10T18:47:41Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/143/commits/cdad9e14ed240e308df8ed82ea6913545d5c14da"
+        },
+        "date": 1631306410178,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 63.1338,
+            "range": "±39.58%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.495.0.4950265"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 23.0241,
+            "range": "±228.75%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.495.0.4950265"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 126.4891,
+            "range": "±25.69%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.495.0.4950265"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -413,6 +454,40 @@
             "name": "FrameRate#Δt",
             "value": 42.4006,
             "range": "±9.79%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.495.0.4950265"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "cdad9e14ed240e308df8ed82ea6913545d5c14da",
+          "message": "LUAFDN-56: Debug tracing API and tests",
+          "timestamp": "2021-09-10T18:47:41Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/143/commits/cdad9e14ed240e308df8ed82ea6913545d5c14da"
+        },
+        "date": 1631306410805,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 18.7784,
+            "range": "±8.18%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.495.0.4950265"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 53.6171,
+            "range": "±8.50%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.495.0.4950265"
           }
@@ -582,6 +657,40 @@
             "extra": "50 samples\nroblox-cli version: 0.495.0.4950265"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "cdad9e14ed240e308df8ed82ea6913545d5c14da",
+          "message": "LUAFDN-56: Debug tracing API and tests",
+          "timestamp": "2021-09-10T18:47:41Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/143/commits/cdad9e14ed240e308df8ed82ea6913545d5c14da"
+        },
+        "date": 1631306411439,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 13.9546,
+            "range": "±10.85%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.495.0.4950265"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 72.6083,
+            "range": "±12.35%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.495.0.4950265"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -743,6 +852,40 @@
             "name": "FrameRate#Δt",
             "value": 10.0323,
             "range": "±8.96%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.495.0.4950265"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "cdad9e14ed240e308df8ed82ea6913545d5c14da",
+          "message": "LUAFDN-56: Debug tracing API and tests",
+          "timestamp": "2021-09-10T18:47:41Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/143/commits/cdad9e14ed240e308df8ed82ea6913545d5c14da"
+        },
+        "date": 1631306412071,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 88.1114,
+            "range": "±12.30%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.495.0.4950265"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 11.5328,
+            "range": "±13.20%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.495.0.4950265"
           }

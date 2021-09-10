@@ -525,4 +525,24 @@ return function()
 			end)
 		end
 	end)
+
+	describe("toLogDev", function()
+		it("does not fail if a logs contains a stack", function()
+			jestExpect(function()
+				console.log("Hello\n    in div")
+			end).toLogDev("Hello")
+		end)
+
+		it("does not fail if all logs contain a stack", function()
+			jestExpect(function()
+				console.log("Hello\n    in div")
+				console.log("Good day\n    in div")
+				console.log("Bye\n    in div")
+			end).toLogDev({
+				"Hello",
+				"Good day",
+				"Bye",
+			})
+		end)
+	end)
 end

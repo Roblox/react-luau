@@ -1738,7 +1738,7 @@ return function()
 						-- was previously disallowed in React as well. There was
 						-- quite a bit of discussion about it here:
 						-- https://github.com/DefinitelyTyped/DefinitelyTyped/issues/31065
-						
+
 						-- For now, we've relaxed this restriction to maximize
 						-- compatibility. We should consider using a binding
 						-- here, which would be the idiomatic approach in legacy
@@ -1925,16 +1925,16 @@ return function()
 		-- ROBLOX TODO: schedulerTracing
 		-- @gate enableSchedulerTracing
 		--   it('does not flush non-discrete passive effects when flushing sync (with tracing)', function()
-		--     local onInteractionScheduledWorkCompleted = jest.fn()
-		--     local onWorkCanceled = jest.fn()
+		--     local onInteractionScheduledWorkCompleted = jest:fn()
+		--     local onWorkCanceled = jest:fn()
 
 		--     SchedulerTracing.unstable_subscribe({
 		--         onInteractionScheduledWorkCompleted = onInteractionScheduledWorkCompleted,
-		--         onInteractionTraced = jest.fn(),
+		--         onInteractionTraced = jest:fn(),
 		--         onWorkCanceled = onWorkCanceled,
-		--         onWorkScheduled = jest.fn(),
-		--         onWorkStarted = jest.fn(),
-		--         onWorkStopped = jest.fn(),
+		--         onWorkScheduled = jest:fn(),
+		--         onWorkStarted = jest:fn(),
+		--         onWorkStopped = jest:fn(),
 		--     })
 
 		--     local _updateCount
