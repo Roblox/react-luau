@@ -116,7 +116,7 @@ exports.appendChild =
 				console.error(
 					"An invalid container has been provided. "
 						.. "This may indicate that another renderer is being used in addition to the test renderer. "
-						.. "(For example, ReactDOM.createPortal inside of a ReactTestRenderer tree.) "
+						.. "(For example, ReactNoop.createPortal inside of a ReactTestRenderer tree.) "
 						.. "This is not supported."
 				)
 			end

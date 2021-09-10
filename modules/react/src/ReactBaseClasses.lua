@@ -245,7 +245,7 @@ end
 if _G.__DEV__ then
   local deprecatedAPIs = {
     isMounted = {'isMounted', 'Instead, make sure to clean up subscriptions and pending requests in ' .. 'componentWillUnmount to prevent memory leaks.'},
-    replaceState = {'replaceState', 'Refactor your code to use setState instead (see ' .. 'https:--github.com/facebook/react/issues/3236).'}
+    replaceState = {'replaceState', 'Refactor your code to use setState instead (see ' .. 'https://github.com/facebook/react/issues/3236).'}
   }
 
   local defineDeprecationWarning = function (methodName, info)

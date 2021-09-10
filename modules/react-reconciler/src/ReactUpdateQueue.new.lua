@@ -679,7 +679,7 @@ function callCallback(callback, context)
 		typeof(callback) == 'function',
 		'Invalid argument passed as callback. Expected a function. Instead ' ..
 			'received: %s',
-		callback
+		tostring(callback)
 	)
 	callback(context)
 end

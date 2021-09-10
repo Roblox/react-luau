@@ -49,7 +49,7 @@ if _G.__DEV__ then
     return maybeStrictRoot
   end
 
-  local setToSortedString = function(set)
+  local setToSortedString = function(set): string
     local array = {}
     for key, value in pairs(set) do
       table.insert(array, key)

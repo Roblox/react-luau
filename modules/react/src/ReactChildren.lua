@@ -214,7 +214,7 @@ local isValidElement = ReactElement.isValidElement
 -- --[[*
 --  * Maps children that are typically specified as `props.children`.
 --  *
---  * See https:--reactjs.org/docs/react-api.html#reactchildrenmap
+--  * See https://reactjs.org/docs/react-api.html#reactchildrenmap
 --  *
 --  * The provided mapFunction(child, index) will be called for each
 --  * leaf child.
@@ -244,7 +244,7 @@ local isValidElement = ReactElement.isValidElement
 --  * Count the number of children that are typically specified as
 --  * `props.children`.
 --  *
---  * See https:--reactjs.org/docs/react-api.html#reactchildrencount
+--  * See https://reactjs.org/docs/react-api.html#reactchildrencount
 --  *
 --  * @param {?*} children Children tree container.
 --  * @return {number} The number of children.
@@ -263,7 +263,7 @@ local isValidElement = ReactElement.isValidElement
 -- --[[*
 --  * Iterates through children that are typically specified as `props.children`.
 --  *
---  * See https:--reactjs.org/docs/react-api.html#reactchildrenforeach
+--  * See https://reactjs.org/docs/react-api.html#reactchildrenforeach
 --  *
 --  * The provided forEachFunc(child, index) will be called for each
 --  * leaf child.
@@ -291,7 +291,7 @@ local isValidElement = ReactElement.isValidElement
 --  * Flatten a children object (typically specified as `props.children`) and
 --  * return an array with appropriately re-keyed children.
 --  *
---  * See https:--reactjs.org/docs/react-api.html#reactchildrentoarray
+--  * See https://reactjs.org/docs/react-api.html#reactchildrentoarray
 --  ]]
 -- function toArray(children: ?ReactNodeList): Array<React$Node> {
 --   return mapChildren(children, child => child) or []
@@ -301,7 +301,7 @@ local isValidElement = ReactElement.isValidElement
  * Returns the first child in a collection of children and verifies that there
  * is only one child in the collection.
  *
- * See https:--reactjs.org/docs/react-api.html#reactchildrenonly
+ * See https://reactjs.org/docs/react-api.html#reactchildrenonly
  *
  * The current implementation of this function assumes that a single child gets
  * passed without a wrapper, but the purpose of this helper function is to

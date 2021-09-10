@@ -36,7 +36,7 @@ local function getWrappedName(outerType, innerType, wrapperName)
 	) or wrapperName)
 end
 
-local function getContextName(type)
+local function getContextName(type): string
 	return type.displayName or "Context"
 end
 

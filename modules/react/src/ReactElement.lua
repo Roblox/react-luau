@@ -63,7 +63,7 @@ end
 
 local reactWarning = {isReactWarning = true}
 
-local function defineKeyPropWarningGetter(props, displayName)
+local function defineKeyPropWarningGetter(props, displayName: string)
 	local warnAboutAccessingKey = function()
 			if _G.__DEV__ then
 				if not specialPropKeyWarningShown then
@@ -94,7 +94,7 @@ local function defineKeyPropWarningGetter(props, displayName)
 	})
 end
 
-local function defineRefPropWarningGetter(props, displayName)
+local function defineRefPropWarningGetter(props, displayName: string)
 	-- deviation: Use a __call metamethod here to make this function-like, but
 	-- still able to have the `isReactWarning` flag defined on it
 	local warnAboutAccessingRef = function()
@@ -138,18 +138,18 @@ local function warnIfStringRefCannotBeAutoConverted(config)
 		then
 			local componentName = getComponentName(ReactCurrentOwner.current.type)
 
+			-- ROBLOX deviation: we don't support string refs and hard error instead of warn
 			if not didWarnAboutStringRefs[componentName] then
-				console.error(
+				error(string.format(
 					'Component "%s" contains the string ref "%s". ' ..
 						"Support for string refs has been removed. " ..
-						"This case cannot be automatically converted to an arrow function. " ..
-						"We ask you to manually fix this case by using useRef() or createRef() instead. " ..
+						"We recommend using useRef() or createRef() instead. " ..
 						"Learn more about using refs safely here: " ..
 						"https://reactjs.org/link/strict-mode-string-ref",
-					componentName,
+					componentName or "Unknown",
 					config.ref
-				)
-				didWarnAboutStringRefs[componentName] = true
+				))
+				-- didWarnAboutStringRefs[componentName] = true
 			end
 		end
 	end

@@ -11,8 +11,6 @@
 local function unimplemented(message)
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   print("UNIMPLEMENTED ERROR: " .. tostring(message))
   error("FIXME (roblox): " .. message .. " is unimplemented", 2)
 end
@@ -31,13 +29,14 @@ local clearTimeout = LuauPolyfill.clearTimeout
 --   ObserveVisibleRectsCallback,
 -- } = require(Packages.react-reconciler/src/ReactTestSelectors'
 local ReactRobloxHostTypes = require(script.Parent["ReactRobloxHostTypes.roblox"])
-type RootType = ReactRobloxHostTypes.RootType;
-type Container = ReactRobloxHostTypes.Container;
-type HostInstance = ReactRobloxHostTypes.HostInstance;
-type SuspenseInstance = ReactRobloxHostTypes.SuspenseInstance;
-type Props = ReactRobloxHostTypes.Props;
-type Type = ReactRobloxHostTypes.Type;
-type HostContext = ReactRobloxHostTypes.HostContext;
+type RootType = ReactRobloxHostTypes.RootType
+type Container = ReactRobloxHostTypes.Container
+type HostInstance = ReactRobloxHostTypes.HostInstance
+type SuspenseInstance = ReactRobloxHostTypes.SuspenseInstance
+type TextInstance = ReactRobloxHostTypes.TextInstance
+type Props = ReactRobloxHostTypes.Props
+type Type = ReactRobloxHostTypes.Type
+type HostContext = ReactRobloxHostTypes.HostContext
 
 -- local type {ReactScopeInstance} = require(Packages.shared/ReactTypes'
 -- local type {ReactDOMFundamentalComponentInstance} = require(Packages.../shared/ReactDOMTypes'
@@ -202,7 +201,7 @@ Object.assign(exports, require(Packages.Shared).ReactFiberHostConfig.WithNoPersi
 exports.getRootHostContext = function(
   rootContainerInstance: Container
 ): HostContext
-  -- deviation: This is a lot of HTML-DOM specific logic; I'm not clear on
+  -- ROBLOX deviation: This is a lot of HTML-DOM specific logic; I'm not clear on
   -- whether there'll be an equivalent of `namespaceURI` for our use cases, but
   -- we may want to provide other kinds of context for host objects.
 
@@ -376,7 +375,7 @@ exports.appendInitialChild = function(
   parentInstance: Instance,
   child: Instance
 )
-  -- deviation: Establish hierarchy with Parent property
+  -- ROBLOX deviation: Establish hierarchy with Parent property
   child.Parent = parentInstance
 end
 
@@ -425,7 +424,7 @@ exports.prepareUpdate = function(
 end
 
 exports.shouldSetTextContent = function(_type: string, _props: Props): boolean
-  -- deviation: Ignore TextInstance logic, which isn't applicable to Roblox
+  -- ROBLOX deviation: Ignore TextInstance logic, which isn't applicable to Roblox
   return false
 --   return (
 --     type == 'textarea' or
@@ -439,28 +438,23 @@ exports.shouldSetTextContent = function(_type: string, _props: Props): boolean
 --   )
 end
 
--- deviation: Ignore TextInstance logic, which isn't applicable to Roblox
--- exports.createTextInstance(
---   text: string,
---   rootContainerInstance: Container,
---   hostContext: HostContext,
---   internalInstanceHandle: Object,
--- ): TextInstance {
---   if __DEV__)
---     local hostContextDev = ((hostContext: any): HostContextDev)
---     validateDOMNesting(null, text, hostContextDev.ancestorInfo)
---   end
---   local textNode: TextInstance = createTextNode(text, rootContainerInstance)
---   precacheFiberNode(internalInstanceHandle, textNode)
---   return textNode
--- end
+-- ROBLOX deviation: Text nodes aren't supported in Roblox renderer, so error so that tests fail immediately
+exports.createTextInstance = function(
+  text: string,
+  rootContainerInstance: Container,
+  hostContext: HostContext,
+  internalInstanceHandle: Object
+): any
+  unimplemented("createTextInstance")
+  return nil
+end
 
 exports.isPrimaryRenderer = true
 exports.warnsIfNotActing = true
 -- This initialization code may run even on server environments
 -- if a component just imports ReactDOM (e.g. for findDOMNode).
 -- Some environments might not have setTimeout or clearTimeout.
--- deviation: We're only dealing with client right now, so these always populate
+-- ROBLOX deviation: We're only dealing with client right now, so these always populate
 exports.scheduleTimeout = setTimeout
 exports.cancelTimeout = clearTimeout
 exports.noTimeout = -1
@@ -508,12 +502,12 @@ exports.commitUpdate = function(
   updateProperties(domElement, updatePayload, type_, oldProps, newProps)
 end
 
--- deviation: Ignore TextInstance logic, which isn't applicable to Roblox
+-- ROBLOX deviation: Ignore TextInstance logic, which isn't applicable to Roblox
 -- exports.resetTextContent(domElement: Instance): void {
 --   setTextContent(domElement, '')
 -- end
 
--- deviation: Ignore TextInstance logic, which isn't applicable to Roblox
+-- ROBLOX deviation: Ignore TextInstance logic, which isn't applicable to Roblox
 -- exports.commitTextUpdate(
 --   textInstance: TextInstance,
 --   oldText: string,
@@ -526,7 +520,7 @@ exports.appendChild = function(
   parentInstance: Instance,
   child: Instance
 )
-  -- deviation: Roblox's DOM is based on child->parent references
+  -- ROBLOX deviation: Roblox's DOM is based on child->parent references
   child.Parent = parentInstance
   -- parentInstance.appendChild(child)
 end
@@ -535,7 +529,7 @@ exports.appendChildToContainer = function(
   container: Container,
   child: Instance
 )
-  -- deviation: Some of this logic may come back; for now, keep it simple
+  -- ROBLOX TODO: Some of this logic may come back; for now, keep it simple
   local parentNode = container
   exports.appendChild(parentNode, child)
 
@@ -553,7 +547,7 @@ exports.appendChildToContainer = function(
   -- -- event exists. So we wouldn't see it and dispatch it.
   -- -- This is why we ensure that non React root containers have inline onclick
   -- -- defined.
-  -- -- https:--github.com/facebook/react/issues/11918
+  -- -- https://github.com/facebook/react/issues/11918
   -- local reactRootContainer = container._reactRootContainer
   -- if
   --   reactRootContainer == nil and parentNode.onclick == nil
@@ -568,7 +562,7 @@ exports.insertBefore = function(
   child: Instance,
   _beforeChild: Instance
 )
-  -- deviation: Roblox's DOM is based on child->parent references
+  -- ROBLOX deviation: Roblox's DOM is based on child->parent references
   child.Parent = parentInstance
   -- parentInstance.insertBefore(child, beforeChild)
 end
@@ -578,7 +572,7 @@ exports.insertInContainerBefore = function(
   child: Instance,
   _beforeChild: Instance
 )
-  -- deviation: use our container definition
+  -- ROBLOX deviation: use our container definition
   child.Parent = container
   -- if container.nodeType == COMMENT_NODE)
   --   (container.parentNode: any).insertBefore(child, beforeChild)
@@ -618,7 +612,7 @@ exports.removeChild = function(
   _parentInstance: Instance,
   child: Instance
 )
-  -- deviation: Roblox's DOM is based on child->parent references
+  -- ROBLOX deviation: Roblox's DOM is based on child->parent references
   child.Parent = nil
   -- parentInstance.removeChild(child)
 end
@@ -627,7 +621,7 @@ exports.removeChildFromContainer = function(
   _container: Container,
   child: Instance
 )
-  -- deviation: Roblox's DOM is based on child->parent references
+  -- ROBLOX deviation: Roblox's DOM is based on child->parent references
   child.Parent = nil
   -- if container.nodeType == COMMENT_NODE)
   --   (container.parentNode: any).removeChild(child)
@@ -640,6 +634,7 @@ exports.clearSuspenseBoundary = function(
   parentInstance: Instance,
   suspenseInstance: SuspenseInstance
 )
+  -- ROBLOX FIXME: this is a major thing we need to fix for Suspense to work as a feature
   unimplemented("clearSuspenseBoundary")
 --   local node = suspenseInstance
 --   -- Delete all nodes within this suspense boundary.
@@ -679,6 +674,7 @@ exports.clearSuspenseBoundaryFromContainer = function(
   container: Container,
   suspenseInstance: SuspenseInstance
 )
+  -- ROBLOX FIXME: this is a major thing we need to fix for Suspense to work as a feature
   unimplemented("clearSuspenseBoundaryFromContainer")
 --   if container.nodeType == COMMENT_NODE)
 --     clearSuspenseBoundary((container.parentNode: any), suspenseInstance)
@@ -704,10 +700,11 @@ exports.hideInstance = function(instance: Instance)
   -- end
 end
 
--- deviation: Ignore TextInstance logic, which isn't applicable to Roblox
--- exports.hideTextInstance(textInstance: TextInstance): void {
+-- ROBLOX deviation: error on TextInstance logic, which isn't applicable to Roblox
+exports.hideTextInstance = function(textInstance: TextInstance): ()
+  unimplemented("hideTextInstance")
 --   textInstance.nodeValue = ''
--- end
+end
 
 exports.unhideInstance = function(instance: Instance, props: Props)
   unimplemented("unhideInstance")
@@ -722,16 +719,17 @@ exports.unhideInstance = function(instance: Instance, props: Props)
   -- instance.style.display = dangerousStyleValue('display', display)
 end
 
--- deviation: Ignore TextInstance logic, which isn't applicable to Roblox
--- exports.unhideTextInstance(
---   textInstance: TextInstance,
---   text: string,
--- ): void {
+-- ROBLOX deviation: error on TextInstance logic, which isn't applicable to Roblox
+exports.unhideTextInstance = function(
+  textInstance: TextInstance,
+  text: string
+): ()
+  unimplemented("unhideTextInstance")
 --   textInstance.nodeValue = text
--- end
+end
 
 exports.clearContainer = function(container: Container)
-  -- deviation: with Roblox, we can simply enumerate and remove the children
+  -- ROBLOX deviation: with Roblox, we can simply enumerate and remove the children
   local parentInstance = container
   for _, child in pairs(parentInstance:GetChildren()) do
     child.Parent = nil

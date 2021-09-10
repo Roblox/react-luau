@@ -19,7 +19,7 @@ export type Container = Instance;
 -- deviation: We can't export this as `Instance`; luau gets upset!
 export type HostInstance = Instance;
 
--- export type TextInstance = Text;
+export type TextInstance = Instance;
 
 -- ROBLOX TODO: Revisit this type for suspense
 -- export type SuspenseInstance = Comment & {_reactRetry?: () => void, ...}

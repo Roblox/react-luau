@@ -144,13 +144,13 @@ if _G.__DEV__ then
         "%s(...): Expected the last optional `callback` argument to be a " ..
           "function. Instead received: %s.",
         callerName,
-        callback
+        tostring(callback)
       )
     end
   end
 
   warnOnUndefinedDerivedState = function(type_, partialState)
-    -- deviation: `nil` is a valid return for getDerivedStateFromProps, but
+    -- ROBLOX deviation: `nil` is a valid return for getDerivedStateFromProps, but
     -- `undefined` is not possible for us to return; we could try to detect
     -- returning zero values, but that's likely not possible without tracking it
     -- differently at the original callsite (e.g. the value we save to
@@ -607,7 +607,7 @@ local function checkClassInstance(workInProgress: Fiber, ctor: any, newProps: an
       )
     end
 
-    -- deviation: We don't actually have a way to detect this in Lua!!
+    -- ROBLOX TODO: get function arity to see if it takes >0 arguments. if it takes 1, assume it's self, and warn
     -- if typeof(instance.getDerivedStateFromProps) == "function" then
     --   console.error(
     --     "%s: getDerivedStateFromProps() is defined as an instance method " ..
@@ -615,7 +615,6 @@ local function checkClassInstance(workInProgress: Fiber, ctor: any, newProps: an
     --     name
     --   )
     -- end
-    -- deviation: We don't actually have a way to detect this in Lua!!
     -- if typeof(instance.getDerivedStateFromError) == "function" then
     --   console.error(
     --     "%s: getDerivedStateFromError() is defined as an instance method " ..
@@ -623,7 +622,6 @@ local function checkClassInstance(workInProgress: Fiber, ctor: any, newProps: an
     --     name
     --   )
     -- end
-    -- deviation: We don't actually have a way to detect this in Lua!!
     -- if typeof(ctor.getSnapshotBeforeUpdate) == "function" then
     --   console.error(
     --     "%s: getSnapshotBeforeUpdate() is defined as a static method " ..
@@ -762,15 +760,15 @@ local function constructClassInstance(
   adoptClassInstance(workInProgress, instance)
 
   if _G.__DEV__ then
-    -- ROBLOX DEVIATION: Instead of checking if state is nil, we check if it is our
+    -- ROBLOX deviation: Instead of checking if state is nil, we check if it is our
     -- UninitializedState singleton.
     if typeof(ctor.getDerivedStateFromProps) == "function" and state == UninitializedState then
       local componentName = getComponentName(ctor) or "Component"
       if not didWarnAboutUninitializedState[componentName] then
         didWarnAboutUninitializedState[componentName] = true
-        -- deviation: message adjusted for accuracy with Lua "class" components
+        -- ROBLOX deviation: message adjusted for accuracy with Lua "class" components
         console.error(
-          "`%s` uses `getDerivedStateFromProps` but its state has not been initialized. " ..
+          "`%s` uses `getDerivedStateFromProps` but its initial state has not been initialized. " ..
             "This is not recommended. Instead, define the initial state by " ..
             "passing an object to `self:setState` in the `init` method of `%s`. " ..
             "This ensures that `getDerivedStateFromProps` arguments have a consistent shape.",

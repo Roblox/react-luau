@@ -424,7 +424,7 @@ local function commitBeforeMutationLifeCycles(
           prevState
         )
         if _G.__DEV__ then
-          -- deviation: not possible to return `undefined` in Lua
+          -- ROBLOX deviation: not possible to return `undefined` in Lua
           -- local didWarnSet = ((didWarnAboutUndefinedSnapshotBeforeUpdate: any): Set<mixed>)
           -- if snapshot == nil and not didWarnSet[finishedWork.type] then
           --   didWarnSet[finishedWork.type] = true
@@ -1225,8 +1225,9 @@ function commitAttachRef(finishedWork: Fiber)
           console.error(
             'Unexpected ref object provided for %s. ' ..
               'Use either a ref-setter function or React.createRef().',
-            getComponentName(finishedWork.type)
+            getComponentName(finishedWork.type) or "instance"
           )
+          return
         end
       end
 
@@ -2118,7 +2119,7 @@ function commitSuspenseComponent(finishedWork: Fiber)
       end
     elseif _G.__DEV__ then
       if suspenseCallback ~= nil then
-        console.error('Unexpected type for suspenseCallback.')
+        console.error('Unexpected type for suspenseCallback: %s', tostring(suspenseCallback))
       end
     end
   end

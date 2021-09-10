@@ -52,7 +52,7 @@ exports.useContext = function(
 					'You passed: %s.%s',
 				unstable_observedBits,
 				(typeof(unstable_observedBits) == 'number' and Array.isArray({...})) and
-					'\n\nDid you call array.map(useContext)? ' ..
+					'\n\nDid you call Array.map(useContext)? ' ..
 						'Calling Hooks inside a loop is not supported. ' ..
 						'Learn more at https://reactjs.org/link/rules-of-hooks' or
 					''

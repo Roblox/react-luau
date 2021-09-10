@@ -240,16 +240,16 @@ local function processChildContext(
 		end
 
 		local childContext = instance:getChildContext()
+		local name = getComponentName(type) or "Unknown"
 		for contextKey, _ in pairs(childContext) do
 			invariant(
 				childContextTypes[contextKey] ~= nil,
 				"%s.getChildContext(): key \"%s\" is not defined in childContextTypes.",
-				getComponentName(type) or "Unknown",
+				name,
 				contextKey
 			)
 		end
 		if _G.__DEV__ then
-			local name = getComponentName(type) or "Unknown"
 			-- ROBLOX deviation: nil as second argument for validateProps compatibility
 			checkPropTypes(childContextTypes, nil, childContext, "child context", name)
 		end

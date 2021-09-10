@@ -1,3 +1,4 @@
+-- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react/src/__tests__/forwardRef-test.internal.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -49,7 +50,6 @@ return function()
     jestExpect(Scheduler).toFlushAndYield({123})
   end)
 
-  -- ROBLOX TODO: Fails in DEV (nothing yielded from `toFlushAndYield`), unclear why
   it("should forward a ref for a single child", function()
     local Child = React.Component:extend("Child")
     function Child:render()
@@ -59,7 +59,7 @@ return function()
 
     local function Wrapper(props)
     -- ROBLOX TODO: Erroneous warnings in dev here
-    return React.createElement(Child, Cryo.Dictionary.join(props, {ref=props.forwardedRef}))
+      return React.createElement(Child, Cryo.Dictionary.join(props, {ref=props.forwardedRef}))
     end
 
     local RefForwardingComponent = React.forwardRef(function(props, ref)
@@ -196,7 +196,7 @@ return function()
       "BadRender throw",
 
       -- Errored again on retry. Now handle it.
-      "ErrorBoundary.componentDidCatch", -- ROBLOX FIXME: not yielding these last two
+      "ErrorBoundary.componentDidCatch",
       "ErrorBoundary.render: catch",
     })
     jestExpect(ref.current).toBe(nil)

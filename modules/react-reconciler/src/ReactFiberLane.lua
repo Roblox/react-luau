@@ -892,7 +892,7 @@ local function getBumpedLaneForHydration(
 	then
 		lane = NoLane
 	else
-		invariant(false, 'Invalid lane: %s. This is a bug in React.', lane)
+		invariant(false, 'Invalid lane: %s. This is a bug in React.', tostring(lane))
 	end
 
 	-- // Check if the lane we chose is suspended. If so, that indicates that we

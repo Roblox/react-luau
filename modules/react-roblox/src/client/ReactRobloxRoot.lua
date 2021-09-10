@@ -160,7 +160,7 @@ createRootImpl = function(
   --     -- it, then Flow doesn't complain. We intentionally
   --     -- hoist it to reduce code-size.
   --     eagerlyTrapReplayableEvents(container, ((doc: any): Document))
-  --   } else if 
+  --   } else if
   --     containerNodeType ~= DOCUMENT_FRAGMENT_NODE and
   --     containerNodeType ~= DOCUMENT_NODE
   --   )
@@ -203,7 +203,8 @@ exports.createRoot = function(
 ): RootType
   invariant(
     isValidContainer(container),
-    "createRoot(...): Target container is not a DOM element."
+    -- ROBLOX deviation: Use roblox engine terminology
+    "createRoot(...): Target container is not a Roblox Instance."
   )
   warnIfReactDOMContainerInDEV(container)
   return ReactRobloxRoot.new(container, options)
@@ -215,7 +216,8 @@ exports.createBlockingRoot = function(
 ): RootType
   invariant(
     isValidContainer(container),
-    "createRoot(...): Target container is not a DOM element."
+    -- ROBLOX deviation: Use roblox engine terminology
+    "createRoot(...): Target container is not a Roblox Instance."
   )
   warnIfReactDOMContainerInDEV(container)
   return createBlockingRoot(container, BlockingRoot, options)

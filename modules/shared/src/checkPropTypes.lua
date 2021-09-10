@@ -10,6 +10,8 @@
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
+type Object = { [string]: any? }
+type Function = (...any) -> any?
 
 -- ROBLOX: use patched console from shared
 local console = require(script.Parent.console)
@@ -41,7 +43,14 @@ local function setCurrentlyValidatingElement(element)
 end
 
 -- ROBLOX deviation: also checks validateProps if present
-local function checkPropTypes(propTypes, validateProps, props, location, componentName, element)
+local function checkPropTypes(
+	propTypes: Object,
+	validateProps,
+	props,
+	location: string,
+	componentName: string?,
+	element: any?
+): ()
 	if _G.__DEV__ then
 		-- deviation: hasOwnProperty shouldn't be relevant to lua objects
 		-- $FlowFixMe This is okay but Flow doesn't know it.
@@ -49,7 +58,7 @@ local function checkPropTypes(propTypes, validateProps, props, location, compone
 
 		-- ROBLOX deviation: warns if both propType and validateProps defined.
 		if propTypes and validateProps then
-			console.warn("You've defined both propTypes and validateProps on " .. componentName)
+			console.warn("You've defined both propTypes and validateProps on " .. (componentName or "a component"))
 		end
 
 		-- ROBLOX deviation: also checks validateProps if present
@@ -85,7 +94,7 @@ local function checkPropTypes(propTypes, validateProps, props, location, compone
 					-- This is intentionally an invariant that gets caught. It's the same
 					-- behavior as without this statement except with a better message.
 					if typeof(propTypes[typeSpecName]) ~= "function" then
-						local err = Error(
+						local err = Error.new(
 							(componentName or "React class")
 								.. ": "
 								.. location
@@ -101,7 +110,7 @@ local function checkPropTypes(propTypes, validateProps, props, location, compone
 						error(err)
 					end
 
-					return propTypes[typeSpecName](
+					return (propTypes[typeSpecName] :: Function)(
 						props,
 						typeSpecName,
 						componentName,
@@ -111,9 +120,9 @@ local function checkPropTypes(propTypes, validateProps, props, location, compone
 					)
 				end)
 
-				-- deviation: FIXME: Can we expose something from JSPolyfill that
+				-- ROBLOX deviation: FIXME: Can we expose something from JSPolyfill that
 				-- will let us verify that this is specifically the Error object
-				-- defined there?
+				-- defined there? if we check for result.message ~= nil, ReactNewContext.spec:1368 fails
 				local isErrorObject = typeof(result) == "table"
 				if result ~= nil and not isErrorObject then
 					setCurrentlyValidatingElement(element)

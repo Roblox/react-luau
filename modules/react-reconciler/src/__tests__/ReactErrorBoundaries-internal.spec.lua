@@ -810,14 +810,14 @@ return function()
 						nil,
 						React.createElement(BrokenComponentWillMountWithContext)
 					))
-					-- ROBLOX FIXME: error message has JS example that needs to be Lua
 				end).toErrorDev(
 					"Warning: The <BrokenComponentWillMountWithContext /> component appears to be a function component that "
 						.. "returns a class instance. "
 						.. "Change BrokenComponentWillMountWithContext to a class that extends React.Component instead. "
-						.. "If you can't use a class try assigning the prototype on the function as a workaround. "
-						.. "`BrokenComponentWillMountWithContext.prototype = React.Component.prototype`. "
-						.. "Don't use an arrow function since it cannot be called with `new` by React."
+					-- ROBLOX deviation: Remove JS specifics
+					-- .. "If you can't use a class try assigning the prototype on the function as a workaround. "
+					-- 	.. "`BrokenComponentWillMountWithContext.prototype = React.Component.prototype`. "
+					-- 	.. "Don't use an arrow function since it cannot be called with `new` by React."
 				)
 				-- ROBLOX FIXME: fails here, but error message above is correct. root appears to have empty children tables
 				-- jestExpect(textContent(root)).toEqual("Caught an error: Hello.")

@@ -12,7 +12,7 @@ local console = require(Packages.Shared).console
 
 local didWarnStateUpdateForUnmountedComponent = {}
 
-local function warnNoop(publicInstance, callerName)
+local function warnNoop(publicInstance, callerName: string)
   if _G.__DEV__ then
     -- local constructor = publicInstance.constructor
     -- local componentName = ((constructor and (constructor.displayName or constructor.name)) or 'ReactClass')
@@ -21,7 +21,7 @@ local function warnNoop(publicInstance, callerName)
     local componentName = publicInstance.__componentName or "ReactClass"
     local warningKey = componentName .. '.' .. callerName
     if didWarnStateUpdateForUnmountedComponent[warningKey] then return end
-    -- deviation: message adjusted for accuracy with Lua class components
+    -- ROBLOX deviation: message adjusted for accuracy with Lua class components
     console.error(
       "Can't call %s on a component that is not yet mounted. " ..
         "This is a no-op, but it might indicate a bug in your application. " ..

@@ -157,18 +157,18 @@ function coerceRef(returnFiber: Fiber, current: Fiber | nil, element: ReactEleme
 	then
 
 		-- ROBLOX deviation: we do not support string refs, and will not coerce
-
 		local componentName = getComponentName(returnFiber.type) or "Component"
 		invariant(
 			(element._owner and element._self and element._owner.stateNode ~= element._self),
 			string.format(
 				'Component "%s" contains the string ref "%s". Support for string refs '
+				-- ROBLOX deviation: we removed string ref support ahead of upstream schedule
 					.. "has been removed. We recommend using "
 					.. "useRef() or createRef() instead. "
 					.. "Learn more about using refs safely here: "
 					.. "https://reactjs.org/link/strict-mode-string-ref",
 				componentName,
-				mixedRef
+				tostring(mixedRef)
 			)
 		)
 

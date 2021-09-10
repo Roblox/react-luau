@@ -1573,7 +1573,7 @@ local function completeWork(
     false,
     "Unknown unit of work tag (%s). This error is likely caused by a bug in " ..
       "React. Please file an issue.",
-    workInProgress.tag
+    tostring(workInProgress.tag)
   )
   return nil
 end

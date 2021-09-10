@@ -592,8 +592,8 @@ exports.requestUpdateLane = function(fiber: Fiber): Lane
         if _G.__DEV__ then
           console.error(
             "Expected current scheduler lane priority %s to match current update lane priority %s",
-            schedulerLanePriority,
-            currentUpdateLanePriority
+            tostring(schedulerLanePriority),
+            tostring(currentUpdateLanePriority)
           )
         end
       end
@@ -3386,7 +3386,7 @@ end
 
 -- deviation: FIXME restore type Set<string>?, has trouble with narrowing
 local didWarnStateUpdateForUnmountedComponent: any = nil
-mod.warnAboutUpdateOnUnmountedFiberInDEV = function(fiber)
+mod.warnAboutUpdateOnUnmountedFiberInDEV = function(fiber: Fiber): ()
   if _G.__DEV__ then
     local tag = fiber.tag
     if
@@ -3459,9 +3459,12 @@ mod.warnAboutUpdateOnUnmountedFiberInDEV = function(fiber)
           "Can't perform a React state update on an unmounted component. This " ..
             "is a no-op, but it indicates a memory leak in your application. To " ..
             "fix, cancel all subscriptions and asynchronous tasks in %s.",
-          tag == ReactWorkTags.ClassComponent
-            and "the componentWillUnmount method"
-            or "a useEffect cleanup function"
+          (function()
+            if tag == ReactWorkTags.ClassComponent then
+              return "the componentWillUnmount method"
+            end
+            return "a useEffect cleanup function"
+          end)()
         )
       end)
 
@@ -3560,7 +3563,7 @@ if _G.__DEV__ then
   didWarnAboutUpdateInRenderForAnotherComponent = {}
 end
 
-mod.warnAboutRenderPhaseUpdatesInDEV = function(fiber)
+mod.warnAboutRenderPhaseUpdatesInDEV = function(fiber: Fiber): ()
   if _G.__DEV__ then
     if
       ReactCurrentFiber.isRendering and
@@ -3571,13 +3574,12 @@ mod.warnAboutRenderPhaseUpdatesInDEV = function(fiber)
         fiber.tag == ReactWorkTags.ForwardRef or
         fiber.tag == ReactWorkTags.SimpleMemoComponent
       then
-        local renderingComponentName
-        if workInProgress ~= nil then
-          -- ROBLOX FIXME: Luau type analsis fails, saying 'type' key doesn't exist even though it does
-          renderingComponentName = "UNHAPPY MKNAM" -- getComponentName(workInProgress.type)
-        else
-          renderingComponentName = "Unknown"
-        end
+        local renderingComponentName = (function()
+          if workInProgress ~= nil then
+            return getComponentName((workInProgress :: Fiber).type)
+          end
+          return "Unknown"
+        end)()
         -- Dedupe by the rendering component because it's the one that needs to be fixed.
         local dedupeKey = renderingComponentName
         -- deviation:
@@ -3663,13 +3665,14 @@ exports.warnIfNotCurrentlyActingEffectsInDEV = function(fiber: Fiber): ()
       IsSomeRendererActing.current == false and
       exports.IsThisRendererActing.current == false
     then
+      -- ROBLOX deviation: Use Lua syntax for example fix
       console.error(
         'An update to %s ran an effect, but was not wrapped in act(...).\n\n' ..
           'When testing, code that causes React state updates should be ' ..
           'wrapped into act(...):\n\n' ..
-          'act(() => {\n' ..
+          'act(function\n' ..
           '  --[[ fire events that update state ]]\n' ..
-          '});\n' ..
+          'end);\n' ..
           '--[[ assert on the output ]]\n\n' ..
           "This ensures that you're testing the behavior the user would see " ..
           'in the browser.' ..
@@ -3691,13 +3694,14 @@ exports.warnIfNotCurrentlyActingUpdatesInDEV = function (fiber: Fiber): ()
       local previousFiber = ReactCurrentFiberCurrent
       local ok, result = pcall(function()
         setCurrentDebugFiberInDEV(fiber)
+        -- ROBLOX deviation: Use Lua syntax for example fix
         console.error(
           'An update to %s inside a test was not wrapped in act(...).\n\n' ..
             'When testing, code that causes React state updates should be ' ..
             'wrapped into act(...):\n\n' ..
-            'act(() => {\n' ..
+            'act(function()\n' ..
             '  --[[ fire events that update state ]]\n' ..
-            '});\n' ..
+            'end);\n' ..
             '--[[ assert on the output ]]\n\n' ..
             "This ensures that you're testing the behavior the user would see " ..
             'in the browser.' ..
@@ -4111,9 +4115,9 @@ exports.act = function(callback: () -> Thenable<any, any>): Thenable<any?, any?>
               -- FIXME (roblox): We should replace this with proper Lua promise
               -- logic
               console.error(
-                "You called act(async () => ...) without await. " ..
+                "You called act(Promise.new(function() --[[ ... ]] end)) without :await() or :expect(). " ..
                   "This could lead to unexpected testing behaviour, interleaving multiple act " ..
-                  "calls and mixing their scopes. You should - await act(async () => ...);"
+                  "calls and mixing their scopes. You should - act(function() Promise.new(function() --[[ ... ]] end):await() end);"
               )
             end
           end)
@@ -4158,10 +4162,11 @@ exports.act = function(callback: () -> Thenable<any, any>): Thenable<any?, any?>
   else
     if _G.__DEV__ then
       if result ~= nil then
+        -- ROBLOX deviation: use Lua syntax
         console.error(
           "The callback passed to act(...) function " ..
-            "must return undefined, or a Promise. You returned %s",
-          result
+            "must return nil, or a Promise. You returned %s",
+          tostring(result)
         )
       end
     end

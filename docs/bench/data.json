@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1630723700224,
+  "lastUpdate": 1631297859446,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -211,6 +211,47 @@
             "extra": "200 samples\nroblox-cli version: 0.494.0.4940339"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "d316007283b3ec76aabda8cc9fc6e6f847afc937",
+          "message": "LUAFDN-537 and LUAFDN-499: fix string formatting in several error messages",
+          "timestamp": "2021-09-04T02:58:11Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/192/commits/d316007283b3ec76aabda8cc9fc6e6f847afc937"
+        },
+        "date": 1631297857604,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 64.2736,
+            "range": "±43.25%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.495.0.4950265"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.5439,
+            "range": "±227.05%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.495.0.4950265"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 108.4224,
+            "range": "±20.38%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.495.0.4950265"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -340,6 +381,40 @@
             "range": "±10.81%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.494.0.4940339"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "d316007283b3ec76aabda8cc9fc6e6f847afc937",
+          "message": "LUAFDN-537 and LUAFDN-499: fix string formatting in several error messages",
+          "timestamp": "2021-09-04T02:58:11Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/192/commits/d316007283b3ec76aabda8cc9fc6e6f847afc937"
+        },
+        "date": 1631297858182,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 23.7843,
+            "range": "±8.75%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.495.0.4950265"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 42.4006,
+            "range": "±9.79%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.495.0.4950265"
           }
         ]
       }
@@ -473,6 +548,40 @@
             "extra": "50 samples\nroblox-cli version: 0.494.0.4940339"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "d316007283b3ec76aabda8cc9fc6e6f847afc937",
+          "message": "LUAFDN-537 and LUAFDN-499: fix string formatting in several error messages",
+          "timestamp": "2021-09-04T02:58:11Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/192/commits/d316007283b3ec76aabda8cc9fc6e6f847afc937"
+        },
+        "date": 1631297858733,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 17.3949,
+            "range": "±10.87%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.495.0.4950265"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 58.3581,
+            "range": "±14.00%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.495.0.4950265"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -602,6 +711,40 @@
             "range": "±13.91%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.494.0.4940339"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "d316007283b3ec76aabda8cc9fc6e6f847afc937",
+          "message": "LUAFDN-537 and LUAFDN-499: fix string formatting in several error messages",
+          "timestamp": "2021-09-04T02:58:11Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/192/commits/d316007283b3ec76aabda8cc9fc6e6f847afc937"
+        },
+        "date": 1631297859445,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 100.5119,
+            "range": "±9.30%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.495.0.4950265"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 10.0323,
+            "range": "±8.96%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.495.0.4950265"
           }
         ]
       }

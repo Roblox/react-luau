@@ -1028,6 +1028,7 @@ local function updateClassComponent(
   else
     hasContext = false
   end
+  -- ROBLOX deviation: pass in function to break cyclic require dependency
   prepareToReadContext(workInProgress, renderLanes, exports.markWorkInProgressReceivedUpdate)
 
   local instance = workInProgress.stateNode
@@ -1617,13 +1618,14 @@ local function mountIndeterminateComponent(
       if not DidWarn.didWarnAboutModulePatternComponent[componentName] then
         console.error(
           "The <%s /> component appears to be a function component that returns a class instance. " ..
-            "Change %s to a class that extends React.Component instead. " ..
-            "If you can't use a class try assigning the prototype on the function as a workaround. " ..
-            "`%s.prototype = React.Component.prototype`. Don't use an arrow function since it " ..
-            "cannot be called with `new` by React.",
-          componentName,
+            "Change %s to a class that extends React.Component instead. ",
+            -- ROBLOX deviation: Don't print JS-specific remediation advice
+            -- "If you can't use a class try assigning the prototype on the function as a workaround. " ..
+            -- "`%s.prototype = React.Component.prototype`. Don't use an arrow function since it " ..
+            -- "cannot be called with `new` by React.",
           componentName,
           componentName
+          -- componentName
         )
         DidWarn.didWarnAboutModulePatternComponent[componentName] = true
       end
@@ -1644,12 +1646,13 @@ local function mountIndeterminateComponent(
         console.error(
           "The <%s /> component appears to be a function component that returns a class instance. " ..
             "Change %s to a class that extends React.Component instead. " ..
-            "If you can't use a class try assigning the prototype on the function as a workaround. " ..
-            "`%s.prototype = React.Component.prototype`. Don't use an arrow function since it " ..
-            "cannot be called with `new` by React.",
-          componentName,
+            -- ROBLOX deviation: Don't print JS-specific remediation advice
+            -- "If you can't use a class try assigning the prototype on the function as a workaround. " ..
+            -- "`%s.prototype = React.Component.prototype`. Don't use an arrow function since it " ..
+            -- "cannot be called with `new` by React.",
           componentName,
           componentName
+          -- componentName
         )
         DidWarn.didWarnAboutModulePatternComponent[componentName] = true
       end
@@ -1746,7 +1749,7 @@ end
 
 function validateFunctionComponentInDev(workInProgress: Fiber, Component: any)
   if  _G.__DEV__ then
-    -- deviation: Lua doesn't allow fields on functions, so this never happens
+    -- ROBLOX deviation: Lua doesn't allow fields on functions, so this never happens
     -- if Component then
     --   if Component.childContextTypes then
     --     console.error(
@@ -1789,7 +1792,8 @@ function validateFunctionComponentInDev(workInProgress: Fiber, Component: any)
       if not DidWarn.didWarnAboutDefaultPropsOnFunctionComponent[componentName] then
         console.error(
           '%s: Support for defaultProps will be removed from function components ' ..
-            'in a future major release. Use JavaScript default parameters instead.',
+            -- ROBLOX deviation: Don't print JS-specific remediation advice
+            'in a future major release.', -- Use JavaScript default parameters instead.',
           componentName
         )
         DidWarn.didWarnAboutDefaultPropsOnFunctionComponent[componentName] = true

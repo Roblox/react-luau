@@ -10,7 +10,7 @@
 
 --[[*
  * inlined Object.is polyfill to avoid requiring consumers ship their own
- * https:--developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/is
  ]]
 local function is(x, y)
 	return x == y and (x ~= 0 or 1 / x == 1 / y) or x ~= x and y ~= y -- eslint-disable-line no-self-compare

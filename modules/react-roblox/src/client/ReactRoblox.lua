@@ -33,7 +33,7 @@ local isValidContainer = ReactRobloxRoot.isValidContainer
 -- ROBLOX deviation: Use the config-injecting entry point for the reconciler
 local ReactReconciler = require(script.Parent.Parent["ReactReconciler.roblox"])
 -- local batchedEventUpdates = ReactReconciler.batchedEventUpdates
--- local batchedUpdates = ReactReconciler.batchedUpdates
+local batchedUpdates = ReactReconciler.batchedUpdates
 -- local discreteUpdates = ReactReconciler.discreteUpdates
 -- local flushDiscreteUpdates = ReactReconciler.flushDiscreteUpdates
 -- local flushSync = ReactReconciler.flushSync
@@ -106,7 +106,7 @@ local Change = require(script.Parent.roblox.PropMarkers.Change)
 --   )
 --     console.error(
 --       'React depends on Map and Set built-in types. Make sure that you load a ' +
---         'polyfill in older browsers. https:--reactjs.org/link/react-polyfills',
+--         'polyfill in older browsers. https://reactjs.org/link/react-polyfills',
 --     )
 --   end
 -- end
@@ -213,7 +213,7 @@ local Internals = {
 
 local exports = {
   createPortal = createPortal,
-  -- unstable_batchedUpdates = batchedUpdates,
+  unstable_batchedUpdates = batchedUpdates,
   -- flushSync = flushSync,
   __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = Internals,
   version = ReactVersion,
@@ -271,10 +271,10 @@ if _G.__DEV__ then
   --       console.info(
   --         '%cDownload the React DevTools ' +
   --           'for a better development experience: ' +
-  --           'https:--reactjs.org/link/react-devtools' +
+  --           'https://reactjs.org/link/react-devtools' +
   --           (protocol == 'file:'
   --             ? '\nYou might need to use a local HTTP server (instead of file:--): ' +
-  --               'https:--reactjs.org/link/react-devtools-faq'
+  --               'https://reactjs.org/link/react-devtools-faq'
   --             : ''),
   --         'font-weight:bold',
   --       )

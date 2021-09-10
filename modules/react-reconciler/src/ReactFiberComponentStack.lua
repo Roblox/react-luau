@@ -79,11 +79,15 @@ return {
 			until node == nil
 			return info
 		end)
+
 		if not ok then
-			-- FIXME: result.stack is probably not present here with the current
-			-- shape of our `Error` object
-			return "\nError generating stack: " .. result.message .. "\n" .. result.stack
+			local message = "\nError generating stack: "
+			if typeof(result) == "table" and result.message and result.stack then
+				return message .. result.message .. "\n" .. result.stack
+			end
+			return message .. tostring(result)
 		end
+
 		return result
 	end,
 }

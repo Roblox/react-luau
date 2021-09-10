@@ -1130,7 +1130,7 @@ return function()
   --   }
   end)
 
-  -- -- Regression test for https:--github.com/facebook/react/issues/19562
+  -- -- Regression test for https://github.com/facebook/react/issues/19562
   -- it('does not fire mouseEnter twice when relatedTarget is the root node', () => {
   --   local ops = []
   --   local target = nil
@@ -1452,7 +1452,7 @@ return function()
   --   expect(container.innerHTML).toBe('<div>foo</div>')
   -- })
 
-  -- -- Regression test for https:--github.com/facebook/react/issues/12643#issuecomment-413727104
+  -- -- Regression test for https://github.com/facebook/react/issues/12643#issuecomment-413727104
   -- it('should not diff memoized host components', () => {
   --   local inputRef = React.createRef()
   --   local didCallOnChange = false

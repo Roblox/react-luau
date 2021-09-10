@@ -22,6 +22,9 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
 
 local function invariant(condition, format, ...)
+	-- ROBLOX TODO: we should encapsulate all formatting compatibility here,
+	-- rather than spreading workarounds throughout the codebase, eg this
+	-- should print an array without the need for a table.concat on the consumer side
 	if not condition then
 		error(Error(string.format(format, ...)))
 	end

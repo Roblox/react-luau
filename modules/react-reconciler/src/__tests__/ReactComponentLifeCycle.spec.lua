@@ -180,7 +180,7 @@ return function()
     no longer throw an error.
   ]]
   -- You could assign state here, but not access members of it, unless you
-  -- had provided a getInitialState method.  
+  -- had provided a getInitialState method.
   xit("throws when accessing state in componentWillMount", function()
     local StatefulComponent = React.Component:extend("StatefulComponent")
 
@@ -1286,7 +1286,7 @@ xit('should not throw when updating an auxiliary component', function()
         ReactNoop.render(React.createElement(MyComponent))
       end)
     end).toErrorDev(
-      "`MyComponent` uses `getDerivedStateFromProps` but its state has not been initialized. " ..
+      "Warning: `MyComponent` uses `getDerivedStateFromProps` but its initial state has not been initialized. " ..
       "This is not recommended. Instead, define the initial state by " ..
       "passing an object to `self:setState` in the `init` method of `MyComponent`. " ..
       "This ensures that `getDerivedStateFromProps` arguments have a consistent shape."

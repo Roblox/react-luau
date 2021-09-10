@@ -10,7 +10,6 @@
 
 local Packages = script.Parent.Parent
 
-local Cryo = require(Packages.Cryo)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
@@ -197,7 +196,8 @@ local function findHostInstance(component: Object): PublicInstance | nil
 			invariant(
 				false,
 				'Argument appears to not be a ReactComponent. Keys: %s',
-				Cryo.Dictionary.keys(component)
+				-- ROBLOX deviation: explicitly coerce the array of strings into a string
+				table.concat(Object.keys(component))
 			)
 		end
 	end
@@ -221,7 +221,8 @@ local function findHostInstanceWithWarning(
 				invariant(
 					false,
 					'Argument appears to not be a ReactComponent. Keys: %s',
-					Cryo.Dictionary.keys(component)
+					-- ROBLOX deviation: explicitly convert array into string
+					table.concat(Object.keys(component))
 				)
 			end
 		end
@@ -358,7 +359,7 @@ exports.updateContainer = function(
 				console.error(
 					"render(...): Expected the last optional `callback` argument to be a " ..
 						"function. Instead received: %s.",
-					callback
+					tostring(callback)
 				)
 			end
 		end
