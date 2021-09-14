@@ -160,17 +160,21 @@ local function performWorkUntilDeadline()
 				-- more work, either yield and defer till later this frame, or
 				-- delay work till next frame
 
+				-- ROBLOX TODO: Use task api once it's stabilized
+				setTimeout(performWorkUntilDeadline, 0)
 				-- ROBLOX FIXME: What's the proper combination of task.defer and
 				-- task.delay that makes this optimal?
-				(task :: any).delay(0, performWorkUntilDeadline)
+				-- (task :: any).delay(0, performWorkUntilDeadline)
 			end
 		end)
 
 		if not ok then
 			-- If a scheduler task throws, exit the current browser task so the
 			-- error can be observed.
+			-- ROBLOX TODO: Use task api once it's stabilized
+			setTimeout(performWorkUntilDeadline, 0)
 			-- ROBLOX deviation: Use task api instead of message channel
-			(task :: any).delay(0, performWorkUntilDeadline)
+			-- (task :: any).delay(0, performWorkUntilDeadline)
 
 			error(result)
 		end
@@ -184,8 +188,10 @@ local function requestHostCallback(callback)
 	if not isMessageLoopRunning then
 		isMessageLoopRunning = true
 
+		-- ROBLOX TODO: Use task api once it's stabilized
+		setTimeout(performWorkUntilDeadline, 0)
 		-- ROBLOX deviation: Use task api instead of message channel
-		(task :: any).delay(0, performWorkUntilDeadline)
+		-- (task :: any).delay(0, performWorkUntilDeadline)
 	end
 end
 
