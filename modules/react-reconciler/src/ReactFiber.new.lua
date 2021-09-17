@@ -40,9 +40,8 @@ local ReactFiberLane = require(script.Parent.ReactFiberLane)
 type Lanes = ReactFiberLane.Lanes;
 local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
 type SuspenseInstance = ReactFiberHostConfig.SuspenseInstance;
--- local ReactFiberOffscreenComponent = require(script.Parent.ReactFiberOffscreenComponent)
--- type OffscreenProps = ReactFiberOffscreenComponent.OffscreenProps;
-type OffscreenProps = any; -- FIXME (roblox): types
+local ReactFiberOffscreenComponent = require(script.Parent.ReactFiberOffscreenComponent)
+type OffscreenProps = ReactFiberOffscreenComponent.OffscreenProps;
 
 local invariant = require(Packages.Shared).invariant
 local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags

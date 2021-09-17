@@ -6,6 +6,10 @@
  * LICENSE file in the root directory of this source tree.
 ]]
 
+local Packages = script.Parent.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
+local Array = LuauPolyfill.Array
+
 local Agent = require(script.agent)
 type Agent = Agent.Agent
 
@@ -96,10 +100,7 @@ local initBackend = function(hook: DevToolsHook, agent: Agent, global: Object): 
 	-- Connect any new renderers that injected themselves.
 	table.insert(
 		subs,
-		hook.sub("renderer", function(args: {
-			id: number,
-			renderer: ReactRenderer,
-		})
+		hook.sub("renderer", function(args: { id: number, renderer: ReactRenderer })
 			local id = args.id
 			local renderer = args.renderer
 			attachRenderer(id, renderer)
@@ -109,12 +110,12 @@ local initBackend = function(hook: DevToolsHook, agent: Agent, global: Object): 
 	hook.emit("react-devtools", agent)
 	hook.reactDevtoolsAgent = agent
 	local function onAgentShutdown()
-		for _, fn in ipairs(subs) do
+		Array.map(subs, function(fn)
 			fn()
-		end
-		for _, rendererInterface in ipairs(hook.rendererInterfaces) do
+		end)
+		Array.map(hook.rendererInterfaces, function(rendererInterface)
 			rendererInterface.cleanup()
-		end
+		end)
 		hook.reactDevtoolsAgent = nil
 	end
 	agent:addListener("shutdown", onAgentShutdown)

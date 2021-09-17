@@ -17,13 +17,9 @@ local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
 local setTimeout = LuauPolyfill.setTimeout
 
--- ROBLOX FIXME: Can't pass types across package boundaries (how do we deal with
--- this?)
--- local ReactInternalTypes = require(Packages.ReactReconciler).ReactInternalTypes
--- type Fiber = ReactInternalTypes.Fiber
--- type FiberRoot = ReactInternalTypes.FiberRoot
-type Fiber = any
-type FiberRoot = any
+local ReactInternalTypes = require(Packages.ReactReconciler)
+type Fiber = ReactInternalTypes.Fiber
+type FiberRoot = ReactInternalTypes.FiberRoot
 
 local ReactTypes = require(Packages.Shared)
 type Thenable<R, U> = ReactTypes.Thenable<R, U>

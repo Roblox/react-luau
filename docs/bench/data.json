@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1631648271878,
+  "lastUpdate": 1631844122879,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -334,6 +334,47 @@
             "extra": "200 samples\nroblox-cli version: 0.495.0.4950267"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "47dcf2451a484650001d667ff4ee068f2254ccb9",
+          "message": "LUAFDN-58 Fix additional bugs/quality gaps in DevTools",
+          "timestamp": "2021-09-14T21:12:42Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/197/commits/47dcf2451a484650001d667ff4ee068f2254ccb9"
+        },
+        "date": 1631844120515,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 62.555,
+            "range": "±37.55%",
+            "unit": "ops/sec",
+            "extra": "602 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 23.2108,
+            "range": "±226.64%",
+            "unit": "ms/op",
+            "extra": "602 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 131.4866,
+            "range": "±24.38%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.496.0.4960343"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -565,6 +606,40 @@
             "range": "±14.91%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.495.0.4950267"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "47dcf2451a484650001d667ff4ee068f2254ccb9",
+          "message": "LUAFDN-58 Fix additional bugs/quality gaps in DevTools",
+          "timestamp": "2021-09-14T21:12:42Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/197/commits/47dcf2451a484650001d667ff4ee068f2254ccb9"
+        },
+        "date": 1631844121275,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 18.468,
+            "range": "±9.75%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 54.7131,
+            "range": "±10.79%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.496.0.4960343"
           }
         ]
       }
@@ -800,6 +875,40 @@
             "extra": "50 samples\nroblox-cli version: 0.495.0.4950267"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "47dcf2451a484650001d667ff4ee068f2254ccb9",
+          "message": "LUAFDN-58 Fix additional bugs/quality gaps in DevTools",
+          "timestamp": "2021-09-14T21:12:42Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/197/commits/47dcf2451a484650001d667ff4ee068f2254ccb9"
+        },
+        "date": 1631844122035,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 13.5503,
+            "range": "±11.15%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 74.718,
+            "range": "±11.48%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -1031,6 +1140,40 @@
             "range": "±10.44%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.495.0.4950267"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "47dcf2451a484650001d667ff4ee068f2254ccb9",
+          "message": "LUAFDN-58 Fix additional bugs/quality gaps in DevTools",
+          "timestamp": "2021-09-14T21:12:42Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/197/commits/47dcf2451a484650001d667ff4ee068f2254ccb9"
+        },
+        "date": 1631844122877,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 87.0444,
+            "range": "±17.30%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 11.8321,
+            "range": "±17.24%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
           }
         ]
       }

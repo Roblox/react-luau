@@ -32,6 +32,7 @@ end
 
 -- import assign from 'object-assign';
 local ReactCurrentDispatcher = require(script.ReactCurrentDispatcher)
+export type Dispatcher = ReactCurrentDispatcher.Dispatcher
 local ReactCurrentBatchConfig = require(script.ReactCurrentBatchConfig)
 local ReactCurrentOwner = require(script.ReactCurrentOwner)
 local ReactDebugCurrentFrame = require(script.ReactDebugCurrentFrame)

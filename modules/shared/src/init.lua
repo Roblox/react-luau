@@ -1,8 +1,11 @@
+--!strict
 -- ROBLOX deviation: Promote `shared` to an actual unpublished package with a
 -- real interface instead of just a bag of loose source code
 
 local ReactTypes = require(script.ReactTypes)
 local ReactElementType = require(script.ReactElementType)
+local ReactFiberHostConfig = require(script.ReactFiberHostConfig)
+local ReactSharedInternals = require(script.ReactSharedInternals)
 
 -- Re-export all top-level public types
 export type ReactEmpty = ReactTypes.ReactEmpty
@@ -11,6 +14,9 @@ export type ReactNodeList = ReactTypes.ReactNodeList
 export type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
 export type ReactContext<T> = ReactTypes.ReactContext<T>
 export type ReactPortal = ReactTypes.ReactPortal
+export type React_Node = ReactTypes.React_Node
+export type React_Element<ElementType> = ReactTypes.React_Element<ElementType>
+export type React_Portal = ReactTypes.React_Portal
 export type RefObject = ReactTypes.RefObject
 export type EventPriority = ReactTypes.EventPriority
 export type ReactFundamentalComponentInstance<C, H> =
@@ -33,6 +39,12 @@ export type Thenable<R, U> = ReactTypes.Thenable<R, U>
 export type Source = ReactElementType.Source
 export type ReactElement = ReactElementType.ReactElement
 
+export type OpaqueIDType = ReactFiberHostConfig.OpaqueIDType
+
+export type Dispatcher = ReactSharedInternals.Dispatcher
+
+
+
 return {
 	checkPropTypes = require(script.checkPropTypes),
 	console = require(script.console),
@@ -54,11 +66,11 @@ return {
 	ReactInstanceMap = require(script.ReactInstanceMap),
 	-- ROBLOX deviation: Instead of re-exporting from here, Shared actually owns
 	-- these files itself
-	ReactSharedInternals = require(script.ReactSharedInternals),
+	ReactSharedInternals = ReactSharedInternals,
 	-- ROBLOX deviation: Instead of extracting these out of the reconciler and
 	-- then re-injecting the host config _into_ the reconciler, export these
 	-- from shared for easier reuse
-	ReactFiberHostConfig = require(script.ReactFiberHostConfig),
+	ReactFiberHostConfig = ReactFiberHostConfig,
 
 	ReactSymbols = require(script.ReactSymbols),
 	ReactVersion = require(script.ReactVersion),

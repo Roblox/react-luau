@@ -1,6 +1,7 @@
 local ReactInternalTypes = require(script.ReactInternalTypes)
 local ReactRootTags = require(script.ReactRootTags)
 
+export type Dispatcher = ReactInternalTypes.Dispatcher
 export type Fiber = ReactInternalTypes.Fiber
 export type FiberRoot = ReactInternalTypes.FiberRoot
 

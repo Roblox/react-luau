@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/7baf9d4128d41903de125527b50285ea9862cf9a/packages/react-reconciler/src/ReactInternalTypes.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -9,6 +10,11 @@
 ]]
 
 local Packages = script.Parent.Parent
+type Array<T> = { [number]: T }
+type Map<K, V> = { [K]: V }
+type Object = { [string]: any }
+type Set<T> = { [T]: boolean }
+
 
 local ReactTypes = require(Packages.Shared)
 -- ROBLOX deviation: ReactElement is defined at the top level of Shared along
@@ -18,26 +24,26 @@ type RefObject = ReactTypes.RefObject
 type ReactContext<T> = ReactTypes.ReactContext<T>
 type MutableSourceVersion = ReactTypes.MutableSourceVersion
 type MutableSource<Source> = ReactTypes.MutableSource<Source>
--- type MutableSourceSubscribeFn = ReactTypes.MutableSourceSubscribeFn;
--- type MutableSourceGetSnapshotFn = ReactTypes.MutableSourceGetSnapshotFn;
+type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscribeFn<Source, Snapshot>
+type MutableSourceGetSnapshotFn<Source, Snapshot> = ReactTypes.MutableSourceGetSnapshotFn<Source, Snapshot>
 
 -- ROBLOX deviation: These are 'mixed' by default, and specialized by the renderer, need complicated dynamic resolution to do this properly
 -- local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
 -- type SuspenseInstance = ReactFiberHostConfig.SuspenseInstance
 type SuspenseInstance = any; -- FIXME (roblox): type
--- type TimeoutHandle = ReactFiberHostConfig.TimeoutHandle;
--- type NoTimeout = ReactFiberHostConfig.NoTimeout;
-type TimeoutHandle = any; -- FIXME (roblox): type
-type NoTimeout = any; -- FIXME (roblox): type
-
 local ReactWorkTags = require(script.Parent.ReactWorkTags)
 type WorkTag = ReactWorkTags.WorkTag
 local ReactTypeOfMode = require(script.Parent.ReactTypeOfMode)
 type TypeOfMode = ReactTypeOfMode.TypeOfMode
 local ReactFiberFlags = require(script.Parent.ReactFiberFlags)
 type Flags = ReactFiberFlags.Flags
-
--- FIXME (roblox): no support for type literals
+-- deviation: FiberLane types are defined and exported from here to avoid
+-- cyclical requires
+export type LanePriority = number
+export type Lanes = number
+export type Lane = number
+export type LaneMap<T> = { [number]: T }
+-- ROBLOX deviation: Lusu doesn't support type literals
 -- export type HookType =
 --  | 'useState'
 --  | 'useReducer'
@@ -53,49 +59,34 @@ type Flags = ReactFiberFlags.Flags
 --  | 'useTransition'
 --  | 'useMutableSource'
 --  | 'useOpaqueIdentifier';
-export type HookType = string;
+export type HookType = string
 local ReactRootTags = require(script.Parent.ReactRootTags)
-type RootTag = ReactRootTags.RootTag;
-
+type RootTag = ReactRootTags.RootTag
+-- ROBLOX deviation: we can't import types for dynamic imports like HostConfig files
+-- type TimeoutHandle = ReactFiberHostConfig.TimeoutHandle;
+-- type NoTimeout = ReactFiberHostConfig.NoTimeout;
+type TimeoutHandle = any
+type NoTimeout = any
 -- ROBLOX deviation: type forwarded to top-level export
 local Shared = require(Packages.Shared)
-type Wakeable = Shared.Wakeable;
-
+type Wakeable = Shared.Wakeable
 -- ROBLOX deviation: Interaction type forwarded to top-level export
 local Scheduler = require(Packages.Scheduler)
 type Interaction = Scheduler.Interaction
 
--- generic types
-type Array<T> = { [number]: T };
-type Map<K, V> = { [K]: V }
-type Object = { [any]: any };
-type Set<T> = { [T]: boolean };
+-- ROBLOX deciation: Luau doesn't support type literals:  99 | 98 | 97 | 96 | 95 | 90
+export type ReactPriorityLevel = number
 
--- deviation: FiberLane types are defined and exported from here to avoid
--- cyclical requires
-export type LanePriority = number;
-export type Lanes = number;
-export type Lane = number;
-export type LaneMap<T> = { [number]: T };
-
--- export type ReactPriorityLevel = 99 | 98 | 97 | 96 | 95 | 90
-export type ReactPriorityLevel = number;
-
--- ROBLOX FIXME: Doesn't play nice with `next: ContextDependency<any>`
--- 1 Jul 2022 Luau analyze error: "ReactReconciler/ReactFiberNewContext.new.lua:420:7-32: (E001) Expected type table, got 'ContextDependency<any>?' instead"
--- export type ContextDependency<T> = {
--- 	context: ReactContext<T>,
--- 	next: ContextDependency<any>?,
-export type ContextDependency = {
-	context: ReactContext<any>,
+export type ContextDependency<T> = {
+	context: ReactContext<T>,
 	observedBits: number,
-	next: ContextDependency?,
+	next: ContextDependency<any> | nil,
 	[any]: any,
-};
+}
 
 export type Dependencies = {
 	lanes: Lanes,
-	firstContext: ContextDependency?,
+	firstContext: ContextDependency<any> | nil,
 	[any]: any,
 };
 
@@ -318,49 +309,14 @@ export type FiberRoot = {
 type BasicStateAction<S> = ((S) -> S) | S
 type Dispatch<A> = (A) -> ()
 
--- export type Dispatcher = {|
--- 	readContext<T>(
--- 		context: ReactContext<T>,
--- 		observedBits: void | number | boolean,
--- 	): T,
--- 	useState<S>(initialState: (() => S) | S): [S, Dispatch<BasicStateAction<S>>],
--- 	useReducer<S, I, A>(
--- 		reducer: (S, A) => S,
--- 		initialArg: I,
--- 		init?: (I) => S,
--- 	): [S, Dispatch<A>],
--- 	useContext<T>(
--- 		context: ReactContext<T>,
--- 		observedBits: void | number | boolean,
--- 	): T,
--- 	useRef<T>(initialValue: T): {|current: T|},
--- 	useEffect(
--- 		create: () => (() => void) | void,
--- 		deps: Array<mixed> | void | nil,
--- 	): void,
--- 	useLayoutEffect(
--- 		create: () => (() => void) | void,
--- 		deps: Array<mixed> | void | nil,
--- 	): void,
--- 	useCallback<T>(callback: T, deps: Array<mixed> | void | nil): T,
--- 	useMemo<T>(nextCreate: () => T, deps: Array<mixed> | void | nil): T,
--- 	useImperativeHandle<T>(
--- 		ref: {|current: T | nil|} | ((inst: T | nil) => mixed) | nil | void,
--- 		create: () => T,
--- 		deps: Array<mixed> | void | nil,
--- 	): void,
--- 	useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void,
--- 	useDeferredValue<T>(value: T): T,
--- 	useTransition(): [(() => void) => void, boolean],
--- 	useMutableSource<Source, Snapshot>(
--- 		source: MutableSource<Source>,
--- 		getSnapshot: MutableSourceGetSnapshotFn<Source, Snapshot>,
--- 		subscribe: MutableSourceSubscribeFn<Source, Snapshot>,
--- 	): Snapshot,
--- 	useOpaqueIdentifier(): any,
-
--- 	unstable_isNewReconciler?: boolean,
--- |}
+-- ROBLOX FIXME: function generics
+type _T = any
+type _S = any
+type _I = any
+type _A = any
+type Snapshot = any
+-- ROBLOX deviation: Dispatcher is defined in Shared to avoid circular deps
+export type Dispatcher = Shared.Dispatcher
 
 -- deviation: Return something so that the module system is happy
 return {}

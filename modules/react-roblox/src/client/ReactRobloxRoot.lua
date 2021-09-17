@@ -15,9 +15,8 @@ type Container = ReactRobloxHostTypes.Container;
 type RootType = ReactRobloxHostTypes.RootType;
 type RootOptions = ReactRobloxHostTypes.RootOptions;
 
--- ROBLOX FIXME: Types across package boundaries
 local ReconcilerTypes = require(Packages.ReactReconciler)
-type RootTag = ReconcilerTypes.RootTag;
+type RootTag = ReconcilerTypes.RootTag
 local ReactTypes = require(Packages.Shared)
 type MutableSource<T> = ReactTypes.MutableSource<T>
 type ReactNodeList = ReactTypes.ReactNodeList

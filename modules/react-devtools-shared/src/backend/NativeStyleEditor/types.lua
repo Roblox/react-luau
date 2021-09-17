@@ -9,12 +9,7 @@
 --  */
 type Object = { [string]: any }
 
-export type BoxStyle = {
-	bottom: number,
-	left: number,
-	right: number,
-	top: number,
-}
+export type BoxStyle = { bottom: number, left: number, right: number, top: number }
 
 export type Layout = {
 	x: number,
@@ -29,10 +24,6 @@ export type Layout = {
 
 export type Style = Object
 
-export type StyleAndLayout = {
-	id: number,
-	style: Style | nil,
-	layout: Layout | nil,
-}
+export type StyleAndLayout = { id: number, style: Style | nil, layout: Layout | nil }
 
 return {}

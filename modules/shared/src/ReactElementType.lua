@@ -24,7 +24,7 @@ export type ReactElement = {
 	-- ReactFiber
 	_owner: any,
 
-	-- _G.__DEV__
+	-- __DEV__
 	_store: {
 		validated: boolean,
 		[any]: any,

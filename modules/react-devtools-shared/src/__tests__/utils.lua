@@ -23,7 +23,7 @@ local Bridge = require(script.Parent.Parent.bridge)
 type FrontendBridge = Bridge.FrontendBridge
 local Store = require(script.Parent.Parent.devtools.store)
 type Store = Store.Store
-local  ProfilerTypes = require(script.Parent.Parent.devtools.views.Profiler.types)
+local ProfilerTypes = require(script.Parent.Parent.devtools.views.Profiler.types)
 type ProfilingDataFrontend = ProfilerTypes.ProfilingDataFrontend
 local Types = require(script.Parent.Parent.types)
 type ElementType = Types.ElementType
@@ -51,10 +51,7 @@ exports.act = function(callback: Function): ()
 	end
 end
 
-exports.actAsync = function(
-	cb: () -> any,
-	recursivelyFlush: boolean?
-)
+exports.actAsync = function(cb: () -> any, recursivelyFlush: boolean?)
 	if recursivelyFlush == nil then
 		recursivelyFlush = true
 	end
@@ -69,7 +66,7 @@ exports.actAsync = function(
 
 	if recursivelyFlush then
 		while jest.getTimerCount() > 0 do
-		  -- $FlowFixMe Flow doesn't know about "await act()" yet
+			-- $FlowFixMe Flow doesn't know about "await act()" yet
 			actDOM(function()
 				return actTestRenderer(function()
 					jest.runAllTimers()
@@ -100,10 +97,7 @@ exports.beforeEachProfiling = function(): ()
 	)
 end
 
-exports.createDisplayNameFilter = function(
-	source: string,
-	isEnabled: boolean
-)
+exports.createDisplayNameFilter = function(source: string, isEnabled: boolean)
 	if isEnabled == nil then
 		isEnabled = true
 	end
@@ -132,10 +126,7 @@ exports.createHOCFilter = function(isEnabled: boolean)
 	}
 end
 
-exports.createElementTypeFilter = function(
-	elementType: ElementType,
-	isEnabled: boolean
-)
+exports.createElementTypeFilter = function(elementType: ElementType, isEnabled: boolean)
 	if isEnabled == nil then
 		isEnabled = true
 	end
@@ -148,10 +139,7 @@ exports.createElementTypeFilter = function(
 	}
 end
 
-exports.createLocationFilter = function(
-	source: string,
-	isEnabled: boolean
-)
+exports.createLocationFilter = function(source: string, isEnabled: boolean)
 	if isEnabled == nil then
 		isEnabled = true
 	end

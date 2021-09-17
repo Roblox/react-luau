@@ -31,9 +31,7 @@ local createContext = React.createContext
 --    The size of this cache is bounded by how many renders were profiled,
 --    and it will be fully reset between profiling sessions.
 
-type Suspender = {
-	andThen: (() -> any, () -> any) -> any,
-}
+type Suspender = { andThen: (() -> any, () -> any) -> any }
 
 type PendingResult = {
 	status: number, -- ROBLOX TODO: Luau doesn't support literal: 0
@@ -202,7 +200,7 @@ exports.createResource = function(
 		write = function(key: Key, value: Value): ()
 			local entriesForResource = getEntriesForResource(resource)
 			local resolvedResult = {
-			status = Resolved,
+				status = Resolved,
 				value = value,
 			}
 

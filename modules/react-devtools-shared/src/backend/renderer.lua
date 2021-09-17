@@ -125,7 +125,6 @@ type WorkTagMap = BackendTypes.WorkTagMap
 
 local ProfilerTypes = require(script.Parent.Parent.devtools.views.Profiler.types)
 type Interaction = ProfilerTypes.Interaction
--- import type {Interaction} from 'react-devtools-shared/src/devtools/views/Profiler/types';
 local TypesModules = require(script.Parent.Parent.types)
 type ComponentFilter = TypesModules.ComponentFilter
 type ElementType = TypesModules.ElementType
@@ -157,13 +156,10 @@ local function getFiberFlags(fiber: Fiber): number
 	end
 end
 
-local getCurrentTime = (function()
+local getCurrentTime = function()
 	-- ROBLOX deviation: use os.clock not performance
 	return os.clock()
-	-- return function()
-	--     return Date.now()
-	-- end
-end)()
+end
 
 exports.getInternalReactConstants = function(
 	version: string
@@ -380,10 +376,8 @@ exports.getInternalReactConstants = function(
 			return getDisplayName(resolvedType)
 		elseif tag == ForwardRef then
 			-- Mirror https://github.com/facebook/react/blob/7c21bf72ace77094fd1910cc350a548287ef8350/packages/shared/getComponentName.js#L27-L37
-			return (type_ and type_.displayName) or getDisplayName(
-				resolvedType,
-				"Anonymous"
-			)
+			return (type_ and type_.displayName)
+				or getDisplayName(resolvedType, "Anonymous")
 		elseif tag == HostRoot then
 			return nil
 		elseif tag == HostComponent then
@@ -405,7 +399,8 @@ exports.getInternalReactConstants = function(
 			then
 				return nil
 			elseif
-				typeSymbol == PROVIDER_NUMBER or typeSymbol == PROVIDER_SYMBOL_STRING
+				typeSymbol == PROVIDER_NUMBER
+				or typeSymbol == PROVIDER_SYMBOL_STRING
 			then
 				-- 16.3.0 exposed the context object as "context"
 				-- PR #12501 changed it to "_context" for 16.3.1+
@@ -429,7 +424,8 @@ exports.getInternalReactConstants = function(
 			then
 				return nil
 			elseif
-				typeSymbol == PROFILER_NUMBER or typeSymbol == PROFILER_SYMBOL_STRING
+				typeSymbol == PROFILER_NUMBER
+				or typeSymbol == PROFILER_SYMBOL_STRING
 			then
 				return ("Profiler(%s)"):format(fiber.memoizedProps.id)
 			elseif typeSymbol == SCOPE_NUMBER or typeSymbol == SCOPE_SYMBOL_STRING then
@@ -703,7 +699,7 @@ exports.attach = function(
 
 		-- Recursively unmount all roots.
 		-- ROBLOX deviation: for loop instead of forEach
-		for _key, root in pairs(hook.getFiberRoots(rendererID)) do
+		for root in pairs(hook.getFiberRoots(rendererID)) do
 			currentRootID = getFiberID(getPrimaryFiber(root.current))
 			unmountFiberChildrenRecursively(root.current)
 			recordUnmount(root.current, false)
@@ -716,7 +712,7 @@ exports.attach = function(
 		rootDisplayNameCounter = {}
 
 		-- Recursively re-mount all roots with new filter criteria applied.
-		for _key, root in pairs(hook.getFiberRoots(rendererID)) do
+		for root in pairs(hook.getFiberRoots(rendererID)) do
 			currentRootID = getFiberID(getPrimaryFiber(root.current))
 
 			setRootPseudoKey(currentRootID, root.current)
@@ -768,7 +764,6 @@ exports.attach = function(
 		end
 		if hideElementsWithDisplayNames.size > 0 then
 			local displayName = getDisplayNameForFiber(fiber)
-
 			if displayName ~= nil then
 				-- eslint-disable-next-line no-for-of-loops/no-for-of-loops
 				for _, displayNameRegExp in hideElementsWithDisplayNames:ipairs() do
@@ -825,7 +820,8 @@ exports.attach = function(
 			then
 				return ElementTypeContext
 			elseif
-				typeSymbol == PROVIDER_NUMBER or typeSymbol == PROVIDER_SYMBOL_STRING
+				typeSymbol == PROVIDER_NUMBER
+				or typeSymbol == PROVIDER_SYMBOL_STRING
 			then
 				return ElementTypeContext
 			elseif
@@ -838,7 +834,8 @@ exports.attach = function(
 			then
 				return ElementTypeOtherOrUnknown
 			elseif
-				typeSymbol == PROFILER_NUMBER or typeSymbol == PROFILER_SYMBOL_STRING
+				typeSymbol == PROFILER_NUMBER
+				or typeSymbol == PROFILER_SYMBOL_STRING
 			then
 				return ElementTypeProfiler
 			else
@@ -871,11 +868,14 @@ exports.attach = function(
 		prevFiber: Fiber | nil,
 		nextFiber: Fiber
 	): ChangeDescription | nil
+		local fiberType = getElementTypeForFiber(nextFiber)
 		if
-			getElementTypeForFiber(nextFiber) == ElementTypeClass
-			or ElementTypeFunction
-			or ElementTypeMemo
-			or ElementTypeForwardRef
+			fiberType == ElementTypeClass
+			or fiberType == ElementTypeFunction
+			or fiberType == ElementTypeMemo
+			or fiberType == ElementTypeForwardRef
+			-- ROBLOX deviation: Include host components in the report
+			or fiberType == ElementTypeHostComponent
 		then
 			if prevFiber == nil then
 				return {
@@ -958,7 +958,7 @@ exports.attach = function(
 
 	getContextChangedKeys = function(fiber: Fiber): nil | boolean | Array<string>
 		if getElementTypeForFiber(fiber) == ElementTypeClass then
- 			if idToContextsMap ~= nil then
+			if idToContextsMap ~= nil then
 				local id = getFiberID(getPrimaryFiber(fiber))
 				local prevContexts = (idToContextsMap :: Map<number, any>)[id]
 				local nextContexts = getContextsForFiber(fiber)
@@ -1020,18 +1020,13 @@ exports.attach = function(
 			return nil
 		end
 
-		local keys = Set.new()
-		-- ROBLOX deviation: copy into set
-		for _, key in Object.keys(prev) do
-			keys:add(key)
-		end
-		for _, key in Object.keys(next_) do
-			keys:add(key)
-		end
+		local keys = Set.new({
+			table.unpack(Object.keys(prev)),
+			table.unpack(Object.keys(next_)),
+		})
 		local changedKeys = {}
-
 		-- eslint-disable-next-line no-for-of-loops/no-for-of-loops
-		for _, key in ipairs(keys) do
+		for _, key in keys:ipairs() do
 			if prev[key] ~= next_[key] then
 				table.insert(changedKeys, key)
 			end
@@ -1267,7 +1262,10 @@ exports.attach = function(
 
 			if isProfiling then
 				if displayNamesByRootID ~= nil then
-					(displayNamesByRootID :: Map<number, string>)[id] = getDisplayNameForRoot(fiber)
+					(displayNamesByRootID :: Map<number, string>)[id] =
+						getDisplayNameForRoot(
+							fiber
+						)
 				end
 			end
 		else
@@ -1583,7 +1581,6 @@ exports.attach = function(
 
 					if recordChangeDescriptions then
 						local changeDescription = getChangeDescription(alternate, fiber)
-
 						if changeDescription ~= nil then
 							if metadata.changeDescriptions ~= nil then
 								metadata.changeDescriptions[id] = changeDescription
@@ -1674,7 +1671,9 @@ exports.attach = function(
 		end
 		if
 			mostRecentlyInspectedElement ~= nil
-			and (mostRecentlyInspectedElement :: InspectedElement).id == getFiberID(getPrimaryFiber(nextFiber))
+			and (mostRecentlyInspectedElement :: InspectedElement).id == getFiberID(
+				getPrimaryFiber(nextFiber)
+			)
 			and didFiberRender(prevFiber, nextFiber)
 		then
 			-- If this Fiber has updated, clear cached inspected data.
@@ -1928,7 +1927,7 @@ exports.attach = function(
 
 			-- If we have not been profiling, then we can just walk the tree and build up its current state as-is.
 			-- ROBLOX deviation: for loop instead of forEach
-			for _, root in pairs(hook.getFiberRoots(rendererID)) do
+			for root in pairs(hook.getFiberRoots(rendererID)) do
 				currentRootID = getFiberID(getPrimaryFiber(root.current))
 
 				setRootPseudoKey(currentRootID, root.current)
@@ -1941,6 +1940,7 @@ exports.attach = function(
 					currentCommitProfilingMetadata = {
 						changeDescriptions = (function()
 							if recordChangeDescriptions then
+								-- ROBLOX deviation: use bare table instead of Map type
 								return {}
 							end
 							return nil
@@ -1948,7 +1948,8 @@ exports.attach = function(
 						durations = {},
 						commitTime = getCurrentTime() - profilingStartTime,
 						-- ROBLOX TODO: Work out how to deviate this assignment, it's messy
-						interactions = Array.from(root.memoizedInteractions).map(
+						interactions = Array.map(
+							Array.from(root.memoizedInteractions),
 							function(interaction)
 								return Object.assign({}, interaction, {
 									timestamp = interaction.timestamp - profilingStartTime,
@@ -2019,14 +2020,15 @@ exports.attach = function(
 			currentCommitProfilingMetadata = {
 				changeDescriptions = (function()
 					if recordChangeDescriptions then
+						-- ROBLOX deviation: use bare table instead of Map
 						return {}
 					end
-
 					return nil
 				end)(),
 				durations = {},
 				commitTime = getCurrentTime() - profilingStartTime,
-				interactions = Array.from(root.memoizedInteractions).map(
+				interactions = Array.map(
+					Array.from(root.memoizedInteractions),
 					function(interaction)
 						return Object.assign({}, interaction, {
 							timestamp = interaction.timestamp - profilingStartTime,
@@ -2130,9 +2132,10 @@ exports.attach = function(
 		return fibers
 	end
 	local function findNativeNodesForFiberID(id: number)
+		-- ROBLOX try
 		local ok, result = pcall(function()
 			local fiber = findCurrentFiberUsingSlowPathById(id)
-			if fiber ~= nil then
+			if fiber == nil then
 				return nil
 			end
 			-- Special case for a timed-out Suspense.
@@ -2152,8 +2155,12 @@ exports.attach = function(
 				return hostFiber.stateNode
 			end)
 		end)
-		-- The fiber might have unmounted by now.
-		return ok and result or nil
+		-- ROBLOX catch
+		if not ok then
+			-- The fiber might have unmounted by now.
+			return nil
+		end
+		return result
 	end
 
 	local function getDisplayNameForFiberID(id)
@@ -3142,7 +3149,11 @@ exports.attach = function(
 
 			if initialTreeBaseDurationsMap ~= nil then
 				for id, treeBaseDuration in pairs(initialTreeBaseDurationsMap :: Map<number, number>) do
-					if initialIDToRootMap ~= nil and (initialIDToRootMap :: Map<number, number>)[id] == rootID then
+					if
+						initialIDToRootMap ~= nil
+						and (initialIDToRootMap :: Map<number, number>)[id]
+							== rootID
+					then
 						-- We don't need to convert milliseconds to microseconds in this case,
 						-- because the profiling summary is JSON serialized.
 						table.insert(initialTreeBaseDurations, { id, treeBaseDuration })
@@ -3188,7 +3199,7 @@ exports.attach = function(
 				table.insert(commitData, {
 					changeDescriptions = (function()
 						if changeDescriptions ~= nil then
-							return Array.from(changeDescriptions.entries())
+							return Array.from(changeDescriptions)
 						end
 
 						return nil
@@ -3205,8 +3216,8 @@ exports.attach = function(
 				commitData = commitData,
 				displayName = displayName,
 				initialTreeBaseDurations = initialTreeBaseDurations,
-				interactionCommits = Array.from(interactionCommits.entries()),
-				interactions = Array.from(allInteractions.entries()),
+				interactionCommits = Array.from(interactionCommits),
+				interactions = Array.from(allInteractions),
 				rootID = rootID,
 			})
 		end
@@ -3233,7 +3244,7 @@ exports.attach = function(
 		initialIDToRootMap = Object.assign({}, idToRootMap)
 		idToContextsMap = {}
 
-		for _, root in hook.getFiberRoots(rendererID):ipairs() do
+		for root in pairs(hook.getFiberRoots(rendererID)) do
 			local rootID = getFiberID(getPrimaryFiber(root.current));
 			(displayNamesByRootID :: DisplayNamesByRootID)[rootID] =
 				getDisplayNameForRoot(
@@ -3492,7 +3503,7 @@ exports.attach = function(
 			fiber = fiber.return_
 		end
 
-		keyPath.reverse()
+		Array.reverse(keyPath)
 		return keyPath
 	end
 
@@ -3518,7 +3529,7 @@ exports.attach = function(
 
 		return {
 			id = getFiberID(getPrimaryFiber(fiber)),
-			isFullMatch = trackedPathMatchDepth == #(trackedPath :: Array<PathFrame>) - 1,
+			isFullMatch = trackedPathMatchDepth == #(trackedPath :: Array<PathFrame>),
 		}
 	end
 
@@ -3555,6 +3566,8 @@ exports.attach = function(
 		stopProfiling = stopProfiling,
 		storeAsGlobal = storeAsGlobal,
 		updateComponentFilters = updateComponentFilters,
+		-- ROBLOX deviation: expose extra function for Roblox Studio use
+		getDisplayNameForRoot = getDisplayNameForRoot,
 	}
 end
 

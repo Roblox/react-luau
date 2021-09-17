@@ -12,18 +12,22 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 type Array<T> = { [number]: T }
 type Map<K, V> = { [K]: V }
-type Function = (any) -> any
+type Function = (...any) -> ...any
 type ElementType<T, U> = any
 
 export type EventEmitter<Events> = {
 	listenersMap: Map<string, Array<Function>>,
 	-- ROBLOX TODO: function generics <Event: $Keys<Events>>(
-	addListener: (EventEmitter<Events>, string, (...ElementType<Events, string>) -> any) -> (),
+	addListener: (
+		self: EventEmitter<Events>,
+		event: string,
+		listener: (...ElementType<Events, string>) -> ...any
+	) -> (),
 	-- ROBLOX TODO: function generics <Event: $Keys<Events>>(
 	emit: (EventEmitter<Events>, string, ...ElementType<Events, string>) -> (),
 	removeAllListeners: (EventEmitter<Events>) -> (),
 	-- ROBLOX deviation: Luau doesn't support $Keys<Events> for first non-self param
-	removeListener: (EventEmitter<Events>, string, Function) -> (),
+	removeListener: (self: EventEmitter<Events>, event: string, listener: Function) -> (),
 }
 local EventEmitter = {}
 local EventEmitterMetatable = { __index = EventEmitter }

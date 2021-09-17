@@ -33,9 +33,7 @@ type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscr
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
--- type Dispatcher = ReactInternalTypes.Dispatcher
--- FIXME (roblox): Dispatcher definition
-type Dispatcher = any
+type Dispatcher = ReactInternalTypes.Dispatcher
 type HookType = ReactInternalTypes.HookType
 type ReactPriorityLevel = ReactInternalTypes.ReactPriorityLevel
 local ReactFiberLane = require(script.Parent.ReactFiberLane)
@@ -44,13 +42,15 @@ type Lane = ReactFiberLane.Lane
 local ReactHookEffectTags = require(script.Parent.ReactHookEffectTags)
 type HookFlags = ReactHookEffectTags.HookFlags
 type FiberRoot = ReactInternalTypes.FiberRoot
+-- ROBLOX TODO: figure out how to expose types through dynamic exports
 -- local type {OpaqueIDType} = require(script.Parent.ReactFiberHostConfig)
+type OpaqueIDType = any
 
 local ReactSharedInternals = require(Packages.Shared).ReactSharedInternals
 local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
-local enableDebugTracing = ReactFeatureFlags.enableDebugTracing
-local enableSchedulingProfiler = ReactFeatureFlags.enableSchedulingProfiler
-local enableNewReconciler = ReactFeatureFlags.enableNewReconciler
+local enableDebugTracing: boolean? = ReactFeatureFlags.enableDebugTracing
+local enableSchedulingProfiler: boolean? = ReactFeatureFlags.enableSchedulingProfiler
+local enableNewReconciler: boolean? = ReactFeatureFlags.enableNewReconciler
 -- local decoupleUpdatePriorityFromScheduler = ReactFeatureFlags.decoupleUpdatePriorityFromScheduler
 local enableDoubleInvokingEffects = ReactFeatureFlags.enableDoubleInvokingEffects
 
@@ -164,7 +164,7 @@ export type Hook = {
 
 export type Effect = {
   tag: HookFlags,
-  create: () -> (() -> ())?,
+  create: () -> (() -> ()) | nil,
   destroy: (() -> ())?,
   deps: Array<any>?,
   next: Effect,
@@ -1272,7 +1272,7 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps)
 end
 
 local function mountEffect(
-  create: () -> (() -> ())?,
+  create: () -> (() -> ()) | nil,
   deps: Array<any>?
 )
   if _G.__DEV__ then
@@ -1301,7 +1301,7 @@ local function mountEffect(
 end
 
 local function updateEffect(
-  create: () -> (() -> ())?,
+  create: () -> (() -> ()) | nil,
   deps: Array<any>?
 )
   if _G.__DEV__ then
@@ -1320,7 +1320,7 @@ local function updateEffect(
 end
 
 local function mountLayoutEffect(
-  create: () -> (() -> ())?,
+  create: () -> (() -> ()) | nil,
   deps: Array<any>?
 )
   if _G.__DEV__ and enableDoubleInvokingEffects then
@@ -1336,7 +1336,7 @@ local function mountLayoutEffect(
 end
 
 local function updateLayoutEffect(
-  create: () -> (() -> ())?,
+  create: () -> (() -> ()) | nil,
   deps: Array<any>?
 )
   return updateEffectImpl(UpdateEffect, HookLayout, create, deps)
@@ -1349,7 +1349,7 @@ end
 -- )
 function imperativeHandleEffect(
   create: () -> any,
-  ref: {current: any | nil} | (any | nil) -> (any) | nil
+  ref: {current: any | nil} | ((inst: any | nil) -> any) | nil
 )
   if typeof(ref) == 'function' then
     local refCallback = ref
@@ -1395,9 +1395,9 @@ end
 --   deps: Array<mixed> | void | null,
 -- ): void
 function mountImperativeHandle(
-  ref: {current: any | nil} | (any | nil) -> (any) | nil,
+  ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
   create: () -> any,
-  deps: {any?}?
+  deps: Array<any> | nil
 )
   if _G.__DEV__ then
     if typeof(create) ~= 'function' then
@@ -1447,7 +1447,7 @@ end
 --   deps: Array<mixed> | void | null,
 -- ): void
 function updateImperativeHandle(
-  ref: {current: any | nil} | (any | nil) -> (any) | nil,
+  ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
   create: () -> any,
   deps: Array<any> | nil
 )
@@ -1714,7 +1714,7 @@ end
 function mountOpaqueIdentifier()
   local makeId
   if _G.__DEV__ then
-    unimplemented("mountOpauqeIdentifier")
+    console.warn("!!! unimplemented: warnOnOpaqueIdentifierAccessInDEV")
     -- makeId = makeClientIdInDEV.bind(
     --     nil,
     --     warnOnOpaqueIdentifierAccessInDEV.bind(null, currentlyRenderingFiber),
@@ -1778,15 +1778,15 @@ function mountOpaqueIdentifier()
   end
 end
 
--- function updateOpaqueIdentifier(): OpaqueIDType {
---   local id = updateState(undefined)[0]
---   return id
--- end
+function updateOpaqueIdentifier(): OpaqueIDType
+  local id, _ = updateState(nil)
+  return id
+end
 
--- function rerenderOpaqueIdentifier(): OpaqueIDType {
---   local id = rerenderState(undefined)[0]
---   return id
--- end
+function rerenderOpaqueIdentifier(): OpaqueIDType
+  local id, _ = rerenderState(nil)
+  return id
+end
 
 -- ROBLOX FIXME: Luau function generics
 -- function dispatchAction<S, A>(
@@ -1935,8 +1935,8 @@ local ContextOnlyDispatcher: Dispatcher = {
   useRef = throwInvalidHookError,
   useState = throwInvalidHookError,
   useDebugValue = throwInvalidHookError,
-  useDeferredValue = throwInvalidHookError,
-  useTransition = throwInvalidHookError,
+  -- useDeferredValue = throwInvalidHookError,
+  -- useTransition = throwInvalidHookError,
   useMutableSource = throwInvalidHookError,
   useOpaqueIdentifier = throwInvalidHookError,
 
@@ -1956,7 +1956,7 @@ local HooksDispatcherOnMount: Dispatcher = {
   useReducer = mountReducer,
   useRef = mountRef,
   useState = mountState,
-  -- useDebugValue = mountDebugValue,
+  useDebugValue = mountDebugValue,
   -- useDeferredValue = mountDeferredValue,
   -- useTransition = mountTransition,
   useMutableSource = mountMutableSource,
@@ -1981,7 +1981,7 @@ local HooksDispatcherOnUpdate: Dispatcher = {
   -- useDeferredValue = updateDeferredValue,
   -- useTransition = updateTransition,
   useMutableSource = updateMutableSource,
-  -- useOpaqueIdentifier = updateOpaqueIdentifier,
+  useOpaqueIdentifier = updateOpaqueIdentifier,
 
   unstable_isNewReconciler = enableNewReconciler,
 }
@@ -2002,7 +2002,7 @@ local HooksDispatcherOnRerender: Dispatcher = {
   -- useDeferredValue = rerenderDeferredValue,
   -- useTransition = rerenderTransition,
   useMutableSource = updateMutableSource,
-  -- useOpaqueIdentifier = rerenderOpaqueIdentifier,
+  useOpaqueIdentifier = rerenderOpaqueIdentifier,
 
   unstable_isNewReconciler = enableNewReconciler,
 }
@@ -2029,7 +2029,7 @@ if _G.__DEV__ then
   HooksDispatcherOnMountInDEV = {
     readContext = function(
       context: ReactContext<any>,
-      observedBits: number | boolean
+      observedBits: nil | number | boolean
     )
       return readContext(context, observedBits)
     end,
@@ -2041,16 +2041,16 @@ if _G.__DEV__ then
     end,
     useContext = function(
       context: ReactContext<any>,
-      observedBits: number | boolean
+      observedBits: nil | number | boolean
     ): any
       currentHookNameInDev = 'useContext'
       mountHookTypesDev()
       return readContext(context, observedBits)
     end,
     useEffect = function(
-      create: () -> (() -> ())?,
+      create: () -> (() -> ()) | nil,
       deps: Array<any>?
-    )
+    ): ()
       currentHookNameInDev = "useEffect"
       mountHookTypesDev()
       checkDepsAreArrayDev(deps)
@@ -2063,19 +2063,19 @@ if _G.__DEV__ then
     --   deps: Array<mixed> | void | null,
     -- ): void
     useImperativeHandle = function(
-      ref: {current: any | nil} | (any | nil) -> (any) | nil,
+      ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
       create: () -> any,
       deps: Array<any> | nil
-    )
+    ): ()
       currentHookNameInDev = 'useImperativeHandle'
       mountHookTypesDev()
       checkDepsAreArrayDev(deps)
       return mountImperativeHandle(ref, create, deps)
     end,
     useLayoutEffect = function(
-      create: () -> (() -> ())?,
+      create: () -> (() -> ()) | nil,
       deps: Array<any>?
-    )
+    ): ()
       currentHookNameInDev = 'useLayoutEffect'
       mountHookTypesDev()
       checkDepsAreArrayDev(deps)
@@ -2135,7 +2135,7 @@ if _G.__DEV__ then
     --   initialState: (() => S) | S,
     -- ): [S, Dispatch<BasicStateAction<S>>]
     useState = function(
-      initialState: (() -> any?) | any?
+      initialState: (() -> any) | any
     ): (any, Dispatch<BasicStateAction<any>>)
       currentHookNameInDev = 'useState'
       mountHookTypesDev()
@@ -2151,12 +2151,14 @@ if _G.__DEV__ then
       end
       -- ROBLOX deviation: Lua version of useState and useReducer return two items, not list like upstream
       return result, setResult
-      end,
---     useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
---       currentHookNameInDev = 'useDebugValue'
---       mountHookTypesDev()
---       return mountDebugValue(value, formatterFn)
---     },
+    end,
+    -- ROBLOX TODO: function generics
+    -- useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
+    useDebugValue = function(value: any, formatterFn: ((value: any) -> any)?): ()
+      currentHookNameInDev = 'useDebugValue'
+      mountHookTypesDev()
+      return mountDebugValue(value, formatterFn)
+    end,
 --     useDeferredValue<T>(value: T): T {
 --       currentHookNameInDev = 'useDeferredValue'
 --       mountHookTypesDev()
@@ -2199,7 +2201,7 @@ if _G.__DEV__ then
       -- ): T
       readContext = function(
         context: ReactContext<any>,
-        observedBits: number | boolean
+        observedBits: nil | number | boolean
       )
         return readContext(context, observedBits)
       end,
@@ -2218,16 +2220,16 @@ if _G.__DEV__ then
       -- ): T
       useContext = function(
         context: ReactContext<any>,
-        observedBits: number | boolean
+        observedBits: nil | number | boolean
       )
         currentHookNameInDev = 'useContext'
         updateHookTypesDev()
         return readContext(context, observedBits)
       end,
       useEffect = function(
-        create: () -> (() -> ())?,
+        create: () -> (() -> ()) | nil,
         deps: Array<any>?
-      )
+      ): ()
         currentHookNameInDev = "useEffect"
         updateHookTypesDev()
         return mountEffect(create, deps)
@@ -2239,18 +2241,18 @@ if _G.__DEV__ then
       --   deps: Array<mixed> | void | null,
       -- ): void
       useImperativeHandle = function(
-        ref: {current: any | nil} | (any | nil) -> (any) | nil,
+        ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
         create: () -> any,
-        deps: Array<any>?
-      )
+        deps: Array<any> | nil
+      ): ()
         currentHookNameInDev = 'useImperativeHandle'
         updateHookTypesDev()
         return mountImperativeHandle(ref, create, deps)
       end,
     useLayoutEffect = function(
-      create: () -> (() -> ())?,
+      create: () -> (() -> ()) | nil,
       deps: Array<any>?
-    )
+    ): ()
       currentHookNameInDev = 'useLayoutEffect'
       updateHookTypesDev()
       return mountLayoutEffect(create, deps)
@@ -2309,7 +2311,7 @@ if _G.__DEV__ then
     --   initialState: (() => S) | S,
     -- ): [S, Dispatch<BasicStateAction<S>>]
     useState = function(
-      initialState: () -> any | any
+      initialState: (() -> any) | any
     ): (any, Dispatch<BasicStateAction<any>>)
       currentHookNameInDev = 'useState'
       updateHookTypesDev()
@@ -2326,11 +2328,12 @@ if _G.__DEV__ then
       -- deviation: Lua version of mountState return two items, not list like upstream
       return result, setResult
     end,
---     useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
---       currentHookNameInDev = 'useDebugValue'
---       updateHookTypesDev()
---       return mountDebugValue(value, formatterFn)
---     },
+    -- useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
+    useDebugValue = function(value: any, formatterFn: ((value: any) -> any)?): ()
+      currentHookNameInDev = 'useDebugValue'
+      updateHookTypesDev()
+      return mountDebugValue(value, formatterFn)
+    end,
 --     useDeferredValue<T>(value: T): T {
 --       currentHookNameInDev = 'useDeferredValue'
 --       updateHookTypesDev()
@@ -2362,7 +2365,7 @@ if _G.__DEV__ then
       return mountOpaqueIdentifier()
     end,
 
---     unstable_isNewReconciler: enableNewReconciler,
+    unstable_isNewReconciler = enableNewReconciler,
     }
 
   HooksDispatcherOnUpdateInDEV = {
@@ -2373,7 +2376,7 @@ if _G.__DEV__ then
       -- ): T
       readContext = function(
         context: ReactContext<any>,
-        observedBits: number | boolean
+        observedBits: nil | number | boolean
       )
         return readContext(context, observedBits)
       end,
@@ -2398,9 +2401,9 @@ if _G.__DEV__ then
         return readContext(context, observedBits)
       end,
       useEffect = function(
-        create: () -> (() -> ())?,
+        create: () -> (() -> ()) | nil,
         deps: Array<any>?
-      )
+      ): ()
         currentHookNameInDev = "useEffect"
         updateHookTypesDev()
         return updateEffect(create, deps)
@@ -2412,18 +2415,18 @@ if _G.__DEV__ then
     --   deps: Array<mixed> | void | null,
     -- ): void
     useImperativeHandle = function(
-      ref: {current: any | nil} | (any | nil) -> (any) | nil,
+      ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
       create: () -> any,
       deps: Array<any> | nil
-    )
+    ): ()
       currentHookNameInDev = 'useImperativeHandle'
       updateHookTypesDev()
       return updateImperativeHandle(ref, create, deps)
     end,
     useLayoutEffect = function(
-      create: () -> (() -> ())?,
+      create: () -> (() -> ()) | nil,
       deps: Array<any>?
-    )
+    ): ()
       currentHookNameInDev = 'useLayoutEffect'
       updateHookTypesDev()
       return updateLayoutEffect(create, deps)
@@ -2481,7 +2484,7 @@ if _G.__DEV__ then
     --   initialState: (() => S) | S,
     -- ): [S, Dispatch<BasicStateAction<S>>]
     useState = function(
-      initialState: () -> any | any
+      initialState: (() -> any) | any
     ): (any, Dispatch<BasicStateAction<any>>)
       currentHookNameInDev = 'useState'
       updateHookTypesDev()
@@ -2498,11 +2501,13 @@ if _G.__DEV__ then
       -- deviation: Lua version of useState returns two items, not list like upstream
       return result, setResult
     end,
---     useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
---       currentHookNameInDev = 'useDebugValue'
---       updateHookTypesDev()
---       return updateDebugValue(value, formatterFn)
---     },
+    -- ROBLOX TODO: function generics
+    -- useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
+    useDebugValue = function(value: any, formatterFn: ((value: any) -> any)?): ()
+      currentHookNameInDev = 'useDebugValue'
+      updateHookTypesDev()
+      return updateDebugValue(value, formatterFn)
+    end,
 --     useDeferredValue<T>(value: T): T {
 --       currentHookNameInDev = 'useDeferredValue'
 --       updateHookTypesDev()
@@ -2528,13 +2533,13 @@ if _G.__DEV__ then
         updateHookTypesDev()
         return updateMutableSource(source, getSnapshot, subscribe)
     end,
---     useOpaqueIdentifier(): OpaqueIDType {
---       currentHookNameInDev = 'useOpaqueIdentifier'
---       updateHookTypesDev()
---       return updateOpaqueIdentifier()
---     },
+    useOpaqueIdentifier = function(): OpaqueIDType
+      currentHookNameInDev = 'useOpaqueIdentifier'
+      updateHookTypesDev()
+      return updateOpaqueIdentifier()
+    end,
 
---     unstable_isNewReconciler: enableNewReconciler,
+    unstable_isNewReconciler = enableNewReconciler,
   }
 
   HooksDispatcherOnRerenderInDEV = {
@@ -2575,7 +2580,7 @@ if _G.__DEV__ then
       --   deps: Array<any> | nil,
       -- ): void {
       useEffect = function(
-        create: () -> (() -> ()),
+        create: () -> (() -> ()) | nil,
         deps: Array<any> | nil
       ): ()
       currentHookNameInDev = 'useEffect'
@@ -2589,16 +2594,16 @@ if _G.__DEV__ then
     --   deps: Array<mixed> | void | null,
     -- ): void
     useImperativeHandle = function(
-      ref: {current: any | nil} | (any | nil) -> (any) | nil,
+      ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
       create: () -> any,
-      deps: Array<any>?
+      deps: Array<any> | nil
     )
       currentHookNameInDev = 'useImperativeHandle'
       updateHookTypesDev()
       return updateImperativeHandle(ref, create, deps)
     end,
     useLayoutEffect = function(
-      create: () -> (() -> ())?,
+      create: () -> (() -> ()) | nil,
       deps: Array<any>?
     )
       currentHookNameInDev = 'useLayoutEffect'
@@ -2645,7 +2650,7 @@ if _G.__DEV__ then
       if not ok then
         error(result)
       end
-      -- deviation: Lua version of useState and useReducer return two items, not list like upstream
+      -- ROBLOX deviation: Lua version of useState and useReducer return two items, not list like upstream
       return result, setResult
     end,
     -- useRef<T>(initialValue: T): {|current: T|} {
@@ -2659,7 +2664,7 @@ if _G.__DEV__ then
   --   initialState: (() => S) | S,
   -- ): [S, Dispatch<BasicStateAction<S>>]
   useState = function(
-    initialState: () -> any | any
+    initialState: (() -> any) | any
   ): (any, Dispatch<BasicStateAction<any>>)
       currentHookNameInDev = 'useState'
       updateHookTypesDev()
@@ -2677,10 +2682,11 @@ if _G.__DEV__ then
       return result, setResult
     end,
 --     useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
---       currentHookNameInDev = 'useDebugValue'
---       updateHookTypesDev()
---       return updateDebugValue(value, formatterFn)
---     },
+    useDebugValue = function(value: any, formatterFn: ((value: any) -> any)?): ()
+      currentHookNameInDev = 'useDebugValue'
+      updateHookTypesDev()
+      return updateDebugValue(value, formatterFn)
+    end,
 --     useDeferredValue<T>(value: T): T {
 --       currentHookNameInDev = 'useDeferredValue'
 --       updateHookTypesDev()
@@ -2706,13 +2712,13 @@ if _G.__DEV__ then
         updateHookTypesDev()
         return updateMutableSource(source, getSnapshot, subscribe)
       end,
---     useOpaqueIdentifier(): OpaqueIDType {
---       currentHookNameInDev = 'useOpaqueIdentifier'
---       updateHookTypesDev()
---       return rerenderOpaqueIdentifier()
---     },
+    useOpaqueIdentifier = function(): OpaqueIDType
+      currentHookNameInDev = 'useOpaqueIdentifier'
+      updateHookTypesDev()
+      return rerenderOpaqueIdentifier()
+    end,
 
---     unstable_isNewReconciler: enableNewReconciler,
+    unstable_isNewReconciler = enableNewReconciler,
   }
 
   InvalidNestedHooksDispatcherOnMountInDEV = {
@@ -2723,14 +2729,14 @@ if _G.__DEV__ then
     -- ): T
     readContext = function(
       context: ReactContext<any>,
-      observedBits: number | boolean
-    )
+      observedBits: nil | number | boolean
+    ): any
       warnInvalidContextAccess()
       return readContext(context, observedBits)
     end,
     -- ROBLOX FIXME: Luau function generics and return
     --     useCallback<T>(callback: T, deps: Array<mixed> | void | null): T {
-    useCallback = function(callback, deps: Array<any> | nil)
+    useCallback = function(callback, deps: Array<any> | nil): any
       currentHookNameInDev = 'useCallback'
       warnInvalidHookAccess()
       mountHookTypesDev()
@@ -2738,42 +2744,42 @@ if _G.__DEV__ then
     end,
     useContext = function(
       context: ReactContext<any>,
-      observedBits: number | boolean
-    )
+      observedBits: nil | number | boolean
+    ): any
       currentHookNameInDev = 'useContext'
       warnInvalidHookAccess()
       mountHookTypesDev()
       return readContext(context, observedBits)
     end,
     useEffect = function(
-      create: () -> (() -> ()),
+      create: () -> (() -> ()) | nil,
       deps: Array<any> | nil
-    )
+    ): ()
       currentHookNameInDev = 'useEffect'
       warnInvalidHookAccess()
       mountHookTypesDev()
       return mountEffect(create, deps)
     end,
     useImperativeHandle = function(
-      ref: {current: any | nil} | (any | nil) -> (any) | nil,
+      ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
       create: () -> any,
       deps: Array<any> | nil
-    )
+    ): ()
       currentHookNameInDev = 'useImperativeHandle'
       warnInvalidHookAccess()
       mountHookTypesDev()
       return mountImperativeHandle(ref, create, deps)
     end,
     useLayoutEffect = function(
-      create: () -> (() -> ()),
+      create: () -> (() -> ()) | nil,
       deps: Array<any> | nil
-    )
+    ): ()
       currentHookNameInDev = 'useLayoutEffect'
       warnInvalidHookAccess()
       mountHookTypesDev()
       return mountLayoutEffect(create, deps)
     end,
-    useMemo = function(create: () -> any, deps: Array<any> | nil)
+    useMemo = function(create: () -> any, deps: Array<any> | nil): any
       currentHookNameInDev = 'useMemo'
       warnInvalidHookAccess()
       mountHookTypesDev()
@@ -2791,8 +2797,8 @@ if _G.__DEV__ then
     useReducer = function(
       reducer: (any, any) -> any,
       initialArg,
-      init: (any) -> any | nil
-    ): Array<any>
+      init: ((any) -> any)?
+    ): (any, Dispatch<BasicStateAction<any>>)
       currentHookNameInDev = 'useReducer'
       warnInvalidHookAccess()
       mountHookTypesDev()
@@ -2821,7 +2827,7 @@ if _G.__DEV__ then
     --   initialState: (() => S) | S,
     -- ): [S, Dispatch<BasicStateAction<S>>]
     useState = function(
-      initialState: () -> any | any
+      initialState: (() -> any) | any
     ): (any, Dispatch<BasicStateAction<any>>)
       currentHookNameInDev = 'useState'
       warnInvalidHookAccess()
@@ -2839,12 +2845,14 @@ if _G.__DEV__ then
       -- deviation: Lua version of useState returns two items, not list like upstream
       return result, setResult
     end,
+    -- ROBLOX TODO: function generics
     -- useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
-    --   currentHookNameInDev = 'useDebugValue'
-    --   warnInvalidHookAccess()
-    --   mountHookTypesDev()
-    --   return mountDebugValue(value, formatterFn)
-    -- },
+    useDebugValue = function(value: any, formatterFn: ((value: any) -> any)?): ()
+      currentHookNameInDev = 'useDebugValue'
+      warnInvalidHookAccess()
+      mountHookTypesDev()
+      return mountDebugValue(value, formatterFn)
+    end,
     -- useDeferredValue<T>(value: T): T {
     --   currentHookNameInDev = 'useDeferredValue'
     --   warnInvalidHookAccess()
@@ -2873,14 +2881,14 @@ if _G.__DEV__ then
           mountHookTypesDev()
           return mountMutableSource(source, getSnapshot, subscribe)
       end,
-    -- useOpaqueIdentifier(): OpaqueIDType {
-    --   currentHookNameInDev = 'useOpaqueIdentifier'
-    --   warnInvalidHookAccess()
-    --   mountHookTypesDev()
-    --   return mountOpaqueIdentifier()
-    -- },
+    useOpaqueIdentifier = function(): OpaqueIDType
+      currentHookNameInDev = 'useOpaqueIdentifier'
+      warnInvalidHookAccess()
+      mountHookTypesDev()
+      return mountOpaqueIdentifier()
+    end,
 
-    -- unstable_isNewReconciler: enableNewReconciler,
+    unstable_isNewReconciler = enableNewReconciler,
   }
 
   InvalidNestedHooksDispatcherOnUpdateInDEV = {
@@ -2898,7 +2906,7 @@ if _G.__DEV__ then
     end,
     -- ROBLOX FIXME: Luau function generics and return
     --     useCallback<T>(callback: T, deps: Array<mixed> | void | null): T {
-    useCallback = function(callback, deps: Array<any> | nil)
+    useCallback = function(callback, deps: Array<any> | nil): any
       currentHookNameInDev = 'useCallback'
       warnInvalidHookAccess()
       updateHookTypesDev()
@@ -2907,7 +2915,7 @@ if _G.__DEV__ then
 
     useContext = function(
       context: ReactContext<any>,
-      observedBits: number | boolean
+      observedBits: nil | number | boolean
     ): any
       currentHookNameInDev = 'useContext'
       warnInvalidHookAccess()
@@ -2920,9 +2928,9 @@ if _G.__DEV__ then
     --   deps: Array<any> | nil,
     -- ): void {
     useEffect = function(
-      create: () -> (() -> ()),
+      create: () -> (() -> ()) | nil,
       deps: Array<any> | nil
-    )
+    ): ()
       currentHookNameInDev = 'useEffect'
       warnInvalidHookAccess()
       updateHookTypesDev()
@@ -2935,7 +2943,7 @@ if _G.__DEV__ then
     --   deps: Array<mixed> | void | null,
     -- ): void
     useImperativeHandle = function(
-      ref: {current: any | nil} | (any | nil) -> (any) | nil,
+      ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
       create: () -> any,
       deps: Array<any>?
     )
@@ -2945,9 +2953,9 @@ if _G.__DEV__ then
       return updateImperativeHandle(ref, create, deps)
     end,
     useLayoutEffect = function(
-      create: () -> (() -> nil),
+      create: () -> (() -> ()) | nil,
       deps: Array<any>?
-    )
+    ): ()
       currentHookNameInDev = 'useLayoutEffect'
       warnInvalidHookAccess()
       updateHookTypesDev()
@@ -2980,7 +2988,7 @@ if _G.__DEV__ then
       reducer: (any, any) -> any,
       initialArg: any,
       init: ((any) -> any)?
-    ): (any, Dispatch<any>)
+    ): (any, Dispatch<BasicStateAction<any>>)
       currentHookNameInDev = 'useReducer'
       warnInvalidHookAccess()
       updateHookTypesDev()
@@ -3010,7 +3018,7 @@ if _G.__DEV__ then
     --   initialState: (() => S) | S,
     -- ): [S, Dispatch<BasicStateAction<S>>]
     useState = function(
-      initialState: () -> any | any
+      initialState: (() -> any) | any
     ): (any, Dispatch<BasicStateAction<any>>)
       currentHookNameInDev = 'useState'
       warnInvalidHookAccess()
@@ -3028,12 +3036,14 @@ if _G.__DEV__ then
       -- deviation: Lua version of useState returns two items, not list like upstream
       return result, setResult
     end,
+    -- ROBLOX TODO: function generics
 --     useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
---       currentHookNameInDev = 'useDebugValue'
---       warnInvalidHookAccess()
---       updateHookTypesDev()
---       return updateDebugValue(value, formatterFn)
---     },
+    useDebugValue = function (value, formatterFn: ((value: any) -> any)?): ()
+      currentHookNameInDev = 'useDebugValue'
+      warnInvalidHookAccess()
+      updateHookTypesDev()
+      return updateDebugValue(value, formatterFn)
+    end,
 --     useDeferredValue<T>(value: T): T {
 --       currentHookNameInDev = 'useDeferredValue'
 --       warnInvalidHookAccess()
@@ -3062,14 +3072,14 @@ if _G.__DEV__ then
         updateHookTypesDev()
         return updateMutableSource(source, getSnapshot, subscribe)
       end,
---     useOpaqueIdentifier(): OpaqueIDType {
---       currentHookNameInDev = 'useOpaqueIdentifier'
---       warnInvalidHookAccess()
---       updateHookTypesDev()
---       return updateOpaqueIdentifier()
---     },
+    useOpaqueIdentifier = function(): OpaqueIDType
+      currentHookNameInDev = 'useOpaqueIdentifier'
+      warnInvalidHookAccess()
+      updateHookTypesDev()
+      return updateOpaqueIdentifier()
+    end,
 
---     unstable_isNewReconciler: enableNewReconciler,
+    unstable_isNewReconciler = enableNewReconciler,
   }
 
   InvalidNestedHooksDispatcherOnRerenderInDEV = {
@@ -3080,7 +3090,7 @@ if _G.__DEV__ then
     -- ): T
     readContext = function(
       context: ReactContext<any>,
-      observedBits: number | boolean
+      observedBits: nil | number | boolean
     ): any
       warnInvalidContextAccess()
       return readContext(context, observedBits)
@@ -3101,7 +3111,7 @@ if _G.__DEV__ then
     -- ): T
     useContext = function(
       context: ReactContext<any>,
-      observedBits: number | boolean
+      observedBits: nil | number | boolean
     ): any
       currentHookNameInDev = 'useContext'
       warnInvalidHookAccess()
@@ -3114,9 +3124,9 @@ if _G.__DEV__ then
     --   deps: Array<any> | nil,
     -- ): void {
     useEffect = function(
-      create: () -> (() -> ()),
+      create: () -> (() -> ()) | nil,
       deps: Array<any> | nil
-    )
+    ): ()
       currentHookNameInDev = 'useEffect'
       warnInvalidHookAccess()
       updateHookTypesDev()
@@ -3129,19 +3139,19 @@ if _G.__DEV__ then
     --   deps: Array<mixed> | void | null,
     -- ): void
     useImperativeHandle = function(
-      ref: {current: any | nil} | (any | nil) -> (any) | nil,
+      ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
       create: () -> any,
-      deps: Array<any>?
-    )
+      deps: Array<any> | nil
+    ): ()
       currentHookNameInDev = 'useImperativeHandle'
       warnInvalidHookAccess()
       updateHookTypesDev()
       return updateImperativeHandle(ref, create, deps)
     end,
     useLayoutEffect = function(
-      create: () -> (() -> ()),
+      create: () -> (() -> ()) | nil,
       deps: Array<any>?
-    )
+    ): ()
       currentHookNameInDev = 'useLayoutEffect'
       warnInvalidHookAccess()
       updateHookTypesDev()
@@ -3203,7 +3213,7 @@ if _G.__DEV__ then
     --   initialState: (() => S) | S,
     -- ): [S, Dispatch<BasicStateAction<S>>]
     useState = function(
-      initialState: () -> any | any
+      initialState: (() -> any) | any
     ): (any, Dispatch<BasicStateAction<any>>)
         currentHookNameInDev = 'useState'
         warnInvalidHookAccess()
@@ -3221,12 +3231,14 @@ if _G.__DEV__ then
         -- deviation: Lua version of useState returns two items, not list like upstream
         return result, setResult
       end,
+      -- ROBLOX TODO: funtion generics
 --     useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
---       currentHookNameInDev = 'useDebugValue'
---       warnInvalidHookAccess()
---       updateHookTypesDev()
---       return updateDebugValue(value, formatterFn)
---     },
+    useDebugValue = function(value: any, formatterFn: ((value: any) -> any)?): ()
+      currentHookNameInDev = 'useDebugValue'
+      warnInvalidHookAccess()
+      updateHookTypesDev()
+      return updateDebugValue(value, formatterFn)
+    end,
 --     useDeferredValue<T>(value: T): T {
 --       currentHookNameInDev = 'useDeferredValue'
 --       warnInvalidHookAccess()
@@ -3255,14 +3267,14 @@ if _G.__DEV__ then
         updateHookTypesDev()
         return updateMutableSource(source, getSnapshot, subscribe)
       end,
---     useOpaqueIdentifier(): OpaqueIDType {
---       currentHookNameInDev = 'useOpaqueIdentifier'
---       warnInvalidHookAccess()
---       updateHookTypesDev()
---       return rerenderOpaqueIdentifier()
---     },
+    useOpaqueIdentifier = function(): OpaqueIDType
+      currentHookNameInDev = 'useOpaqueIdentifier'
+      warnInvalidHookAccess()
+      updateHookTypesDev()
+      return rerenderOpaqueIdentifier()
+    end,
 
---     unstable_isNewReconciler: enableNewReconciler,
+    unstable_isNewReconciler = enableNewReconciler,
   }
 end
 

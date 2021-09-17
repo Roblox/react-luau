@@ -19,7 +19,7 @@ local ReactTypes = require(Packages.Shared)
 type ReactContext<T> = ReactTypes.ReactContext<T>
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
-type ContextDependency = ReactInternalTypes.ContextDependency
+type ContextDependency<T> = ReactInternalTypes.ContextDependency<T>
 
 local ReactFiberStack = require(script.Parent["ReactFiberStack.new"])
 type StackCursor<T> = ReactFiberStack.StackCursor<T>
@@ -66,10 +66,8 @@ if _G.__DEV__ then
   rendererSigil = {}
 end
 
-local currentlyRenderingFiber = nil
--- FIXME (roblox): change to `ContextDependency<any>` when ContextDependency
--- type can be better aligned
-local lastContextDependency = nil
+local currentlyRenderingFiber: Fiber | nil = nil
+local lastContextDependency: ContextDependency<any> | nil = nil
 local lastContextWithAllBitsObserved: ReactContext<any> | nil = nil
 
 local isDisallowedContextReadInDEV: boolean = false
@@ -411,8 +409,8 @@ exports.readContext = function(
       )
 
       -- This is the first dependency for this component. Create a new list.
-      lastContextDependency = contextItem
-      currentlyRenderingFiber.dependencies = {
+      lastContextDependency = contextItem;
+      (currentlyRenderingFiber :: Fiber).dependencies = {
         lanes = NoLanes,
         firstContext = contextItem,
         responders = nil,

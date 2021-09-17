@@ -12,8 +12,6 @@
 local function unimplemented(message)
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   print("UNIMPLEMENTED ERROR: " .. tostring(message))
   error("FIXME (roblox): " .. message .. " is unimplemented", 2)
 end
@@ -23,17 +21,7 @@ local Packages = script.Parent.Parent
 local console = require(Packages.Shared).console
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Set = LuauPolyfill.Set
-
--- ROBLOX TODO: inline definition here until luau-polyfill #61 is fixed
-type Set<T> = {
-	size: number,
-	-- method definitions
-	add: (Set<T>, T) -> Set<T>,
-	clear: (Set<T>) -> (),
-	delete: (Set<T>, T) -> boolean,
-	has: (Set<T>, T) -> boolean,
-	ipairs: (Set<T>) -> any,
-}
+type Set<T> = LuauPolyfill.Set<T>
 type Array<T> = { [number]: T }
 
 local exports: any = {}

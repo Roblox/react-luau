@@ -2,6 +2,6 @@
 rotrieve = { source = "roblox/rotriever", version = "0.5.0-rc.1" }
 rojo = { source = "rojo-rbx/rojo", version = "6.2.0" }
 selene = { source = "Kampfkarren/selene", version = "0.14" }
-stylua = { source = "JohnnyMorganz/StyLua", version = "0.10.1" }
+stylua = { source = "JohnnyMorganz/StyLua", version = "0.11" }
 testez = { source = "roblox/testez", version = "0.3.2" }
 run-in-roblox = { source = "rojo-rbx/run-in-roblox", version = "0.3.0" }

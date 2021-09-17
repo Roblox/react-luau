@@ -35,7 +35,7 @@ type Interaction = DevToolsViewsProfilerTypes.Interaction
 
 type ResolveNativeStyle = (any) -> Object?
 
--- ROBLOX TODO: Luau currently can't express enumerations of literals
+-- ROBLOX deviation: Luau currently can't express enumerations of literals
 --  | 0 -- PROD
 --  | 1; -- DEV
 type BundleType = number
@@ -84,7 +84,8 @@ export type FiberData = {
 export type NativeType = Object
 export type RendererID = number
 
-type Dispatcher = any
+-- ROBLOX FIXME: using the real Dispatcher type runs into a current ceiling on Luau type analysis
+type Dispatcher = Object -- ReactShared.Dispatcher
 export type CurrentDispatcherRef = { current: nil | Dispatcher }
 
 export type GetDisplayNameForFiberID = (number, boolean?) -> string | nil
@@ -107,20 +108,45 @@ export type ReactRenderer = {
 	rendererPackageName: string,
 	bundleType: BundleType,
 	-- 16.9+
-	overrideHookState: ((self: ReactRenderer, Object, number, Array<string | number>, any) -> ()),
+	overrideHookState: ((
+		self: ReactRenderer,
+		Object,
+		number,
+		Array<string | number>,
+		any
+	) -> ()),
 	-- 17+
-	overrideHookStateDeletePath: ((self: ReactRenderer, Object, number, Array<string | number>) -> ()),
+	overrideHookStateDeletePath: ((
+		self: ReactRenderer,
+		Object,
+		number,
+		Array<string | number>
+	) -> ()),
 	-- 17+
-	overrideHookStateRenamePath: ((self: ReactRenderer, Object, number, Array<string | number>, Array<string | number>) -> ()),
+	overrideHookStateRenamePath: ((
+		self: ReactRenderer,
+		Object,
+		number,
+		Array<string | number>,
+		Array<string | number>
+	) -> ()),
 	-- 16.7+
 	overrideProps: ((self: ReactRenderer, Object, Array<string | number>, any) -> ()),
 	-- 17+
 	overridePropsDeletePath: ((self: ReactRenderer, Object, Array<string | number>) -> ()),
 	-- 17+
-	overridePropsRenamePath: ((self: ReactRenderer, Object, Array<string | number>, Array<string | number>) -> ()),
+	overridePropsRenamePath: ((
+		self: ReactRenderer,
+		Object,
+		Array<string | number>,
+		Array<string | number>
+	) -> ()),
 	-- 16.9+
 	scheduleUpdate: ((self: ReactRenderer, Object) -> ()),
-	setSuspenseHandler: (self: ReactRenderer, shouldSuspend: (fiber: Object) -> boolean) -> (),
+	setSuspenseHandler: (
+		self: ReactRenderer,
+		shouldSuspend: (fiber: Object) -> boolean
+	) -> (),
 	-- Only injected by React v16.8+ in order to support hooks inspection.
 	currentDispatcherRef: CurrentDispatcherRef?,
 	-- Only injected by React v16.9+ in DEV mode.
@@ -178,27 +204,13 @@ export type ProfilingDataBackend = {
 	rendererID: number,
 }
 
-export type PathFrame = {
-	key: string | nil,
-	index: number,
-	displayName: string | nil,
-}
+export type PathFrame = { key: string | nil, index: number, displayName: string | nil }
 
-export type PathMatch = {
-	id: number,
-	isFullMatch: boolean,
-}
+export type PathMatch = { id: number, isFullMatch: boolean }
 
-export type Owner = {
-	displayName: string | nil,
-	id: number,
-	type: ElementType,
-}
+export type Owner = { displayName: string | nil, id: number, type: ElementType }
 
-export type OwnersList = {
-	id: number,
-	owners: Array<Owner> | nil,
-}
+export type OwnersList = { id: number, owners: Array<Owner> | nil }
 
 export type InspectedElement = {
 	id: number,
@@ -289,10 +301,7 @@ export type InspectedElementPayload =
 	| InspectElementNoChange
 	| InspectElementNotFound
 
-export type InstanceAndStyle = {
-	instance: Object | nil,
-	style: Object | nil,
-}
+export type InstanceAndStyle = { instance: Object | nil, style: Object | nil }
 
 -- ROBLOX TODO: Luau can't express literals
 --   type Type = 'props' | 'hooks' | 'state' | 'context';
@@ -319,7 +328,13 @@ export type RendererInterface = {
 	overrideValueAtPath: (Type, number, number?, Array<string | number>, any) -> (),
 	prepareViewAttributeSource: (number, Array<string | number>) -> (),
 	prepareViewElementSource: (number) -> (),
-	renamePath: (Type, number, number?, Array<string | number>, Array<string | number>) -> (),
+	renamePath: (
+		Type,
+		number,
+		number?,
+		Array<string | number>,
+		Array<string | number>
+	) -> (),
 	renderer: ReactRenderer | nil,
 	setTraceUpdatesEnabled: (boolean) -> (),
 	setTrackedPath: (Array<PathFrame> | nil) -> (),
@@ -327,7 +342,10 @@ export type RendererInterface = {
 	stopProfiling: () -> (),
 	storeAsGlobal: (number, Array<string | number>, number) -> (),
 	updateComponentFilters: (Array<ComponentFilter>) -> (),
+	-- ROBLOX TODO: once we are back up to 70% coverage, use [string]: any to approximate the ... below
 	--   ...
+	-- ROBLOX deviation: add specific exports needed so the contract is explcit and explicitly typed
+	getDisplayNameForRoot: (fiber: Fiber) -> string,
 }
 
 export type Handler = (any) -> ()
@@ -345,7 +363,7 @@ export type DevToolsHook = {
 	on: (string, Handler) -> (),
 	off: (string, Handler) -> (),
 	reactDevtoolsAgent: Object?,
-	sub: (string, Handler) -> (),
+	sub: (string, Handler) -> (() -> ()),
 
 	-- Used by react-native-web and Flipper/Inspector
 	resolveRNStyle: ResolveNativeStyle?,

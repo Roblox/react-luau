@@ -73,10 +73,7 @@ local debug_ = function(methodName, ...)
 	end
 end
 
-type ElementAndRendererID = {
-	id: number,
-	rendererID: number,
-}
+type ElementAndRendererID = { id: number, rendererID: number }
 
 type StoreAsGlobalParams = {
 	count: number,
@@ -143,16 +140,9 @@ type OverrideValueAtPathParams = {
 	value: any,
 }
 
-type OverrideSuspenseParams = {
-	id: number,
-	rendererID: number,
-	forceFallback: boolean,
-}
+type OverrideSuspenseParams = { id: number, rendererID: number, forceFallback: boolean }
 
-type PersistedSelection = {
-	rendererID: number,
-	path: Array<PathFrame>,
-}
+type PersistedSelection = { rendererID: number, path: Array<PathFrame> }
 
 export type Agent = EventEmitter<{
 	hideNativeHighlight: Array<any>,
@@ -163,19 +153,18 @@ export type Agent = EventEmitter<{
 	_bridge: BackendBridge,
 	_isProfiling: boolean,
 	_recordChangeDescriptions: boolean,
-	_rendererInterfaces: {
-		[RendererID]: RendererInterface,
-	},
+	_rendererInterfaces: { [RendererID]: RendererInterface },
 	_persistedSelection: PersistedSelection | nil,
 	_persistedSelectionMatch: PathMatch | nil,
 	_traceUpdatesEnabled: boolean,
 
-	getRendererInterfaces: (self: Agent) -> {
-		[RendererID]: RendererInterface,
-	},
+	getRendererInterfaces: (self: Agent) -> { [RendererID]: RendererInterface },
 	copyElementPath: (self: Agent, copyElementParams: CopyElementParams) -> (),
 	deletePath: (self: Agent, deletePathParams: DeletePathParams) -> (),
-	getInstanceAndStyle: (self: Agent, elementAndRendererId: ElementAndRendererID) -> InstanceAndStyle | nil,
+	getInstanceAndStyle: (
+		self: Agent,
+		elementAndRendererId: ElementAndRendererID
+	) -> InstanceAndStyle | nil,
 	getIDForNode: (self: Agent, node: Object) -> number | nil,
 	getProfilingData: (self: Agent, rendererIdObject: { rendererID: RendererID }) -> (),
 	getProfilingStatus: (self: Agent) -> boolean,
@@ -183,7 +172,10 @@ export type Agent = EventEmitter<{
 	inspectElement: (self: Agent, inspectElementParams: InspectElementParams) -> (),
 	logElementToConsole: (self: Agent, elementAndRendererID: ElementAndRendererID) -> (),
 	overrideSuspense: (self: Agent, overrideSuspenseParams: OverrideSuspenseParams) -> (),
-	overrideValueAtPath: (self: Agent, overrideValueAtPathParams: OverrideValueAtPathParams) -> (),
+	overrideValueAtPath: (
+		self: Agent,
+		overrideValueAtPathParams: OverrideValueAtPathParams
+	) -> (),
 	overrideContext: (self: Agent, setInParams: SetInParams) -> (),
 	overrideHookState: (self: Agent, overrideHookParams: OverrideHookParams) -> (),
 	overrideProps: (self: Agent, setInParams: SetInParams) -> (),
@@ -191,17 +183,21 @@ export type Agent = EventEmitter<{
 	reloadAndProfile: (self: Agent, recordChangeDescriptions: boolean) -> (),
 	renamePath: (self: Agent, renamePathParams: RenamePathParams) -> (),
 	selectNode: (self: Agent, target: Object) -> (),
-	setRendererInterface: (self: Agent, rendererID: number, rendererInterface: RendererInterface) -> (),
+	setRendererInterface: (
+		self: Agent,
+		rendererID: number,
+		rendererInterface: RendererInterface
+	) -> (),
 	setTraceUpdatesEnabled: (self: Agent, traceUpdatesEnabled: boolean) -> (),
 	syncSelectionFromNativeElementsPanel: (self: Agent) -> (),
 	shutdown: (self: Agent) -> (),
 	startProfiling: (self: Agent, recordChangeDescriptions: boolean) -> (),
 	stopProfiling: (self: Agent) -> (),
 	storeAsGlobal: (self: Agent, storeAsGlobalParams: StoreAsGlobalParams) -> (),
-	updateConsolePatchSettings: (self: Agent, _ref16: {
-		appendComponentStack: boolean,
-		breakOnConsoleErrors: boolean,
-	}) -> (),
+	updateConsolePatchSettings: (
+		self: Agent,
+		_ref16: { appendComponentStack: boolean, breakOnConsoleErrors: boolean }
+	) -> (),
 	updateComponentFilters: (self: Agent, componentFilters: Array<ComponentFilter>) -> (),
 	viewAttributeSource: (self: Agent, copyElementParams: CopyElementParams) -> (),
 	viewElementSource: (self: Agent, elementAndRendererID: ElementAndRendererID) -> (),
@@ -398,7 +394,8 @@ function Agent:inspectElement(inspectElementParams: InspectElementParams)
 		-- When user selects an element, stop trying to restore the selection,
 		-- and instead remember the current selection for the next reload.
 		if
-			self._persistedSelectionMatch == nil or self._persistedSelectionMatch.id ~= id
+			self._persistedSelectionMatch == nil
+			or self._persistedSelectionMatch.id ~= id
 		then
 			self._persistedSelection = nil
 			self._persistedSelectionMatch = nil
@@ -668,9 +665,9 @@ end
 
 function Agent:updateConsolePatchSettings(
 	_ref16: {
-	appendComponentStack: boolean,
-	breakOnConsoleErrors: boolean,
-}
+		appendComponentStack: boolean,
+		breakOnConsoleErrors: boolean,
+	}
 )
 	local appendComponentStack, breakOnConsoleErrors =
 		_ref16.appendComponentStack, _ref16.breakOnConsoleErrors

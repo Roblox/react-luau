@@ -25,15 +25,9 @@ type RendererID = BackendTypes.RendererID
 
 local BATCH_DURATION = 100
 
-type Message = {
-	event: string,
-	payload: any,
-}
+type Message = { event: string, payload: any }
 
-type ElementAndRendererID = {
-	id: number,
-	rendererID: RendererID,
-}
+type ElementAndRendererID = { id: number, rendererID: RendererID }
 
 -- ROBLOX deviation: Luau can't use ...type, use intersection instead
 type HighlightElementInDOM = ElementAndRendererID & {
@@ -57,11 +51,8 @@ type OverrideHookState = OverrideValue & { hookID: number }
 type PathType = string
 
 -- ROBLOX deviation: Luau can't use ...type, use intersection instead
-type DeletePath = ElementAndRendererID & {
-	type: PathType,
-	hookID: number?,
-	path: Array<string | number>,
-}
+type DeletePath =
+	ElementAndRendererID & { type: PathType, hookID: number?, path: Array<string | number> }
 
 -- ROBLOX deviation: Luau can't use ...type, use intersection instead
 type RenamePath = ElementAndRendererID & {
@@ -83,25 +74,17 @@ type OverrideValueAtPath = ElementAndRendererID & {
 type OverrideSuspense = ElementAndRendererID & { forceFallback: boolean }
 
 -- ROBLOX deviation: Luau can't use ...type, use intersection instead
-type CopyElementPathParams = ElementAndRendererID & {
-	path: Array<string | number>,
-}
+type CopyElementPathParams = ElementAndRendererID & { path: Array<string | number> }
 
 -- ROBLOX deviation: Luau can't use ...type, use intersection instead
-type ViewAttributeSourceParams = ElementAndRendererID & {
-	path: Array<string | number>,
-}
+type ViewAttributeSourceParams = ElementAndRendererID & { path: Array<string | number> }
 
 -- ROBLOX deviation: Luau can't use ...type, use intersection instead
-type InspectElementParams = ElementAndRendererID & {
-	path: Array<string | number>?,
-}
+type InspectElementParams = ElementAndRendererID & { path: Array<string | number>? }
 
 -- ROBLOX deviation: Luau can't use ...type, use intersection instead
-type StoreAsGlobalParams = ElementAndRendererID & {
-	count: number,
-	path: Array<string | number>,
-}
+type StoreAsGlobalParams =
+	ElementAndRendererID & { count: number, path: Array<string | number> }
 
 -- ROBLOX deviation: Luau can't use ...type, use intersection instead
 type NativeStyleEditor_RenameAttributeParams = ElementAndRendererID & {
@@ -111,10 +94,8 @@ type NativeStyleEditor_RenameAttributeParams = ElementAndRendererID & {
 }
 
 -- ROBLOX deviation: Luau can't use ...type, use intersection instead
-type NativeStyleEditor_SetValueParams = ElementAndRendererID & {
-	name: string,
-	value: string,
-}
+type NativeStyleEditor_SetValueParams =
+	ElementAndRendererID & { name: string, value: string }
 
 type UpdateConsolePatchSettingsParams = {
 	appendComponentStack: boolean,
@@ -122,10 +103,7 @@ type UpdateConsolePatchSettingsParams = {
 }
 
 -- ROBLOX deviation: Luau can't define object types in a function type
-type IsSupported = {
-	isSupported: boolean,
-	validAttributes: Array<string>,
-}
+type IsSupported = { isSupported: boolean, validAttributes: Array<string> }
 
 type BackendEvents = {
 	extensionBackendInitialized: () -> (),

@@ -27,16 +27,9 @@ export type CommitTreeNode = {
 	type: ElementType,
 }
 
-export type CommitTree = {
-	nodes: Map<number, CommitTreeNode>,
-	rootID: number,
-}
+export type CommitTree = { nodes: Map<number, CommitTreeNode>, rootID: number }
 
-export type Interaction = {
-	id: number,
-	name: string,
-	timestamp: number,
-}
+export type Interaction = { id: number, name: string, timestamp: number }
 
 export type SnapshotNode = {
 	id: number,

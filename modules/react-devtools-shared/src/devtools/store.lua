@@ -43,9 +43,14 @@ local __DEBUG__ = constants.__DEBUG__
 local devtoolsUtils = require(script.Parent.utils)
 local printStore = devtoolsUtils.printStore
 
--- ROBLOX FIXME: Implement ProfilerStore
--- local ProfilerStore = require(script.Parent.ProfilerStore).ProfilerStore
+-- ROBLOX TODO: implement ProfilerStore
+-- local ProfilerStoreModule = require(script.Parent.ProfilerStore)
+-- local ProfilerStore = ProfilerStoreModule.ProfilerStore
+-- type ProfilerStore = ProfilerStoreModule.ProfilerStore
 type ProfilerStore = Object
+local ProfilerStore = {
+	new = function(...) end,
+}
 
 local ComponentsTypes = require(script.Parent.Parent.devtools.views.Components.types)
 type Element = ComponentsTypes.Element
@@ -74,84 +79,80 @@ type Config = {
 	supportsTraceUpdates: boolean?,
 }
 
-type Capabilities = {
-	hasOwnerMetadata: boolean,
-	supportsProfiling: boolean,
-}
+type Capabilities = { hasOwnerMetadata: boolean, supportsProfiling: boolean }
 
 -- /**
 --  * The store is the single source of truth for updates from the backend.
 --  * ContextProviders can subscribe to the Store for specific things they want to provide.
 --  */
 export type Store = EventEmitter<{
-  collapseNodesByDefault: Array<any>,
-  componentFilters: Array<any>,
-  mutated: Array<any>, -- ROBLOX deviation: can't express jagged array types in Luau
-  recordChangeDescriptions: Array<any>,
-  roots: Array<any>,
-  supportsNativeStyleEditor: Array<any>,
-  supportsProfiling: Array<any>,
-  supportsReloadAndProfile: Array<any>,
-  unsupportedRendererVersionDetected: Array<any>,
+	collapseNodesByDefault: Array<any>,
+	componentFilters: Array<any>,
+	mutated: Array<any>, -- ROBLOX deviation: can't express jagged array types in Luau
+	recordChangeDescriptions: Array<any>,
+	roots: Array<any>,
+	supportsNativeStyleEditor: Array<any>,
+	supportsProfiling: Array<any>,
+	supportsReloadAndProfile: Array<any>,
+	unsupportedRendererVersionDetected: Array<any>,
 }> & {
-  _bridge: FrontendBridge,
+	_bridge: FrontendBridge,
 
-  -- Should new nodes be collapsed by default when added to the tree?
-  _collapseNodesByDefault: boolean,
+	-- Should new nodes be collapsed by default when added to the tree?
+	_collapseNodesByDefault: boolean,
 
-  _componentFilters: Array<ComponentFilter>,
+	_componentFilters: Array<ComponentFilter>,
 
-  -- At least one of the injected renderers contains (DEV only) owner metadata.
-  _hasOwnerMetadata: boolean,
+	-- At least one of the injected renderers contains (DEV only) owner metadata.
+	_hasOwnerMetadata: boolean,
 
-  -- Map of ID to (mutable) Element.
-  -- Elements are mutated to avoid excessive cloning during tree updates.
-  -- The InspectedElementContext also relies on this mutability for its WeakMap usage.
-  _idToElement: Map<number, Element>,
+	-- Map of ID to (mutable) Element.
+	-- Elements are mutated to avoid excessive cloning during tree updates.
+	-- The InspectedElementContext also relies on this mutability for its WeakMap usage.
+	_idToElement: Map<number, Element>,
 
-  -- Should the React Native style editor panel be shown?
-  _isNativeStyleEditorSupported: boolean,
+	-- Should the React Native style editor panel be shown?
+	_isNativeStyleEditorSupported: boolean,
 
-  -- Can the backend use the Storage API (e.g. localStorage)?
-  -- If not, features like reload-and-profile will not work correctly and must be disabled.
-  _isBackendStorageAPISupported: boolean,
+	-- Can the backend use the Storage API (e.g. localStorage)?
+	-- If not, features like reload-and-profile will not work correctly and must be disabled.
+	_isBackendStorageAPISupported: boolean,
 
-  _nativeStyleEditorValidAttributes: Array<string> | nil,
+	_nativeStyleEditorValidAttributes: Array<string> | nil,
 
-  -- Map of element (id) to the set of elements (ids) it owns.
-  -- This map enables getOwnersListForElement() to avoid traversing the entire tree.
-  _ownersMap: Map<number, Set<number>>,
+	-- Map of element (id) to the set of elements (ids) it owns.
+	-- This map enables getOwnersListForElement() to avoid traversing the entire tree.
+	_ownersMap: Map<number, Set<number>>,
 
-  _profilerStore: ProfilerStore,
+	_profilerStore: ProfilerStore,
 
-  _recordChangeDescriptions: boolean,
+	_recordChangeDescriptions: boolean,
 
-  -- Incremented each time the store is mutated.
-  -- This enables a passive effect to detect a mutation between render and commit phase.
-  _revision: number,
+	-- Incremented each time the store is mutated.
+	-- This enables a passive effect to detect a mutation between render and commit phase.
+	_revision: number,
 
-  -- This Array must be treated as immutable!
-  -- Passive effects will check it for changes between render and mount.
-  _roots: Array<number>,
+	-- This Array must be treated as immutable!
+	-- Passive effects will check it for changes between render and mount.
+	_roots: Array<number>,
 
-  _rootIDToCapabilities: Map<number, Capabilities>,
+	_rootIDToCapabilities: Map<number, Capabilities>,
 
-  -- Renderer ID is needed to support inspection fiber props, state, and hooks.
-  _rootIDToRendererID: Map<number, number>,
+	-- Renderer ID is needed to support inspection fiber props, state, and hooks.
+	_rootIDToRendererID: Map<number, number>,
 
-  -- These options may be initially set by a confiugraiton option when constructing the Store.
-  -- In the case of "supportsProfiling", the option may be updated based on the injected renderers.
-  _supportsNativeInspection: boolean,
-  _supportsProfiling: boolean,
-  _supportsReloadAndProfile: boolean,
-  _supportsTraceUpdates: boolean,
+	-- These options may be initially set by a confiugraiton option when constructing the Store.
+	-- In the case of "supportsProfiling", the option may be updated based on the injected renderers.
+	_supportsNativeInspection: boolean,
+	_supportsProfiling: boolean,
+	_supportsReloadAndProfile: boolean,
+	_supportsTraceUpdates: boolean,
 
-  _unsupportedRendererVersionDetected: boolean,
+	_unsupportedRendererVersionDetected: boolean,
 
-  -- Total number of visible elements (within all roots).
-  -- Used for windowing purposes.
-  _weightAcrossRoots: number,
-
+	-- Total number of visible elements (within all roots).
+	-- Used for windowing purposes.
+	_weightAcrossRoots: number,
 }
 -- ROBLOX deviation: equivalent of sub-class
 local Store = setmetatable({}, { __index = EventEmitter })
@@ -234,11 +235,9 @@ function Store.new(bridge: FrontendBridge, config: Config?)
 
 	self._componentFilters = getSavedComponentFilters()
 
-	-- ROBLOX deviation: This doesn't look necessary
-	-- local isProfiling = false
+	local isProfiling = false
 	if config ~= nil then
-		-- ROBLOX deviation: This doesn't look necessary
-		-- isProfiling = config.isProfiling == true
+		isProfiling = config.isProfiling == true
 
 		local supportsNativeInspection = (config :: Config).supportsNativeInspection
 		local supportsProfiling = (config :: Config).supportsProfiling
@@ -296,8 +295,10 @@ function Store.new(bridge: FrontendBridge, config: Config?)
 		self.onBridgeUnsupportedRendererVersion
 	)
 
-	-- ROBLOX FIXME: Implement ProfilerStore
-	-- self._profilerStore = ProfilerStore.new(bridge, self, isProfiling)
+	-- ROBLOX FIXME: lazy init this since ProfilerStore doesn't exist in our port yet
+	if isProfiling then
+		self._profilerStore = ProfilerStore.new(bridge, self, isProfiling)
+	end
 
 	return self
 end
@@ -351,13 +352,13 @@ end
 function Store:getComponentFilters(): Array<ComponentFilter>
 	return self._componentFilters
 end
+
 function Store:setComponentFilters(value: Array<ComponentFilter>)
-	-- ROBLOX deviation: this doesn't look necessary
-	-- if self._profilerStore.isProfiling then
-	-- Re-mounting a tree while profiling is in progress might break a lot of assumptions.
-	-- If necessary, we could support this- but it doesn't seem like a necessary use case.
-	-- error('Cannot modify filter preferences while profiling')
-	-- end
+	if self._profilerStore.isProfiling then
+		-- Re-mounting a tree while profiling is in progress might break a lot of assumptions.
+		-- If necessary, we could support this- but it doesn't seem like a necessary use case.
+		error("Cannot modify filter preferences while profiling")
+	end
 
 	-- Filter updates are expensive to apply (since they impact the entire tree).
 	-- Let's determine if they've changed and avoid doing this work if they haven't.
@@ -786,7 +787,8 @@ function Store:_adjustParentTreeWeight(parentElement: Element | nil, weightDelta
 	local isInsideCollapsedSubTree = false
 
 	while parentElement ~= nil do
-		(parentElement :: Element).weight = (parentElement :: Element).weight + weightDelta
+		(parentElement :: Element).weight = (parentElement :: Element).weight
+			+ weightDelta
 
 		-- Additions and deletions within a collapsed subtree should not bubble beyond the collapsed parent.
 		-- Their weight will bubble up when the parent is expanded.
@@ -806,9 +808,9 @@ end
 
 function Store:onBridgeNativeStyleEditorSupported(
 	options: {
-	isSupported: boolean,
-	validAttributes: Array<string>,
-}
+		isSupported: boolean,
+		validAttributes: Array<string>,
+	}
 )
 	local isSupported, validAttributes = options.isSupported, options.validAttributes
 

@@ -14,6 +14,10 @@
 	* Shared has no intra-workspace dependencies (no cycles)
 ]]
 
+-- types that are common across ReactFiberHostConfig files, moved here to avoid circular deps
+type Object = { [string]: any }
+export type OpaqueIDType = string | Object
+
 return {
 	WithNoHydration = require(script.WithNoHydration),
 	WithNoPersistence = require(script.WithNoPersistence),

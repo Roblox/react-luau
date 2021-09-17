@@ -117,15 +117,15 @@ local markRenderScheduled = require(script.Parent.SchedulingProfiler).markRender
 
 local exports = {}
 
--- ROBLOX deviation: export internals used by the noop and test renderers
+-- ROBLOX deviation: explicitly export internal type definitions used by the noop and test renderers
 exports.ReactRootTags = ReactRootTags
--- ROBLOX deviation: export internals used by the test renderer
+-- ROBLOX deviation: explicitly export internal type definitions used by the test renderer
 exports.ReactWorkTags = ReactWorkTags
--- ROBLOX deviation: export internals used by the dev tools
-exports.ReactTypeOfMode = ReactTypeOfMode
--- ROBLOX deviation: export internals used by the dev tools
-exports.ReactFiberFlags = ReactFiberFlags
 
+-- ROBLOX deviation: explicitly export internal type definitions used by the dev tools
+exports.ReactTypeOfMode = ReactTypeOfMode
+exports.ReactFiberFlags = ReactFiberFlags
+exports.getNearestMountedFiber = ReactFiberTreeReflection.getNearestMountedFiber
 exports.findCurrentFiberUsingSlowPath = ReactFiberTreeReflection.findCurrentFiberUsingSlowPath
 
 -- exports.registerMutableSourceForHydration = require(script.Parent["ReactMutableSource.new"]).registerMutableSourceForHydration

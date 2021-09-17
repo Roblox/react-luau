@@ -1,4 +1,4 @@
--- upstream: https://github.com/facebook/react/blob/17.0.1/packages/react-debug-tools/src/ReactDebugHooks.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/17.0.1/packages/react-debug-tools/src/ReactDebugHooks.js
 --[[*
 	* Copyright (c) Facebook, Inc. and its affiliates.
 	*
@@ -11,19 +11,57 @@ local Packages = Workspace.Parent
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
+type Array<T> = LuauPolyfill.Array<T>
+local Error = LuauPolyfill.Error
+type Error = LuauPolyfill.Error
+local String = LuauPolyfill.String
+
 local Object = LuauPolyfill.Object
+type Object = { [string]: any }
+type Map<K, V> = { [K]: V }
+local exports = {}
 
--- ROBLOX TODO: work out a suitable implementation for this
-local ErrorStackParser = {
-	parse = function(stack)
-		return stack:split("\n")
-	end
-}
+local ReactTypes = require(Packages.Shared)
+type MutableSource<T> = ReactTypes.MutableSource<T>
+type MutableSourceGetSnapshotFn<Source, Snapshot> =
+	ReactTypes.MutableSourceGetSnapshotFn<Source, Snapshot>
+type MutableSourceSubscribeFn<Source, Snapshot> =
+	ReactTypes.MutableSourceSubscribeFn<Source, Snapshot>
+type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
+type ReactContext<T> = ReactTypes.ReactContext<T>
+-- ROBLOX deviation: import this type that is a built-in in flow
+type React_Node = ReactTypes.React_Node
 
--- ROBLOX FIXME: pass in a real host config, or make this able to use basic enums without initializing
+local ReactInternalTypes = require(Packages.ReactReconciler)
+type Fiber = ReactInternalTypes.Fiber
+type DispatcherType = ReactTypes.Dispatcher
+
+local ReactFiberHostConfig = require(Packages.Shared)
+type OpaqueIDType = ReactFiberHostConfig.OpaqueIDType
+
 local ReconcilerModule = require(Packages.ReactReconciler)({})
 local ReactTypeOfMode = ReconcilerModule.ReactTypeOfMode
 local NoMode = ReactTypeOfMode.NoMode
+
+-- ROBLOX TODO: work out a suitable implementation for this, pulled from error-stack-parser definitelytyped
+type StackFrame = {
+	source: string?,
+	funtionName: string?,
+}
+local ErrorStackParser = {
+	parse = function(error_: Error): Array<StackFrame>
+		if error_.stack == nil then
+			return {}
+		end
+		return Array.map(
+			string.split((error_.stack :: string), "\n"),
+			function(stackTraceLine)
+				return { source = stackTraceLine }
+			end
+		)
+	end,
+}
+
 local SharedModule = require(Packages.Shared)
 local ReactSharedInternals = SharedModule.ReactSharedInternals
 local ReactSymbols = SharedModule.ReactSymbols
@@ -34,22 +72,44 @@ local SimpleMemoComponent = ReactWorkTags.SimpleMemoComponent
 local ContextProvider = ReactWorkTags.ContextProvider
 local ForwardRef = ReactWorkTags.ForwardRef
 local Block = ReactWorkTags.Block
-local hookLog = {}
-local primitiveStackCache = nil
-local currentFiber = nil
 
-local exports = {}
+type CurrentDispatcherRef = typeof(ReactSharedInternals.ReactCurrentDispatcher)
 
--- deviation: hoist definition
-local Dispatcher
+-- Used to track hooks called during a render
 
-local function getPrimitiveStackCache()
+type HookLogEntry = {
+	primitive: string,
+	stackError: Error,
+	value: any,
+	-- ...
+}
+
+local hookLog: Array<HookLogEntry> = {}
+
+-- Primitives
+
+type BasicStateAction<S> = ((S) -> S) | S
+
+type Dispatch<A> = (A) -> ()
+
+local primitiveStackCache: nil | Map<string, Array<any>> = nil
+
+local currentFiber: Fiber | nil = nil
+
+type Hook = { memoizedState: any, next: Hook | nil }
+
+-- ROBLOX deviation: hoist definition
+local Dispatcher: DispatcherType
+
+local function getPrimitiveStackCache(): Map<string, Array<any>>
+	-- This initializes a cache of all primitive hooks so that the top
+	-- most stack frames added by calling the primitive hook can be removed.
 	if primitiveStackCache == nil then
 		local cache = {}
 		local readHookLog
 		pcall(function()
 			-- Use all hooks here to add them to the hook log.
-			Dispatcher.useContext({})
+			Dispatcher.useContext({ _currentValue = nil } :: any)
 			Dispatcher.useState(nil)
 			Dispatcher.useReducer(function(s, a)
 				return s
@@ -57,10 +117,14 @@ local function getPrimitiveStackCache()
 			Dispatcher.useRef(nil)
 			Dispatcher.useLayoutEffect(function() end)
 			Dispatcher.useEffect(function() end)
-			Dispatcher.useImperativeHandle(nil, function() end)
+			Dispatcher.useImperativeHandle(nil, function()
+				return nil
+			end)
 			Dispatcher.useDebugValue(nil)
 			Dispatcher.useCallback(function() end)
-			Dispatcher.useMemo(function() end)
+			Dispatcher.useMemo(function()
+				return nil
+			end)
 		end)
 		readHookLog = hookLog
 		hookLog = {}
@@ -70,12 +134,12 @@ local function getPrimitiveStackCache()
 		end
 		primitiveStackCache = cache
 	end
-	return primitiveStackCache
+	return primitiveStackCache :: Map<string, Array<any>>
 end
 
-local currentHook = nil
+local currentHook: nil | Hook = nil
 
-local function nextHook()
+local function nextHook(): nil | Hook
 	local hook = currentHook
 	if hook ~= nil then
 		currentHook = hook.next
@@ -83,30 +147,50 @@ local function nextHook()
 	return hook
 end
 
-local function readContext(context, observedBits)
-	return context._currentValue
-end
-
-local function useContext(context, observedBits)
+-- ROBLOX TODO: function generics
+-- function readContext<T>(
+-- 	context: ReactContext<T>,
+-- 	observedBits: void | number | boolean,
+--   ): T {
+type _T = any
+function readContext(context: ReactContext<_T>, observedBits: nil | number | boolean): _T
 	table.insert(hookLog, {
-		primitive = 'Context',
-		-- deviation: use traceback rather than throwing an error
-		stackError = debug.traceback(),
+		primitive = "Context",
+		stackError = Error.new(),
 		value = context._currentValue,
 	})
 	return context._currentValue
 end
 
-local function useState(initialState)
+-- ROBLOX TODO: function generics
+-- function useContext<T>(
+-- 	context: ReactContext<T>,
+-- 	observedBits: void | number | boolean,
+--   ): T {
+function useContext(context: ReactContext<any>, observedBits: nil | number | boolean): any
+	table.insert(hookLog, {
+		primitive = "Context",
+		stackError = Error.new(),
+		value = context._currentValue,
+	})
+	return context._currentValue
+end
+
+-- ROBLOX TODO: function generics
+-- function useState<S>(
+-- 	initialState: (() => S) | S,
+--   ): [S, Dispatch<BasicStateAction<S>>] {
+type S = any
+function useState(initialState: (() -> S) | S): (any, Dispatch<BasicStateAction<any>>)
 	local hook = nextHook()
 	local state = (function()
 		if hook ~= nil then
 			return hook.memoizedState
 		end
 
-		return(function()
-			if typeof(initialState) == 'function' then
-				return initialState()
+		return (function()
+			if typeof(initialState) == "function" then
+				return (initialState :: (() -> S))()
 			end
 
 			return initialState
@@ -114,19 +198,25 @@ local function useState(initialState)
 	end)()
 
 	table.insert(hookLog, {
-		primitive = 'State',
-		-- deviation: use traceback rather than throwing an error
-		stackError = debug.traceback(),
+		primitive = "State",
+		stackError = Error.new(),
 		value = state,
 	})
 
-	return {
-		state,
-		function(action) end,
-	}
+	return state, function(_action: BasicStateAction<any>) end
 end
 
-local function useReducer(reducer, initialArg, init)
+-- ROBLOX TODO: function generics
+-- function useReducer<S, I, A>(
+-- 	reducer: (S, A) => S,
+-- 	initialArg: I,
+-- 	init?: I => S,
+--   ): [S, Dispatch<A>] {
+local function useReducer(
+	reducer: (any, any) -> any,
+	initialArg: any,
+	init: ((any) -> any)?
+): (any, Dispatch<any>)
 	local hook = nextHook()
 	local state
 
@@ -143,16 +233,12 @@ local function useReducer(reducer, initialArg, init)
 	end
 
 	table.insert(hookLog, {
-		primitive = 'Reducer',
-		-- deviation: use traceback rather than throwing an error
-		stackError = debug.traceback(),
+		primitive = "Reducer",
+		stackError = Error.new(),
 		value = state,
 	})
 
-	return{
-		state,
-		function(action) end,
-	}
+	return state, function(_action: any) end
 end
 
 local function useRef(initialValue)
@@ -162,64 +248,78 @@ local function useRef(initialValue)
 			return hook.memoizedState
 		end
 
-		return{current = initialValue}
+		return { current = initialValue }
 	end)()
 
 	table.insert(hookLog, {
-		primitive = 'Ref',
-		-- deviation: use traceback rather than throwing an error
-		stackError = debug.traceback(),
+		primitive = "Ref",
+		stackError = Error.new(),
 		value = ref.current,
 	})
 
 	return ref
 end
 
-local function useLayoutEffect(create, inputs)
+-- ROBLOX TODO: function generics
+-- function useLayoutEffect(
+-- 	create: () => (() => void) | void,
+-- 	inputs: Array<mixed> | void | null,
+--   ): void {
+local function useLayoutEffect(
+	create: () -> (() -> ()) | nil,
+	inputs: Array<any> | nil
+): ()
 	nextHook()
 	table.insert(hookLog, {
-		primitive = 'LayoutEffect',
-		-- deviation: use traceback rather than throwing an error
-		stackError = debug.traceback(),
+		primitive = "LayoutEffect",
+		stackError = Error.new(),
 		value = create,
 	})
 end
 
-local function useEffect(create, inputs)
+-- ROBLOX TODO: function generics
+-- function useEffect(
+-- 	create: () => (() => void) | void,
+-- 	inputs: Array<mixed> | void | null,
+--   ): void {
+local function useEffect(create: () -> (() -> ()) | nil, inputs: Array<any> | nil): ()
 	nextHook()
 	table.insert(hookLog, {
-		primitive = 'Effect',
-		-- deviation: use traceback rather than throwing an error
-		stackError = debug.traceback(),
+		primitive = "Effect",
+		stackError = Error.new(),
 		value = create,
 	})
 end
 
-local function useImperativeHandle(ref, create, inputs)
+local function useImperativeHandle(
+	ref: { current: _T | nil } | ((inst: _T | nil) -> any) | nil,
+	create: () -> _T,
+	inputs: Array<any> | nil
+): ()
 	nextHook()
-
+	-- We don't actually store the instance anywhere if there is no ref callback
+	-- and if there is a ref callback it might not store it but if it does we
+	-- have no way of knowing where. So let's only enable introspection of the
+	-- ref itself if it is using the object form.
 	local instance = nil
 
-	-- deviation: use 'table' not object
-	if ref ~= nil and typeof(ref) == 'table' then
+	if ref ~= nil and typeof(ref) == "table" then
 		instance = ref.current
 	end
 
 	table.insert(hookLog, {
-		primitive = 'ImperativeHandle',
-		-- deviation: use traceback rather than throwing an error',
-		stackError = debug.traceback(),
+		primitive = "ImperativeHandle",
+		stackError = Error.new(),
 		value = instance,
 	})
 end
 
 local function useDebugValue(value, formatterFn)
 	table.insert(hookLog, {
-		primitive = 'DebugValue',
-		-- deviation: use traceback rather than throwing an error
-		stackError = debug.traceback(),
+		primitive = "DebugValue",
+		stackError = Error.new(),
 		value = (function()
-			if typeof(formatterFn) == 'function' then
+			if typeof(formatterFn) == "function" then
 				return formatterFn(value)
 			end
 
@@ -232,9 +332,8 @@ local function useCallback(callback, inputs)
 	local hook = nextHook()
 
 	table.insert(hookLog, {
-		primitive = 'Callback',
-		-- deviation: use traceback rather than throwing an error
-		stackError = debug.traceback(),
+		primitive = "Callback",
+		stackError = Error.new(),
 		value = (function()
 			if hook ~= nil then
 				return hook.memoizedState[0]
@@ -258,67 +357,81 @@ local function useMemo(nextCreate, inputs)
 	end)()
 
 	table.insert(hookLog, {
-		primitive = 'Memo',
-		-- deviation: use traceback rather than throwing an error
-		stackError = debug.traceback(),
+		primitive = "Memo",
+		stackError = Error.new(),
 		value = value,
 	})
 
 	return value
 end
 
-local function useMutableSource(source, getSnapshot, subscribe)
-	nextHook()
-	nextHook()
-	nextHook()
-	nextHook()
+-- ROBLOX TODO: function generics
+-- function useMutableSource<Source, Snapshot>(
+type Source = any
+type Snapshot = any
+function useMutableSource(
+	source: MutableSource<Source>,
+	getSnapshot: MutableSourceGetSnapshotFn<Source, Snapshot>,
+	subscribe: MutableSourceSubscribeFn<Source, Snapshot>
+): Snapshot
+	-- useMutableSource() composes multiple hooks internally.
+	-- Advance the current hook index the same number of times
+	-- so that subsequent hooks have the right memoized state.
+	nextHook() -- MutableSource
+	nextHook() -- State
+	nextHook() -- Effect
+	nextHook() -- Effect
 
 	local value = getSnapshot(source._source)
 
 	table.insert(hookLog, {
-		primitive = 'MutableSource',
-		-- deviation: use traceback rather than throwing an error
-		stackError = debug.traceback(),
+		primitive = "MutableSource",
+		stackError = Error.new(),
 		value = value,
 	})
 
 	return value
 end
 
-local function useTransition()
-	nextHook()
-	nextHook()
-	table.insert(hookLog, {
-		primitive = 'Transition',
-		-- deviation: use traceback rather than throwing an error
-		stackError = debug.traceback(),
-		value = nil,
-	})
+-- ROBLOX TODO: enable these once they are fully enabled in the Dispatcher type and in ReactFiberHooks' myriad dispatchers
 
-	return{
-		function(callback) end,
-		false,
-	}
-end
+-- local function useTransition(): ((() -> ()) -> (), boolean)
+-- 	-- useTransition() composes multiple hooks internally.
+-- 	-- Advance the current hook index the same number of times
+-- 	-- so that subsequent hooks have the right memoized state.
+-- 	nextHook() -- State
+-- 	nextHook() -- Callback
+-- 	table.insert(hookLog, {
+-- 		primitive = 'Transition',
+-- 		stackError = Error.new(),
+-- 		value = nil,
+-- 	})
 
-local function useDeferredValue(value)
-	nextHook()
-	nextHook()
-	table.insert(hookLog, {
-		primitive = 'DeferredValue',
-		-- deviation: use traceback rather than throwing an error
-		stackError = debug.traceback(),
-		value = value,
-	})
+-- 	return
+-- 		function() return function() end end,
+-- 		false
+-- end
 
-	return value
-end
+-- local function useDeferredValue(value)
+-- 	-- useDeferredValue() composes multiple hooks internally.
+-- 	-- Advance the current hook index the same number of times
+-- 	-- so that subsequent hooks have the right memoized state.
+-- 	nextHook() -- State
+-- 	nextHook() -- Effect
+-- 	table.insert(hookLog, {
+-- 		primitive = 'DeferredValue',
+-- 		stackError = Error.new(),
+-- 		value = value,
+-- 	})
 
-local function useOpaqueIdentifier()
-	local hook = nextHook()
+-- 	return value
+-- end
+
+local function useOpaqueIdentifier(): OpaqueIDType | nil
+	local hook = nextHook() -- State
 
 	if currentFiber and currentFiber.mode == NoMode then
-		nextHook()
+		nextHook() -- Effect
 	end
 
 	local value = (function()
@@ -326,17 +439,16 @@ local function useOpaqueIdentifier()
 			return nil
 		end
 
-		return hook.memoizedState
+		return (hook :: Hook).memoizedState
 	end)()
 
-	if value and value['$$typeof'] == REACT_OPAQUE_ID_TYPE then
+	if value and (value :: any)["$$typeof"] == REACT_OPAQUE_ID_TYPE then
 		value = nil
 	end
 
 	table.insert(hookLog, {
-		primitive = 'OpaqueIdentifier',
-		-- deviation: use traceback rather than throwing an error'
-		stackError = debug.traceback(),
+		primitive = "OpaqueIdentifier",
+		stackError = Error.new(),
 		value = value,
 	})
 
@@ -355,11 +467,24 @@ Dispatcher = {
 	useReducer = useReducer,
 	useRef = useRef,
 	useState = useState,
-	useTransition = useTransition,
+	-- useTransition = useTransition,
 	useMutableSource = useMutableSource,
-	useDeferredValue = useDeferredValue,
+	-- useDeferredValue = useDeferredValue,
 	useOpaqueIdentifier = useOpaqueIdentifier,
 }
+
+-- Inspect
+
+export type HooksNode = {
+	id: number | nil,
+	isStateEditable: boolean,
+	name: string,
+	value: any,
+	subHooks: Array<HooksNode>,
+	--   ...
+}
+export type HooksTree = Array<HooksNode>
+
 -- Don't assume
 --
 -- We can't assume that stack frames are nth steps away from anything.
@@ -373,14 +498,15 @@ Dispatcher = {
 -- We also can't assume that the last frame of the root call is the same
 -- frame as the last frame of the hook call because long stack traces can be
 -- truncated to a stack trace limit.
+
 local mostLikelyAncestorIndex = 0
 
-local function findSharedIndex(hookStack, rootStack, rootIndex)
+local function findSharedIndex(hookStack, rootStack: Array<StackFrame>, rootIndex: number)
 	local source = rootStack[rootIndex].source
 	for i = 1, #hookStack do
 		if hookStack[i].source == source then
 			-- This looks like a match. Validate that the rest of both stack match up.
-			-- deviation: rewrite complex loop
+			-- ROBLOX deviation: rewrite complex loop
 			local a = rootIndex + 1
 			local b = i + 1
 			local skipReturn = false
@@ -406,7 +532,7 @@ local function findCommonAncestorIndex(rootStack, hookStack)
 	end
 	-- If the most likely one wasn't a hit, try any other frame to see if it is shared.
 	-- If that takes more than 5 frames, something probably went wrong.
-	-- deviation: use min to precompute iteration count
+	-- ROBLOX deviation: use min to precompute iteration count
 	for i = 1, math.min(#rootStack, 5) do
 		rootIndex = findSharedIndex(hookStack, rootStack, i)
 		if rootIndex ~= -1 then
@@ -418,42 +544,49 @@ local function findCommonAncestorIndex(rootStack, hookStack)
 	return -1
 end
 
-local function isReactWrapper(functionName, primitiveName)
+local function isReactWrapper(functionName: string, primitiveName: string)
 	if not functionName then
 		return false
 	end
 
-	local expectedPrimitiveName = 'use' + primitiveName
+	local expectedPrimitiveName = "use" .. primitiveName
 
-	if functionName.length < expectedPrimitiveName.length then
+	if string.len(functionName) < string.len(expectedPrimitiveName) then
 		return false
 	end
 
-	return functionName.lastIndexOf(expectedPrimitiveName) == functionName.length - expectedPrimitiveName.length
+	return String.lastIndexOf(functionName, expectedPrimitiveName)
+		== string.len(functionName) - string.len(expectedPrimitiveName)
 end
 
 local function findPrimitiveIndex(hookStack, hook)
 	local stackCache = getPrimitiveStackCache()
-	local primitiveStack = stackCache.get(hook.primitive)
+	local primitiveStack = stackCache[hook.primitive]
 
 	if primitiveStack == nil then
 		return -1
 	end
 
-	-- deviation: precompute iteration count
+	-- ROBLOX deviation: precompute iteration count
 	for i = 1, math.min(#primitiveStack, #hookStack) do
 		if primitiveStack[i].source ~= hookStack[i].source then
 			-- If the next two frames are functions called `useX` then we assume that they're part of the
 			-- wrappers that the React packager or other packages adds around the dispatcher.
-			-- deviation: 1-indexed so drop -1
-			if i < #hookStack and isReactWrapper(hookStack[i].functionName, hook.primitive) then
+			-- ROBLOX deviation: 1-indexed so drop -1
+			if
+				i < #hookStack
+				and isReactWrapper(hookStack[i].functionName, hook.primitive)
+			then
 				i += 1
 			end
-		  	-- deviation: 1-indexed so drop -1
-			if i < #hookStack and isReactWrapper(hookStack[i].functionName, hook.primitive) then
+			-- ROBLOX deviation: 1-indexed so drop -1
+			if
+				i < #hookStack
+				and isReactWrapper(hookStack[i].functionName, hook.primitive)
+			then
 				i += 1
 			end
-		  return i
+			return i
 		end
 	end
 
@@ -461,55 +594,63 @@ local function findPrimitiveIndex(hookStack, hook)
 end
 
 local function parseTrimmedStack(rootStack, hook)
-	-- deviation: don't parse traceback
+	-- Get the stack trace between the primitive hook function and
+	-- the root function call. I.e. the stack frames of custom hooks.
+
 	local hookStack = ErrorStackParser.parse(hook.stackError)
 	local rootIndex = findCommonAncestorIndex(rootStack, hookStack)
 	local primitiveIndex = findPrimitiveIndex(hookStack, hook)
 
 	if rootIndex == -1 or primitiveIndex == -1 or rootIndex - primitiveIndex < 2 then
+		-- Something went wrong. Give up.
 		return nil
 	end
 
+	-- ROBLOX FIXME? does rootIndex need the -1?
 	return Array.slice(hookStack, primitiveIndex, rootIndex - 1)
 end
 
-local function parseCustomHookName(functionName)
+local function parseCustomHookName(functionName: nil | string): string
 	if not functionName then
-		return''
+		return ""
 	end
 
-	local startIndex = functionName.lastIndexOf('.')
+	local startIndex = String.lastIndexOf((functionName :: string), ".")
 
 	if startIndex == -1 then
 		startIndex = 0
 	end
-	if functionName.substr(startIndex, 3) == 'use' then
+	if String.substr(functionName :: string, startIndex, 3) == "use" then
 		startIndex = startIndex + 3
 	end
 
-	return functionName.substr(startIndex)
+	return String.substr(functionName :: string, startIndex)
 end
 
 local processDebugValues
 
-local function buildTree(rootStack, readHookLog)
+local function buildTree(rootStack, readHookLog): HooksTree
 	local rootChildren = {}
 	local prevStack = nil
 	local levelChildren = rootChildren
 	local nativeHookID = 0
 	local stackOfChildren = {}
 
-	for i=0, readHookLog.length - 1 do
+	for i = 1, #readHookLog do
 		local hook = readHookLog[i]
 		local stack = parseTrimmedStack(rootStack, hook)
 
 		if stack ~= nil then
+			-- Note: The indices 0 <= n < length-1 will contain the names.
+			-- The indices 1 <= n < length will contain the source locations.
+			-- That's why we get the name from n - 1 and don't check the source
+			-- of index 0.
 			local commonSteps = 0
-
 			if prevStack ~= nil then
-				while commonSteps < stack.length and commonSteps < prevStack.length do
-					local stackSource = stack[stack.length - commonSteps - 1].source
-					local prevSource = prevStack[prevStack.length - commonSteps - 1].source
+				-- Compare the current level's stack to the new stack.
+				while commonSteps < #stack and commonSteps < #prevStack do
+					local stackSource = stack[#stack - commonSteps].source
+					local prevSource = prevStack[#prevStack - commonSteps].source
 
 					if stackSource ~= prevSource then
 						break
@@ -518,7 +659,6 @@ local function buildTree(rootStack, readHookLog)
 					commonSteps += 1
 				end
 				-- Pop back the stack as many steps as were not common.
-				-- deviation: use 1-indexing so drop -1
 				for j = #prevStack, commonSteps, -1 do
 					table.remove(levelChildren)
 				end
@@ -526,19 +666,17 @@ local function buildTree(rootStack, readHookLog)
 
 			-- The remaining part of the new stack are custom hooks. Push them
 			-- to the tree.
-			-- deviation: use 1-indexing so drop -1
-			for j = #stack.length - commonSteps, 1, -1 do
-		  		local children = {}
+			for j = #stack - commonSteps, 1, -1 do
+				local children = {}
 				table.insert(levelChildren, {
 					id = nil,
 					isStateEditable = false,
-					-- deviation: use 1-indexing so drop -1
 					name = parseCustomHookName(stack[j].functionName),
 					value = nil,
-					subHooks = children
+					subHooks = children,
 				})
 				table.insert(stackOfChildren, levelChildren)
-		  		levelChildren = children
+				levelChildren = children
 			end
 
 			prevStack = stack
@@ -551,14 +689,18 @@ local function buildTree(rootStack, readHookLog)
 		end
 
 		local primitive = hook.primitive
+
+		-- For now, the "id" of stateful hooks is just the stateful hook index.
+		-- Custom hooks have no ids, nor do non-stateful native hooks (e.g. Context, DebugValue).
 		local id = (function()
-			if primitive == 'Context' or primitive == 'DebugValue' then
+			if primitive == "Context" or primitive == "DebugValue" then
 				return nil
 			end
 
 			return POSTFIX_INCREMENT()
 		end)()
-		local isStateEditable = primitive == 'Reducer' or primitive == 'State'
+		-- For the time being, only State and Reducer hooks support runtime overrides.
+		local isStateEditable = primitive == "Reducer" or primitive == "State"
 
 		table.insert(levelChildren, {
 			id = id,
@@ -569,32 +711,44 @@ local function buildTree(rootStack, readHookLog)
 		})
 	end
 
+	-- Associate custom hook values (useDebugValue() hook entries) with the correct hooks.
 	processDebugValues(rootChildren, nil)
 
 	return rootChildren
 end
 
-processDebugValues = function(hooksTree, parentHooksNode)
-	local debugValueHooksNodes = {}
+-- Custom hooks support user-configurable labels (via the special useDebugValue() hook).
+-- That hook adds user-provided values to the hooks tree,
+-- but these values aren't intended to appear alongside of the other hooks.
+-- Instead they should be attributed to their parent custom hook.
+-- This method walks the tree and assigns debug values to their custom hook owners.
+function processDebugValues(hooksTree: HooksTree, parentHooksNode: HooksNode | nil): ()
+	local debugValueHooksNodes: Array<HooksNode> = {}
 
-	for i=0, hooksTree.length - 1 do
+	local i = 0
+	while i <= #hooksTree do
 		local hooksNode = hooksTree[i]
 
-		if hooksNode.name == 'DebugValue' and hooksNode.subHooks.length == 0 then
+		if hooksNode.name == "DebugValue" and #hooksNode.subHooks == 0 then
 			Array.splice(hooksTree, i, 1)
 
-			i = i - 1
+			i -= 1
 
-			table.insert(debugValueHooksNodes,hooksNode)
+			table.insert(debugValueHooksNodes, hooksNode)
 		else
 			processDebugValues(hooksNode.subHooks, hooksNode)
 		end
+
+		i += 1
 	end
 
+	-- Bubble debug value labels to their custom hook owner.
+	-- If there is no parent hook, just ignore them for now.
+	-- (We may warn about this in the future.)
 	if parentHooksNode ~= nil then
-		if debugValueHooksNodes.length == 1 then
-			parentHooksNode.value = debugValueHooksNodes[0].value
-		elseif debugValueHooksNodes.length > 1 then
+		if #debugValueHooksNodes == 1 then
+			parentHooksNode.value = debugValueHooksNodes[1].value
+		elseif #debugValueHooksNodes > 1 then
 			parentHooksNode.value = Array.map(debugValueHooksNodes, function(_ref)
 				local value = _ref.value
 				return value
@@ -603,33 +757,45 @@ processDebugValues = function(hooksTree, parentHooksNode)
 	end
 end
 
-exports.inspectHooks = function(renderFunction, props, currentDispatcher)
+-- ROBLOX TODO: function generics
+-- exports.inspectHooks<Props>(
+-- 	renderFunction: Props => React$Node,
+-- 	props: Props,
+-- 	currentDispatcher: ?CurrentDispatcherRef,
+--   ): HooksTree {
+exports.inspectHooks = function(
+	renderFunction: (any) -> React_Node,
+	props: any,
+	currentDispatcher: CurrentDispatcherRef?
+): HooksTree
+	-- DevTools will pass the current renderer's injected dispatcher.
+	-- Other apps might compile debug hooks as part of their app though.
 	if currentDispatcher == nil then
 		currentDispatcher = ReactSharedInternals.ReactCurrentDispatcher
 	end
 
-	local previousDispatcher = currentDispatcher.current
-	local readHookLog
+	local previousDispatcher = (currentDispatcher :: CurrentDispatcherRef).current
+	local readHookLog;
 
-	currentDispatcher.current = Dispatcher
+	(currentDispatcher :: CurrentDispatcherRef).current = Dispatcher
 
 	local ancestorStackError
 
 	pcall(function()
-		ancestorStackError = debug.traceback()
+		ancestorStackError = Error.new()
 		renderFunction(props)
 	end)
 	readHookLog = hookLog
-	hookLog = {}
-	currentDispatcher.current = previousDispatcher
+	hookLog = {};
+	(currentDispatcher :: CurrentDispatcherRef).current = previousDispatcher
 
 	local rootStack = ErrorStackParser.parse(ancestorStackError)
 
 	return buildTree(rootStack, readHookLog)
 end
 
-local function setupContexts(contextMap, fiber)
-	local current = fiber
+local function setupContexts(contextMap: Map<ReactContext<any>, any>, fiber: Fiber)
+	local current: Fiber? = fiber
 
 	while current do
 		if current.tag == ContextProvider then
@@ -637,23 +803,36 @@ local function setupContexts(contextMap, fiber)
 			local context = providerType._context
 
 			if not contextMap[context] then
+				-- Store the current value that we're going to restore later.
 				contextMap[context] = context._currentValue
-
+				-- Set the inner most provider value on the context.
 				context._currentValue = current.memoizedProps.value
 			end
 		end
 
-		current = current.return_
+		current = (current :: Fiber).return_
 	end
 end
 
-local function restoreContexts(contextMap)
+local function restoreContexts(contextMap: Map<ReactContext<any>, any>)
 	for context, value in pairs(contextMap) do
 		context._currentValue = value
 	end
 end
 
-local function inspectHooksOfForwardRef(renderFunction, props, ref, currentDispatcher)
+-- ROBLOX TODO: function generics
+-- function inspectHooksOfForwardRef<Props, Ref>(
+-- 	renderFunction: (Props, Ref) => React$Node,
+-- 	props: Props,
+-- 	ref: Ref,
+-- 	currentDispatcher: CurrentDispatcherRef,
+--   ): HooksTree {
+local function inspectHooksOfForwardRef(
+	renderFunction: (any, any) -> React_Node,
+	props: any,
+	ref: any,
+	currentDispatcher: CurrentDispatcherRef
+): HooksTree
 	local previousDispatcher = currentDispatcher.current
 	local readHookLog
 
@@ -661,8 +840,8 @@ local function inspectHooksOfForwardRef(renderFunction, props, ref, currentDispa
 
 	local ancestorStackError
 	pcall(function()
-		ancestorStackError = debug.traceback()
-		renderFunction(props)
+		ancestorStackError = Error.new()
+		renderFunction(props, ref)
 	end)
 	readHookLog = hookLog
 	hookLog = {}
@@ -675,6 +854,7 @@ end
 
 local function resolveDefaultProps(Component, baseProps)
 	if Component and Component.defaultProps then
+		-- Resolve default props. Taken from ReactElement
 		local props = Object.assign({}, baseProps)
 		local defaultProps = Component.defaultProps
 		for propName, _ in pairs(defaultProps) do
@@ -688,43 +868,52 @@ local function resolveDefaultProps(Component, baseProps)
 	return baseProps
 end
 
-exports.inspectHooksOfFiber = function(fiber, currentDispatcher)
-	if currentDispatcher == nil then
-		currentDispatcher = ReactSharedInternals.ReactCurrentDispatcher
-	end
-
-	currentFiber = fiber
-
-	if fiber.tag ~= FunctionComponent and fiber.tag ~= SimpleMemoComponent and fiber.tag ~= ForwardRef and fiber.tag ~= Block then
-		error('Unknown Fiber. Needs to be a function component to inspect hooks.')
-	end
-
-	getPrimitiveStackCache()
-
-	local type_ = fiber.type
-	local props = fiber.memoizedProps
-
-	if type_ ~= fiber.elementType then
-		props = resolveDefaultProps(type_, props)
-	end
-
-	currentHook = fiber.memoizedState
-
-	local contextMap = {}
-	pcall(function()
-		setupContexts(contextMap, fiber)
-		if fiber.tag == ForwardRef then
-			return inspectHooksOfForwardRef(
-				type_.render,
-				props,
-				fiber.ref,
-				currentDispatcher
-		  	)
+exports.inspectHooksOfFiber =
+	function(fiber: Fiber, currentDispatcher: CurrentDispatcherRef?)
+		-- DevTools will pass the current renderer's injected dispatcher.
+		-- Other apps might compile debug hooks as part of their app though.
+		if currentDispatcher == nil then
+			currentDispatcher = ReactSharedInternals.ReactCurrentDispatcher
 		end
-		return exports.inspectHooks(type_, props, currentDispatcher)
-	end)
-	currentHook = nil
-	restoreContexts(contextMap)
-end
+
+		currentFiber = fiber
+
+		if
+			fiber.tag ~= FunctionComponent
+			and fiber.tag ~= SimpleMemoComponent
+			and fiber.tag ~= ForwardRef
+			and fiber.tag ~= Block
+		then
+			error("Unknown Fiber. Needs to be a function component to inspect hooks.")
+		end
+		-- Warm up the cache so that it doesn't consume the currentHook.
+		getPrimitiveStackCache()
+
+		local type_ = fiber.type
+		local props = fiber.memoizedProps
+
+		if type_ ~= fiber.elementType then
+			props = resolveDefaultProps(type_, props)
+		end
+		-- Set up the current hook so that we can step through and read the
+		-- current state from them.
+		currentHook = fiber.memoizedState
+
+		local contextMap = {}
+		pcall(function()
+			setupContexts(contextMap, fiber)
+			if fiber.tag == ForwardRef then
+				return inspectHooksOfForwardRef(
+					type_.render,
+					props,
+					fiber.ref,
+					currentDispatcher
+				)
+			end
+			return exports.inspectHooks(type_, props, currentDispatcher)
+		end)
+		currentHook = nil
+		restoreContexts(contextMap)
+	end
 
 return exports

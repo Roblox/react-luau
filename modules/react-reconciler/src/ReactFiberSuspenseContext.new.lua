@@ -10,16 +10,11 @@
  * @flow
 ]]
 
--- deviation: ReactInternalTypes not implemented. Instead of just dropping
--- the type, we are defining one so it'll be a minor refactor to switch to
--- the futur FiberRoot type.
-type Fiber = any
+local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
+type Fiber = ReactInternalTypes.Fiber
 
 local ReactFiberStack = require(script.Parent['ReactFiberStack.new'])
--- deviation: until roblox-cli is able to trace requires with index
--- expressions (CLI-31888), we can't import the type so we just copy it
--- type StackCursor<T> = ReactFiberStack.StackCursor<T>
-type StackCursor<T> = { current: T }
+type StackCursor<T> = ReactFiberStack.StackCursor<T>
 
 local createCursor = ReactFiberStack.createCursor
 local push = ReactFiberStack.push

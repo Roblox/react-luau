@@ -364,7 +364,7 @@ exports.shallowDiffers = function(prev: Object, next_: Object): boolean
 	return false
 end
 
-exports.getInObject = function(object: Object, path: Array<string | number>)
+exports.getInObject = function(object: Object, path: Array<string | number>): any
 	return Array.reduce(path, function(reduced: Object, attr)
 		if reduced then
 			if reduced[attr] ~= nil then

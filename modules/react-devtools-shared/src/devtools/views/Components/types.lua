@@ -58,10 +58,7 @@ export type Owner = {
 	type: ElementType,
 }
 
-export type OwnersList = {
-	id: number,
-	owners: Array<Owner> | nil,
-}
+export type OwnersList = { id: number, owners: Array<Owner> | nil }
 
 export type InspectedElement = {
 	id: number,
@@ -112,9 +109,7 @@ export type InspectedElement = {
 
 export type DehydratedData = {
 	cleaned: Array<Array<string | number>>,
-	data: string | Dehydrated | Unserializable | Array<Dehydrated> | Array<Unserializable> | {
-		[string]: string | Dehydrated | Unserializable,
-	},
+	data: string | Dehydrated | Unserializable | Array<Dehydrated> | Array<Unserializable> | { [string]: string | Dehydrated | Unserializable },
 	unserializable: Array<Array<string | number>>,
 }
 

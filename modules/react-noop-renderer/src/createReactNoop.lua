@@ -36,8 +36,7 @@ local ReactSymbols = require(Packages.Shared).ReactSymbols
 local REACT_FRAGMENT_TYPE = ReactSymbols.REACT_FRAGMENT_TYPE
 local REACT_ELEMENT_TYPE = ReactSymbols.REACT_ELEMENT_TYPE
 
--- TODO (roblox): Figure out what the top-level interface of the reconciler is
--- local ReactRootTags = require(Packages.ReactReconciler).ReactRootTags
+local ReactRootTags = require(Packages.ReactReconciler)
 -- local ConcurrentRoot = ReactRootTags.ConcurrentRoot
 -- local BlockingRoot = ReactRootTags.BlockingRoot
 -- local LegacyRoot = ReactRootTags.LegacyRoot
@@ -775,9 +774,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			return getPendingChildren(container)
 		end,
 
-		-- ROBLOX FIXME: Types across package boundaries
-		-- getOrCreateRootContainer = function(rootID: string?, tag: ReactRootTags.RootTag)
-		getOrCreateRootContainer = function(rootID: string?, tag: number)
+		getOrCreateRootContainer = function(rootID: string?, tag: ReactRootTags.RootTag)
 			rootID = rootID or DEFAULT_ROOT_ID
 			local root = roots[rootID]
 			if not root then

@@ -20,8 +20,24 @@ type Object = { [string]: any }
 --   | ReactProvider<any>
 --   | ReactConsumer<any>;
 
--- deviation: alias for internal React$ flow types
-type React_Node = any | { [any]: any }
+-- ROBLOX deviation: alias for internal React$ flow types
+export type React_Node =
+	nil
+	| boolean
+	| number
+	| string
+	| React_Element<any>
+	| React_Portal
+	| Array<React_Node?>
+export type React_Element<ElementType> = {
+	type: ElementType,
+	props: any?, -- ROBLOX TODO: can't find this definition React_ElementProps<ElementType>,
+	key: React_Key | nil,
+	ref: any,
+}
+export type React_Portal = any
+export type React_Key = string | number
+
 
 export type ReactEmpty = boolean?
 
