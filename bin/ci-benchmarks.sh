@@ -16,8 +16,8 @@ stylua --version
 stylua -c modules -g "*[a-bdh-km-oquvyz].lua"
 
 echo "Run benchmarks"
-roblox-cli run --load.model model.rbxmx --run bin/run-first-render-benchmark.lua --fastFlags.overrides EnableLoadModule=true --fastFlags.allOnLuau --headlessRenderer 1
-roblox-cli run --load.model model.rbxmx --run bin/run-frame-rate-benchmark.lua --fastFlags.overrides EnableLoadModule=true --fastFlags.allOnLuau --headlessRenderer 1
-roblox-cli run --load.model model.rbxmx --run bin/run-deep-tree-benchmark.lua --fastFlags.overrides EnableLoadModule=true --fastFlags.allOnLuau --headlessRenderer 1
-roblox-cli run --load.model model.rbxmx --run bin/run-wide-tree-benchmark.lua --fastFlags.overrides EnableLoadModule=true --fastFlags.allOnLuau --headlessRenderer 1
-roblox-cli run --load.model model.rbxmx --run bin/run-sierpinski-triangle-benchmark.lua --fastFlags.overrides EnableLoadModule=true --fastFlags.allOnLuau --headlessRenderer 1
+robloxdev-cli run --load.model model.rbxmx --run bin/run-first-render-benchmark.lua --fastFlags.allOnLuau --fastFlags.overrides EnableLoadModule=true EnableDelayedTaskMethods=true --headlessRenderer 1
+robloxdev-cli run --load.model model.rbxmx --run bin/run-frame-rate-benchmark.lua --fastFlags.allOnLuau --fastFlags.overrides EnableLoadModule=true EnableDelayedTaskMethods=true --headlessRenderer 1
+robloxdev-cli run --load.model model.rbxmx --run bin/run-deep-tree-benchmark.lua --fastFlags.allOnLuau --fastFlags.overrides EnableLoadModule=true EnableDelayedTaskMethods=true --headlessRenderer 1
+robloxdev-cli run --load.model model.rbxmx --run bin/run-wide-tree-benchmark.lua --fastFlags.allOnLuau --fastFlags.overrides EnableLoadModule=true EnableDelayedTaskMethods=true --headlessRenderer 1
+robloxdev-cli run --load.model model.rbxmx --run bin/run-sierpinski-triangle-benchmark.lua --fastFlags.allOnLuau --fastFlags.overrides EnableLoadModule=true EnableDelayedTaskMethods=true --headlessRenderer 1

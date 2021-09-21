@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1631844122879,
+  "lastUpdate": 1632256588400,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -375,6 +375,47 @@
             "extra": "200 samples\nroblox-cli version: 0.496.0.4960343"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "59d9aee9aa9fbaa9573632fc4bf68072d81aae7e",
+          "message": "LUAFDN-538: use task library",
+          "timestamp": "2021-09-17T02:14:27Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/198/commits/59d9aee9aa9fbaa9573632fc4bf68072d81aae7e"
+        },
+        "date": 1632256586311,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.3076,
+            "range": "±27.46%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.8944,
+            "range": "±222.92%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 83.2509,
+            "range": "±20.82%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.496.0.4960343"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -638,6 +679,40 @@
             "name": "FrameRate#Δt",
             "value": 54.7131,
             "range": "±10.79%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.496.0.4960343"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "59d9aee9aa9fbaa9573632fc4bf68072d81aae7e",
+          "message": "LUAFDN-538: use task library",
+          "timestamp": "2021-09-17T02:14:27Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/198/commits/59d9aee9aa9fbaa9573632fc4bf68072d81aae7e"
+        },
+        "date": 1632256586980,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 19.3896,
+            "range": "±12.74%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 52.6942,
+            "range": "±17.94%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.496.0.4960343"
           }
@@ -909,6 +984,40 @@
             "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "59d9aee9aa9fbaa9573632fc4bf68072d81aae7e",
+          "message": "LUAFDN-538: use task library",
+          "timestamp": "2021-09-17T02:14:27Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/198/commits/59d9aee9aa9fbaa9573632fc4bf68072d81aae7e"
+        },
+        "date": 1632256587677,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 13.8233,
+            "range": "±13.39%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 73.9023,
+            "range": "±16.34%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -1172,6 +1281,40 @@
             "name": "FrameRate#Δt",
             "value": 11.8321,
             "range": "±17.24%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "59d9aee9aa9fbaa9573632fc4bf68072d81aae7e",
+          "message": "LUAFDN-538: use task library",
+          "timestamp": "2021-09-17T02:14:27Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/198/commits/59d9aee9aa9fbaa9573632fc4bf68072d81aae7e"
+        },
+        "date": 1632256588398,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 100.9674,
+            "range": "±13.87%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 10.132,
+            "range": "±16.69%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
           }

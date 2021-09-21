@@ -107,8 +107,6 @@ local taskTimeoutID = -1
 local yieldInterval = 15
 local deadline = 0
 
-
-
 -- ROBLOX deviation: Removed some logic around browser functionality that's not
 -- present in the roblox engine
 local function shouldYieldToHost()
@@ -143,7 +141,9 @@ local function performWorkUntilDeadline()
 		-- the message event.
 		deadline = currentTime + yieldInterval
 		local hasTimeRemaining = true
-		local ok, result = pcall(function()
+
+		local ok, result
+		local function doWork()
 			local hasMoreWork = scheduledHostCallback(
 				hasTimeRemaining,
 				currentTime
@@ -160,21 +160,22 @@ local function performWorkUntilDeadline()
 				-- more work, either yield and defer till later this frame, or
 				-- delay work till next frame
 
-				-- ROBLOX TODO: Use task api once it's stabilized
-				setTimeout(performWorkUntilDeadline, 0)
 				-- ROBLOX FIXME: What's the proper combination of task.defer and
 				-- task.delay that makes this optimal?
-				-- (task :: any).delay(0, performWorkUntilDeadline)
+				task.delay(0, performWorkUntilDeadline)
 			end
-		end)
+		end
+		if not _G.__YOLO__ then
+			ok, result = pcall(doWork)
+		else
+			result = doWork()
+			ok = true
+		end
 
 		if not ok then
 			-- If a scheduler task throws, exit the current browser task so the
 			-- error can be observed.
-			-- ROBLOX TODO: Use task api once it's stabilized
-			setTimeout(performWorkUntilDeadline, 0)
-			-- ROBLOX deviation: Use task api instead of message channel
-			-- (task :: any).delay(0, performWorkUntilDeadline)
+			task.delay(0, performWorkUntilDeadline)
 
 			error(result)
 		end
@@ -188,10 +189,7 @@ local function requestHostCallback(callback)
 	if not isMessageLoopRunning then
 		isMessageLoopRunning = true
 
-		-- ROBLOX TODO: Use task api once it's stabilized
-		setTimeout(performWorkUntilDeadline, 0)
-		-- ROBLOX deviation: Use task api instead of message channel
-		-- (task :: any).delay(0, performWorkUntilDeadline)
+		task.delay(0, performWorkUntilDeadline)
 	end
 end
 
