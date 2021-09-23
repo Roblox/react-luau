@@ -19,10 +19,10 @@ local function unimplemented(message)
 end
 
 -- ROBLOX DEVIATION: keep track of the pcall run depth and whether or not we have
--- warned the user about hitting a pcall depth of over 200.
+-- warned the user about hitting a pcall depth of over MAX_RUN_DEPTH.
 local runDepth = 0
 local warnedRunDepth = false
-local MAX_RUN_DEPTH = 180
+local MAX_RUN_DEPTH = 20
 
 local function isCallable(value)
   if typeof(value) == "function" then
@@ -710,7 +710,7 @@ local function recursivelyCommitLayoutEffects(
           local prevCurrentFiberInDEV = ReactCurrentFiber.current
           setCurrentDebugFiberInDEV(child)
           --[[
-              ROBLOX DEVIATION: In DEV, After 200 pcalls, do not wrap recursive calls in pcall. Otherwise,
+              ROBLOX DEVIATION: In DEV, After MAX_RUN_DEPTH pcalls, do not wrap recursive calls in pcall. Otherwise,
               we hit the stack limit and get a stack overflow error.
             ]]
           if runDepth < MAX_RUN_DEPTH then
@@ -751,10 +751,10 @@ local function recursivelyCommitLayoutEffects(
           local ok, error_
           if not _G.__YOLO__ then
             --[[
-              ROBLOX DEVIATION: After 200 pcalls, do not wrap recursive calls in pcall. Otherwise, we hit the
+              ROBLOX DEVIATION: After MAX_RUN_DEPTH pcalls, do not wrap recursive calls in pcall. Otherwise, we hit the
               stack limit and get a stack overflow error.
             ]]
-            if runDepth < 180 then
+            if runDepth < MAX_RUN_DEPTH then
               runDepth += 1
 
               ok, error_ = pcall(function()
@@ -765,7 +765,7 @@ local function recursivelyCommitLayoutEffects(
               runDepth -= 1
             else
               -- ROBLOX DEVIATION: Warn the first time we go over the pcall limit.
-              if not warnedRunDepth and runDepth == 180 then
+              if not warnedRunDepth and runDepth == MAX_RUN_DEPTH then
                 warnedRunDepth = true
                 console.warn("Hit maximum pcall depth of " .. MAX_RUN_DEPTH .. ", entering UNSAFE call mode. Suspense and Error "..
                              "Boundaries will no longer work correctly. This will be resolved in React 18.")

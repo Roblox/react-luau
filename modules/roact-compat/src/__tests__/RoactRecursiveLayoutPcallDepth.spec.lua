@@ -45,7 +45,7 @@ return function()
             jestExpect(function()
                 root:render(DeepTree)
                 Scheduler.unstable_flushAllWithoutAsserting()
-            end).toWarnDev("Hit maximum pcall depth of 180, entering UNSAFE call mode. Suspense and Error "..
+            end).toWarnDev("Hit maximum pcall depth of 20, entering UNSAFE call mode. Suspense and Error "..
                            "Boundaries will no longer work correctly. This will be resolved in React 18.")
         end)
     end)

@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1632256588400,
+  "lastUpdate": 1632346015563,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -416,6 +416,47 @@
             "extra": "200 samples\nroblox-cli version: 0.496.0.4960343"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "c74e1b9e25531ce64bcfa805cbe5873f629f925a",
+          "message": "LUAFDN-607: Update MAX_PCALL_DEPTH usage",
+          "timestamp": "2021-09-21T22:08:34Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/201/commits/c74e1b9e25531ce64bcfa805cbe5873f629f925a"
+        },
+        "date": 1632346013343,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.4422,
+            "range": "±30.02%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 23.177,
+            "range": "±219.83%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 92.2023,
+            "range": "±24.31%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.496.0.4960343"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -713,6 +754,40 @@
             "name": "FrameRate#Δt",
             "value": 52.6942,
             "range": "±17.94%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.496.0.4960343"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "c74e1b9e25531ce64bcfa805cbe5873f629f925a",
+          "message": "LUAFDN-607: Update MAX_PCALL_DEPTH usage",
+          "timestamp": "2021-09-21T22:08:34Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/201/commits/c74e1b9e25531ce64bcfa805cbe5873f629f925a"
+        },
+        "date": 1632346014121,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 17.1521,
+            "range": "±12.38%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 59.6752,
+            "range": "±19.26%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.496.0.4960343"
           }
@@ -1018,6 +1093,40 @@
             "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "c74e1b9e25531ce64bcfa805cbe5873f629f925a",
+          "message": "LUAFDN-607: Update MAX_PCALL_DEPTH usage",
+          "timestamp": "2021-09-21T22:08:34Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/201/commits/c74e1b9e25531ce64bcfa805cbe5873f629f925a"
+        },
+        "date": 1632346014827,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 13.1705,
+            "range": "±13.11%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 77.9703,
+            "range": "±21.09%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -1315,6 +1424,40 @@
             "name": "FrameRate#Δt",
             "value": 10.132,
             "range": "±16.69%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "c74e1b9e25531ce64bcfa805cbe5873f629f925a",
+          "message": "LUAFDN-607: Update MAX_PCALL_DEPTH usage",
+          "timestamp": "2021-09-21T22:08:34Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/201/commits/c74e1b9e25531ce64bcfa805cbe5873f629f925a"
+        },
+        "date": 1632346015560,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 85.6057,
+            "range": "±9.81%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 11.7991,
+            "range": "±10.23%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
           }
