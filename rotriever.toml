@@ -13,5 +13,5 @@ authors = [
 [workspace.dependencies]
 Promise = "github.com/evaera/roblox-lua-promise@3.1.0"
 Cryo = "github.com/roblox/cryo@1.0"
-LuauPolyfill = "github.com/roblox/luau-polyfill@0.2.4"
+LuauPolyfill = "github.com/roblox/luau-polyfill@0.2.5"
 JestRoblox = "github.com/roblox/jest-roblox@=1.0.0"

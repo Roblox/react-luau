@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1632346015563,
+  "lastUpdate": 1632425163703,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -457,6 +457,47 @@
             "extra": "200 samples\nroblox-cli version: 0.496.0.4960343"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "5fe5615d45e448a94e57006eb8b8ce6822d85c19",
+          "message": "#nojira - Upgrade polyfill to play nice with  in lua-apps",
+          "timestamp": "2021-09-23T16:01:31Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/202/commits/5fe5615d45e448a94e57006eb8b8ce6822d85c19"
+        },
+        "date": 1632425161298,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.8238,
+            "range": "±31.48%",
+            "unit": "ops/sec",
+            "extra": "602 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 23.3239,
+            "range": "±221.02%",
+            "unit": "ms/op",
+            "extra": "602 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 95.9572,
+            "range": "±24.69%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.496.0.4960343"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -788,6 +829,40 @@
             "name": "FrameRate#Δt",
             "value": 59.6752,
             "range": "±19.26%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.496.0.4960343"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "5fe5615d45e448a94e57006eb8b8ce6822d85c19",
+          "message": "#nojira - Upgrade polyfill to play nice with  in lua-apps",
+          "timestamp": "2021-09-23T16:01:31Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/202/commits/5fe5615d45e448a94e57006eb8b8ce6822d85c19"
+        },
+        "date": 1632425162036,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 17.1504,
+            "range": "±12.25%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 59.4611,
+            "range": "±16.71%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.496.0.4960343"
           }
@@ -1127,6 +1202,40 @@
             "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "5fe5615d45e448a94e57006eb8b8ce6822d85c19",
+          "message": "#nojira - Upgrade polyfill to play nice with  in lua-apps",
+          "timestamp": "2021-09-23T16:01:31Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/202/commits/5fe5615d45e448a94e57006eb8b8ce6822d85c19"
+        },
+        "date": 1632425162831,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 12.5056,
+            "range": "±13.02%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 81.959,
+            "range": "±19.85%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -1458,6 +1567,40 @@
             "name": "FrameRate#Δt",
             "value": 11.7991,
             "range": "±10.23%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "5fe5615d45e448a94e57006eb8b8ce6822d85c19",
+          "message": "#nojira - Upgrade polyfill to play nice with  in lua-apps",
+          "timestamp": "2021-09-23T16:01:31Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/202/commits/5fe5615d45e448a94e57006eb8b8ce6822d85c19"
+        },
+        "date": 1632425163701,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 87.6227,
+            "range": "±10.96%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 11.5552,
+            "range": "±11.37%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.496.0.4960343"
           }
