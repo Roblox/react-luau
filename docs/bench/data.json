@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1632456049869,
+  "lastUpdate": 1632508696895,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -539,6 +539,47 @@
             "extra": "200 samples\nroblox-cli version: 0.497.0.4970357"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "180e78d05c536fec1e9dee503db30a054db12af1",
+          "message": "#nojira - Update to rc.3",
+          "timestamp": "2021-09-24T04:08:39Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/204/commits/180e78d05c536fec1e9dee503db30a054db12af1"
+        },
+        "date": 1632508694854,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.5149,
+            "range": "±26.66%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.497.0.4970357"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.6034,
+            "range": "±224.16%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.497.0.4970357"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 79.5571,
+            "range": "±19.77%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.497.0.4970357"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -938,6 +979,40 @@
             "name": "FrameRate#Δt",
             "value": 56.4091,
             "range": "±20.40%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970357"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "180e78d05c536fec1e9dee503db30a054db12af1",
+          "message": "#nojira - Update to rc.3",
+          "timestamp": "2021-09-24T04:08:39Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/204/commits/180e78d05c536fec1e9dee503db30a054db12af1"
+        },
+        "date": 1632508695528,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 19.4541,
+            "range": "±14.33%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970357"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 52.7708,
+            "range": "±19.12%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.497.0.4970357"
           }
@@ -1345,6 +1420,40 @@
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970357"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "180e78d05c536fec1e9dee503db30a054db12af1",
+          "message": "#nojira - Update to rc.3",
+          "timestamp": "2021-09-24T04:08:39Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/204/commits/180e78d05c536fec1e9dee503db30a054db12af1"
+        },
+        "date": 1632508696225,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 14.3176,
+            "range": "±14.26%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970357"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 71.4084,
+            "range": "±16.05%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970357"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -1744,6 +1853,40 @@
             "name": "FrameRate#Δt",
             "value": 11.747,
             "range": "±11.65%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970357"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "180e78d05c536fec1e9dee503db30a054db12af1",
+          "message": "#nojira - Update to rc.3",
+          "timestamp": "2021-09-24T04:08:39Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/204/commits/180e78d05c536fec1e9dee503db30a054db12af1"
+        },
+        "date": 1632508696893,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 97.4152,
+            "range": "±13.13%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970357"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 10.4496,
+            "range": "±13.55%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970357"
           }
