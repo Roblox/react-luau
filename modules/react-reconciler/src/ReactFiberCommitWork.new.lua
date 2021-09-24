@@ -735,8 +735,10 @@ local function recursivelyCommitLayoutEffects(
             -- ROBLOX DEVIATION: Warn the first time we go over the pcall limit.
             if not warnedRunDepth and runDepth == MAX_RUN_DEPTH then
               warnedRunDepth = true
-              console.warn("Hit maximum pcall depth of " .. MAX_RUN_DEPTH .. ", entering UNSAFE call mode. Suspense and Error "..
-                           "Boundaries will no longer work correctly. This will be resolved in React 18.")
+              if _G.__DEV__ then
+                console.warn("Hit maximum pcall depth of " .. MAX_RUN_DEPTH .. ", entering UNSAFE call mode. Suspense and Error "..
+                             "Boundaries will no longer work correctly. This will be resolved in React 18.")
+              end
             end
 
             recursivelyCommitLayoutEffects(child, finishedRoot, captureCommitPhaseError, schedulePassiveEffectCallback)
@@ -767,8 +769,10 @@ local function recursivelyCommitLayoutEffects(
               -- ROBLOX DEVIATION: Warn the first time we go over the pcall limit.
               if not warnedRunDepth and runDepth == MAX_RUN_DEPTH then
                 warnedRunDepth = true
-                console.warn("Hit maximum pcall depth of " .. MAX_RUN_DEPTH .. ", entering UNSAFE call mode. Suspense and Error "..
-                             "Boundaries will no longer work correctly. This will be resolved in React 18.")
+                if _G.__DEV__ then
+                  console.warn("Hit maximum pcall depth of " .. MAX_RUN_DEPTH .. ", entering UNSAFE call mode. Suspense and Error "..
+                               "Boundaries will no longer work correctly. This will be resolved in React 18.")
+                end
               end
 
               ok = true
