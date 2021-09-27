@@ -217,9 +217,7 @@ local currentHookNameInDev: HookType? = nil
 -- In DEV, this list ensures that hooks are called in the same order between renders.
 -- The list stores the order of hooks used during the initial render (mount).
 -- Subsequent renders (updates) reference this list.
--- FIXME (roblox): type refinement
--- local hookTypesDev: Array<HookType> | nil = nil
-local hookTypesDev: any = nil
+local hookTypesDev: Array<HookType> | nil = nil
 local hookTypesUpdateIndexDev: number = 0
 
 -- In DEV, this tracks whether currently rendering component needs to ignore
@@ -238,9 +236,7 @@ local InvalidNestedHooksDispatcherOnRerenderInDEV: Dispatcher | nil = nil
 
 local function mountHookTypesDev()
   if _G.__DEV__ then
-    -- FIXME (roblox): type coercion
-    -- local hookName = ((currentHookNameInDev: any): HookType)
-    local hookName = currentHookNameInDev
+    local hookName = currentHookNameInDev :: HookType
 
     if hookTypesDev == nil then
       hookTypesDev = { hookName }
@@ -299,15 +295,16 @@ function warnOnHookMismatchInDev(currentHookName: HookType)
             newHookName = oldHookName
           end
 
-          local row = tostring(i) .. ". " .. oldHookName
+          -- ROBLOX note: upstream lets this be void and string concat coerces it to 'undefined'
+          local row = tostring(i) .. ". " .. (oldHookName or 'undefined')
 
           -- Extra space so second column lines up
           -- lol @ IE not supporting String#repeat
-          while row.length < secondColumnStart do
+          while string.len(row) < secondColumnStart do
             row ..= ' '
           end
 
-          row ..= newHookName + '\n'
+          row ..= newHookName .. '\n'
 
           table_ ..= row
         end

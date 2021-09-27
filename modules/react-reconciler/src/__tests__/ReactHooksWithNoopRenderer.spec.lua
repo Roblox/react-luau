@@ -3920,8 +3920,7 @@ return function()
 	-- })
 
 	describe("progressive enhancement (not supported)", function()
-		-- ROBLOX FIXME: has the top error message cut off the stack
-		xit("mount additional state", function()
+		it("mount additional state", function()
 			local updateA
 			local updateB
 			-- local updateC
@@ -4018,8 +4017,7 @@ return function()
 			)
 		end)
 
-		-- ROBLOX FIXME: missing the top line of the error message
-		xit("unmount effects", function()
+		it("unmount effects", function()
 			local function App(props)
 				useEffect(function()
 					Scheduler.unstable_yieldValue("Mount A")
