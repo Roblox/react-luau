@@ -109,7 +109,8 @@ export type ReactPriorityLevel = number
 export type ContextDependency<T> = {
 	context: ReactContext<T>,
 	observedBits: number,
-	next: ContextDependency<any> | nil,
+	-- ROBLOX TODO: upstream only parameterizes this type with `mixed`, so avoid Luau recursive type constraint. upstream this change later.
+	next: ContextDependency<T> | nil,
 	[any]: any,
 }
 

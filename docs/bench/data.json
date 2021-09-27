@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1632769987147,
+  "lastUpdate": 1632775891437,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -621,6 +621,47 @@
             "extra": "200 samples\nroblox-cli version: 0.497.0.4970358"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "41a491696aa3933a35daf6c2b05903e3633c7d4c",
+          "message": "Made types compatible with Luau RFC recursive-type-restriction",
+          "timestamp": "2021-09-27T19:51:58Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/210/commits/41a491696aa3933a35daf6c2b05903e3633c7d4c"
+        },
+        "date": 1632775888609,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 58.4029,
+            "range": "±26.20%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.214,
+            "range": "±226.69%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 74.1752,
+            "range": "±18.10%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -1090,6 +1131,40 @@
             "range": "±18.91%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.497.0.4970358"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "41a491696aa3933a35daf6c2b05903e3633c7d4c",
+          "message": "Made types compatible with Luau RFC recursive-type-restriction",
+          "timestamp": "2021-09-27T19:51:58Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/210/commits/41a491696aa3933a35daf6c2b05903e3633c7d4c"
+        },
+        "date": 1632775889165,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 20.195,
+            "range": "±11.81%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 50.4792,
+            "range": "±16.90%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
       }
@@ -1563,6 +1638,40 @@
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970358"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "41a491696aa3933a35daf6c2b05903e3633c7d4c",
+          "message": "Made types compatible with Luau RFC recursive-type-restriction",
+          "timestamp": "2021-09-27T19:51:58Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/210/commits/41a491696aa3933a35daf6c2b05903e3633c7d4c"
+        },
+        "date": 1632775890915,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 15.2597,
+            "range": "±12.82%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 66.9929,
+            "range": "±18.05%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -2032,6 +2141,40 @@
             "range": "±14.72%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970358"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "41a491696aa3933a35daf6c2b05903e3633c7d4c",
+          "message": "Made types compatible with Luau RFC recursive-type-restriction",
+          "timestamp": "2021-09-27T19:51:58Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/210/commits/41a491696aa3933a35daf6c2b05903e3633c7d4c"
+        },
+        "date": 1632775891435,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 94.965,
+            "range": "±12.08%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 10.6988,
+            "range": "±13.22%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
       }
