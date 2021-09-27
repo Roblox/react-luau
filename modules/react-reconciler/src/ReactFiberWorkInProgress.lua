@@ -4,21 +4,22 @@
 local ReactFiberLane = require(script.Parent.ReactFiberLane)
 local _workInProgressRootSkippedLanes: Lanes = ReactFiberLane.NoLanes
 local mergeLanes = ReactFiberLane.mergeLanes
-type Lanes = ReactFiberLane.Lanes;
-type Lane = ReactFiberLane.Lane;
+type Lanes = ReactFiberLane.Lanes
+type Lane = ReactFiberLane.Lane
 
 local exports = {}
 
-exports.workInProgressRootSkippedLanes = function(value)
+-- ROBLOX TODO: turn this into newindex property accessor
+exports.workInProgressRootSkippedLanes = function(value): Lanes
 	if value == nil then
 		return _workInProgressRootSkippedLanes
 	end
 
 	_workInProgressRootSkippedLanes = value
-	return nil
+	return _workInProgressRootSkippedLanes
 end
 
-exports.markSkippedUpdateLanes = function(lane: Lane | Lanes)
+exports.markSkippedUpdateLanes = function(lane: Lane | Lanes): ()
 	_workInProgressRootSkippedLanes = mergeLanes(
 	  lane,
 	  _workInProgressRootSkippedLanes

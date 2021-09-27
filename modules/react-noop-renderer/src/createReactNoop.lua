@@ -943,15 +943,15 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			return Scheduler.unstable_clearYields()
 		end,
 
-		flushWithHostCounters = function(_fn: () -> ()):
-			{
-				hostDiffCounter: number,
-				hostUpdateCounter: number,
-			  }
-			| {
-				hostDiffCounter: number,
-				hostCloneCounter: number,
-			  }
+		flushWithHostCounters = function(
+			_fn: () -> ()
+		): {
+			hostDiffCounter: number,
+			hostUpdateCounter: number,
+		} | {
+			hostDiffCounter: number,
+			hostCloneCounter: number,
+		}
 			hostDiffCounter = 0
 			hostUpdateCounter = 0
 			hostCloneCounter = 0
@@ -1046,7 +1046,13 @@ local function createReactNoop(reconciler, useMutation: boolean)
 						log(indent .. "- " .. (child :: TextInstance).text)
 					else
 						-- $FlowFixMe - The child should've been refined now.
-						log(indent .. "- " .. (child :: Instance).type .. "#" .. tostring(child.id))
+						log(
+							indent
+								.. "- "
+								.. (child :: Instance).type
+								.. "#"
+								.. tostring(child.id)
+						)
 						-- $FlowFixMe - The child should've been refined now.
 						logHostInstances((child :: Instance).children, depth + 1)
 					end
@@ -1066,8 +1072,8 @@ local function createReactNoop(reconciler, useMutation: boolean)
 					repeat
 						log(
 							string.rep("  ", depth + 1) .. "~",
-								-- ROBLOX TODO: this is a bogus field, even in upstream
-								"[" .. tostring((update :: any).expirationTime) .. "]"
+							-- ROBLOX TODO: this is a bogus field, even in upstream
+							"[" .. tostring((update :: any).expirationTime) .. "]"
 						)
 					until update == nil
 				end
@@ -1152,7 +1158,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 	local IsThisRendererActing = NoopRenderer.IsThisRendererActing
 	local actingUpdatesScopeDepth = 0
 
-	local function noopAct(scope: (() -> Thenable<any>) | () -> () )
+	local function noopAct(scope: (() -> Thenable<any>) | () -> ())
 		if Scheduler.unstable_flushAllWithoutAsserting == nil then
 			error(
 				Error("This version of `act` requires a special mock build of Scheduler.")

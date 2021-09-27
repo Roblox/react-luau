@@ -28,17 +28,17 @@ type Exports = {
 	[string]: any,
 }
 
-local exports = {}
-
-exports.current = nil
-exports.isRendering = false
+local exports: Exports = {
+	current = nil,
+	isRendering = false,
+}
 
 exports.getCurrentFiberOwnerNameInDevOrNull = function(): string?
 	if _G.__DEV__ then
 		if exports.current == nil then
 			return nil
 		end
-		local owner = exports.current._debugOwner
+		local owner = (exports.current :: Fiber)._debugOwner
 		if owner then
 			return getComponentName(owner.type)
 		end
@@ -58,7 +58,7 @@ local function getCurrentFiberStackInDev(): string
 	return ""
 end
 
-exports.resetCurrentFiber = function()
+exports.resetCurrentFiber = function(): ()
 	if _G.__DEV__ then
 		ReactDebugCurrentFrame.getCurrentStack = nil
 		exports.current = nil
@@ -66,7 +66,7 @@ exports.resetCurrentFiber = function()
 	end
 end
 
-exports.setCurrentFiber = function(fiber: Fiber)
+exports.setCurrentFiber = function(fiber: Fiber): ()
 	if _G.__DEV__ then
 		ReactDebugCurrentFrame.getCurrentStack = getCurrentFiberStackInDev
 		exports.current = fiber
@@ -74,17 +74,17 @@ exports.setCurrentFiber = function(fiber: Fiber)
 	end
 end
 
-exports.setIsRendering = function(rendering: boolean)
+exports.setIsRendering = function(rendering: boolean): ()
 	if _G.__DEV__ then
 		exports.isRendering = rendering
 	end
 end
 
-exports.getIsRendering = function()
+exports.getIsRendering = function(): boolean
 	if _G.__DEV__ then
 		return exports.isRendering
 	end
-	return nil
+	return false
 end
 
 return exports

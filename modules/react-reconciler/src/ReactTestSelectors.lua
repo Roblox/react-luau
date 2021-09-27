@@ -7,12 +7,12 @@
  *
  * @flow
  ]]
-
--- deviation: Common types
-type Set<T> = { [T]: boolean };
-type Array<T> = { [number]: T };
-type Function = (any) -> any;
-type Object = { [any]: any };
+local Packages = script.Parent.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
+type Set<T> = { [T]: boolean }
+type Array<T> = LuauPolyfill.Array<T>
+type Function = (...any) -> ...any
+type Object = LuauPolyfill.Object
 
 
 -- local type {Fiber} = require(Packages.react-reconciler/src/ReactInternalTypes'
@@ -377,12 +377,12 @@ local exports = {}
 --   return nil
 -- end
 
--- export type BoundingRect = {|
---   x: number,
---   y: number,
---   width: number,
---   height: number,
--- |}
+export type BoundingRect = {
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+}
 
 -- exports.findBoundingRects(
 --   hostRoot: Instance,
@@ -510,7 +510,7 @@ local exports = {}
 
 local commitHooks: Array<Function> = {}
 
-exports.onCommitRoot = function()
+exports.onCommitRoot = function(): ()
   if supportsTestSelectors then
     for i, commitHook in ipairs(commitHooks) do
             commitHook()
@@ -520,9 +520,9 @@ end
 
 export type IntersectionObserverOptions = Object
 
--- export type ObserveVisibleRectsCallback = (
---   intersections: Array<{ratio: number, rect: BoundingRect}>,
--- ) => void
+export type ObserveVisibleRectsCallback = (
+  intersections: Array<{ratio: number, rect: BoundingRect}>
+) -> ()
 
 -- exports.observeVisibleRects(
 --   hostRoot: Instance,

@@ -136,10 +136,7 @@ return function()
 			ReactTestRenderer.create(React.createElement(App), {
 				unstable_isConcurrent = true,
 			})
-			-- Promise.delay(0):await()
 
-			-- ROBLOX TODO: currently fails here with ReactCacheOld:178: attempt to index nil with 'status'
-			-- return value from accessResult is nil
 			jestExpect(Scheduler).toFlushAndYield({ "Suspend! [Hi]", "Loading..." })
 
 			RobloxJest.advanceTimersByTime(100)

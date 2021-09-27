@@ -8,12 +8,10 @@
  * @flow
 ]]
 -- FIXME (roblox): remove this when our unimplemented
-local function unimplemented(message)
+local function unimplemented(message: string)
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("UNIMPLEMENTED ERROR: " .. tostring(message))
+  print("UNIMPLEMENTED ERROR: " .. message)
   error("FIXME (roblox): " .. message .. " is unimplemented")
 end
 
@@ -142,7 +140,7 @@ type Update<S, A> = {
 
 type UpdateQueue<S, A> = {
   pending: Update<S, A> | nil,
-  dispatch: ((A) -> any) | nil,
+  dispatch: ((A) -> ...any) | nil,
   lastRenderedReducer: ((S, A) -> S) | nil,
   lastRenderedState: S | nil,
 }
@@ -157,17 +155,17 @@ end
 export type Hook = {
   memoizedState: any,
   baseState: any,
-  baseQueue: Update<any, any>?,
-  queue: UpdateQueue<any, any>,
+  baseQueue: Update<any, any> | nil,
+  queue: UpdateQueue<any, any> | nil,
   next: Hook?,
 }
 
 export type Effect = {
   tag: HookFlags,
-  create: () -> (() -> ()) | nil,
+  create: (() -> (() -> ())) | () -> (),
   destroy: (() -> ())?,
   deps: Array<any>?,
-  next: Effect,
+  next: Effect | nil,
 }
 
 export type FunctionComponentUpdateQueue = {
@@ -325,7 +323,7 @@ function warnOnHookMismatchInDev(currentHookName: HookType)
   end
 end
 
-local function throwInvalidHookError()
+local function throwInvalidHookError(): ()
   invariant(
     false,
     "Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for" ..
@@ -602,7 +600,7 @@ function mountReducer(
   queue.dispatch = function(...)
       return dispatchAction(cRF, queue, ...)
     end
-  local dispatch: Dispatch<any> = queue.dispatch
+  local dispatch: Dispatch<any> = queue.dispatch :: any
   -- deviation: Lua version of useState and useReducer return two items, not list like upstream
   return hook.memoizedState, dispatch
 end
@@ -616,7 +614,7 @@ end
 function updateReducer(
   reducer: (any, any) -> any,
   initialArg: any,
-  init: ((any) -> any)?
+  init: ((...any) -> ...any)?
 ): (any, Dispatch<any>)
   local hook = updateWorkInProgressHook()
   local queue = hook.queue
@@ -679,7 +677,7 @@ function updateReducer(
           action= update.action,
           eagerReducer= update.eagerReducer,
           eagerState= update.eagerState,
-          next= nil,
+          next = nil,
         }
         if newBaseQueueLast == nil then
           newBaseQueueLast = clone
@@ -747,8 +745,7 @@ function updateReducer(
     queue.lastRenderedState = newState
   end
 
-  -- ROBLOX TODO: dispatch type Dispatch<A>
-  local dispatch = queue.dispatch
+  local dispatch: Dispatch<any> = queue.dispatch :: any
   -- deviation: Lua version of useState and useReducer return two items, not list like upstream
   return hook.memoizedState, dispatch
 end
@@ -905,8 +902,8 @@ function readFromUnsubcribedMutableSource(
       false,
       'Cannot read from mutable source during the current render without tearing. This is a bug in React. Please file an issue.'
     )
-  -- ROBLOX deviation: explicit return to silence
-  return
+    -- ROBLOX deviation: Luau analyze doesn't understand invariant contract as (false) -> throw/noreturn
+    return nil
   end
 end
 
@@ -1346,7 +1343,7 @@ end
 -- )
 function imperativeHandleEffect(
   create: () -> any,
-  ref: {current: any | nil} | ((inst: any | nil) -> any) | nil
+  ref: {current: any | nil} | ((inst: any | nil) -> ...any) | nil
 )
   if typeof(ref) == 'function' then
     local refCallback = ref
@@ -1392,7 +1389,7 @@ end
 --   deps: Array<mixed> | void | null,
 -- ): void
 function mountImperativeHandle(
-  ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
+  ref: {current: any | nil} | ((inst: any | nil) -> ...any) | nil,
   create: () -> any,
   deps: Array<any> | nil
 )
@@ -1444,7 +1441,7 @@ end
 --   deps: Array<mixed> | void | null,
 -- ): void
 function updateImperativeHandle(
-  ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
+  ref: {current: any | nil} | ((inst: any | nil) -> ...any) | nil,
   create: () -> any,
   deps: Array<any> | nil
 )
@@ -1928,9 +1925,9 @@ local ContextOnlyDispatcher: Dispatcher = {
   useImperativeHandle = throwInvalidHookError,
   useLayoutEffect = throwInvalidHookError,
   useMemo = throwInvalidHookError,
-  useReducer = throwInvalidHookError,
-  useRef = throwInvalidHookError,
-  useState = throwInvalidHookError,
+  useReducer = throwInvalidHookError :: any,
+  useRef = throwInvalidHookError :: any,
+  useState = throwInvalidHookError :: any,
   useDebugValue = throwInvalidHookError,
   -- useDeferredValue = throwInvalidHookError,
   -- useTransition = throwInvalidHookError,
@@ -2060,7 +2057,7 @@ if _G.__DEV__ then
     --   deps: Array<mixed> | void | null,
     -- ): void
     useImperativeHandle = function(
-      ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
+      ref: {current: any | nil} | ((inst: any | nil) -> ...any) | nil,
       create: () -> any,
       deps: Array<any> | nil
     ): ()
@@ -2238,7 +2235,7 @@ if _G.__DEV__ then
       --   deps: Array<mixed> | void | null,
       -- ): void
       useImperativeHandle = function(
-        ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
+        ref: {current: any | nil} | ((inst: any | nil) -> ...any) | nil,
         create: () -> any,
         deps: Array<any> | nil
       ): ()
@@ -2412,7 +2409,7 @@ if _G.__DEV__ then
     --   deps: Array<mixed> | void | null,
     -- ): void
     useImperativeHandle = function(
-      ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
+      ref: {current: any | nil} | ((inst: any | nil) -> ...any) | nil,
       create: () -> any,
       deps: Array<any> | nil
     ): ()
@@ -2591,7 +2588,7 @@ if _G.__DEV__ then
     --   deps: Array<mixed> | void | null,
     -- ): void
     useImperativeHandle = function(
-      ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
+      ref: {current: any | nil} | ((inst: any | nil) -> ...any) | nil,
       create: () -> any,
       deps: Array<any> | nil
     )
@@ -2758,7 +2755,7 @@ if _G.__DEV__ then
       return mountEffect(create, deps)
     end,
     useImperativeHandle = function(
-      ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
+      ref: {current: any | nil} | ((inst: any | nil) -> ...any) | nil,
       create: () -> any,
       deps: Array<any> | nil
     ): ()
@@ -2940,7 +2937,7 @@ if _G.__DEV__ then
     --   deps: Array<mixed> | void | null,
     -- ): void
     useImperativeHandle = function(
-      ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
+      ref: {current: any | nil} | ((inst: any | nil) -> ...any) | nil,
       create: () -> any,
       deps: Array<any>?
     )
@@ -3136,7 +3133,7 @@ if _G.__DEV__ then
     --   deps: Array<mixed> | void | null,
     -- ): void
     useImperativeHandle = function(
-      ref: {current: any | nil} | ((inst: any | nil) -> any) | nil,
+      ref: {current: any | nil} | ((inst: any | nil) -> ...any) | nil,
       create: () -> any,
       deps: Array<any> | nil
     ): ()

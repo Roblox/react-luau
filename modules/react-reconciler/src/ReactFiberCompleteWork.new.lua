@@ -9,9 +9,7 @@
 ]]
 --!nolint LocalShadowPedantic
 -- FIXME (roblox): remove this when our unimplemented
-local function unimplemented(message)
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+local function unimplemented(message: string)
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   print("UNIMPLEMENTED ERROR: " .. tostring(message))

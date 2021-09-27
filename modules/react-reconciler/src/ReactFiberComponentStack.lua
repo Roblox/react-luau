@@ -9,6 +9,8 @@
 ]]
 
 local Packages = script.Parent.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
+type Error = LuauPolyfill.Error
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
@@ -70,12 +72,12 @@ end
 
 return {
 	getStackByFiberInDevAndProd = function(workInProgress: Fiber): string
-		local ok, result = pcall(function()
+		local ok: boolean, result: Error | string = pcall(function()
 			local info = ""
-			local node = workInProgress
+			local node: Fiber? = workInProgress
 			repeat
-				info ..= describeFiber(node)
-				node = node.return_
+				info ..= describeFiber(node :: Fiber)
+				node = (node :: Fiber).return_
 			until node == nil
 			return info
 		end)
@@ -83,11 +85,14 @@ return {
 		if not ok then
 			local message = "\nError generating stack: "
 			if typeof(result) == "table" and result.message and result.stack then
-				return message .. result.message .. "\n" .. result.stack
+				return message
+					.. (result :: Error).message
+					.. "\n"
+					.. tostring((result :: Error).stack)
 			end
 			return message .. tostring(result)
 		end
 
-		return result
+		return result :: string
 	end,
 }

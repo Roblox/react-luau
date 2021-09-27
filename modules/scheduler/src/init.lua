@@ -41,7 +41,9 @@ local exports = {
     unstable_yieldValue = onlyInTestError("unstable_yieldValue"),
 
     tracing = {
-        unstable_wrap = onlyInTestError("unstable_wrap")
+        unstable_wrap = onlyInTestError("unstable_wrap"),
+        __interactionsRef = {},
+        __subscriberRef = {}
     }
 }
 

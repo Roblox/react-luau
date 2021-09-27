@@ -11,15 +11,28 @@
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
+type Array<T> = LuauPolyfill.Array<T>
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 
 local ReactTypes = require(Packages.Shared)
+type MutableSource<T> = ReactTypes.MutableSource<T>
+type MutableSourceGetSnapshotFn<Source, Snapshot> =
+	ReactTypes.MutableSourceGetSnapshotFn<Source, Snapshot>
+type MutableSourceSubscribeFn<Source, Snapshot> =
+	ReactTypes.MutableSourceSubscribeFn<Source, Snapshot>
+type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
 type ReactContext<T> = ReactTypes.ReactContext<T>
+local ReactFiberHostConfig = require(Packages.Shared)
+type OpaqueIDType = ReactFiberHostConfig.OpaqueIDType
 
 local invariant = require(Packages.Shared).invariant
 
 local ReactCurrentDispatcher = require(Packages.Shared).ReactSharedInternals.ReactCurrentDispatcher
+
+type BasicStateAction<S> = ((S) -> S) | S
+type Dispatch<A> = (A) -> ()
+
 
 local function resolveDispatcher()
 	local dispatcher = ReactCurrentDispatcher.current
@@ -37,12 +50,18 @@ end
 
 local exports = {}
 
--- ROBLOX TODO: Luau doesn't support function generics yet
+-- ROBLOX TODO: function generics
+-- export function useContext<T>(
+-- 	Context: ReactContext<T>,
+-- 	unstable_observedBits: number | boolean | void,
+--   ): T {
+
+type _T = any
 exports.useContext = function(
-	Context: ReactContext<any>,
+	Context: ReactContext<_T>,
 	unstable_observedBits: number | boolean | nil,
 	... -- ROBLOX deviation: Lua must specify ... here to capture additional args
-)
+): _T
 	local dispatcher = resolveDispatcher()
 	if _G.__DEV__ then
 		if unstable_observedBits ~= nil then
@@ -80,56 +99,121 @@ exports.useContext = function(
 	return dispatcher.useContext(Context, unstable_observedBits)
 end
 
--- deviation: Stripped types from function signature
-exports.useState = function(initialState)
+-- ROBLOX TODO: function generics
+-- export function useState<S>(
+-- 	initialState: (() => S) | S,
+--   ): [S, Dispatch<BasicStateAction<S>>] {
+exports.useState = function(
+	initialState: (() -> any) | any
+): (any, Dispatch<BasicStateAction<any>>)
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useState(initialState)
 end
 
--- deviation: Stripped types from function signature
-exports.useReducer = function(reducer, initialArg, init)
+-- ROBLOX TODO: function generics
+-- export function useReducer<S, I, A>(
+-- 	reducer: (S, A) => S,
+-- 	initialArg: I,
+-- 	init?: I => S,
+--   ): [S, Dispatch<A>] {
+
+exports.useReducer = function(
+	reducer: (any, any) -> any,
+	initialArg: any,
+	init: ((any) -> any)?
+): (any, Dispatch<any>)
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useReducer(reducer, initialArg, init)
 end
 
--- deviation: Stripped types from function signature
-exports.useRef = function(initialValue)
+-- ROBLOX TODO: function generics
+-- export function useRef<T>(initialValue: T): {|current: T|} {
+
+exports.useRef = function(initialValue): { current: any }
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useRef(initialValue)
 end
 
--- deviation: Stripped types from function signature
-exports.useEffect = function(create, deps)
+-- ROBLOX TODO: function generics
+-- export function useEffect(
+-- 	create: () => (() => void) | void,
+-- 	deps: Array<mixed> | void | null,
+--   ): void {
+
+exports.useEffect = function(
+	-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+	create: (() -> ()) | ((() -> ()) -> ()),
+	deps: Array<any> | nil
+): ()
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useEffect(create, deps)
 end
 
--- deviation: Stripped types from function signature
-exports.useLayoutEffect = function(create, deps)
+-- ROBLOX TODO: function generics
+-- function useLayoutEffect(
+-- 	create: () => (() => void) | void,
+-- 	inputs: Array<mixed> | void | null,
+--   ): void {
+exports.useLayoutEffect = function(
+	-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+	create: (() -> ()) | ((() -> ()) -> ()),
+	deps: Array<any> | nil
+): ()
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useLayoutEffect(create, deps)
 end
 
--- deviation: Stripped types from function signature
-exports.useCallback = function(callback, deps)
+-- ROBLOX TODO: function generics
+-- export function useCallback<T>(
+-- 	callback: T,
+-- 	deps: Array<mixed> | void | null,
+--   ): T {
+exports.useCallback = function(
+	callback: _T,
+	deps: Array<any> | nil
+): _T
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useCallback(callback, deps)
 end
 
--- deviation: Stripped types from function signature
-exports.useMemo = function(create, deps)
+-- ROBLOX TODO: function generics
+-- export function useMemo<T>(
+-- 	create: () => T,
+-- 	deps: Array<mixed> | void | null,
+--   ): T {
+exports.useMemo = function(
+	create: () -> _T,
+	deps: Array<any> | nil
+): _T
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useMemo(create, deps)
 end
 
--- deviation: Stripped types from function signature
-exports.useImperativeHandle = function(ref, create, deps)
+-- ROBLOX TODO: function generics:
+-- export function useImperativeHandle<T>(
+-- 	ref: {|current: T | null|} | ((inst: T | null) => mixed) | null | void,
+-- 	create: () => T,
+-- 	deps: Array<mixed> | void | null,
+--   ): void {
+
+exports.useImperativeHandle = function(
+	ref: { current: _T | nil } | ((inst: _T | nil) -> any) | nil,
+	create: () -> _T,
+	deps: Array<any> | nil
+): ()
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useImperativeHandle(ref, create, deps)
 end
 
--- deviation: Stripped types from function signature
-exports.useDebugValue = function(value, formatterFn)
+-- ROBLOX TODO: function generics
+-- export function useDebugValue<T>(
+-- 	value: T,
+-- 	formatterFn: ?(value: T) => mixed,
+--   ): void {
+	exports.useDebugValue = function(
+	value: _T,
+	formatterFn: ((value: _T) -> any)?
+): ()
 	if _G.__DEV__ then
 		local dispatcher = resolveDispatcher()
 		return dispatcher.useDebugValue(value, formatterFn)
@@ -141,26 +225,34 @@ end
 
 exports.emptyObject = {}
 
--- deviation: Stripped types from function signature
-exports.useTransition = function()
+exports.useTransition = function(): ((() -> ()) -> (), boolean)
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useTransition()
 end
 
--- deviation: Stripped types from function signature
-exports.useDeferredValue = function(value)
+-- ROBLOX TODO: function generics
+-- export function useDeferredValue<T>(value: T): T {
+	exports.useDeferredValue = function(value: _T): _T
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useDeferredValue(value)
 end
 
 -- deviation: Stripped types from function signature
-exports.useOpaqueIdentifier = function()
+exports.useOpaqueIdentifier = function(): OpaqueIDType | nil
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useOpaqueIdentifier()
 end
 
 -- deviation: Stripped types from function signature
-exports.useMutableSource = function(source, getSnapshot, subscribe)
+-- ROBLOX TODO: function generics
+-- function useMutableSource<Source, Snapshot>(
+type Source = any
+type Snapshot = any
+exports.useMutableSource = function(
+	source: MutableSource<Source>,
+	getSnapshot: MutableSourceGetSnapshotFn<Source, Snapshot>,
+	subscribe: MutableSourceSubscribeFn<Source, Snapshot>
+): Snapshot
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useMutableSource(source, getSnapshot, subscribe)
 end

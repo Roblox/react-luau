@@ -74,11 +74,11 @@ local flushSyncCallbackQueueImpl
 
 -- FIXME (roblox): Use self-recursive type once supported
 -- export type SchedulerCallback = (isSync: boolean) -> SchedulerCallback | nil;
-export type SchedulerCallback = (boolean) -> any?;
+export type SchedulerCallback = (isSync: boolean) -> nil | () -> any?
 
 -- FIXME (roblox): Use better syntax for incomplete definitions
 -- type SchedulerCallbackOptions = { timeout: number?, ... };
-type SchedulerCallbackOptions = { timeout: number? } | { [any]: any };
+type SchedulerCallbackOptions = { timeout: number?, [string]: any }
 
 local fakeCallbackNode = {}
 
@@ -112,7 +112,7 @@ local initialTimeMs: number = Scheduler_now()
 
 -- deviation: Roblox uses `tick` under the hood, which is more like the unix
 -- timestamp behavior referenced above
-local function now()
+local function now(): number
   return Scheduler_now() - initialTimeMs
 end
 
@@ -160,8 +160,8 @@ end
 -- ): T {
 local function runWithPriority(
   reactPriorityLevel: ReactPriorityLevel,
-  fn: () -> any
-): any
+  fn: () -> ...any
+): ...any
   local priorityLevel = reactPriorityToSchedulerPriority(reactPriorityLevel)
   return Scheduler_runWithPriority(priorityLevel, fn)
 end

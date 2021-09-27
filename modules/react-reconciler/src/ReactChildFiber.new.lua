@@ -1041,7 +1041,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 						if newFiber.key == nil then
 							key = newIdx
 						else
-							key = newFiber.key
+							key = newFiber.key :: string | number
 						end
 						existingChildren[key] = nil
 					end

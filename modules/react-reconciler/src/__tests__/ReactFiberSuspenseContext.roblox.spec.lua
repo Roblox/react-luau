@@ -2,6 +2,8 @@ return function()
 	local Packages = script.Parent.Parent.Parent
 	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
 	local RobloxJest = require(Packages.Dev.RobloxJest)
+	local ReactFiber = require(script.Parent.Parent["ReactFiber.new"])
+
 
 	local ReactFiberSuspenseContext
 
@@ -18,7 +20,7 @@ return function()
 
 			beforeEach(function()
 				someContext = 0b1000
-				fiber = {}
+				fiber = ReactFiber.createFiberFromText("", 0, 0)
 				suspenseStackCursor = ReactFiberSuspenseContext.suspenseStackCursor
 			end)
 

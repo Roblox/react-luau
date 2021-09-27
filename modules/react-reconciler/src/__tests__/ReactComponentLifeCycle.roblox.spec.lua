@@ -679,7 +679,7 @@
       end)
     end)
 
-    local function testWithComponentKind(component)
+    local function testWithComponentKind(component: string)
       it("should warn if using old Roact didMount naming in " .. component, function()
         local Foo = React[component]:extend("Foo")
         jestExpect(function()

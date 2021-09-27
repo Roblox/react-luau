@@ -18,15 +18,6 @@ local ReactNoop
 local Scheduler
 -- local gen
 
-local arrayReverse = function(arr)
-	local length = #arr
-	local reversed = {}
-	for i = 1, length do
-		reversed[i] = arr[length + 1 - i]
-	end
-	return reversed
-end
-
 return function()
 	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
 	local RobloxJest = require(Packages.Dev.RobloxJest)
@@ -239,7 +230,7 @@ return function()
 				local Consumer = getConsumer(Context)
 
 				local function Provider(props)
-					return React.createElement(Consumer, nil, function(contextValue)
+					return React.createElement(Consumer, nil, function(contextValue: number)
 						-- Multiply previous context value by 2, unless prop overrides
 						return React.createElement(
 							Context.Provider,
@@ -343,7 +334,7 @@ return function()
 				local Consumer = getConsumer(Context)
 
 				local function Provider(props)
-					return React.createElement(Context.Consumer, nil, function(contextValue)
+					return React.createElement(Context.Consumer, nil, function(contextValue: number)
 						-- Multiply previous context value by 2, unless prop overrides
 						return React.createElement(
 							Context.Provider,
@@ -939,10 +930,10 @@ return function()
 				end
 				function App:renderList()
 					local list = Array.map({ 1, 2 }, function(id)
-						self.renderItem(id)
+						return self.renderItem(id)
 					end)
 					if self.props.reverse then
-						list = arrayReverse(list)
+						Array.reverse(list)
 					end
 					return list
 				end

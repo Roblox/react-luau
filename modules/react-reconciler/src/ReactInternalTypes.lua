@@ -179,7 +179,10 @@ export type Fiber = {
 	-- I'll avoid adding an owner field for prod and model that as functions.
 	-- ROBLOX deviation: Lua doesn't allow fields on functions
 	-- ref: (((any) -> ()) & {_stringRef: string?, [string]: any}) | RefObject,
-	ref: ((any) -> ()) | {_stringRef: string?, [string]: any} | RefObject,
+	ref: nil
+		| ((any) -> ())
+		| {_stringRef: string?, [string]: any}
+		| RefObject,
 
 	-- Input is the data coming into process this fiber. Arguments. Props.
 	pendingProps: any, -- This type will be more specific once we overload the tag.

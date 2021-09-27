@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1632779126760,
+  "lastUpdate": 1632785098817,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -744,6 +744,47 @@
             "extra": "200 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "a45b813eba458f0757f081ca36c805c950628cd8",
+          "message": "LUAFDN-247: Type public API more thoroughly",
+          "timestamp": "2021-09-27T21:51:34Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/211/commits/a45b813eba458f0757f081ca36c805c950628cd8"
+        },
+        "date": 1632785097165,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 58.2933,
+            "range": "±29.34%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.2876,
+            "range": "±226.82%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 82.2506,
+            "range": "±16.67%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -1313,6 +1354,40 @@
             "name": "FrameRate#Δt",
             "value": 50.6438,
             "range": "±19.90%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "a45b813eba458f0757f081ca36c805c950628cd8",
+          "message": "LUAFDN-247: Type public API more thoroughly",
+          "timestamp": "2021-09-27T21:51:34Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/211/commits/a45b813eba458f0757f081ca36c805c950628cd8"
+        },
+        "date": 1632785097712,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 20.1083,
+            "range": "±11.70%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 50.5223,
+            "range": "±13.91%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
           }
@@ -1890,6 +1965,40 @@
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "a45b813eba458f0757f081ca36c805c950628cd8",
+          "message": "LUAFDN-247: Type public API more thoroughly",
+          "timestamp": "2021-09-27T21:51:34Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/211/commits/a45b813eba458f0757f081ca36c805c950628cd8"
+        },
+        "date": 1632785098283,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 15.124,
+            "range": "±13.55%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 67.4266,
+            "range": "±14.78%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -2459,6 +2568,40 @@
             "name": "FrameRate#Δt",
             "value": 10.3607,
             "range": "±16.41%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "a45b813eba458f0757f081ca36c805c950628cd8",
+          "message": "LUAFDN-247: Type public API more thoroughly",
+          "timestamp": "2021-09-27T21:51:34Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/211/commits/a45b813eba458f0757f081ca36c805c950628cd8"
+        },
+        "date": 1632785098815,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 109.4538,
+            "range": "±10.80%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 9.251,
+            "range": "±11.68%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
           }

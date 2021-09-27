@@ -11,9 +11,7 @@
 -- ROBLOX TODO remove this when CLI-38793 lands
 --!nolint LocalShadow
 -- FIXME (roblox): remove this when our unimplemented
-local function unimplemented(message)
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+local function unimplemented(message: string)
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   print("UNIMPLEMENTED ERROR: " .. tostring(message))
@@ -172,11 +170,11 @@ local lazyRefs = {
   shouldSuspendRef = nil
 }
 
-local shouldSuspend = function(...)
+local shouldSuspend = function(fiber: Fiber): boolean
   if not lazyRefs.shouldSuspendRef then
     lazyRefs.shouldSuspendRef = require(script.Parent.ReactFiberReconciler).shouldSuspend
   end
-  return lazyRefs.shouldSuspendRef(...)
+  return lazyRefs.shouldSuspendRef(fiber)
 end
 
 -- ROBLOX deviation: collective lazy init methods from ReactFiberHooks
@@ -289,10 +287,8 @@ if _G.__DEV__ then
   DidWarn.didWarnAboutDefaultPropsOnFunctionComponent = {}
 end
 
--- FIXME (roblox): type refinements, reintroduce parameter annotation
--- current: Fiber | nil,
 local function reconcileChildren(
-  current,
+  current: Fiber | nil,
   workInProgress: Fiber,
   nextChildren: any,
   renderLanes: Lanes
@@ -317,7 +313,7 @@ local function reconcileChildren(
     -- let's throw it out.
     workInProgress.child = reconcileChildFibers(
       workInProgress,
-      current.child,
+      (current :: Fiber).child,
       nextChildren,
       renderLanes
     )

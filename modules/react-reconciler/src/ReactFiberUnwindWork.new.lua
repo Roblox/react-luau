@@ -50,7 +50,7 @@ local transferActualDuration = require(script.Parent["ReactProfilerTimer.new"]).
 local invariant = require(Packages.Shared).invariant
 
 
-local function unwindWork(workInProgress: Fiber, renderLanes: Lanes)
+local function unwindWork(workInProgress: Fiber, renderLanes: Lanes): Fiber?
   if workInProgress.tag == ReactWorkTags.ClassComponent then
     local Component = workInProgress.type
     if isLegacyContextProvider(Component) then

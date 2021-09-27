@@ -149,7 +149,7 @@ exports.findFirstSuspended = function(row: Fiber): Fiber?
 			if node.return_ == nil or node.return_ == row then
 				return nil
 			end
-			node = node.return_
+			node = node.return_ :: Fiber  -- ROBLOX TODO: Luau narrowing doesn't understand this loop until nil pattern
 		end
 		node.sibling.return_ = node.return_
 		node = node.sibling

@@ -184,35 +184,33 @@ local clearContainer = ReactFiberHostConfig.clearContainer
 -- ROBLOX deviation: Lazy init to avoid circular dependencies
 local ReactFiberWorkLoop
 
-local resolveRetryWakeable = function(...)
+local resolveRetryWakeable = function(boundaryFiber: Fiber, wakeable: Wakeable): ()
   if not ReactFiberWorkLoop then
     ReactFiberWorkLoop = require(script.Parent["ReactFiberWorkLoop.new"]) :: any
   end
-  return ReactFiberWorkLoop.resolveRetryWakeable(...)
+  ReactFiberWorkLoop.resolveRetryWakeable(boundaryFiber, wakeable)
 end
 
-
-local markCommitTimeOfFallback = function(...)
+local markCommitTimeOfFallback = function(): ()
   if not ReactFiberWorkLoop then
     ReactFiberWorkLoop = require(script.Parent["ReactFiberWorkLoop.new"]) :: any
   end
-  return ReactFiberWorkLoop.markCommitTimeOfFallback(...)
+  ReactFiberWorkLoop.markCommitTimeOfFallback()
 end
-
--- local captureCommitPhaseError = ReactFiberWorkLoop.captureCommitPhaseError
--- local schedulePassiveEffectCallback = ReactFiberWorkLoop.schedulePassiveEffectCallback
-
 
 -- deviation: stub to allow dependency injection that breaks circular dependency
 local schedulePassiveEffectCallback
-schedulePassiveEffectCallback = function(current, parent, error_)
+schedulePassiveEffectCallback = function(): ()
   console.warn("ReactFiberCommitWork: schedulePassiveEffectCallback causes a dependency cycle\n" .. debug.traceback())
-  error(error_)
 end
 
 -- deviation: stub to allow dependency injection that breaks circular dependency
 local captureCommitPhaseError
-captureCommitPhaseError = function(current, parent, error_)
+captureCommitPhaseError = function(
+  rootFiber: Fiber,
+  sourceFiber: Fiber,
+  error_: any?
+): ()
   console.warn("ReactFiberCommitWork: captureCommitPhaseError causes a dependency cycle")
   error(error_)
 end
@@ -281,7 +279,7 @@ function safelyCallComponentWillUnmount(
   current: Fiber,
   instance: any,
   nearestMountedAncestor
-)
+): ()
   if _G.__DEV__ then
     invokeGuardedCallback(
       nil,
@@ -312,7 +310,7 @@ function safelyCallComponentWillUnmount(
   end
 end
 
-local function safelyDetachRef(current: Fiber, nearestMountedAncestor: Fiber)
+local function safelyDetachRef(current: Fiber, nearestMountedAncestor: Fiber): ()
   local ref = current.ref
   if ref ~= nil then
     if typeof(ref) == "function" then
@@ -347,7 +345,7 @@ local function safelyCallDestroy(
   current: Fiber,
   nearestMountedAncestor: Fiber?,
   destroy: () -> ()
-)
+): ()
   if _G.__DEV__ then
     invokeGuardedCallback(nil, destroy, nil)
     if hasCaughtError() then
@@ -364,15 +362,10 @@ local function safelyCallDestroy(
   end
 end
 
--- FIXME: Type refinement
--- local function commitBeforeMutationLifeCycles(
---   current: Fiber | nil,
---   finishedWork: Fiber
--- )
 local function commitBeforeMutationLifeCycles(
-  current: any,
+  current: Fiber | nil,
   finishedWork: Fiber
-)
+): ()
   if
     finishedWork.tag == FunctionComponent or
     finishedWork.tag == ForwardRef or
@@ -383,8 +376,8 @@ local function commitBeforeMutationLifeCycles(
   elseif finishedWork.tag == ClassComponent then
     if bit32.band(finishedWork.flags, Snapshot) ~= 0 then
       if current ~= nil then
-        local prevProps = current.memoizedProps
-        local prevState = current.memoizedState
+        local prevProps = (current :: Fiber).memoizedProps
+        local prevState = (current :: Fiber).memoizedState
         local instance = finishedWork.stateNode
         -- We could update instance props and state here,
         -- but instead we rely on them being set during last render.
@@ -1191,13 +1184,12 @@ local function hideOrUnhideAllChildren(finishedWork, isHidden)
         if node.return_ == nil or node.return_ == finishedWork then
           return
         end
-        -- ROBLOX FIXME: type cast to silence analyze, Luau doesn't understand nil check
-        node = (node.return_ :: Fiber)
+        node = node.return_ :: Fiber  -- ROBLOX TODO: Luau narrowing doesn't understand this loop until nil pattern
       end
       -- ROBLOX FIXME: cast to any to silence analyze
       (node.sibling :: Fiber).return_ = node.return_
       -- ROBLOX FIXME: recast to silence analyze while Luau doesn't understand nil check
-      node = (node.sibling :: Fiber)
+      node = node.sibling :: Fiber
     end
   end
 end
@@ -1395,7 +1387,7 @@ commitNestedUnmounts = function(
       if node.return_ == nil or node.return_ == root then
         return
       end
-      node = node.return_ :: Fiber
+      node = node.return_ :: Fiber  -- ROBLOX TODO: Luau narrowing doesn't understand this loop until nil pattern
     end
     (node.sibling :: Fiber).return_ = node.return_
     node = node.sibling :: Fiber
@@ -1511,7 +1503,7 @@ getHostSibling = function(fiber: Fiber): Instance?
         -- last sibling.
         return nil
       end
-      node = node.return_ :: Fiber
+      node = node.return_ :: Fiber  -- ROBLOX TODO: Luau narrowing doesn't understand this loop until nil pattern
     end
     (node.sibling :: Fiber).return_ = node.return_ :: Fiber
     node = node.sibling :: Fiber

@@ -58,7 +58,7 @@ function startProfilerTimer(fiber: Fiber): ()
 
   profilerStartTime = now()
 
-  if fiber.actualStartTime < 0 then
+  if fiber.actualStartTime ~= nil and (fiber.actualStartTime :: number) < 0 then
     fiber.actualStartTime = now()
   end
 end
