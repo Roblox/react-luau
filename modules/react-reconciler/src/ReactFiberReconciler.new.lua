@@ -13,6 +13,8 @@ local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
+type Function = (...any) -> ...any
+
 
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
@@ -168,7 +170,7 @@ if _G.__DEV__ then
 end
 
 local function getContextForSubtree(
-	parentComponent
+	parentComponent: any?
 ): Object
 	if not parentComponent then
 		return emptyContextObject
@@ -294,7 +296,7 @@ exports.updateContainer = function(
 	element: ReactNodeList,
 	container: OpaqueRoot,
 	parentComponent,
-	callback
+	callback: Function?
 ): Lane
 	if _G.__DEV__ then
 		onScheduleRoot(container, element)

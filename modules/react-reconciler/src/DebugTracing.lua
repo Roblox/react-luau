@@ -122,19 +122,21 @@ exports.logCommitStopped = logCommitStopped
 -- ROBLOX deviation: use raw Lua table
 -- const PossiblyWeakMap = typeof WeakMap === 'function' ? WeakMap : Map;
 -- $FlowFixMe: Flow cannot handle polymorphic WeakMaps
-local wakeableIDs: Map<Wakeable, number> = {}
-local wakeableID: number = 0
-local function getWakeableID(wakeable: Wakeable): number
-	if not wakeableIDs[wakeable] ~= nil then
-		wakeableIDs[wakeable] =
-			(function()
-				local result = wakeableID
-				wakeableID += 1
-				return result
-			end)()
-	end
-	return wakeableIDs[wakeable]
-end
+
+-- ROBLOX TODO: restore the color message formatting from upstream
+-- local wakeableIDs: Map<Wakeable, number> = {}
+-- local wakeableID: number = 0
+-- local function getWakeableID(wakeable: Wakeable): number
+-- 	if not wakeableIDs[wakeable] ~= nil then
+-- 		wakeableIDs[wakeable] =
+-- 			(function()
+-- 				local result = wakeableID
+-- 				wakeableID += 1
+-- 				return result
+-- 			end)()
+-- 	end
+-- 	return wakeableIDs[wakeable]
+-- end
 
 local function logComponentSuspended(
 	componentName: string,
@@ -142,8 +144,9 @@ local function logComponentSuspended(
 ): ()
 	if _G.__DEV__ then
 		if enableDebugTracing then
-			local _id = getWakeableID(wakeable)
-			local _display = wakeable.displayName or wakeable
+			-- local _id = getWakeableID(wakeable)
+			-- ROBLOX deviation: our Wakeable can be a function or a callable table
+			-- local _display = wakeable.displayName or wakeable
 			log(
 				string.format("* %s suspended", componentName)
 				-- REACT_LOGO_STYLE,

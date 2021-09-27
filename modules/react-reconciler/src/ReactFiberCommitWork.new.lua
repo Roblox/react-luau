@@ -64,7 +64,7 @@ local ReactFiberSuspenseComponent = require(script.Parent["ReactFiberSuspenseCom
 type SuspenseState = ReactFiberSuspenseComponent.SuspenseState
 
 local ReactUpdateQueueModule = require(script.Parent["ReactUpdateQueue.new"])
-type UpdateQueue<T> = ReactUpdateQueueModule.UpdateQueue<T>
+type UpdateQueue<T> = ReactInternalTypes.UpdateQueue<T>
 
 -- local ReactFiberHooks = require(script.Parent["ReactFiberHooks.new"])
 -- type FunctionComponentUpdateQueue = ReactFiberHooks.FunctionComponentUpdateQueue

@@ -127,32 +127,10 @@ local reenableLogs = ConsolePatchingDev.reenableLogs
 -- deviation: Common types
 type Array<T> = { [number]: T };
 
-export type Update<State> = {
-	-- TODO: Temporary field. Will remove this by storing a map of
-	-- transition -> event time on the root.
-	eventTime: number,
-	lane: Lane,
-
-	-- deviation: FIXME revert when luau supports the type spec below
-	-- tag: 0 | 1 | 2 | 3,
-	tag: number,
-	payload: any,
-	callback: (() -> any)?,
-
-	next: Update<State>?,
-};
-
-type SharedQueue<State> = {
-	pending: Update<State>?,
-};
-
-export type UpdateQueue<State> = {
-	baseState: State,
-	firstBaseUpdate: Update<State>?,
-	lastBaseUpdate: Update<State>?,
-	shared: SharedQueue<State>,
-	effects: Array<Update<State>>?,
-};
+-- ROBLOX deviation: transplants UpdateQueue<> and SharedState<> types to ReactInternalTypes for export to createReactNoop
+type Update<T> = ReactInternalTypes.Update<T>
+type UpdateQueue<T> = ReactInternalTypes.UpdateQueue<T>
+type SharedQueue<T> = ReactInternalTypes.SharedQueue<T>
 
 local exports = {}
 

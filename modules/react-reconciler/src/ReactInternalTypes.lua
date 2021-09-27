@@ -43,6 +43,35 @@ export type LanePriority = number
 export type Lanes = number
 export type Lane = number
 export type LaneMap<T> = { [number]: T }
+
+-- ROBLOX deviation: Update<>, SharedQueue<>, UpdateQueue<> transplanted from ReactUpdateQueue for use by createReactNoop
+export type Update<State> = {
+	-- TODO: Temporary field. Will remove this by storing a map of
+	-- transition -> event time on the root.
+	eventTime: number,
+	lane: Lane,
+
+	-- deviation: FIXME revert when luau supports the type spec below
+	-- tag: 0 | 1 | 2 | 3,
+	tag: number,
+	payload: any,
+	callback: (() -> any)?,
+
+	next: Update<State>?,
+};
+
+export type SharedQueue<State> = {
+	pending: Update<State>?,
+};
+
+export type UpdateQueue<State> = {
+	baseState: State,
+	firstBaseUpdate: Update<State>?,
+	lastBaseUpdate: Update<State>?,
+	shared: SharedQueue<State>,
+	effects: Array<Update<State>>?,
+};
+
 -- ROBLOX deviation: Lusu doesn't support type literals
 -- export type HookType =
 --  | 'useState'

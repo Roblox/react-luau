@@ -5,6 +5,9 @@ export type Dispatcher = ReactInternalTypes.Dispatcher
 export type Fiber = ReactInternalTypes.Fiber
 export type FiberRoot = ReactInternalTypes.FiberRoot
 
+-- ROBLOX deviation: explicit export for use in createReactNoop
+export type UpdateQueue<T> = ReactInternalTypes.UpdateQueue<T>
+
 export type RootTag = ReactRootTags.RootTag
 
 -- ROBLOX deviation: In order to allow host config to be spliced in, we export

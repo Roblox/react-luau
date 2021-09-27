@@ -19,7 +19,7 @@ type Fiber = ReactInternalTypes.Fiber
 local ReactFiberLane = require(script.Parent.ReactFiberLane)
 type Lanes = ReactFiberLane.Lanes
 local ReactUpdateQueue = require(script.Parent["ReactUpdateQueue.new"])
-type UpdateQueue<State> = ReactUpdateQueue.UpdateQueue<State>
+type UpdateQueue<State> = ReactInternalTypes.UpdateQueue<State>
 
 local React = require(Packages.React)
 
@@ -226,8 +226,6 @@ local function applyDerivedStateFromProps(
   -- base state.
   if workInProgress.lanes == NoLanes then
     -- Queue is always non-null for classes
-    -- ROBLOX FIXME: type coercion
-    -- local updateQueue: UpdateQueue<any> = (workInProgress.updateQueue: any)
     local updateQueue: UpdateQueue<any> = workInProgress.updateQueue
     updateQueue.baseState = memoizedState
   end

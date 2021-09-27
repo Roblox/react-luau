@@ -25,18 +25,25 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Error = LuauPolyfill.Error
 local Object = LuauPolyfill.Object
+type Function = (...any) -> ...any
 local setTimeout = LuauPolyfill.setTimeout
 local clearTimeout = LuauPolyfill.clearTimeout
-
--- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
+
+local ReactReconciler = require(Packages.ReactReconciler)
+type Fiber = ReactReconciler.Fiber
+type UpdateQueue<T> = ReactReconciler.UpdateQueue<T>
+local ReactShared = require(Packages.Shared)
+type ReactNodeList = ReactShared.ReactNodeList
+type Thenable<T> = ReactShared.Thenable<T, any>
+
+type RootTag = ReactReconciler.RootTag
 local Scheduler = require(Packages.Scheduler)
 -- deviation: These are only used for the JSX logic that's currently omitted
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 local REACT_FRAGMENT_TYPE = ReactSymbols.REACT_FRAGMENT_TYPE
 local REACT_ELEMENT_TYPE = ReactSymbols.REACT_ELEMENT_TYPE
 
-local ReactRootTags = require(Packages.ReactReconciler)
 -- local ConcurrentRoot = ReactRootTags.ConcurrentRoot
 -- local BlockingRoot = ReactRootTags.BlockingRoot
 -- local LegacyRoot = ReactRootTags.LegacyRoot
@@ -266,7 +273,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 		return typeof(props.children) == "string" or typeof(props.children) == "number"
 	end
 
-	computeText = function(rawText, hostContext)
+	computeText = function(rawText, hostContext): string
 		return hostContext == UPPERCASE_CONTEXT and string.upper(rawText) or rawText
 	end
 
@@ -774,12 +781,12 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			return getPendingChildren(container)
 		end,
 
-		getOrCreateRootContainer = function(rootID: string?, tag: ReactRootTags.RootTag)
+		getOrCreateRootContainer = function(rootID: string?, tag: RootTag)
 			rootID = rootID or DEFAULT_ROOT_ID
 			local root = roots[rootID]
 			if not root then
 				local container = {
-					rootID = rootID,
+					rootID = rootID :: string,
 					pendingChildren = {},
 					children = {},
 				}
@@ -889,18 +896,18 @@ local function createReactNoop(reconciler, useMutation: boolean)
 		end,
 
 		-- Shortcut for testing a single root
-		render = function(element, callback)
+		render = function(element, callback: Function?)
 			ReactNoop.renderToRootWithID(element, DEFAULT_ROOT_ID, callback)
 		end,
 
-		renderLegacySyncRoot = function(element, callback)
+		renderLegacySyncRoot = function(element, callback: Function?)
 			local rootID = DEFAULT_ROOT_ID
 			local container = ReactNoop.getOrCreateRootContainer(rootID, LegacyRoot)
 			local root = roots[container.rootID]
 			NoopRenderer.updateContainer(element, root, nil, callback)
 		end,
 
-		renderToRootWithID = function(element, rootID: string, callback)
+		renderToRootWithID = function(element, rootID: string, callback: Function?)
 			local container = ReactNoop.getOrCreateRootContainer(rootID, ConcurrentRoot)
 			local root = roots[container.rootID]
 			NoopRenderer.updateContainer(element, root, nil, callback)
@@ -916,7 +923,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			end
 		end,
 
-		findInstance = function(componentOrElement)
+		findInstance = function(componentOrElement): nil | Instance | TextInstance
 			if componentOrElement == nil then
 				return nil
 			end
@@ -931,12 +938,20 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			return NoopRenderer.findHostInstance(component)
 		end,
 
-		flushNextYield = function()
+		flushNextYield = function(): Array<any>
 			Scheduler.unstable_flushNumberOfYields(1)
 			return Scheduler.unstable_clearYields()
 		end,
 
-		flushWithHostCounters = function(fn: () -> ())
+		flushWithHostCounters = function(_fn: () -> ()):
+			{
+				hostDiffCounter: number,
+				hostUpdateCounter: number,
+			  }
+			| {
+				hostDiffCounter: number,
+				hostCloneCounter: number,
+			  }
 			hostDiffCounter = 0
 			hostUpdateCounter = 0
 			hostCloneCounter = 0
@@ -950,7 +965,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				else
 					return {
 						hostDiffCounter = hostDiffCounter,
-						hostCloneCounter = hostUpdateCounter,
+						hostCloneCounter = hostCloneCounter,
 					}
 				end
 			end)
@@ -967,7 +982,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 
 		expire = Scheduler.unstable_advanceTime,
 
-		flushExpired = function()
+		flushExpired = function(): Array<any>
 			return Scheduler.unstable_flushExpired()
 		end,
 
@@ -1014,33 +1029,36 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				table.insert(bufferedLog, "\n")
 			end
 
-			-- FIXME (roblox): This likely needs to be adopted to Roblox
+			-- ROBLOX FIXME: This likely needs to be adopted to Roblox
 			-- Instance structure as opposed to HTML DOM nodes
-			local function logHostInstances(children, depth)
-				-- deviation: May not be able to assume children is an array in
+			local function logHostInstances(
+				children: Array<Instance | TextInstance>,
+				depth: number
+			)
+				-- ROBLOX deviation: May not be able to assume children is an array in
 				-- Roblox (we use keys as names), so iterate with `pairs`
 
-				-- FIXME (roblox): Might want to iterate in array order if
+				-- ROBLOX FIXME: Might want to iterate in array order if
 				-- children _is_ an array
 				for _, child in pairs(children) do
 					local indent = string.rep("  ", depth)
 					if typeof(child.text) == "string" then
-						log(indent .. "- " .. child.text)
+						log(indent .. "- " .. (child :: TextInstance).text)
 					else
 						-- $FlowFixMe - The child should've been refined now.
-						log(indent .. "- " .. child.type .. "#" .. child.id)
+						log(indent .. "- " .. (child :: Instance).type .. "#" .. tostring(child.id))
 						-- $FlowFixMe - The child should've been refined now.
-						logHostInstances(child.children, depth + 1)
+						logHostInstances((child :: Instance).children, depth + 1)
 					end
 				end
 			end
 
-			local function logContainer(container, depth)
+			local function logContainer(container: Container, depth: number)
 				log(string.rep("  ", depth) .. "- [root#" .. container.rootID .. "]")
 				logHostInstances(container.children, depth + 1)
 			end
 
-			local function logUpdateQueue(updateQueue, depth)
+			local function logUpdateQueue(updateQueue: UpdateQueue<any>, depth: number)
 				log(string.rep("  ", depth + 1) .. "QUEUED UPDATES")
 				local first = updateQueue.firstBaseUpdate
 				local update = first
@@ -1048,7 +1066,8 @@ local function createReactNoop(reconciler, useMutation: boolean)
 					repeat
 						log(
 							string.rep("  ", depth + 1) .. "~",
-							"[" .. update.expirationTime .. "]"
+								-- ROBLOX TODO: this is a bogus field, even in upstream
+								"[" .. tostring((update :: any).expirationTime) .. "]"
 						)
 					until update == nil
 				end
@@ -1061,14 +1080,15 @@ local function createReactNoop(reconciler, useMutation: boolean)
 						repeat
 							log(
 								string.rep("  ", depth + 1) .. "~",
-								"[" .. pendingUpdate.expirationTime .. "]"
+								-- ROBLOX TODO: this is a bogus field, even in upstream
+								"[" .. tostring((update :: any).expirationTime) .. "]"
 							)
 						until pendingUpdate == nil or pendingUpdate == firstPending
 					end
 				end
 			end
 
-			local function logFiber(fiber, depth)
+			local function logFiber(fiber: Fiber, depth: number)
 				log(
 					string.rep("  ", depth)
 							.. "- "
@@ -1076,7 +1096,8 @@ local function createReactNoop(reconciler, useMutation: boolean)
 							.. fiber.type and (fiber.type.name or tostring(fiber.type))
 						or "[root]",
 					"["
-						.. fiber.childExpirationTime
+						-- ROBLOX TODO: this field is bogus even in upstream, will always be nil
+						.. tostring((fiber :: any).childExpirationTime)
 						.. (fiber.pendingProps and "*" or "")
 						.. "]"
 				)
@@ -1131,7 +1152,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 	local IsThisRendererActing = NoopRenderer.IsThisRendererActing
 	local actingUpdatesScopeDepth = 0
 
-	local function noopAct(scope)
+	local function noopAct(scope: (() -> Thenable<any>) | () -> () )
 		if Scheduler.unstable_flushAllWithoutAsserting == nil then
 			error(
 				Error("This version of `act` requires a special mock build of Scheduler.")
@@ -1205,6 +1226,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				if not ok then
 					error(result)
 				end
+				-- ROBLOX deviation: upstream flowtype doesn't mind the inconsistent return, but Luau does
 				return nil
 			end
 		end)

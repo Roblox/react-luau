@@ -25,7 +25,7 @@ type Lane = ReactFiberLane.Lane;
 local ReactCapturedValue = require(script.Parent.ReactCapturedValue)
 type CapturedValue<T> = ReactCapturedValue.CapturedValue<T>
 local ReactUpdateQueue = require(script.Parent["ReactUpdateQueue.new"])
-type Update<T> = ReactUpdateQueue.Update<T>
+type Update<T> = ReactInternalTypes.Update<T>
 
 local ReactTypes = require(Packages.Shared)
 type Thenable<T, U> = ReactTypes.Thenable<T, U>
