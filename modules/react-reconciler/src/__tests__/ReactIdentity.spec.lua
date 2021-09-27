@@ -145,6 +145,42 @@ return function()
 		end
 	end)
 
+	-- ROBLOX deviation: Verify equivalent behavior with table keys, an adaptation
+	-- to be compatible with currently-released Roact
+	it("should use table key to express identity when updating children type", function()
+		local ref = React.createRef(nil)
+
+		local function Component(props)
+			local children = {}
+			for i = 1, props.count do
+				children[i] = React.createElement("TextLabel", { Text = tostring(i) })
+			end
+
+			if props.count == 0 then
+				children["Test"] = React.createElement("Frame")
+			end
+
+			return React.createElement("Frame", { ref = ref }, children)
+		end
+
+		reactRobloxRoot:render(React.createElement(Component, {
+			count = 0
+		}))
+		Scheduler.unstable_flushAllWithoutAsserting()
+
+		jestExpect(ref.current:FindFirstChild(tostring("Test"))).never.toBe(nil)
+
+		reactRobloxRoot:render(React.createElement(Component, {
+			count = 15,
+			complexComponents = false,
+		}))
+		Scheduler.unstable_flushAllWithoutAsserting()
+
+		for i = 1, 15 do
+			jestExpect(ref.current:FindFirstChild(tostring(i))).never.toBe(nil)
+		end
+	end)
+
 	it("should defer to provided key if both are present", function()
 		local ref = React.createRef(nil)
 		local function Component(props)

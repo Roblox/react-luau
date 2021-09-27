@@ -1025,7 +1025,9 @@ local function ChildReconciler(shouldTrackSideEffects)
 				returnFiber,
 				newIdx,
 				newChildren[newIdx],
-				lanes
+				lanes,
+				-- ROBLOX deviation: pass newIdx to be used as the key of the element
+				newIdx
 			)
 			if newFiber ~= nil then
 				if shouldTrackSideEffects then
