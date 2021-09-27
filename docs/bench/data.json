@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1632777761675,
+  "lastUpdate": 1632779126760,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -703,6 +703,47 @@
             "extra": "200 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "8d1d0941fffd01703c6ae30208eb3979fad7c870",
+          "message": "LUAFDN-610: Fix a mistranslation bug that results in a hard runtime error",
+          "timestamp": "2021-09-27T21:35:46Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/205/commits/8d1d0941fffd01703c6ae30208eb3979fad7c870"
+        },
+        "date": 1632779124827,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 58.2772,
+            "range": "±23.24%",
+            "unit": "ops/sec",
+            "extra": "600 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 21.9207,
+            "range": "±230.29%",
+            "unit": "ms/op",
+            "extra": "600 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 76.0529,
+            "range": "±23.19%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -1238,6 +1279,40 @@
             "name": "FrameRate#Δt",
             "value": 57.5168,
             "range": "±21.67%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "8d1d0941fffd01703c6ae30208eb3979fad7c870",
+          "message": "LUAFDN-610: Fix a mistranslation bug that results in a hard runtime error",
+          "timestamp": "2021-09-27T21:35:46Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/205/commits/8d1d0941fffd01703c6ae30208eb3979fad7c870"
+        },
+        "date": 1632779125481,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 20.2977,
+            "range": "±14.71%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 50.6438,
+            "range": "±19.90%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
           }
@@ -1781,6 +1856,40 @@
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "8d1d0941fffd01703c6ae30208eb3979fad7c870",
+          "message": "LUAFDN-610: Fix a mistranslation bug that results in a hard runtime error",
+          "timestamp": "2021-09-27T21:35:46Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/205/commits/8d1d0941fffd01703c6ae30208eb3979fad7c870"
+        },
+        "date": 1632779126129,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 15.1513,
+            "range": "±14.99%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 67.8878,
+            "range": "±19.77%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -2316,6 +2425,40 @@
             "name": "FrameRate#Δt",
             "value": 13.1313,
             "range": "±12.49%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "8d1d0941fffd01703c6ae30208eb3979fad7c870",
+          "message": "LUAFDN-610: Fix a mistranslation bug that results in a hard runtime error",
+          "timestamp": "2021-09-27T21:35:46Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/205/commits/8d1d0941fffd01703c6ae30208eb3979fad7c870"
+        },
+        "date": 1632779126758,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 98.6196,
+            "range": "±13.54%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 10.3607,
+            "range": "±16.41%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
           }

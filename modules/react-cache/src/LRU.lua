@@ -23,9 +23,9 @@ local cleanUp
 local scheduleCallback = Scheduler.unstable_scheduleCallback
 local IdlePriority = Scheduler.unstable_IdlePriority
 
-type Entry<T> = {
+export type Entry<T> = {
 	value: T,
-	onDelete: () -> any,
+	onDelete: () -> ...any,
 	previous: Entry<T>,
 	next_: Entry<T>,
 }

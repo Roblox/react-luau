@@ -16,16 +16,23 @@ type Map<K, V> = { [K]: V }
 type Object = { [string]: any }
 local ReactTypes = require(Packages.Shared)
 local React = require(Packages.React)
-type Thenable<R, U> = ReactTypes.Thenable<R, U>
+type Thenable<R> = ReactTypes.Thenable<R, any>
 
 -- ROBLOX deviation: predeclare methods to fix declaration ordering
 local deleteEntry
 
-local createLRU = require(script.Parent.LRU).createLRU
+local LRU = require(script.Parent.LRU)
+local createLRU = LRU.createLRU
+-- ROBLOX devition: pull in this type in an attempt to tighten up the types to detect bugs found manually
+type Entry<T> = LRU.Entry<T>
 
--- ROBLOX deviation: use andThen convention, extra parameter for self
+-- ROBLOX deviation: use andThen convention, aligned to be compatible with Thenable in Luau's analysis
 type Suspender = {
-	andThen: (Object, () -> any, () -> any) -> any,
+	andThen: (
+		self: Suspender,
+		resolve: (...any) -> () | Suspender,
+		reject: (...any) -> () | Suspender
+	) -> () | Suspender,
 }
 
 type PendingResult = {
@@ -94,7 +101,8 @@ end
 local CACHE_LIMIT = 500
 local lru = createLRU(CACHE_LIMIT)
 
-local entries: Map<Resource<any, any>, Map<any, any>> = {}
+-- ROBLOX deviation: tightened this up versus upstream to try and detect more bugs
+local entries: Map<Resource<any, any>, Map<number, Entry<any>>> = {}
 
 local CacheContext = React.createContext(nil)
 
@@ -107,7 +115,7 @@ local CacheContext = React.createContext(nil)
 -- ): Result<V>
 local function accessResult(
 	resource: any,
-	fetch: (any) -> Thenable<any, any>,
+	fetch: (any) -> Thenable<any>,
 	input: any,
 	key: any
 ): Result<any>
@@ -155,7 +163,7 @@ deleteEntry = function(resource, key)
 	local entriesForResource = entries[resource]
 	if entriesForResource ~= nil then
 		entriesForResource[key] = nil
-		if entriesForResource.size == 0 then
+		if #entriesForResource == 0 then
 			entries[resource] = nil
 		end
 	end
@@ -168,10 +176,7 @@ end
 --     maybeHashInput: ((I) -> K)?
 --  ): Resource<I, V>
 exports.unstable_createResource =
-	function(
-		fetch: (any) -> Thenable<any, any>,
-		maybeHashInput: ((any) -> any)?
-	): Resource<any, any>
+	function(fetch: (any) -> Thenable<any>, maybeHashInput: ((any) -> any)?): Resource<any, any>
 		local hashInput: (any) -> any
 		if maybeHashInput ~= nil then
 			-- ROBLOX TODO: remove recast once Luau understands nil check
