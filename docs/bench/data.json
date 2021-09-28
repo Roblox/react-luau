@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1632785098817,
+  "lastUpdate": 1632798148277,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -785,6 +785,47 @@
             "extra": "200 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "6a24d389ce9e63933d437e3ee75ce6431db8959b",
+          "message": "Switch promise dependency to internal one",
+          "timestamp": "2021-09-27T23:52:53Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/212/commits/6a24d389ce9e63933d437e3ee75ce6431db8959b"
+        },
+        "date": 1632798146238,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 58.1224,
+            "range": "±22.29%",
+            "unit": "ops/sec",
+            "extra": "600 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.0294,
+            "range": "±228.31%",
+            "unit": "ms/op",
+            "extra": "600 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 77.4657,
+            "range": "±18.58%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -1388,6 +1429,40 @@
             "name": "FrameRate#Δt",
             "value": 50.5223,
             "range": "±13.91%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "6a24d389ce9e63933d437e3ee75ce6431db8959b",
+          "message": "Switch promise dependency to internal one",
+          "timestamp": "2021-09-27T23:52:53Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/212/commits/6a24d389ce9e63933d437e3ee75ce6431db8959b"
+        },
+        "date": 1632798146948,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 19.6813,
+            "range": "±12.21%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 51.789,
+            "range": "±16.08%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
           }
@@ -1999,6 +2074,40 @@
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "6a24d389ce9e63933d437e3ee75ce6431db8959b",
+          "message": "Switch promise dependency to internal one",
+          "timestamp": "2021-09-27T23:52:53Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/212/commits/6a24d389ce9e63933d437e3ee75ce6431db8959b"
+        },
+        "date": 1632798147617,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 14.1983,
+            "range": "±12.22%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 71.5944,
+            "range": "±13.85%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -2602,6 +2711,40 @@
             "name": "FrameRate#Δt",
             "value": 9.251,
             "range": "±11.68%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "6a24d389ce9e63933d437e3ee75ce6431db8959b",
+          "message": "Switch promise dependency to internal one",
+          "timestamp": "2021-09-27T23:52:53Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/212/commits/6a24d389ce9e63933d437e3ee75ce6431db8959b"
+        },
+        "date": 1632798148275,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 93.5237,
+            "range": "±8.98%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 10.7819,
+            "range": "±9.28%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
           }
