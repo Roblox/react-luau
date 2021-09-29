@@ -50,17 +50,26 @@ function BindingInternalApi.create(initialValue)
 	end
 
 	function impl.update(newValue)
-		impl.value = newValue
-		impl.changeSignal:fire(newValue)
+		if impl.value ~= newValue then
+			impl.value = newValue
+			impl.changeSignal:fire(newValue)
+		end
 	end
 
 	function impl.getValue()
 		return impl.value
 	end
 
+	local source
+	if _G.__DEV__ then
+		-- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for bindings
+		source = debug.traceback("Binding created at:", 3)
+	end
+
 	return setmetatable({
 		["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
 		[BindingImpl] = impl,
+		_source = source,
 	}, BindingPublicMeta), impl.update
 end
 
@@ -90,9 +99,16 @@ function BindingInternalApi.map(upstreamBinding, predicate)
 		return predicate(upstreamBinding:getValue())
 	end
 
+	local source
+	if _G.__DEV__ then
+		-- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for bindings
+		source = debug.traceback("Mapped binding created at:", 3)
+	end
+
 	return setmetatable({
 		["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
 		[BindingImpl] = impl,
+		_source = source,
 	}, BindingPublicMeta)
 end
 
@@ -155,9 +171,16 @@ function BindingInternalApi.join(upstreamBindings)
 		return getValue()
 	end
 
+	local source
+	if _G.__DEV__ then
+		-- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for bindings
+		source = debug.traceback("Joined binding created at:", 2)
+	end
+
 	return setmetatable({
 		["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
 		[BindingImpl] = impl,
+		_source = source,
 	}, BindingPublicMeta)
 end
 

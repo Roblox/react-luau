@@ -2,6 +2,8 @@ local Packages = script.Parent.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 
+local console = require(Packages.Shared).console
+
 local React = require(Packages.React)
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 local SingleEventManager = require(script.Parent.SingleEventManager)
@@ -25,17 +27,25 @@ local instanceToEventManager: { [HostInstance]: EventManager } = {}
 local instanceToBindings: { [HostInstance]: { [string]: any } } = {}
 
 local applyPropsError = [[
-Error applying initial props:
-  %s
-In element:
+Error applying initial props to Roblox Instance '%s' (%s):
   %s
 ]]
 
 local updatePropsError = [[
-Error updating props:
+Error updating props on Roblox Instance '%s' (%s):
   %s
-In element:
+]]
+
+local updateBindingError = [[
+Error updating binding or ref assigned to key %s of '%s' (%s).
+
+Updated value:
   %s
+
+Error:
+  %s
+
+%s
 ]]
 
 local function identity(...)
@@ -70,8 +80,12 @@ local function attachBinding(hostInstance, key, newBinding)
     end, identity)
 
     if not success then
-      -- ROBLOX FIXME: Binding update error messages
-      error(errorMessage, 0)
+      local source = newBinding._source or "<enable DEV mode for stack>"
+      local fullMessage = updateBindingError:format(key, hostInstance.Name, hostInstance.ClassName, tostring(newValue), errorMessage, source)
+      console.error(fullMessage)
+      -- FIXME: Until console.error can be instrumented to send telemetry, we
+      -- need to keep the hard error here
+      error(fullMessage, 0)
     end
   end
 
@@ -142,17 +156,14 @@ local function setInitialProperties(
     applyProps(domElement, rawProps)
   end, identity)
 
-  -- ROBLOX deviation: Roblox renderer doesn't currently track where instances were created
+  -- ROBLOX deviation: Roblox renderer doesn't currently track where instances
+  -- were created the way that legacy Roact did, but DEV mode should include
+  -- component stack traces as a separate warning
   if not success then
-  --   local source = domElement.source
-
-    -- if source == nil then
-    local source = "<enable element tracebacks>"
-    -- end
-
-    -- ROBLOX FIXME: Does this error messaging play nicely with the error logic
-    -- in the reconciler?
-    local fullMessage = applyPropsError:format(errorMessage, source)
+    local fullMessage = applyPropsError:format(domElement.Name, domElement.ClassName, errorMessage)
+    console.error(fullMessage)
+    -- FIXME: Until console.error can be instrumented to send telemetry, we need
+    -- to keep the hard error here
     error(fullMessage, 0)
   end
 
@@ -185,16 +196,13 @@ local function updateProperties(
   end, identity)
 
   if not success then
-    -- ROBLOX deviation: Roblox renderer doesn't currently track where instances were created
-    -- local source = domElement.source
-
-    -- if source == nil then
-    local source = "<enable element tracebacks>"
-    -- end
-
-    -- ROBLOX FIXME: Does this error messaging play nicely with the error logic
-    -- in the reconciler?
-    local fullMessage = updatePropsError:format(errorMessage, source)
+    -- ROBLOX deviation: Roblox renderer doesn't currently track where instances
+    -- were created the way that legacy Roact did, but DEV mode should include
+    -- component stack traces as a separate warning
+    local fullMessage = updatePropsError:format(domElement.Name, domElement.ClassName, errorMessage)
+    console.error(fullMessage)
+    -- FIXME: Until console.error can be instrumented to send telemetry, we need
+    -- to keep the hard error here
     error(fullMessage, 0)
   end
 

@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1632798148277,
+  "lastUpdate": 1632872860115,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -826,6 +826,47 @@
             "extra": "200 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "e7a58f4cfcc4a682fe9479c590b1455ca37c509d",
+          "message": "LUAFDN-498 - Better error output for bad prop assignments",
+          "timestamp": "2021-09-28T06:02:25Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/200/commits/e7a58f4cfcc4a682fe9479c590b1455ca37c509d"
+        },
+        "date": 1632872858159,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.1674,
+            "range": "±23.13%",
+            "unit": "ops/sec",
+            "extra": "600 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.4917,
+            "range": "±225.61%",
+            "unit": "ms/op",
+            "extra": "600 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 82.029,
+            "range": "±21.99%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -1463,6 +1504,40 @@
             "name": "FrameRate#Δt",
             "value": 51.789,
             "range": "±16.08%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "e7a58f4cfcc4a682fe9479c590b1455ca37c509d",
+          "message": "LUAFDN-498 - Better error output for bad prop assignments",
+          "timestamp": "2021-09-28T06:02:25Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/200/commits/e7a58f4cfcc4a682fe9479c590b1455ca37c509d"
+        },
+        "date": 1632872858812,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 19.8622,
+            "range": "±13.74%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 51.7234,
+            "range": "±20.49%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
           }
@@ -2108,6 +2183,40 @@
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "e7a58f4cfcc4a682fe9479c590b1455ca37c509d",
+          "message": "LUAFDN-498 - Better error output for bad prop assignments",
+          "timestamp": "2021-09-28T06:02:25Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/200/commits/e7a58f4cfcc4a682fe9479c590b1455ca37c509d"
+        },
+        "date": 1632872859491,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 14.9059,
+            "range": "±14.49%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 68.8521,
+            "range": "±19.61%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -2745,6 +2854,40 @@
             "name": "FrameRate#Δt",
             "value": 10.7819,
             "range": "±9.28%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "e7a58f4cfcc4a682fe9479c590b1455ca37c509d",
+          "message": "LUAFDN-498 - Better error output for bad prop assignments",
+          "timestamp": "2021-09-28T06:02:25Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/200/commits/e7a58f4cfcc4a682fe9479c590b1455ca37c509d"
+        },
+        "date": 1632872860112,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 105.6557,
+            "range": "±9.57%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 9.5539,
+            "range": "±9.82%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
           }

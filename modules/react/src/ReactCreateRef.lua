@@ -22,6 +22,15 @@ exports.createRef = function(): any -- ROBLOX FIXME: Redefine RefObject type
 
   local ref = {}
 
+  -- ROBLOX DEVIATION: Since refs are used as bindings, they can often be
+  -- assigned to fields of other Instances; we track creation here parallel to
+  -- how we do with bindings created via `createBinding` to improve messaging
+  -- when something goes wrong
+  if _G.__DEV__ then
+    -- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for refs
+    binding._source = debug.traceback("Ref created at:", 1)
+  end
+
   --[[
     A ref is just redirected to a binding via its metatable
   ]]

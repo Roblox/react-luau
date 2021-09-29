@@ -22,6 +22,20 @@ return function()
 			update("foo")
 			jestExpect(tostring(binding)).toBe("RoactBinding(foo)")
 		end)
+
+		if _G.__DEV__ then
+			it("should include a stack in DEV mode", function()
+				-- Simulate the additional layer of stack depth we'll have when
+				-- we use `React.createBinding` in the wild, since it will
+				-- affect the shape of our debug stacktrace
+				local function createBinding(...)
+					return Binding.create(...)
+				end
+				local binding, _ = createBinding(1)
+				jestExpect(binding._source).toContain(script.name)
+				jestExpect(binding._source).toContain("Binding created")
+			end)
+		end
 	end)
 
 	describe("Binding object", function()
@@ -143,6 +157,17 @@ return function()
 				Binding.update(mapped, 5)
 			end).toThrow()
 		end)
+
+		if _G.__DEV__ then
+			it("should include a stack in DEV mode", function()
+				local binding, _ = Binding.create(1)
+				local mappedBinding = binding:map(function(value)
+					return value
+				end)
+				jestExpect(mappedBinding._source).toContain(script.name)
+				jestExpect(mappedBinding._source).toContain("Mapped binding created")
+			end)
+		end
 	end)
 
 	describe("Binding.join", function()
@@ -276,6 +301,14 @@ return function()
 					})
 				end).toThrow()
 			end)
+
+			it("should include a stack in DEV mode", function()
+				local binding1, _ = Binding.create(1)
+				local binding2, _ = Binding.create(2)
+				local joinedBinding = Binding.join({binding1, binding2})
+				jestExpect(joinedBinding._source).toContain(script.name)
+				jestExpect(joinedBinding._source).toContain("Joined binding created")
+			end)
 		end
 	end)
 
@@ -290,5 +323,13 @@ return function()
 			ref.current = Instance.new("Folder")
 			jestExpect(tostring(ref)).toBe("Ref(Folder)")
 		end)
+
+		if _G.__DEV__ then
+			it("should include a stack in DEV mode", function()
+				local ref = ReactCreateRef.createRef()
+				jestExpect(ref._source).toContain(script.name)
+				jestExpect(ref._source).toContain("Ref created")
+			end)
+		end
 	end)
 end
