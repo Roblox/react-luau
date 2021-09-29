@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/72d00ab623502983ebd7ac0756cf2787df109811/packages/react-reconciler/src/ReactFiberComponentStack.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -10,6 +11,7 @@
 
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
+type Function = (...any) -> ...any
 type Error = LuauPolyfill.Error
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
@@ -35,7 +37,7 @@ local describeClassComponentFrame = ReactComponentStackFrame.describeClassCompon
 
 local function describeFiber(fiber: Fiber): string
 	-- deviation: untangling some nested ternaries to use more idiomatic if/else
-	local owner: (() -> ())? = nil
+	local owner: nil | Function = nil
 	if _G.__DEV__ then
 		-- FIXME (roblox): Luau's limited narrowing necessitates this local
 		local debugOwner = fiber._debugOwner

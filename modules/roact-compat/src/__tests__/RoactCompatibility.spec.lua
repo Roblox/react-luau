@@ -133,7 +133,7 @@ return function()
 					{ bogusParent = true }
 				)
 				end).toThrow(
-				"Cannot mount element (`Frame`) into a parent that is not a Roblox Instance (got type `table`) \n{\n  bogusParent",
+				"Cannot mount element (`Frame`) into a parent that is not a Roblox Instance (got type `table`) \n{ bogusParent",
 				{ withoutStack = true }
 			)
 		end)

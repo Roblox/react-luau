@@ -1,3 +1,4 @@
+--!strict
 local ReactInternalTypes = require(script.ReactInternalTypes)
 local ReactRootTags = require(script.ReactRootTags)
 

@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/8e5adfbd7e605bda9c5e96c10e015b3dc0df688e/packages/react-dom/src/client/ReactDOMRoot.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -56,8 +57,8 @@ local createRootImpl
 local ReactRobloxRoot = {}
 ReactRobloxRoot.__index = ReactRobloxRoot
 
-function ReactRobloxRoot.new(container: Container, options: RootOptions?)
-  local root = setmetatable(ReactRobloxRoot, {})
+function ReactRobloxRoot.new(container: Container, options: RootOptions?): RootType
+  local root: RootType = (setmetatable(ReactRobloxRoot, {}) :: any) :: RootType
   root._internalRoot = createRootImpl(container, ConcurrentRoot, options)
 
   return root
@@ -67,9 +68,9 @@ local function createBlockingRoot(
   container: Container,
   tag: RootTag,
   options: RootOptions?
-)
+): RootType
   -- deviation: We can just share the logic here via metatables
-  local root = setmetatable(ReactRobloxRoot, {})
+  local root: RootType = (setmetatable(ReactRobloxRoot, {}) :: any) :: RootType
   root._internalRoot = createRootImpl(container, tag, options)
 
   return root

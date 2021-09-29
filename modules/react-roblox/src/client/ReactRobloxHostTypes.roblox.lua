@@ -1,3 +1,4 @@
+--!strict
 local Packages = script.Parent.Parent.Parent
 
 local ReactReconciler = require(Packages.ReactReconciler)
@@ -61,8 +62,8 @@ type HostContextProd = string
 export type HostContext = HostContextDev | HostContextProd
 
 export type RootType = {
-  render: (ReactNodeList) -> (),
-  unmount: () -> (),
+  render: (self: RootType, children: ReactNodeList) -> (),
+  unmount: (self: RootType) -> (),
   _internalRoot: any,
   -- _internalRoot: FiberRoot,
   -- ...
@@ -72,8 +73,8 @@ export type RootType = {
 export type RootOptions = {
   hydrate: boolean?,
   hydrationOptions: {
-    onHydrated: (any) -> ()?,
-    onDeleted: (any) -> ()?,
+    onHydrated: (suspenseNode: any) -> ()?,
+    onDeleted: (suspenseNode: any) -> ()?,
     mutableSources: Array<MutableSource<any>>?,
     -- ...
     [any]: any,

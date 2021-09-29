@@ -1,3 +1,4 @@
+--!strict
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -6,8 +7,9 @@
  *
  * @flow
 ]]
+
+-- ROBLOX TODO remove this when CLI-38793 lands
 --!nolint LocalShadow
---!nolint LocalShadowPedantic
 
 local Packages = script.Parent.Parent
 

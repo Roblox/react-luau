@@ -83,9 +83,7 @@ export type FiberData = {
 
 export type NativeType = Object
 export type RendererID = number
-
--- ROBLOX FIXME: using the real Dispatcher type runs into a current ceiling on Luau type analysis
-type Dispatcher = Object -- ReactShared.Dispatcher
+type Dispatcher = ReactShared.Dispatcher
 export type CurrentDispatcherRef = { current: nil | Dispatcher }
 
 export type GetDisplayNameForFiberID = (number, boolean?) -> string | nil

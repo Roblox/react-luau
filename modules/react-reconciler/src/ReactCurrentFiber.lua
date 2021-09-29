@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/b0cb137bcbd3a11d8eff3c2229cd6b8379d29785/packages/react-reconciler/src/ReactCurrentFiber.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -53,7 +54,7 @@ local function getCurrentFiberStackInDev(): string
 		end
 		-- Safe because if current fiber exists, we are reconciling,
 		-- and it is guaranteed to be the work-in-progress version.
-		return getStackByFiberInDevAndProd(exports.current)
+		return getStackByFiberInDevAndProd(exports.current :: Fiber)
 	end
 	return ""
 end

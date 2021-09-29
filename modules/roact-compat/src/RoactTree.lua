@@ -1,7 +1,9 @@
+--!strict
 local Packages = script.Parent.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
+local inspect = LuauPolyfill.util.inspect
 local ReactRoblox = require(Packages.ReactRoblox)
-local Shared = require(Packages.Shared)
-local inspect = Shared.inspect.inspect
+type RootType = ReactRoblox.RootType
 
 local warnOnce = require(script.Parent.warnOnce)
 
@@ -40,6 +42,7 @@ local function mount(element, parent, key)
 	if key == nil then
 		key = "ReactLegacyRoot"
 	end
+
 	root:render(ReactRoblox.createPortal({ [key] = element }, parent))
 
 	return {
@@ -51,7 +54,13 @@ local function mount(element, parent, key)
 	}
 end
 
-local function update(roactHandle, element)
+type RoactHandle = {
+	root: RootType,
+	key: string | number,
+	parent: any, -- ROBLOX TODO: Instance?
+}
+
+local function update(roactHandle: RoactHandle, element)
 	if _G.__DEV__ then
 		warnOnce("update", "Please use the createRoot API in ReactRoblox")
 	end
@@ -63,7 +72,7 @@ local function update(roactHandle, element)
 	return roactHandle
 end
 
-local function unmount(roactHandle)
+local function unmount(roactHandle: RoactHandle)
 	if _G.__DEV__ then
 		warnOnce("unmount", "Please use the createRoot API in ReactRoblox")
 	end

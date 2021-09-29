@@ -1,4 +1,3 @@
---!nolint LocalShadowPedantic
 return function()
 	local Reconciler = script.Parent.Parent
 	local Packages = script.Parent.Parent.Parent

@@ -7,7 +7,6 @@
 *
 * @flow
 ]]
---!nolint LocalShadowPedantic
 local console = require(script.Parent.console)
 local ReactSymbols = require(script.Parent.ReactSymbols)
 local REACT_CONTEXT_TYPE = ReactSymbols.REACT_CONTEXT_TYPE

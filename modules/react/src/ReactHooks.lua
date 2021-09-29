@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/ddd1faa1972b614dfbfae205f2aa4a6c0b39a759/packages/react/src/ReactHooks.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -16,6 +17,8 @@ type Array<T> = LuauPolyfill.Array<T>
 local console = require(Packages.Shared).console
 
 local ReactTypes = require(Packages.Shared)
+-- ROBLOX TODO: we only pull in Dispatcher here for the typecheck, remove once Luau narrowing improves
+type Dispatcher = ReactTypes.Dispatcher
 type MutableSource<T> = ReactTypes.MutableSource<T>
 type MutableSourceGetSnapshotFn<Source, Snapshot> =
 	ReactTypes.MutableSourceGetSnapshotFn<Source, Snapshot>
@@ -45,7 +48,7 @@ local function resolveDispatcher()
 			'3. You might have more than one copy of React in the same app\n' ..
 			'See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.'
 	)
-	return dispatcher
+	return dispatcher :: Dispatcher
 end
 
 local exports = {}
@@ -105,7 +108,7 @@ end
 --   ): [S, Dispatch<BasicStateAction<S>>] {
 exports.useState = function(
 	initialState: (() -> any) | any
-): (any, Dispatch<BasicStateAction<any>>)
+): (any, Dispatch<BasicStateAction<any?>>)
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useState(initialState)
 end
@@ -121,7 +124,7 @@ exports.useReducer = function(
 	reducer: (any, any) -> any,
 	initialArg: any,
 	init: ((any) -> any)?
-): (any, Dispatch<any>)
+): (any, Dispatch<any?>)
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useReducer(reducer, initialArg, init)
 end

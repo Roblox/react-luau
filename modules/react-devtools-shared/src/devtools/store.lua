@@ -10,13 +10,13 @@ local Packages = script.Parent.Parent.Parent
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
+local inspect = LuauPolyfill.util.inspect
 local Object = LuauPolyfill.Object
 local Set = LuauPolyfill.Set
 type Array<T> = { [number]: T }
 type Map<K, V> = { [K]: V }
 type Object = { [string]: any }
 type Set<K> = { [K]: boolean }
-local inspect = require(Packages.Shared).inspect.inspect
 local console = require(Packages.Shared).console
 
 local EventEmitter = require(script.Parent.Parent.events)

@@ -6,7 +6,6 @@
  *
  *
  ]]
---!nolint LocalShadowPedantic
 
 local Packages = script.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)

@@ -1,8 +1,4 @@
 -- Mimicking https://github.com/facebook/jest/blob/4453901c0239939cc2c1c8b7c7d121447f6f5f52/packages/jest-fake-timers/src/legacyFakeTimers.ts#L506
---!nolint UnknownGlobal
-
--- ROBLOX FIXME: references to the `task` global make the type-checker unhappy
---!nocheck
 
 type Timer = {
 	expiry: number,

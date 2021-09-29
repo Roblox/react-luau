@@ -12,7 +12,8 @@ local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from shared
 local Shared = require(Packages.Shared)
 local console = Shared.console
-local inspect = Shared.inspect.inspect
+local LuauPolyfill = require(Packages.LuauPolyfill)
+local inspect = LuauPolyfill.util.inspect
 
 local ReactTypes = require(Packages.Shared)
 type Wakeable = ReactTypes.Wakeable

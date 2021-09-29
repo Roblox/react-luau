@@ -209,7 +209,7 @@ return function()
 						"Warning: " -- ROBLOX FIXME: remove the Warning: prefix in consoleWithStackDev
 							.. "Invalid key type. Expected a string, number, symbol, or "
 							-- ROBLOX TODO: make console polyfill format arrays the same as JS
-							.. 'boolean, but instead received: { "Hi", 100 }\n\n'
+							.. 'boolean, but instead received: ["Hi", 100]\n\n'
 							.. "To use non-primitive values as keys, you must pass a hash "
 							.. "function as the second argument to createResource()."
 					)

@@ -7,14 +7,12 @@
  * @flow
 *]]
 
---!nolint LocalShadowPedantic
-
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
 local console = require(Packages.Shared).console
-local inspect = require(Packages.Shared).inspect.inspect
+local inspect = LuauPolyfill.util.inspect
 
 local isValidElementType = require(Packages.Shared).isValidElementType
 local getComponentName = require(Packages.Shared).getComponentName

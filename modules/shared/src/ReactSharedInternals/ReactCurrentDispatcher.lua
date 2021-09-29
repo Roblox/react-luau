@@ -68,9 +68,9 @@ export type Dispatcher = {
 		deps: Array<any> | nil
 	) -> (),
 	useDebugValue: (value: _T, formatterFn: ((value: _T) -> any)?) -> (),
-	-- ROBLOX TODO: uncomment these and implement them in the dispatchers
-	-- useDeferredValue: (value: _T) -> _T,
-	-- useTransition: () -> Array<any>, -- ROBLOX deviation: Luau doesn't support jagged array types [(() -> ()) -> (), boolean],
+	-- ROBLOX TODO: make these non-optional and implement them in the dispatchers
+	useDeferredValue: ((value: _T) -> _T)?,
+	useTransition: (() -> ((() -> ()) -> (), boolean))?, -- ROBLOX deviation: Luau doesn't support jagged array types [(() -> ()) -> (), boolean],
 	useMutableSource: (
 		source: MutableSource<Source>,
 		getSnapshot: MutableSourceGetSnapshotFn<Source, Snapshot>,

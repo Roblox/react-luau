@@ -7,7 +7,6 @@
  *
  * @flow
 ]]
---!nolint LocalShadowPedantic
 -- FIXME (roblox): remove this when our unimplemented
 local function unimplemented(message: string)
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")

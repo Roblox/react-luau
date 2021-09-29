@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1632872860115,
+  "lastUpdate": 1632878708042,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -867,6 +867,47 @@
             "extra": "200 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "c645f97ebb36682bb7e8d33d1b22a08b536ca18a",
+          "message": "#nojira Cleanup pragmas, add strict mode where reasonable, fix a bug",
+          "timestamp": "2021-09-29T00:15:19Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/213/commits/c645f97ebb36682bb7e8d33d1b22a08b536ca18a"
+        },
+        "date": 1632878703882,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.8072,
+            "range": "±28.84%",
+            "unit": "ops/sec",
+            "extra": "600 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.7196,
+            "range": "±222.41%",
+            "unit": "ms/op",
+            "extra": "600 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 78.1392,
+            "range": "±19.59%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -1538,6 +1579,40 @@
             "name": "FrameRate#Δt",
             "value": 51.7234,
             "range": "±20.49%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "c645f97ebb36682bb7e8d33d1b22a08b536ca18a",
+          "message": "#nojira Cleanup pragmas, add strict mode where reasonable, fix a bug",
+          "timestamp": "2021-09-29T00:15:19Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/213/commits/c645f97ebb36682bb7e8d33d1b22a08b536ca18a"
+        },
+        "date": 1632878704555,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 19.9107,
+            "range": "±12.77%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 51.3202,
+            "range": "±17.47%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
           }
@@ -2217,6 +2292,40 @@
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "c645f97ebb36682bb7e8d33d1b22a08b536ca18a",
+          "message": "#nojira Cleanup pragmas, add strict mode where reasonable, fix a bug",
+          "timestamp": "2021-09-29T00:15:19Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/213/commits/c645f97ebb36682bb7e8d33d1b22a08b536ca18a"
+        },
+        "date": 1632878705234,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 14.707,
+            "range": "±14.20%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 69.7532,
+            "range": "±18.48%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -2888,6 +2997,40 @@
             "name": "FrameRate#Δt",
             "value": 9.5539,
             "range": "±9.82%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "c645f97ebb36682bb7e8d33d1b22a08b536ca18a",
+          "message": "#nojira Cleanup pragmas, add strict mode where reasonable, fix a bug",
+          "timestamp": "2021-09-29T00:15:19Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/213/commits/c645f97ebb36682bb7e8d33d1b22a08b536ca18a"
+        },
+        "date": 1632878708039,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 96.7296,
+            "range": "±15.78%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 10.6381,
+            "range": "±18.89%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
           }

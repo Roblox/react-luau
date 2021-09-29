@@ -3,6 +3,8 @@
 	is mostly based on:
 	https://github.com/facebook/react/blob/47ff31a77add22bef54aaed9d4fb62d5aa693afd/scripts/jest/matchers/schedulerTestMatchers.js
 ]]
+
+-- ROBLOX TODO remove this when CLI-38793 lands
 --!nolint LocalShadowPedantic
 local function captureAssertion(fn)
 	-- Trick to use a TestEZ expectation matcher inside another Jest

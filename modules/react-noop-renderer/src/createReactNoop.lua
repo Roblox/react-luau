@@ -7,7 +7,7 @@
  *
  * @flow
 ]]
---!nolint LocalShadowPedantic
+-- ROBLOX TODO remove this when CLI-38793 lands
 --!nolint LocalShadow
 
 --[[*

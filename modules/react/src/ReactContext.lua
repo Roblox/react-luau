@@ -11,9 +11,9 @@ local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from shared
 local Shared = require(Packages.Shared)
 local console = Shared.console
-local inspect = Shared.inspect.inspect
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
+local inspect = LuauPolyfill.util.inspect
 
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 local REACT_PROVIDER_TYPE = ReactSymbols.REACT_PROVIDER_TYPE

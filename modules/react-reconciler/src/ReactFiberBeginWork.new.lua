@@ -7,7 +7,6 @@
  *
  * @flow
 ]]
---!nolint LocalShadowPedantic
 -- ROBLOX TODO remove this when CLI-38793 lands
 --!nolint LocalShadow
 -- FIXME (roblox): remove this when our unimplemented
@@ -22,12 +21,10 @@ local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from Shared
 local Shared = require(Packages.Shared)
 local console = Shared.console
-local inspect = Shared.inspect.inspect
-
-
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
+local inspect = LuauPolyfill.util.inspect
 
 local ReactTypes = require(Packages.Shared)
 type ReactProviderType<T> = ReactTypes.ReactProviderType<T>

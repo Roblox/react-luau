@@ -11,7 +11,8 @@
 
 local Packages = script.Parent.Parent
 local console = require(Packages.Shared).console
-local inspect = require(Packages.Shared).inspect.inspect
+local LuauPolyfill = require(Packages.LuauPolyfill)
+local inspect = LuauPolyfill.util.inspect
 type Map<K, V> = { [K]: V }
 type Object = { [string]: any }
 local ReactTypes = require(Packages.Shared)

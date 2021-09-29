@@ -43,8 +43,6 @@ export type OpaqueIDType = ReactFiberHostConfig.OpaqueIDType
 
 export type Dispatcher = ReactSharedInternals.Dispatcher
 
-
-
 return {
 	checkPropTypes = require(script.checkPropTypes),
 	console = require(script.console),
@@ -54,7 +52,6 @@ return {
 	ExecutionEnvironment = require(script["ExecutionEnvironment.roblox"]),
 	formatProdErrorMessage = require(script.formatProdErrorMessage),
 	getComponentName = require(script.getComponentName),
-	inspect = require(script["inspect.roblox"]),
 	invariant = require(script.invariant),
 	invokeGuardedCallbackImpl = require(script.invokeGuardedCallbackImpl),
 	isValidElementType = require(script.isValidElementType),

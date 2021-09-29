@@ -12,10 +12,10 @@ local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 local Array = LuauPolyfill.Array
+local inspect = LuauPolyfill.util.inspect
 
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
-local inspect = require(Packages.Shared).inspect.inspect
 
 local ReactTypes = require(Packages.Shared)
 -- ROBLOX deviation: ReactElement is defined at the top level of Shared along

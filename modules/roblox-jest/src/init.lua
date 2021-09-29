@@ -1,4 +1,4 @@
---!nolint LocalShadowPedantic
+--!strict
 local FakeTimers = require(script.FakeTimers)
 local Module = require(script.Module)
 

@@ -7,7 +7,6 @@
  *
  * @flow
 ]]
---!nolint LocalShadowPedantic
 
 local Packages = script.Parent.Parent
 

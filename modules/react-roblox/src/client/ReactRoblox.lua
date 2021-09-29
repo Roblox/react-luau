@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/8e5adfbd7e605bda9c5e96c10e015b3dc0df688e/packages/react-dom/src/client/ReactDOM.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -247,6 +248,7 @@ local exports = {
   -- to import `ReactRoblox` will need to do so in order to set events/change
   Event = Event,
   Change = Change,
+  unstable_isNewReconciler = enableNewReconciler,
 }
 
 -- local foundDevTools = injectIntoDevTools({
@@ -282,7 +284,5 @@ if _G.__DEV__ then
   --   end
   -- end
 end
-
-exports.unstable_isNewReconciler = enableNewReconciler
 
 return exports

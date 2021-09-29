@@ -9,7 +9,6 @@
 ]]
 
 type Object = { [string]: any }
---!nolint LocalShadowPedantic
 
 local ReactElementType = require(script.Parent.ReactElementType)
 type Source = ReactElementType.Source
