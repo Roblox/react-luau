@@ -16,9 +16,9 @@ type Agent = Agent.Agent
 local attach = require(script.renderer).attach
 
 local types = require(script.types)
-type DevToolsHook = types.DevToolsHook
-type ReactRenderer = types.ReactRenderer
-type RendererInterface = types.RendererInterface
+export type DevToolsHook = types.DevToolsHook
+export type ReactRenderer = types.ReactRenderer
+export type RendererInterface = types.RendererInterface
 
 type Object = { [string]: any }
 

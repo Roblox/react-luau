@@ -24,8 +24,8 @@ return function()
 				end)
 			end).toThrow(
 				"ReactRoblox.act is only available in testing environments, "
-				.. "not production. Enable the `__ROACT_17_INLINE_ACT__` global in "
-				.. "your test configuration in order to use `act`."
+					.. "not production. Enable the `__ROACT_17_INLINE_ACT__` global in "
+					.. "your test configuration in order to use `act`."
 			)
 		end)
 
@@ -51,7 +51,10 @@ return function()
 			local tree
 			jestExpect(function()
 				RoactCompat.act(function()
-					tree = RoactCompat.mount(RoactCompat.createElement("TextLabel"), parent)
+					tree = RoactCompat.mount(
+						RoactCompat.createElement("TextLabel"),
+						parent
+					)
 				end)
 			end).never.toThrow()
 

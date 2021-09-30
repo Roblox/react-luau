@@ -14,7 +14,7 @@ return function()
 
 	it("should create an orphaned instance to mount under if none is provided", function()
 		local ref = RoactCompat.createRef()
-		local tree = RoactCompat.mount(RoactCompat.createElement("Frame", {ref = ref}))
+		local tree = RoactCompat.mount(RoactCompat.createElement("Frame", { ref = ref }))
 
 		jestExpect(ref.current).never.toBeNil()
 		jestExpect(ref.current.Parent).never.toBeNil()
@@ -27,10 +27,18 @@ return function()
 
 	it("should name children using the key", function()
 		local legacyTarget = Instance.new("Folder")
-		local legacyTree = Roact.mount(Roact.createElement("Frame"), legacyTarget, "SameNameTree")
+		local legacyTree = Roact.mount(
+			Roact.createElement("Frame"),
+			legacyTarget,
+			"SameNameTree"
+		)
 
 		local compatTarget = Instance.new("Folder")
-		local compatTree = RoactCompat.mount(RoactCompat.createElement("Frame"), compatTarget, "SameNameTree")
+		local compatTree = RoactCompat.mount(
+			RoactCompat.createElement("Frame"),
+			compatTarget,
+			"SameNameTree"
+		)
 
 		local legacyRootInstance = legacyTarget:FindFirstChildWhichIsA("Frame")
 		jestExpect(legacyRootInstance).never.toBeNil()
@@ -46,10 +54,18 @@ return function()
 
 	it("keeps the same root name on update", function()
 		local legacyTarget = Instance.new("Folder")
-		local legacyTree = Roact.mount(Roact.createElement("Frame"), legacyTarget, "SameNameTree")
+		local legacyTree = Roact.mount(
+			Roact.createElement("Frame"),
+			legacyTarget,
+			"SameNameTree"
+		)
 
 		local compatTarget = Instance.new("Folder")
-		local compatTree = RoactCompat.mount(RoactCompat.createElement("Frame"), compatTarget, "SameNameTree")
+		local compatTree = RoactCompat.mount(
+			RoactCompat.createElement("Frame"),
+			compatTarget,
+			"SameNameTree"
+		)
 
 		local legacyRootInstance = legacyTarget:FindFirstChildWhichIsA("Frame")
 		jestExpect(legacyRootInstance.Name).toBe("SameNameTree")
@@ -75,7 +91,11 @@ return function()
 		preexistingChild.Name = "PreexistingChild"
 		preexistingChild.Parent = compatTarget
 
-		local compatTree = RoactCompat.mount(RoactCompat.createElement("TextLabel"), compatTarget, "RoactTree")
+		local compatTree = RoactCompat.mount(
+			RoactCompat.createElement("TextLabel"),
+			compatTarget,
+			"RoactTree"
+		)
 
 		local compatRootInstance = compatTarget:FindFirstChildWhichIsA("TextLabel")
 		jestExpect(compatRootInstance.Name).toBe("RoactTree")

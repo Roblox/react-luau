@@ -11,8 +11,20 @@
 local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
+local LuauPolyfill = require(Packages.LuauPolyfill)
+type Object = LuauPolyfill.Object
 local exports = {}
 
+-- ROBLOX deviation: subset copied here from devtools-shared/backend/types, to have stronger enforcement than 'Object' without circular dep
+type DevToolsHook = {
+  -- ROBLOX TODO: ideally, ReactRenderer type would be importable from this file so we could use it here
+	inject: (Object) -> number | nil,
+	supportsFiber: boolean,
+	isDisabled: boolean,
+	--   ...
+}
+
+-- ROBLOX deviation: we use callable tables instead of functions sometimes, so typeof() == "function" isn't enough
 local function isCallable(value)
   if typeof(value) == "function" then
     return true
@@ -52,12 +64,12 @@ local hasLoggedError = false
 exports.isDevToolsPresent =
   typeof(_G.__REACT_DEVTOOLS_GLOBAL_HOOK__) ~= 'nil'
 
-exports.injectInternals = function(internals): boolean
-  if typeof(_G.__REACT_DEVTOOLS_GLOBAL_HOOK__) == 'nil' then
+exports.injectInternals = function(internals: Object): boolean
+  if _G.__REACT_DEVTOOLS_GLOBAL_HOOK__ == nil then
     -- No DevTools
     return false
   end
-  local hook = _G.__REACT_DEVTOOLS_GLOBAL_HOOK__
+  local hook: DevToolsHook = _G.__REACT_DEVTOOLS_GLOBAL_HOOK__
   if hook.isDisabled then
     -- This isn't a real property on the hook, but it can be set to opt out
     -- of DevTools integration and associated warnings and logs.

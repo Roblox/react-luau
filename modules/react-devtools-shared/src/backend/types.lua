@@ -357,6 +357,7 @@ export type RendererInterface = {
 
 export type Handler = (any) -> ()
 
+-- ROBLOX TODO? move these types into shared so reconciler and devtools don't have circlar dep?
 export type DevToolsHook = {
 	listeners: {
 		[string]: Array<Handler>, --[[ ...]]
@@ -389,6 +390,7 @@ boolean?
 	) -> (),
 	-- ROBLOX deviation: track specific additions to interface needed instead of catch-all
 	supportsFiber: boolean,
+	isDisabled: boolean?,
 	--   ...
 }
 

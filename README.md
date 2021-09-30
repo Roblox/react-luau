@@ -2,7 +2,17 @@
 [![Coverage Status](https://coveralls.io/repos/github/Roblox/roact-alignment/badge.svg?branch=master&t=TvTSze)](https://coveralls.io/github/Roblox/roact-alignment?branch=master)
 
 # Roact Alignment
-A temporary ground-up Roact repository that will track our preliminary alignment with React, starting with leaf nodes like the scheduler.
+A comprehensive, but not exhaustive, translation of upstream ReactJS 17.x into Roblox Lua.
+
+## TL;DR
+
+* In a new project, you can consume this library by adding this line to your rotriever.toml
+  * `React = "github.com/roblox/roact-alignment@17.0.1-rc.4"`
+* If you're have legacy Roact code, use the roact-compat library instead
+  * `RoactCompat = "github.com/roblox/roact-alignment@17.0.1-rc.1"`
+* Make sure you are using the latest [rotriever](https://github.com/Roblox/rotriever/releases) 0.5 (or later) release
+  * you can download the release binary, or add it to your `foreman.toml`: ```rotrieve = { source = "roblox/rotriever", version = "0.5.0-rc.1" }```
+* For unit testing components and trees of components, you'll want to use the [`act()`](https://github.com/threepointone/react-act-examples/blob/master/sync.md) API exported from the react-roblox package.
 
 ## Status
 The [react repo](https://github.com/facebook/react) is a monorepo with a number of member projects in its `packages` folder, managed by a yarn workspace. Below is a description of each of those package, its status in our alignment repo, and how it likely fits into our future plans.
@@ -15,41 +25,42 @@ The [react repo](https://github.com/facebook/react) is a monorepo with a number 
 | `dom-event-testing-library` | Dom event simulation for tests | ❌ Not ported | ❔ Not yet assessed | May inspire Rhodium improvements |
 | `eslint-plugin-react-hooks` | Linting plugin for hooks rules | ❌ Not ported | ❔ Not yet assessed | Depends on future linting tools |
 | `jest-mock-scheduler` | Reexports scheduler testing utilities | ❌ Not ported | ❔ Not yet assessed | |
-| 📌`jest-react` | Jest matchers and utilities | ✔️ Ported | | Haven't yet run into any uses of this in tests we've ported so far |
-| 📌`react` | Base react interface | 🔨 Port in progress |  | Defines basic shape of internals like Components and Elements. We may add things like Bindings here. |
+| 📌`jest-react` | Jest matchers and utilities | ✔️ Ported | | Used for internal framework tests, but could be useful for client developer testing as well. |
+| 📌`react` | Base react interface | ✔️ Ported |  | Defines basic shape of internals like Components and Elements. We added added Roblox-specifics like Bindings, but otherwise comply with upstream ReactJS. |
 | `react-art` | For drawing vector graphics | ❌ Not ported | ➖ Unlikely to be ported | |
-| `react-cache` | Basic cache for use with experimental React features | ❌ Not ported | ❔ Not yet assessed | API is flagged as unstable |
+| `react-cache` | Basic cache for use with experimental React features | ✔️ Ported | ❔  | API is flagged as unstable, is stable in React 18, used in advanced Suspense cases |
 | `react-client` | Experimental package for consuming React streaming models | ❌ Not ported | ❔ Not yet assessed | API considered unstable. Might be worth investigating if it stabilizes |
-| `react-debug-tools` | Experimental debugger package | ❌ Not ported | ❔ Not yet assessed | API considered unstable |
+| `react-debug-tools` | Experimental debugger package | ✔️ Ported |  | Used by DevTools and Roblox Studio Inspector |
 | `react-devtools` | Top-level app for react devtools | ❌ Not ported | ➕ Likely to be ported | Devtools needs to be addressed as a whole to see where/how it translates |
 | `react-devtools-core` | Standalone devtools impl | ❌ Not ported | ➕ Likely to be ported | Devtools needs to be addressed as a whole to see where/how it translates |
 | `react-devtools-extensions` | Devtools browser extension | ❌ Not ported | ➖ Unlikely to be ported | |
 | `react-devtools-inline` | Impl for embedding in browser-based IDEs | ❌ Not ported | ➕ Likely to be ported | Devtools needs to be addressed as a whole to see where/how it translates |
 | `react-devtools-scheduling-profiler` | Experimental concurrent mode profiler | ❌ Not ported | ❔ Not yet assessed | |
-| `react-devtools-shared` | Private shared utilities for devtools | ❌ Not ported | ➕ Likely to be ported | Devtools needs to be addressed as a whole to see where/how it translates |
+| `react-devtools-shared` | Private shared utilities for devtools | ✔️ Ported |  | Used by Roblox Studio Inspector |
 | `react-devtools-shell` | Harness for testing other devtools packages | ❌ Not ported | ❔ Not yet assessed | Devtools needs to be addressed as a whole to see where/how it translates |
-| `react-dom` | Entrypoint for DOM and server renderers | ❌ Not ported | ➖ Unlikely to be ported | Will inform top-level interface, but will be mostly replaced with Roblox-specific logic |
+| `react-dom` | Entrypoint for DOM and server renderers | ❌ Not ported | ➖ Unlikely to be ported | Heavily inspired the top-level interface of the React-Roblox Renderer |
 | `react-fetch` | For use with experimental React features | ❌ Not ported | ❔ Not yet assessed | API considered unstable |
 | `react-interactions` | For use with experimental React features | ❌ Not ported | ❔ Not yet assessed | |
 | 📌`react-is` | Runtime type checks for React elements | ✔️ Ported | | |
 | `react-native-renderer` | Renderer interface for react-native | ❌ Not ported | ❔ Not yet assessed | This package has no readme, so it's hard to understand its scope |
-| 📌`react-noop-renderer` | Renderer used for debugging Fiber | ✔️ Ported |  | Will be needed to verify our Fiber/Reconciler work |
+| 📌`react-noop-renderer` | Renderer used for debugging Fiber | ✔️ Ported |  | Used heavily for internal framework testing |
 | 📌`react-reconciler` | Reconciler implementation used with various renderers | ✔️ Ported |  | Bulk of React's complicated logic lives here |
 | `react-refresh` | Wiring for Fast Refresh | ❌ Not ported | ❔ Not yet assessed, depend on applicability | Officially supported successor to "hot reloading" |
 | `react-server` | Experimental package for creating React streaming server renderers | ❌ Not ported | ❔ Not yet assessed | |
-| `react-test-renderer` | Test renderer with dom snapshotting | ✔️ Ported | | Used for testing much of React's internals |
+| `react-test-renderer` | Test renderer helpful utilities and snapshot support | ✔️ Ported | | Used for testing much of React's internals, can be used by client developers |
 | `react-transport-dom-delay` | Internal package, likely for testing | ❌ Not ported | ➖ Unlikely to be ported | No readme in package |
 | `react-transport-dom-webpack` | Related to above | ❌ Not ported | ➖ Unlikely to be ported | Appears to be webpack-specific |
-| 📌`scheduler` | Cooperative scheduling implementation | ✔️ Ported | | Tracing feature is excluded, will be needed at some point for devtools |
-| 📌`shared` | Loose collection of shared utilities and definitions | ✔️ Ported | | Working with upstream to see if this can be cleaned up |
+| 📌`scheduler` | Cooperative scheduling implementation | ✔️ Ported | | Includes Tracing and Profiling features, which are enabled through ReactFeatureFlags |
+| 📌`shared` | Loose collection of shared utilities and definitions | ✔️ Ported | | We pushed many things into this leaf node module to fix circular dependencies. Working with upstream to clean this up. |
 | `use-subscription` | Hook for managing subscriptions in concurrent mode | ❌ Not ported | ❔ Not yet assessed | Not sure if/how this will apply to Roblox |
 
-Projects not in the react repo:
+Projects not in the upstream React repo:
 | Project | Description | Notes |
 | - | - | - |
 | 📌`react-shallow-renderer` | Shallow renderer used in tests for some older React features. Re-exported alongside `react-test-renderer`, source of truth [here](https://github.com/NMinhNguyen/react-shallow-renderer). |  ✔️ Ported - with tests that are helping us exercise functionality in the `react` package |
-| `roblox-jest` | Custom matchers and timer logic for TestEZ | A rough approximation of what we'll eventually have with the [`jest` alignment effort](https://github.com/Roblox/lest-alignment) |
-| `roblox-js-polyfill` | Implementations of JS specific interfaces or functionality | Most implementations are incomplete or slightly adjusted for Lua |
+| `roblox-jest` | Custom matchers and timer logic for Jest-Roblox| A rough approximation of what will eventually be provided in the [`jest` alignment effort](https://github.com/Roblox/jest-roblox) |
+| `react-roblox` | Based on react-dom renderer, shares much of its code and public interface.| Also exports [`act()`](https://github.com/threepointone/react-act-examples/blob/master/sync.md) functionality, which is *required* for testing components that are asynchronously rendered (the default). |
+| `roact-compat` | A comaptibility layer that emulates some deprecated behaviors of legacy Roact | Meant to ease initial adoption of Roact 17, using React APIs directly is encouraged and necessary for newer functonality (eg Hooks) |
 
 ## Deviations from [Roact](https://github.com/roblox/roact)
 This repo is meant to supplant the `Roact` project, which is an open-source project that currently powers the majority of the Lua App and is used by the community as well. Our goal is to be as compatible as possible with Roact by the time we're ready to start adopting this alignment effort for use.

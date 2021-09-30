@@ -39,7 +39,7 @@ local batchedUpdates = ReactReconciler.batchedUpdates
 -- local flushDiscreteUpdates = ReactReconciler.flushDiscreteUpdates
 -- local flushSync = ReactReconciler.flushSync
 -- local flushControlled = ReactReconciler.flushControlled
--- local injectIntoDevTools = ReactReconciler.injectIntoDevTools
+local injectIntoDevTools = ReactReconciler.injectIntoDevTools
 local flushPassiveEffects = ReactReconciler.flushPassiveEffects
 local IsThisRendererActing = ReactReconciler.IsThisRendererActing
 -- local attemptSynchronousHydration = ReactReconciler.attemptSynchronousHydration
@@ -61,7 +61,7 @@ local ReactRobloxComponentTree = require(script.Parent.ReactRobloxComponentTree)
 local getInstanceFromNode = ReactRobloxComponentTree.getInstanceFromNode
 local getNodeFromInstance = ReactRobloxComponentTree.getNodeFromInstance
 local getFiberCurrentPropsFromNode = ReactRobloxComponentTree.getFiberCurrentPropsFromNode
--- local getClosestInstanceFromNode = ReactRobloxComponentTree.getClosestInstanceFromNode
+local getClosestInstanceFromNode = ReactRobloxComponentTree.getClosestInstanceFromNode
 -- local restoreControlledState = require(script.Parent.ReactRobloxComponent).restoreControlledState
 
 -- local ReactDOMEventReplaying = require(Packages.Parent.Parent.events.ReactDOMEventReplaying)
@@ -268,12 +268,13 @@ if _G.__ROACT_17_INLINE_ACT__ then
   exports.act = ReactReconciler.act
 end
 
--- local foundDevTools = injectIntoDevTools({
---   findFiberByHostInstance = getClosestInstanceFromNode,
---   bundleType = _G.__DEV__ and 1 or 0,
---   version = ReactVersion,
---   rendererPackageName = 'ReactRoblox',
--- })
+-- ROBLOX deviation: we don't currently implement the logic below that uses this value
+local _foundDevTools = injectIntoDevTools({
+  findFiberByHostInstance = getClosestInstanceFromNode,
+  bundleType = _G.__DEV__ and 1 or 0,
+  version = ReactVersion,
+  rendererPackageName = 'ReactRoblox',
+})
 
 if _G.__DEV__ then
   -- if not foundDevTools and canUseDOM and window.top == window.self then

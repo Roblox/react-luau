@@ -67,7 +67,7 @@ return function()
 			)
 		end)
 
-	-- FIXME: Underlying ReactChildren API not yet ported
+		-- FIXME: Underlying ReactChildren API not yet ported
 		xit("warns about oneChild", function()
 			jestExpect(function()
 				RoactCompat.oneChild({ RoactCompat.createElement("div") })
@@ -110,10 +110,10 @@ return function()
 					RoactCompat.createElement("TextLabel", { Text = "Foo" })
 				)
 			end).toWarnDev({
-					"Warning: The legacy Roact API 'mount' is deprecated"
-				},
-				{ withoutStack = true }
-			)
+				"Warning: The legacy Roact API 'mount' is deprecated",
+			}, {
+				withoutStack = true,
+			})
 		end)
 
 		it("warns about mount with invalid instance", function()
@@ -122,7 +122,7 @@ return function()
 					RoactCompat.createElement("TextLabel", { Text = "Foo" }),
 					"I'm not an instance!"
 				)
-				end).toThrow(
+			end).toThrow(
 				"Cannot mount element (`TextLabel`) into a parent that is not a Roblox Instance (got type `string`)",
 				{ withoutStack = true }
 			)
@@ -132,7 +132,7 @@ return function()
 					RoactCompat.createElement("Frame"),
 					{ bogusParent = true }
 				)
-				end).toThrow(
+			end).toThrow(
 				"Cannot mount element (`Frame`) into a parent that is not a Roblox Instance (got type `table`) \n{ bogusParent",
 				{ withoutStack = true }
 			)
@@ -185,7 +185,9 @@ return function()
 			jestExpect(function()
 				root:render(componentInstance)
 				Scheduler.unstable_flushAllWithoutAsserting()
-			end).toErrorDev("Attempted to directly mutate state. Use setState to assign new values to state.")
+			end).toErrorDev(
+				"Attempted to directly mutate state. Use setState to assign new values to state."
+			)
 		end)
 
 		it("warns if unitialized state is accessed", function()
@@ -208,7 +210,9 @@ return function()
 			jestExpect(function()
 				root:render(componentInstance)
 				Scheduler.unstable_flushAllWithoutAsserting()
-			end).toWarnDev("Attempted to access unitialized state. Use setState to initialize state")
+			end).toWarnDev(
+				"Attempted to access unitialized state. Use setState to initialize state"
+			)
 
 			jestExpect(capturedBool).toBe(true)
 		end)

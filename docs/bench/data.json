@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1632964060118,
+  "lastUpdate": 1633034433614,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -990,6 +990,47 @@
             "extra": "200 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "1a62c42d4dbb37c387e9647475a8f6bec33b2432",
+          "message": "LUAFDN-58: inject internals into dev tools if the global is present",
+          "timestamp": "2021-09-30T02:42:41Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/216/commits/1a62c42d4dbb37c387e9647475a8f6bec33b2432"
+        },
+        "date": 1633034431611,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 58.0225,
+            "range": "±26.16%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.3322,
+            "range": "±224.11%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 65.8723,
+            "range": "±16.96%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -1763,6 +1804,40 @@
             "name": "FrameRate#Δt",
             "value": 66.6555,
             "range": "±22.94%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "1a62c42d4dbb37c387e9647475a8f6bec33b2432",
+          "message": "LUAFDN-58: inject internals into dev tools if the global is present",
+          "timestamp": "2021-09-30T02:42:41Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/216/commits/1a62c42d4dbb37c387e9647475a8f6bec33b2432"
+        },
+        "date": 1633034432263,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 23.8607,
+            "range": "±14.01%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 43.0321,
+            "range": "±19.89%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
           }
@@ -2544,6 +2619,40 @@
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "1a62c42d4dbb37c387e9647475a8f6bec33b2432",
+          "message": "LUAFDN-58: inject internals into dev tools if the global is present",
+          "timestamp": "2021-09-30T02:42:41Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/216/commits/1a62c42d4dbb37c387e9647475a8f6bec33b2432"
+        },
+        "date": 1633034432940,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 17.1488,
+            "range": "±13.80%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 59.6958,
+            "range": "±17.32%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -3317,6 +3426,40 @@
             "name": "FrameRate#Δt",
             "value": 11.6428,
             "range": "±18.83%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "1a62c42d4dbb37c387e9647475a8f6bec33b2432",
+          "message": "LUAFDN-58: inject internals into dev tools if the global is present",
+          "timestamp": "2021-09-30T02:42:41Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/216/commits/1a62c42d4dbb37c387e9647475a8f6bec33b2432"
+        },
+        "date": 1633034433612,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 103.7986,
+            "range": "±11.44%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 9.7624,
+            "range": "±11.63%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
           }
