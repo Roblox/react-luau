@@ -14,6 +14,7 @@ type Array<T> = { [number]: T }
 type Map<K, V> = { [K]: V }
 type Function = (...any) -> ...any
 type ElementType<T, U> = any
+type EventListener = (...ElementType<any, string>) -> any
 
 export type EventEmitter<Events> = {
 	listenersMap: Map<string, Array<Function>>,
@@ -21,7 +22,7 @@ export type EventEmitter<Events> = {
 	addListener: (
 		self: EventEmitter<Events>,
 		event: string,
-		listener: (...ElementType<Events, string>) -> ...any
+		listener: EventListener
 	) -> (),
 	-- ROBLOX TODO: function generics <Event: $Keys<Events>>(
 	emit: (EventEmitter<Events>, string, ...ElementType<Events, string>) -> (),
@@ -34,41 +35,35 @@ local EventEmitterMetatable = { __index = EventEmitter }
 
 function EventEmitter.new()
 	local self = {}
-	self.listenersMap = {}
+	self.listenersMap = {} :: Map<string, Array<EventListener>>
 
 	return setmetatable(self, EventEmitterMetatable)
 end
 
-function EventEmitter:addListener(
-	event: string,
-	listener: (...ElementType<any, string>) -> any
-): ()
-	local listeners = self.listenersMap[event]
+function EventEmitter:addListener(event: string, listener: EventListener): ()
+	local listeners = self.listenersMap[event] :: Array<EventListener>?
 	if listeners == nil then
 		self.listenersMap[event] = { listener }
 	else
-		local index = Array.indexOf(listeners, listener)
+		local index = Array.indexOf(listeners :: Array<EventListener>, listener)
 		if index < 1 then
-			table.insert(listeners, listener)
+			table.insert(listeners :: Array<EventListener>, listener)
 		end
 	end
 end
 
-function EventEmitter:emit(
-	-- ROBLOX deviation: Luau doesn't support $Keys<Events> for first non-self param
-	event: string,
-	...: ElementType<any, string>
-): ()
-	local listeners = self.listenersMap[event]
+-- ROBLOX deviation: Luau doesn't support $Keys<Events> for first non-self param
+function EventEmitter:emit(event: string, ...: ElementType<any, string>): ()
+	local listeners = self.listenersMap[event] :: Array<EventListener>?
 	if listeners ~= nil then
-		if #listeners == 1 then
+		if #(listeners :: Array<EventListener>) == 1 then
 			-- No need to clone or try/catch
-			local listener = listeners[1]
+			local listener = (listeners :: Array<EventListener>)[1]
 			listener(...)
 		else
 			local didThrow = false
 			local caughtError = nil
-			local clonedListeners = Array.from(listeners)
+			local clonedListeners = Array.from((listeners :: Array<EventListener>))
 			for i = 1, #clonedListeners do
 				local listener = clonedListeners[i]
 				local ok, error_ = pcall(function(...)
@@ -93,13 +88,13 @@ end
 
 -- ROBLOX deviation: Luau doesn't support $Keys<Events> for first non-self param
 function EventEmitter:removeListener(event: string, listener: Function): ()
-	local listeners = self.listenersMap[event]
+	local listeners = self.listenersMap[event] :: Array<EventListener>?
 
 	if listeners ~= nil then
-		local index = Array.indexOf(listeners, listener)
+		local index = Array.indexOf(listeners :: Array<EventListener>, listener)
 
 		if index >= 1 then
-			Array.splice(listeners, index, 1)
+			Array.splice(listeners :: Array<EventListener>, index, 1)
 		end
 	end
 end

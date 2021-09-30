@@ -28,6 +28,8 @@ end
 local window = _G
 local exports = {}
 
+local invariant = require(Packages.Shared).invariant
+
 -- ROBLOX deviation: we don't currently need semver, as we only support one version of React
 -- local semver = require(semver)
 -- local gte = semver.gte
@@ -103,6 +105,10 @@ local MEMO_SYMBOL_STRING = ReactSymbols.MEMO_SYMBOL_STRING
 
 -- ROBLOX FIXME: pass in a real host config, or make this able to use basic enums without initializing
 local ReactReconciler = require(Packages.ReactReconciler)({})
+
+-- ROBLOX deviation: Require shared functionality rather than copying and pasting it inline
+local getNearestMountedFiber = ReactReconciler.getNearestMountedFiber
+
 -- ROBLOX deviation: ReactInternalTypes is re-exported from top-level reconciler to respect the module encapsulation boundary
 local ReactInternalTypes = require(Packages.ReactReconciler)
 type Fiber = ReactInternalTypes.Fiber
@@ -128,6 +134,9 @@ type Interaction = ProfilerTypes.Interaction
 local TypesModules = require(script.Parent.Parent.types)
 type ComponentFilter = TypesModules.ComponentFilter
 type ElementType = TypesModules.ElementType
+
+type RegExpComponentFilter = TypesModules.RegExpComponentFilter
+type ElementTypeComponentFilter = TypesModules.ElementTypeComponentFilter
 
 type getDisplayNameForFiberType = (fiber: Fiber) -> string | nil
 type getTypeSymbolType = (type: any) -> any | number
@@ -488,10 +497,7 @@ exports.attach = function(
 		_getInternalReactCons.ReactPriorityLevels,
 		_getInternalReactCons.ReactTypeOfWork,
 		_getInternalReactCons.ReactTypeOfSideEffect
-	local NoFlags, PerformedWork, Placement =
-		ReactTypeOfSideEffect.NoFlags,
-		ReactTypeOfSideEffect.PerformedWork,
-		ReactTypeOfSideEffect.Placement
+	local PerformedWork = ReactTypeOfSideEffect.PerformedWork
 	local FunctionComponent, ClassComponent, ContextConsumer, DehydratedSuspenseComponent, Fragment, ForwardRef, HostRoot, HostPortal, HostComponent, HostText, IncompleteClassComponent, IndeterminateComponent, MemoComponent, OffscreenComponent, SimpleMemoComponent, SuspenseComponent, SuspenseListComponent =
 		ReactTypeOfWork.FunctionComponent,
 		ReactTypeOfWork.ClassComponent,
@@ -578,19 +584,26 @@ exports.attach = function(
 			local displayName = getDisplayNameForFiber(fiber) or "nil"
 			local id = getFiberID(fiber)
 			local parentDisplayName = parentFiber ~= nil
-					and getDisplayNameForFiber(parentFiber)
+					and getDisplayNameForFiber(
+						parentFiber :: Fiber
+					)
 				or "nil"
-			local parentID = parentFiber and getFiberID(parentFiber) or ""
+			local parentID = parentFiber and getFiberID(parentFiber :: Fiber) or ""
 			-- NOTE: calling getFiberID or getPrimaryFiber is unsafe here
 			-- because it will put them in the map. For now, we'll omit them.
 			-- TODO: better debugging story for this.
 			-- ROBLOX deviation: avoid incompatible log formatting
 			console.log(
-				("[renderer] %s %s (%s) %s"):format(
+				("[renderer] %s %s (%d) %s"):format(
 					name,
 					displayName,
 					id,
-					parentFiber and ("%s (%s)"):format(parentDisplayName, parentID) or ""
+					parentFiber
+							and ("%s (%s)"):format(
+								tostring(parentDisplayName),
+								tostring(parentID)
+							)
+						or ""
 				)
 			)
 		end
@@ -653,19 +666,28 @@ exports.attach = function(
 			end
 			if componentFilter.type == ComponentFilterDisplayName then
 				-- ROBLOX deviation: use value directly as pattern rather than creating a RegExp
-				hideElementsWithDisplayNames:add(componentFilter.value)
+				hideElementsWithDisplayNames:add(
+					(componentFilter :: RegExpComponentFilter).value
+				)
 			elseif componentFilter.type == ComponentFilterElementType then
-				hideElementsWithTypes:add(componentFilter.value)
+				hideElementsWithTypes:add(
+					(componentFilter :: ElementTypeComponentFilter).value
+				)
 			elseif componentFilter.type == ComponentFilterLocation then
-				if componentFilter.isValid and componentFilter.value ~= "" then
+				if
+					(componentFilter :: RegExpComponentFilter).isValid
+					and (componentFilter :: RegExpComponentFilter).value ~= ""
+				then
 					-- ROBLOX deviation: use value directly as pattern rather than creating a RegExp
-					hideElementsWithPaths:add(componentFilter.value)
+					hideElementsWithPaths:add(
+						(componentFilter :: RegExpComponentFilter).value
+					)
 				end
 			elseif componentFilter.type == ComponentFilterHOC then
 				hideElementsWithDisplayNames:add("%(")
 			else
 				console.warn(
-					('Invalid component filter type "%s"'):format(componentFilter.type)
+					('Invalid component filter type "%d"'):format(componentFilter.type)
 				)
 			end
 		end
@@ -713,10 +735,10 @@ exports.attach = function(
 
 		-- Recursively re-mount all roots with new filter criteria applied.
 		for root in pairs(hook.getFiberRoots(rendererID)) do
-			currentRootID = getFiberID(getPrimaryFiber(root.current))
+			currentRootID = getFiberID(getPrimaryFiber(root.current :: Fiber))
 
-			setRootPseudoKey(currentRootID, root.current)
-			mountFiberRecursively(root.current, nil, false, false)
+			setRootPseudoKey(currentRootID, root.current :: Fiber)
+			mountFiberRecursively(root.current :: Fiber, nil, false, false)
 			flushPendingEvents(root)
 
 			currentRootID = -1
@@ -768,7 +790,7 @@ exports.attach = function(
 				-- eslint-disable-next-line no-for-of-loops/no-for-of-loops
 				for _, displayNameRegExp in hideElementsWithDisplayNames:ipairs() do
 					-- ROBLOX deviation: these are patterns not RegExps
-					if displayName:match(displayNameRegExp) then
+					if (displayName :: string):match(displayNameRegExp) then
 						return true
 					end
 				end
@@ -856,7 +878,7 @@ exports.attach = function(
 		local alternate = fiber.alternate
 
 		if alternate ~= nil and primaryFibers:has(alternate) then
-			return alternate
+			return alternate :: Fiber
 		end
 
 		primaryFibers:add(fiber)
@@ -951,8 +973,8 @@ exports.attach = function(
 		updateContextsForFiber(fiber)
 		local current = fiber.child
 		while current ~= nil do
-			crawlToInitializeContextsMap(current)
-			current = current.sibling
+			crawlToInitializeContextsMap(current :: Fiber)
+			current = (current :: Fiber).sibling
 		end
 	end
 
@@ -970,7 +992,7 @@ exports.attach = function(
 				local prevLegacyContext, prevModernContext =
 					prevContexts[1], prevContexts[2]
 				local nextLegacyContext, nextModernContext =
-					nextContexts[1], nextContexts[2]
+					(nextContexts :: Array<any>)[1], (nextContexts :: Array<any>)[2]
 
 				if nextLegacyContext ~= NO_CONTEXT then
 					return getChangedKeys(prevLegacyContext, nextLegacyContext)
@@ -1015,19 +1037,33 @@ exports.attach = function(
 			next_["baseState"]
 			and next_["memoizedState"]
 			and next_["next"]
-			and Object.hasOwnProperty(next_, "queue")
+			and next_["queue"] ~= nil
 		then
 			return nil
 		end
 
-		local keys = Set.new({
-			table.unpack(Object.keys(prev)),
-			table.unpack(Object.keys(next_)),
-		})
+		-- ROBLOX deviation: Avoid an additional Set allocation here as that
+		-- creates unneccessary tables and requires extra iteration.
+		-- Instead, iterate through the prev keys first and check if they have
+		-- changed in next, then check next for any new keys.
+
+		-- local keys = Set.new({
+		-- 	table.unpack(Object.keys(prev)),
+		-- 	table.unpack(Object.keys(next_)),
+		-- })
+		-- local changedKeys = {}
+		-- -- eslint-disable-next-line no-for-of-loops/no-for-of-loops
+		-- for _, key in keys:ipairs() do
+		-- 	if prev[key] ~= next_[key] then
 		local changedKeys = {}
-		-- eslint-disable-next-line no-for-of-loops/no-for-of-loops
-		for _, key in keys:ipairs() do
-			if prev[key] ~= next_[key] then
+
+		for key, value in pairs(prev) do
+			if value ~= next_[key] then
+				table.insert(changedKeys, key)
+			end
+		end
+		for key, value in pairs(next_) do
+			if prev[key] == nil then
 				table.insert(changedKeys, key)
 			end
 		end
@@ -1103,22 +1139,22 @@ exports.attach = function(
 		local numUnmountIDs = #pendingRealUnmountedIDs
 			+ #pendingSimulatedUnmountedIDs
 			+ (pendingUnmountedRootID == nil and 0 or 1)
-		-- ROBLOX TODO: Create an array of a specified length
-		local operations = Array.new(
+		local operations: Array<string | number> = Array.new(
+			-- ROBLOX deviation: don't create an array of specified length
 			-- Identify which renderer this update is coming from.
-			2 -- [rendererID, rootFiberID]
-							-- How big is the string table?
-							+ 1 -- [stringTableLength]
-							-- Then goes the actual string table.
-							+ pendingStringTableLength
-							-- All unmounts are batched in a single message.
-							-- [TREE_OPERATION_REMOVE, removedIDLength, ...ids]
-							+ numUnmountIDs
-						> 0
-					and (2 + numUnmountIDs)
-				or 0
-					-- Regular operations
-					+ #pendingOperations
+			-- 2 -- [rendererID, rootFiberID]
+			-- 				-- How big is the string table?
+			-- 				+ 1 -- [stringTableLength]
+			-- 				-- Then goes the actual string table.
+			-- 				+ pendingStringTableLength
+			-- 				-- All unmounts are batched in a single message.
+			-- 				-- [TREE_OPERATION_REMOVE, removedIDLength, ...ids]
+			-- 				+ numUnmountIDs
+			-- 			> 0
+			-- 		and (2 + numUnmountIDs)
+			-- 	or 0
+			-- 		-- Regular operations
+			-- 		+ #pendingOperations
 		)
 
 		-- Identify which renderer this update is coming from.
@@ -1160,15 +1196,15 @@ exports.attach = function(
 
 		if numUnmountIDs > 0 then
 			-- All unmounts except roots are batched in a single message.
-			operations[POSTFIX_INCREMENT()] = TREE_OPERATION_REMOVE
+			operations[POSTFIX_INCREMENT()] = TREE_OPERATION_REMOVE :: number
 			-- The first number is how many unmounted IDs we're gonna send.
-			operations[POSTFIX_INCREMENT()] = numUnmountIDs
+			operations[POSTFIX_INCREMENT()] = numUnmountIDs :: number
 
 			-- Fill in the real unmounts in the reverse order.
 			-- They were inserted parents-first by React, but we want children-first.
 			-- So we traverse our array backwards.
 			for j = #pendingRealUnmountedIDs, 1, -1 do
-				operations[POSTFIX_INCREMENT()] = pendingRealUnmountedIDs[j]
+				operations[POSTFIX_INCREMENT()] = pendingRealUnmountedIDs[j] :: number
 			end
 
 			-- Fill in the simulated unmounts (hidden Suspense subtrees) in their order.
@@ -1177,14 +1213,14 @@ exports.attach = function(
 			-- children of already pushed "real" IDs. If they were, we wouldn't be able
 			-- to discover them during the traversal, as they would have been deleted.
 			for j = 1, #pendingSimulatedUnmountedIDs do
-				operations[i + j] = pendingSimulatedUnmountedIDs[j]
+				operations[i + j] = pendingSimulatedUnmountedIDs[j] :: number
 			end
 
 			i = i + #pendingSimulatedUnmountedIDs
 
 			-- The root ID should always be unmounted last.
 			if pendingUnmountedRootID ~= nil then
-				operations[i] = pendingUnmountedRootID
+				operations[i] = pendingUnmountedRootID :: number
 				i = i + 1
 			end
 		end
@@ -1192,7 +1228,7 @@ exports.attach = function(
 		-- Fill in the rest of the operations.
 		for j = 1, #pendingOperations do
 			-- ROBLOX deviation: 1-indexing math
-			operations[i + j - 1] = pendingOperations[j]
+			operations[i + j - 1] = pendingOperations[j] :: number
 		end
 
 		i = i + #pendingOperations
@@ -1224,10 +1260,10 @@ exports.attach = function(
 			return 0
 		end
 
-		local existingID = pendingStringTable[str :: string]
+		local existingID: number? = pendingStringTable[str :: string]
 
 		if existingID ~= nil then
-			return existingID
+			return existingID :: number
 		end
 
 		local stringID = #Object.keys(pendingStringTable) + 1
@@ -1273,14 +1309,18 @@ exports.attach = function(
 			local displayName = getDisplayNameForFiber(fiber)
 			local elementType = getElementTypeForFiber(fiber)
 			local _debugOwner = fiber._debugOwner
-			local ownerID = _debugOwner and getFiberID(getPrimaryFiber(_debugOwner)) or 0
-			local parentID = parentFiber and getFiberID(getPrimaryFiber(parentFiber)) or 0
+			local ownerID = _debugOwner
+					and getFiberID(getPrimaryFiber(_debugOwner :: Fiber))
+				or 0
+			local parentID = parentFiber
+					and getFiberID(getPrimaryFiber(parentFiber :: Fiber))
+				or 0
 
 			local displayNameStringID = getStringID(displayName)
 
 			-- This check is a guard to handle a React element that has been modified
 			-- in such a way as to bypass the default stringification of the "key" property.
-			local keyString = (function()
+			local keyString = (function(): string?
 				if key == nil then
 					return nil
 				end
@@ -1426,7 +1466,7 @@ exports.attach = function(
 								return fiber
 							end
 
-							return parentFiber
+							return parentFiber :: Fiber
 						end)(),
 						true,
 						traceNearestHostComponentUpdate
@@ -1449,7 +1489,7 @@ exports.attach = function(
 								return fiber
 							end
 
-							return parentFiber
+							return parentFiber :: Fiber
 						end)(),
 						true,
 						traceNearestHostComponentUpdate
@@ -1464,7 +1504,7 @@ exports.attach = function(
 						if shouldIncludeInTree then
 							return fiber
 						end
-						return parentFiber
+						return parentFiber :: Fiber
 					end)(),
 					true,
 					traceNearestHostComponentUpdate
@@ -1479,7 +1519,7 @@ exports.attach = function(
 		if traverseSiblings and fiber.sibling ~= nil then
 			mountFiberRecursively(
 				fiber.sibling,
-				parentFiber,
+				parentFiber :: Fiber,
 				true,
 				traceNearestHostComponentUpdate
 			)
@@ -1521,12 +1561,12 @@ exports.attach = function(
 		while child ~= nil do
 			-- Record simulated unmounts children-first.
 			-- We skip nodes without return because those are real unmounts.
-			if child.return_ ~= nil then
-				unmountFiberChildrenRecursively(child)
-				recordUnmount(child, true)
+			if (child :: Fiber).return_ ~= nil then
+				unmountFiberChildrenRecursively(child :: Fiber)
+				recordUnmount(child :: Fiber, true)
 			end
 
-			child = child.sibling
+			child = (child :: Fiber).sibling
 		end
 	end
 	recordProfilingDurations = function(fiber: Fiber)
@@ -1541,7 +1581,10 @@ exports.attach = function(
 
 			-- It's important to update treeBaseDuration even if the current Fiber did not render,
 			-- because it's possible that one of its descendants did.
-			if alternate == nil or treeBaseDuration ~= alternate.treeBaseDuration then
+			if
+				alternate == nil
+				or treeBaseDuration ~= (alternate :: Fiber).treeBaseDuration
+			then
 				local convertedTreeBaseDuration = math.floor(
 					(treeBaseDuration or 0) * 1000
 				)
@@ -1550,7 +1593,7 @@ exports.attach = function(
 				pushOperation(id)
 				pushOperation(convertedTreeBaseDuration)
 			end
-			if alternate == nil or didFiberRender(alternate, fiber) then
+			if alternate == nil or didFiberRender((alternate :: Fiber), fiber) then
 				if actualDuration ~= nil then
 					-- The actual duration reported by React includes time spent working on children.
 					-- This is useful information, but it's also useful to be able to exclude child durations.
@@ -1558,32 +1601,36 @@ exports.attach = function(
 					-- So we need to do this on the backend.
 					-- Note that this calculated self duration is not the same thing as the base duration.
 					-- The two are calculated differently (tree duration does not accumulate).
-					local selfDuration = actualDuration
+					local selfDuration = actualDuration :: number
 					local child = fiber.child
 
 					while child ~= nil do
-						selfDuration = selfDuration - (child.actualDuration or 0)
-						child = child.sibling
+						selfDuration = selfDuration
+							- ((child :: Fiber).actualDuration or 0)
+						child = (child :: Fiber).sibling
 					end
 
 					-- If profiling is active, store durations for elements that were rendered during the commit.
 					-- Note that we should do this for any fiber we performed work on, regardless of its actualDuration value.
 					-- In some cases actualDuration might be 0 for fibers we worked on (particularly if we're using Date.now)
 					-- In other cases (e.g. Memo) actualDuration might be greater than 0 even if we "bailed out".
-					local metadata = currentCommitProfilingMetadata
+					local metadata = currentCommitProfilingMetadata :: CommitProfilingData
 					table.insert(metadata.durations, id)
-					table.insert(metadata.durations, actualDuration)
+					table.insert(metadata.durations, actualDuration :: number)
 					table.insert(metadata.durations, selfDuration)
 					metadata.maxActualDuration = math.max(
 						metadata.maxActualDuration,
-						actualDuration
+						actualDuration :: number
 					)
 
 					if recordChangeDescriptions then
 						local changeDescription = getChangeDescription(alternate, fiber)
 						if changeDescription ~= nil then
 							if metadata.changeDescriptions ~= nil then
-								metadata.changeDescriptions[id] = changeDescription
+								(
+									metadata.changeDescriptions :: Map<number, ChangeDescription>
+								)[id] =
+									changeDescription :: ChangeDescription
 							end
 						end
 
@@ -1601,12 +1648,12 @@ exports.attach = function(
 
 		-- This is a naive implementation that shallowly recourses children.
 		-- We might want to revisit this if it proves to be too inefficient.
-		local child = childSet
+		local child: Fiber? = childSet
 
 		while child ~= nil do
-			findReorderedChildrenRecursively(child, nextChildren)
+			findReorderedChildrenRecursively(child :: Fiber, nextChildren)
 
-			child = child.sibling
+			child = (child :: Fiber).sibling
 		end
 
 		local numChildren = #nextChildren
@@ -1632,7 +1679,7 @@ exports.attach = function(
 			local child = fiber.child
 			while child ~= nil do
 				findReorderedChildrenRecursively(child, nextChildren)
-				child = child.sibling
+				child = (child :: Fiber).sibling
 			end
 		end
 	end
@@ -1723,9 +1770,9 @@ exports.attach = function(
 				nextFallbackChildSet ~= nil
 				and prevFallbackChildSet ~= nil
 				and updateFiberRecursively(
-					nextFallbackChildSet,
-					prevFallbackChildSet,
-					nextFiber,
+					nextFallbackChildSet :: Fiber,
+					prevFallbackChildSet :: Fiber,
+					nextFiber :: Fiber,
 					traceNearestHostComponentUpdate
 				)
 			then
@@ -1740,8 +1787,8 @@ exports.attach = function(
 
 			if nextPrimaryChildSet ~= nil then
 				mountFiberRecursively(
-					nextPrimaryChildSet,
-					nextFiber,
+					nextPrimaryChildSet :: Fiber,
+					nextFiber :: Fiber,
 					true,
 					traceNearestHostComponentUpdate
 				)
@@ -1781,7 +1828,7 @@ exports.attach = function(
 			if nextFiber.child ~= prevFiber.child then
 				-- If the first child is different, we need to traverse them.
 				-- Each next child will be either a new child (mount) or an alternate (update).
-				local nextChild = nextFiber.child
+				local nextChild: Fiber? = nextFiber.child
 				local prevChildAtSameIndex = prevFiber.child
 
 				while nextChild do
@@ -1789,18 +1836,18 @@ exports.attach = function(
 					-- they are either new mounts or alternates of previous children.
 					-- Schedule updates and mounts depending on whether alternates exist.
 					-- We don't track deletions here because they are reported separately.
-					if nextChild.alternate then
-						local prevChild = nextChild.alternate
+					if (nextChild :: Fiber).alternate then
+						local prevChild = (nextChild :: Fiber).alternate
 
 						if
 							updateFiberRecursively(
-								nextChild,
-								prevChild,
+								nextChild :: Fiber,
+								prevChild :: Fiber,
 								(function()
 									if shouldIncludeInTree then
-										return nextFiber
+										return nextFiber :: Fiber
 									end
-									return parentFiber
+									return parentFiber :: Fiber
 								end)(),
 								traceNearestHostComponentUpdate
 							)
@@ -1818,12 +1865,12 @@ exports.attach = function(
 						end
 					else
 						mountFiberRecursively(
-							nextChild,
+							nextChild :: Fiber,
 							(function()
 								if shouldIncludeInTree then
-									return nextFiber
+									return nextFiber :: Fiber
 								end
-								return parentFiber
+								return parentFiber :: Fiber
 							end)(),
 							false,
 							traceNearestHostComponentUpdate
@@ -1833,12 +1880,12 @@ exports.attach = function(
 					end
 
 					-- Try the next child.
-					nextChild = nextChild.sibling
+					nextChild = nextChild.sibling :: Fiber
 
 					-- Advance the pointer in the previous list so that we can
 					-- keep comparing if they line up.
 					if not shouldResetChildren and prevChildAtSameIndex ~= nil then
-						prevChildAtSameIndex = prevChildAtSameIndex.sibling
+						prevChildAtSameIndex = (prevChildAtSameIndex :: Fiber).sibling
 					end
 				end
 
@@ -1890,7 +1937,7 @@ exports.attach = function(
 					end)()
 				end
 				if nextChildSet ~= nil then
-					recordResetChildren(nextFiber, nextChildSet)
+					recordResetChildren(nextFiber, nextChildSet :: Fiber)
 				end
 
 				-- We've handled the child order change for this Fiber.
@@ -1913,9 +1960,12 @@ exports.attach = function(
 
 		pendingOperationsQueue = nil
 
-		if localPendingOperationsQueue ~= nil and #localPendingOperationsQueue > 0 then
+		if
+			localPendingOperationsQueue ~= nil
+			and #(localPendingOperationsQueue :: Array<Array<number>>) > 0
+		then
 			-- ROBLOX deviation: for loop instead of forEach
-			for _, operations in ipairs(localPendingOperationsQueue) do
+			for _, operations in ipairs(localPendingOperationsQueue :: Array<Array<number>>) do
 				hook.emit("operations", operations)
 			end
 		else
@@ -1938,18 +1988,13 @@ exports.attach = function(
 					-- If profiling is active, store commit time and duration, and the current interactions.
 					-- The frontend may request this information after profiling has stopped.
 					currentCommitProfilingMetadata = {
-						changeDescriptions = (function()
-							if recordChangeDescriptions then
-								-- ROBLOX deviation: use bare table instead of Map type
-								return {}
-							end
-							return nil
-						end)(),
+						-- ROBLOX deviation: use bare table instead of Map type
+						changeDescriptions = recordChangeDescriptions and {} or nil,
 						durations = {},
 						commitTime = getCurrentTime() - profilingStartTime,
 						-- ROBLOX TODO: Work out how to deviate this assignment, it's messy
 						interactions = Array.map(
-							Array.from(root.memoizedInteractions),
+							Array.from(root.memoizedInteractions :: Array<any>),
 							function(interaction)
 								return Object.assign({}, interaction, {
 									timestamp = interaction.timestamp - profilingStartTime,
@@ -2018,13 +2063,8 @@ exports.attach = function(
 			-- If profiling is active, store commit time and duration, and the current interactions.
 			-- The frontend may request this information after profiling has stopped.
 			currentCommitProfilingMetadata = {
-				changeDescriptions = (function()
-					if recordChangeDescriptions then
-						-- ROBLOX deviation: use bare table instead of Map
-						return {}
-					end
-					return nil
-				end)(),
+				-- ROBLOX deviation: use bare table instead of Map type
+				changeDescriptions = recordChangeDescriptions and {} or nil,
 				durations = {},
 				commitTime = getCurrentTime() - profilingStartTime,
 				interactions = Array.map(
@@ -2036,26 +2076,25 @@ exports.attach = function(
 					end
 				),
 				maxActualDuration = 0,
-				priorityLevel = (function()
+				priorityLevel = (function(): string?
 					if priorityLevel == nil then
 						return nil
 					end
-
 					return formatPriorityLevel(priorityLevel)
 				end)(),
 			}
 		end
 		if alternate then
 			-- TODO: relying on this seems a bit fishy.
-			local wasMounted = alternate.memoizedState ~= nil
-				and alternate.memoizedState.element ~= nil
+			local wasMounted = (alternate :: Fiber).memoizedState ~= nil
+				and (alternate :: Fiber).memoizedState.element ~= nil
 			local isMounted = current.memoizedState ~= nil
 				and current.memoizedState.element ~= nil
 
 			if not wasMounted and isMounted then
 				-- Mount a new root.
 				setRootPseudoKey(currentRootID, current)
-				mountFiberRecursively(current, nil, false, false)
+				mountFiberRecursively(current :: Fiber, nil, false, false)
 			elseif wasMounted and isMounted then
 				-- Update an existing root.
 				updateFiberRecursively(current, alternate, nil, false)
@@ -2067,7 +2106,7 @@ exports.attach = function(
 		else
 			-- Mount a new root.
 			setRootPseudoKey(currentRootID, current)
-			mountFiberRecursively(current, nil, false, false)
+			mountFiberRecursively(current :: Fiber, nil, false, false)
 		end
 		if isProfiling and isProfilingSupported then
 			local commitProfilingMetadata = (
@@ -2094,22 +2133,22 @@ exports.attach = function(
 	end
 	findAllCurrentHostFibers = function(id: number): Array<Fiber>
 		local fibers = {}
-		local fiber = findCurrentFiberUsingSlowPathById(id)
+		local fiber: Fiber? = findCurrentFiberUsingSlowPathById(id)
 
 		if not fiber then
 			return fibers
 		end
 
 		-- Next we'll drill down this component to find all HostComponent/Text.
-		local node = fiber
+		local node = fiber :: Fiber
 
 		while true do
 			if node.tag == HostComponent or node.tag == HostText then
 				table.insert(fibers, node)
 			elseif node.child then
 				-- ROBLOX TODO: What do we use instead of "return"?
-				node.child.return_ = node
-				node = node.child
+				(node.child :: Fiber).return_ = node
+				node = node.child :: Fiber
 			end
 			if node == fiber then
 				return fibers
@@ -2120,11 +2159,11 @@ exports.attach = function(
 					return fibers
 				end
 
-				node = node.return_
+				node = node.return_ :: Fiber
 			end
 
-			node.sibling.return_ = node.return_
-			node = node.sibling
+			(node.sibling :: Fiber).return_ = node.return_ :: Fiber
+			node = node.sibling :: Fiber
 		end
 
 		-- Flow needs the return here, but ESLint complains about it.
@@ -2134,24 +2173,25 @@ exports.attach = function(
 	local function findNativeNodesForFiberID(id: number)
 		-- ROBLOX try
 		local ok, result = pcall(function()
-			local fiber = findCurrentFiberUsingSlowPathById(id)
+			local fiber: Fiber? = findCurrentFiberUsingSlowPathById(id)
 			if fiber == nil then
 				return nil
 			end
 			-- Special case for a timed-out Suspense.
-			local isTimedOutSuspense = fiber.tag == SuspenseComponent
-				and fiber.memoizedState ~= nil
+			local isTimedOutSuspense = (fiber :: Fiber).tag == SuspenseComponent
+				and (fiber :: Fiber).memoizedState ~= nil
 			if isTimedOutSuspense then
 				-- A timed-out Suspense's findDOMNode is useless.
 				-- Try our best to find the fallback directly.
-				local maybeFallbackFiber = fiber.child and fiber.child.sibling
+				local maybeFallbackFiber = (fiber :: Fiber).child
+					and ((fiber :: Fiber).child :: Fiber).sibling
 				if maybeFallbackFiber ~= nil then
-					fiber = maybeFallbackFiber
+					fiber = maybeFallbackFiber :: Fiber
 				end
 			end
 			local hostFibers = findAllCurrentHostFibers(id)
 			-- ROBLOX deviation: filter for Boolean doesn't make sense
-			return Array.map(hostFibers, function(hostFiber)
+			return Array.map(hostFibers :: Array<Fiber>, function(hostFiber: Fiber)
 				return hostFiber.stateNode
 			end)
 		end)
@@ -2164,10 +2204,10 @@ exports.attach = function(
 	end
 
 	local function getDisplayNameForFiberID(id)
-		local fiber = idToFiberMap[id]
-		return (function()
+		local fiber: Fiber? = idToFiberMap[id]
+		return (function(): string?
 			if fiber ~= nil then
-				return getDisplayNameForFiber(fiber)
+				return getDisplayNameForFiber(fiber :: Fiber)
 			end
 			return nil
 		end)()
@@ -2176,17 +2216,17 @@ exports.attach = function(
 	local function getFiberIDForNative(
 		hostInstance,
 		findNearestUnfilteredAncestor: boolean?
-	)
+	): number?
 		findNearestUnfilteredAncestor = findNearestUnfilteredAncestor or false
 		local fiber = renderer.findFiberByHostInstance(hostInstance)
 
 		if fiber ~= nil then
 			if findNearestUnfilteredAncestor then
-				while fiber ~= nil and shouldFilterFiber(fiber) do
-					fiber = fiber.return_
+				while fiber ~= nil and shouldFilterFiber(fiber :: Fiber) do
+					fiber = (fiber :: Fiber).return_
 				end
 			end
-			return getFiberID(getPrimaryFiber(fiber))
+			return getFiberID(getPrimaryFiber(fiber :: Fiber))
 		end
 
 		return nil
@@ -2198,43 +2238,8 @@ exports.attach = function(
 	-- https://github.com/facebook/react/blob/master/packages/react-reconciler/src/ReactFiberTreeReflection.js
 	-- It would be nice if we updated React to inject this function directly (vs just indirectly via findDOMNode).
 	-- BEGIN copied code
-	local ReactFiberFlags = ReactReconciler.ReactFiberFlags
-	local Hydrating = ReactFiberFlags.Hydrating
-	local function getNearestMountedFiber(fiber: Fiber): Fiber?
-		local node = fiber
-		local nearestMounted = fiber
-		if not fiber.alternate then
-			-- If there is no alternate, this might be a new tree that isn't inserted
-			-- yet. If it is, then it will have a pending insertion effect on it.
-			local nextNode = node
-			repeat
-				node = nextNode
-				if bit32.band(node.flags, bit32.bor(Placement, Hydrating)) ~= NoFlags then
-					-- This is an insertion or in-progress hydration. The nearest possible
-					-- mounted fiber is the parent but we need to continue to figure out
-					-- if that one is still mounted.
-					nearestMounted = node.return_
-				end
-				nextNode = node.return_
-			until not nextNode
-		else
-			while node.return_ do
-				node = node.return_
-			end
-		end
-		if node.tag == HostRoot then
-			-- TODO: Check if this was a nested HostRoot when used with
-			-- renderContainerIntoSubtree.
-			return nearestMounted
-		end
-		-- If we didn't hit the root, that means that we're in an disconnected tree
-		-- that has been unmounted.
-		return nil
-	end
 
 	-- ROBLOX NOTE: Copied these supporting functions from ReactFiberTreeReflection
-	local invariant = require(Packages.Shared).invariant
-
 	local function assertIsMounted(fiber)
 		invariant(
 			getNearestMountedFiber(fiber) == fiber,
@@ -2243,7 +2248,7 @@ exports.attach = function(
 	end
 
 	findCurrentFiberUsingSlowPathById = function(id: number): Fiber | nil
-		local fiber = idToFiberMap[id]
+		local fiber: Fiber? = idToFiberMap[id]
 
 		if fiber == nil then
 			console.warn(('Could not find Fiber with id "%s"'):format(tostring(id)))
@@ -2251,40 +2256,40 @@ exports.attach = function(
 		end
 
 		-- ROBLOX NOTE: Copied from ReactFiberTreeReflection.lua
-		local alternate = fiber.alternate
+		local alternate = (fiber :: Fiber).alternate
 		if not alternate then
 			-- If there is no alternate, then we only need to check if it is mounted.
-			local nearestMounted = getNearestMountedFiber(fiber)
+			local nearestMounted = getNearestMountedFiber((fiber :: Fiber))
 			invariant(
 				nearestMounted ~= nil,
 				"Unable to find node on an unmounted component."
 			)
-			if nearestMounted ~= fiber then
+			if nearestMounted ~= (fiber :: Fiber) then
 				return nil
 			end
-			return fiber
+			return (fiber :: Fiber)
 		end
 		-- If we have two possible branches, we'll walk backwards up to the root
 		-- to see what path the root points to. On the way we may hit one of the
 		-- special cases and we'll deal with them.
-		local a: Fiber = fiber
-		local b: Fiber = alternate
+		local a = fiber :: Fiber
+		local b = alternate :: Fiber
 		while true do
 			local parentA = a.return_
 			if parentA == nil then
 				-- We're at the root.
 				break
 			end
-			local parentB = parentA.alternate
+			local parentB = (parentA :: Fiber).alternate
 			if parentB == nil then
 				-- There is no alternate. This is an unusual case. Currently, it only
 				-- happens when a Suspense component is hidden. An extra fragment fiber
 				-- is inserted in between the Suspense fiber and its children. Skip
 				-- over this extra fragment fiber and proceed to the next parent.
-				local nextParent = parentA.return_
+				local nextParent = (parentA :: Fiber).return_
 				if nextParent ~= nil then
-					a = nextParent
-					b = nextParent
+					a = nextParent :: Fiber
+					b = nextParent :: Fiber
 					continue
 				end
 				-- If there's no parent, we're at the root.
@@ -2294,8 +2299,8 @@ exports.attach = function(
 			-- If both copies of the parent fiber point to the same child, we can
 			-- assume that the child is current. This happens when we bailout on low
 			-- priority: the bailed out fiber's child reuses the current child.
-			if parentA.child == parentB.child then
-				local child = parentA.child
+			if (parentA :: Fiber).child == (parentB :: Fiber).child then
+				local child = (parentA :: Fiber).child
 				while child do
 					if child == a then
 						-- We've determined that A is the current branch.
@@ -2307,7 +2312,7 @@ exports.attach = function(
 						assertIsMounted(parentA)
 						return alternate
 					end
-					child = child.sibling
+					child = child.sibling :: Fiber
 				end
 				-- We should never have an alternate for any mounting node. So the only
 				-- way this could possibly happen is if this was unmounted, if at all.
@@ -2319,8 +2324,8 @@ exports.attach = function(
 				-- fibers. We assume that return pointers never criss-cross, so A must
 				-- belong to the child set of A.return_, and B must belong to the child
 				-- set of B.return_.
-				a = parentA
-				b = parentB
+				a = parentA :: Fiber
+				b = parentB :: Fiber
 			else
 				-- The return pointers point to the same fiber. We'll have to use the
 				-- default, slow path: scan the child sets of each parent alternate to see
@@ -2328,39 +2333,39 @@ exports.attach = function(
 				--
 				-- Search parent A's child set
 				local didFindChild = false
-				local child = parentA.child
+				local child = (parentA :: Fiber).child
 				while child do
 					if child == a then
 						didFindChild = true
-						a = parentA
-						b = parentB
+						a = parentA :: Fiber
+						b = parentB :: Fiber
 						break
 					end
 					if child == b then
 						didFindChild = true
-						b = parentA
-						a = parentB
+						b = parentA :: Fiber
+						a = parentB :: Fiber
 						break
 					end
-					child = child.sibling
+					child = child.sibling :: Fiber
 				end
 				if not didFindChild then
 					-- Search parent B's child set
-					child = parentB.child
+					child = (parentB :: Fiber).child
 					while child do
 						if child == a then
 							didFindChild = true
-							a = parentB
-							b = parentA
+							a = parentB :: Fiber
+							b = parentA :: Fiber
 							break
 						end
 						if child == b then
 							didFindChild = true
-							b = parentB
-							a = parentA
+							b = parentB :: Fiber
+							a = parentA :: Fiber
 							break
 						end
-						child = child.sibling
+						child = child.sibling :: Fiber
 					end
 					invariant(
 						didFindChild,
@@ -2399,14 +2404,15 @@ exports.attach = function(
 		end
 	end
 	local function prepareViewElementSource(id: number): ()
-		local fiber = idToFiberMap[id]
+		local fiber: Fiber? = idToFiberMap[id]
 
 		if fiber == nil then
 			console.warn(('Could not find Fiber with id "%s"'):format(tostring(id)))
 			return
 		end
 
-		local elementType, tag, type_ = fiber.elementType, fiber.tag, fiber.type
+		local elementType, tag, type_ =
+			(fiber :: Fiber).elementType, (fiber :: Fiber).tag, (fiber :: Fiber).type
 
 		if
 			tag == ClassComponent
@@ -2428,32 +2434,32 @@ exports.attach = function(
 	end
 
 	local function getOwnersList(id: number): Array<Owner> | nil
-		local fiber = findCurrentFiberUsingSlowPathById(id)
+		local fiber: Fiber? = findCurrentFiberUsingSlowPathById(id)
 
 		if fiber == nil then
 			return nil
 		end
 
-		local _debugOwner = fiber._debugOwner
+		local _debugOwner = (fiber :: Fiber)._debugOwner
 		local owners = {
 			{
-				displayName = getDisplayNameForFiber(fiber) or "Anonymous",
+				displayName = getDisplayNameForFiber((fiber :: Fiber)) or "Anonymous",
 				id = id,
-				type = getElementTypeForFiber(fiber),
+				type = getElementTypeForFiber((fiber :: Fiber)),
 			},
 		}
 
 		if _debugOwner then
-			local owner = _debugOwner
+			local owner: Fiber? = _debugOwner
 
 			while owner ~= nil do
 				owners.unshift({
-					displayName = getDisplayNameForFiber(owner) or "Anonymous",
-					id = getFiberID(getPrimaryFiber(owner)),
-					type = getElementTypeForFiber(owner),
+					displayName = getDisplayNameForFiber(owner :: Fiber) or "Anonymous",
+					id = getFiberID(getPrimaryFiber(owner :: Fiber)),
+					type = getElementTypeForFiber(owner :: Fiber),
 				})
 
-				owner = owner._debugOwner or nil
+				owner = (owner :: Fiber)._debugOwner or nil
 			end
 		end
 
@@ -2466,13 +2472,13 @@ exports.attach = function(
 	local function getInstanceAndStyle(id: number): InstanceAndStyle
 		local instance = nil
 		local style = nil
-		local fiber = findCurrentFiberUsingSlowPathById(id)
+		local fiber: Fiber? = findCurrentFiberUsingSlowPathById(id)
 
 		if fiber ~= nil then
-			instance = fiber.stateNode
+			instance = (fiber :: Fiber).stateNode
 
-			if fiber.memoizedProps ~= nil then
-				style = fiber.memoizedProps.style
+			if (fiber :: Fiber).memoizedProps ~= nil then
+				style = (fiber :: Fiber).memoizedProps.style
 			end
 		end
 
@@ -2483,24 +2489,24 @@ exports.attach = function(
 	end
 
 	local function inspectElementRaw(id: number): InspectedElement | nil
-		local fiber = findCurrentFiberUsingSlowPathById(id)
+		local fiber: Fiber? = findCurrentFiberUsingSlowPathById(id)
 
 		if fiber == nil then
 			return nil
 		end
 
 		local _debugOwner, _debugSource, stateNode, key, memoizedProps, memoizedState, dependencies, tag, type_ =
-			fiber._debugOwner,
-			fiber._debugSource,
-			fiber.stateNode,
-			fiber.key,
-			fiber.memoizedProps,
-			fiber.memoizedState,
-			fiber.dependencies,
-			fiber.tag,
-			fiber.type
+			(fiber :: Fiber)._debugOwner,
+			(fiber :: Fiber)._debugSource,
+			(fiber :: Fiber).stateNode,
+			(fiber :: Fiber).key,
+			(fiber :: Fiber).memoizedProps,
+			(fiber :: Fiber).memoizedState,
+			(fiber :: Fiber).dependencies,
+			(fiber :: Fiber).tag,
+			(fiber :: Fiber).type
 
-		local elementType = getElementTypeForFiber(fiber)
+		local elementType = getElementTypeForFiber(fiber :: Fiber)
 
 		local usesHooks = (
 				tag == FunctionComponent
@@ -2542,10 +2548,10 @@ exports.attach = function(
 			context = consumerResolvedContext._currentValue or nil
 
 			-- Look for overridden value.
-			local current = fiber.return_
+			local current = (fiber :: Fiber).return_
 
 			while current ~= nil do
-				local currentType = current.type
+				local currentType = (current :: Fiber).type
 				local currentTypeSymbol = getTypeSymbol(currentType)
 
 				if
@@ -2559,13 +2565,13 @@ exports.attach = function(
 						or currentType.context
 
 					if providerResolvedContext == consumerResolvedContext then
-						context = current.memoizedProps.value
+						context = (current :: Fiber).memoizedProps.value
 
 						break
 					end
 				end
 
-				current = current.return_
+				current = (current :: Fiber).return_
 			end
 		end
 
@@ -2582,14 +2588,14 @@ exports.attach = function(
 
 		if _debugOwner then
 			owners = {}
-			local owner = _debugOwner
+			local owner: Fiber? = _debugOwner
 			while owner ~= nil do
 				table.insert(owners, {
-					displayName = getDisplayNameForFiber(owner) or "Anonymous",
-					id = getFiberID(getPrimaryFiber(owner)),
-					type = getElementTypeForFiber(owner),
+					displayName = getDisplayNameForFiber(owner :: Fiber) or "Anonymous",
+					id = getFiberID(getPrimaryFiber(owner :: Fiber)),
+					type = getElementTypeForFiber(owner :: Fiber),
 				})
-				owner = owner._debugOwner or nil
+				owner = (owner :: Fiber)._debugOwner or nil
 			end
 		end
 
@@ -2609,7 +2615,7 @@ exports.attach = function(
 			end
 
 			pcall(function()
-				hooks = inspectHooksOfFiber(fiber, renderer.currentDispatcherRef)
+				hooks = inspectHooksOfFiber(fiber :: Fiber, renderer.currentDispatcherRef)
 			end)
 
 			-- Restore originl console functionality.
@@ -2621,10 +2627,10 @@ exports.attach = function(
 		end
 
 		local rootType = nil
-		local current = fiber
+		local current = fiber :: Fiber
 
 		while current.return_ ~= nil do
-			current = current.return_
+			current = current.return_ :: Fiber
 		end
 		local fiberRoot = current.stateNode
 		if fiberRoot ~= nil and fiberRoot._debugRootType ~= nil then
@@ -2664,7 +2670,7 @@ exports.attach = function(
 
 				return nil
 			end)(),
-			displayName = getDisplayNameForFiber(fiber),
+			displayName = getDisplayNameForFiber(fiber :: Fiber),
 			type_ = elementType,
 
 			-- Inspectable properties.
@@ -2756,16 +2762,19 @@ exports.attach = function(
 	local function updateSelectedElement(inspectedElement: InspectedElement): ()
 		local hooks, id, props =
 			inspectedElement.hooks, inspectedElement.id, inspectedElement.props
-		local fiber = idToFiberMap[id]
+		local fiber: Fiber? = idToFiberMap[id]
 
 		if fiber == nil then
-			console.warn(('Could not find Fiber with id "%s"'):format(id))
+			console.warn(('Could not find Fiber with id "%s"'):format(tostring(id)))
 
 			return
 		end
 
 		local elementType, stateNode, tag, type_ =
-			fiber.elementType, fiber.stateNode, fiber.tag, fiber.type
+			(fiber :: Fiber).elementType,
+			(fiber :: Fiber).stateNode,
+			(fiber :: Fiber).tag,
+			(fiber :: Fiber).type
 
 		if
 			tag == ClassComponent
@@ -2831,11 +2840,11 @@ exports.attach = function(
 
 		if isCurrent then
 			if path ~= nil then
-				mergeInspectedPaths(path :: Array<string | number>)
+				mergeInspectedPaths(path :: Array<string>)
 
 				local secondaryCategory = nil
 
-				if (path :: Array<string | number>)[1] == "hooks" then
+				if (path :: Array<string>)[1] == "hooks" then
 					secondaryCategory = "hooks"
 				end
 
@@ -2878,7 +2887,7 @@ exports.attach = function(
 				}
 			end
 			if path ~= nil then
-				mergeInspectedPaths(path :: Array<string | number>)
+				mergeInspectedPaths(path :: Array<string>)
 			end
 
 			-- Any time an inspected element has an update,
@@ -2920,7 +2929,7 @@ exports.attach = function(
 	end
 
 	local function logElementToConsole(id: number)
-		local result: InspectedElement = (function()
+		local result: InspectedElement? = (function()
 			if isMostRecentlyInspectedElementCurrent(id) then
 				return mostRecentlyInspectedElement
 			end
@@ -2939,14 +2948,14 @@ exports.attach = function(
 		-- if supportsGroup then
 		--     console.groupCollapsed(('[Click to expand] %c<%s />'):format(result.displayName or 'Component'), 'color: var(--dom-tag-name-color); font-weight: normal;')
 		-- end
-		if result.props ~= nil then
-			console.log("Props:", result.props)
+		if (result :: InspectedElement).props ~= nil then
+			console.log("Props:", (result :: InspectedElement).props)
 		end
-		if result.state ~= nil then
-			console.log("State:", result.state)
+		if (result :: InspectedElement).state ~= nil then
+			console.log("State:", (result :: InspectedElement).state)
 		end
-		if result.hooks ~= nil then
-			console.log("Hooks:", result.hooks)
+		if (result :: InspectedElement).hooks ~= nil then
+			console.log("Hooks:", (result :: InspectedElement).hooks)
 		end
 
 		local nativeNodes = findNativeNodesForFiberID(id)
@@ -2954,8 +2963,8 @@ exports.attach = function(
 		if nativeNodes ~= nil then
 			console.log("Nodes:", nativeNodes)
 		end
-		if result.source ~= nil then
-			console.log("Location:", result.source)
+		if (result :: InspectedElement).source ~= nil then
+			console.log("Location:", (result :: InspectedElement).source)
 		end
 
 		-- ROBLOX deviation: not needed
@@ -2976,10 +2985,10 @@ exports.attach = function(
 		hookID: number?,
 		path: Array<string | number>
 	): ()
-		local fiber = findCurrentFiberUsingSlowPathById(id)
+		local fiber: Fiber? = findCurrentFiberUsingSlowPathById(id)
 
 		if fiber ~= nil then
-			local instance = fiber.stateNode
+			local instance = (fiber :: Fiber).stateNode
 
 			if type_ == "context" then
 				-- To simplify hydration and display of primitive context values (e.g. number, string)
@@ -2987,28 +2996,28 @@ exports.attach = function(
 				-- We need to remove the first part of the path (the "value") before continuing.
 				path = Array.slice(path, 1)
 
-				if fiber.tag == ClassComponent then
+				if (fiber :: Fiber).tag == ClassComponent then
 					if #path == 0 then
 						-- Simple context value (noop)
 					else
 						deletePathInObject(instance.context, path)
 					end
 					instance:forceUpdate()
-				elseif fiber.tag == FunctionComponent then
+				elseif (fiber :: Fiber).tag == FunctionComponent then
 					-- Function components using legacy context are not editable
 					-- because there's no instance on which to create a cloned, mutated context.
 				end
 			elseif type_ == "hooks" then
 				if type(overrideHookStateDeletePath) == "function" then
-					overrideHookStateDeletePath(fiber, hookID, path)
+					overrideHookStateDeletePath((fiber :: Fiber), hookID, path)
 				end
 			elseif type_ == "props" then
 				if instance == nil then
 					if type(overridePropsDeletePath) == "function" then
-						overridePropsDeletePath(fiber, path)
+						overridePropsDeletePath((fiber :: Fiber), path)
 					end
 				else
-					fiber.pendingProps = copyWithDelete(instance.props, path)
+					(fiber :: Fiber).pendingProps = copyWithDelete(instance.props, path)
 					instance:forceUpdate()
 				end
 			elseif type_ == "state" then
@@ -3025,10 +3034,10 @@ exports.attach = function(
 		oldPath: Array<string | number>,
 		newPath: Array<string | number>
 	): ()
-		local fiber = findCurrentFiberUsingSlowPathById(id)
+		local fiber: Fiber? = findCurrentFiberUsingSlowPathById(id)
 
 		if fiber ~= nil then
-			local instance = fiber.stateNode
+			local instance = (fiber :: Fiber).stateNode
 
 			if type_ == "context" then
 				-- To simplify hydration and display of primitive context values (e.g. number, string)
@@ -3037,14 +3046,14 @@ exports.attach = function(
 				oldPath = Array.slice(oldPath, 1)
 				newPath = Array.slice(newPath, 1)
 
-				if fiber.tag == ClassComponent then
+				if (fiber :: Fiber).tag == ClassComponent then
 					if #oldPath == 0 then
 						-- Simple context value (noop)
 					else
 						renamePathInObject(instance.context, oldPath, newPath)
 					end
 					instance:forceUpdate()
-				elseif fiber.tag == FunctionComponent then
+				elseif (fiber :: Fiber).tag == FunctionComponent then
 					-- Function components using legacy context are not editable
 					-- because there's no instance on which to create a cloned, mutated context.
 				end
@@ -3058,7 +3067,11 @@ exports.attach = function(
 						overridePropsRenamePath(fiber, oldPath, newPath)
 					end
 				else
-					fiber.pendingProps = copyWithRename(instance.props, oldPath, newPath)
+					(fiber :: Fiber).pendingProps = copyWithRename(
+						instance.props,
+						oldPath,
+						newPath
+					)
 					instance:forceUpdate()
 				end
 			elseif type_ == "state" then
@@ -3075,10 +3088,10 @@ exports.attach = function(
 		path: Array<string | number>,
 		value: any
 	): ()
-		local fiber = findCurrentFiberUsingSlowPathById(id)
+		local fiber: Fiber? = findCurrentFiberUsingSlowPathById(id)
 
 		if fiber ~= nil then
-			local instance = fiber.stateNode
+			local instance = (fiber :: Fiber).stateNode
 
 			if type_ == "context" then
 				-- To simplify hydration and display of primitive context values (e.g. number, string)
@@ -3086,7 +3099,7 @@ exports.attach = function(
 				-- We need to remove the first part of the path (the "value") before continuing.
 				path = Array.slice(path, 1)
 
-				if fiber.tag == ClassComponent then
+				if (fiber :: Fiber).tag == ClassComponent then
 					if #path == 0 then
 						-- Simple context value
 						instance.context = value
@@ -3094,21 +3107,25 @@ exports.attach = function(
 						setInObject(instance.context, path, value)
 					end
 					instance:forceUpdate()
-				elseif fiber.tag == FunctionComponent then
+				elseif (fiber :: Fiber).tag == FunctionComponent then
 					-- Function components using legacy context are not editable
 					-- because there's no instance on which to create a cloned, mutated context.
 				end
 			elseif type_ == "hooks" then
 				if type(overrideHookState) == "function" then
-					overrideHookState(fiber, hookID, path, value)
+					overrideHookState((fiber :: Fiber), hookID, path, value)
 				end
 			elseif type_ == "props" then
 				if instance == nil then
 					if type(overrideProps) == "function" then
-						overrideProps(fiber, path, value)
+						overrideProps((fiber :: Fiber), path, value)
 					end
 				else
-					fiber.pendingProps = copyWithSet(instance.props, path, value)
+					(fiber :: Fiber).pendingProps = copyWithSet(
+						instance.props,
+						path,
+						value
+					)
 					instance:forceUpdate()
 				end
 			elseif type_ == "state" then
@@ -3196,13 +3213,9 @@ exports.attach = function(
 				end
 
 				table.insert(commitData, {
-					changeDescriptions = (function()
-						if changeDescriptions ~= nil then
-							return Array.from(changeDescriptions)
-						end
-
-						return nil
-					end)(),
+					changeDescriptions = changeDescriptions ~= nil and Array.from(
+						Object.entries(changeDescriptions)
+					) or nil,
 					duration = maxActualDuration,
 					fiberActualDurations = fiberActualDurations,
 					fiberSelfDurations = fiberSelfDurations,
@@ -3215,8 +3228,8 @@ exports.attach = function(
 				commitData = commitData,
 				displayName = displayName,
 				initialTreeBaseDurations = initialTreeBaseDurations,
-				interactionCommits = Array.from(interactionCommits),
-				interactions = Array.from(allInteractions),
+				interactionCommits = Array.from(Object.entries(interactionCommits)),
+				interactions = Array.from(Object.entries(allInteractions)),
 				rootID = rootID,
 			})
 		end
@@ -3311,10 +3324,10 @@ exports.attach = function(
 			end
 		end
 
-		local fiber = idToFiberMap[id]
+		local fiber: Fiber? = idToFiberMap[id]
 
 		if fiber ~= nil then
-			scheduleUpdate(fiber)
+			scheduleUpdate(fiber :: Fiber)
 		end
 	end
 
@@ -3340,7 +3353,7 @@ exports.attach = function(
 		local returnFiber = fiber.return_
 		local returnAlternate = (function()
 			if returnFiber ~= nil then
-				return returnFiber.alternate
+				return (returnFiber :: Fiber).alternate
 			end
 			return nil
 		end)()
@@ -3353,16 +3366,17 @@ exports.attach = function(
 		then
 			-- Is this the next Fiber we should select? Let's compare the frames.
 			local actualFrame = getPathFrame(fiber)
-			local expectedFrame =
+			local expectedFrame: PathFrame? =
 				(trackedPath :: Array<PathFrame>)[trackedPathMatchDepth + 1]
 
 			if expectedFrame == nil then
 				error("Expected to see a frame at the next depth.")
 			end
 			if
-				actualFrame.index == expectedFrame.index
-				and actualFrame.key == expectedFrame.key
-				and actualFrame.displayName == expectedFrame.displayName
+				actualFrame.index == (expectedFrame :: PathFrame).index
+				and actualFrame.key == (expectedFrame :: PathFrame).key
+				and actualFrame.displayName
+					== (expectedFrame :: PathFrame).displayName
 			then
 				-- We have our next match.
 				trackedPathMatchFiber = fiber
@@ -3400,11 +3414,11 @@ exports.attach = function(
 		local name = getDisplayNameForRoot(fiber)
 		local counter = rootDisplayNameCounter[name] or 0
 		rootDisplayNameCounter[name] = counter + 1
-		local pseudoKey = ("%s:%s"):format(name, counter)
+		local pseudoKey = ("%s:%d"):format(name, counter)
 		rootPseudoKeys[id] = pseudoKey
 	end
 	removeRootPseudoKey = function(id: number)
-		local pseudoKey = rootPseudoKeys[id]
+		local pseudoKey: string? = rootPseudoKeys[id]
 
 		if pseudoKey == nil then
 			error("Expected root pseudo key to be known.")
@@ -3412,7 +3426,7 @@ exports.attach = function(
 
 		-- ROBLOX deviation: No existing lastIndexOf implementation
 		-- local name = pseudoKey:sub(1, String.lastIndexOf(pseudoKey, ':'))
-		local name = pseudoKey:gsub("%:[0-9]$", "")
+		local name = (pseudoKey :: string):gsub("%:[0-9]$", "")
 		local counter = rootDisplayNameCounter[name]
 
 		if counter == nil then
@@ -3438,12 +3452,12 @@ exports.attach = function(
 				break
 			end
 
-			local displayName = getDisplayNameForFiber(child)
+			local displayName = getDisplayNameForFiber(child :: Fiber)
 
 			if displayName ~= nil then
 				-- Prefer display names that we get from user-defined components.
 				-- We want to avoid using e.g. 'Suspense' unless we find nothing else.
-				if typeof(child.type) == "function" then
+				if typeof((child :: Fiber).type) == "function" then
 					-- There's a few user-defined tags, but we'll prefer the ones
 					-- that are usually explicitly named (function or class components).
 					preferredDisplayName = displayName
@@ -3455,7 +3469,7 @@ exports.attach = function(
 				break
 			end
 
-			child = child.child
+			child = (child :: Fiber).child
 		end
 
 		return preferredDisplayName or fallbackDisplayName or "Anonymous"
@@ -3470,11 +3484,11 @@ exports.attach = function(
 			-- Roots don't have a real displayName, index, or key.
 			-- Instead, we'll use the pseudo key (childDisplayName:indexWithThatName).
 			local id = getFiberID(getPrimaryFiber(fiber))
-			local pseudoKey = rootPseudoKeys[id]
+			local pseudoKey: string? = rootPseudoKeys[id]
 			if pseudoKey == nil then
 				error("Expected mounted root to have known pseudo key.")
 			end
-			displayName = pseudoKey
+			displayName = pseudoKey :: string
 		elseif fiber.tag == HostComponent then
 			displayName = fiber.type
 		end
@@ -3491,15 +3505,15 @@ exports.attach = function(
 	-- The return path will contain Fibers that are "invisible" to the store
 	-- because their keys and indexes are important to restoring the selection.
 	local function getPathForElement(id: number): Array<PathFrame> | nil
-		local fiber = idToFiberMap[id]
+		local fiber: Fiber? = idToFiberMap[id]
 		if fiber == nil then
 			return nil
 		end
 
 		local keyPath = {}
 		while fiber ~= nil do
-			table.insert(keyPath, getPathFrame(fiber))
-			fiber = fiber.return_
+			table.insert(keyPath, getPathFrame(fiber :: Fiber))
+			fiber = (fiber :: Fiber).return_
 		end
 
 		Array.reverse(keyPath)
@@ -3517,9 +3531,9 @@ exports.attach = function(
 		end
 
 		-- Find the closest Fiber store is aware of.
-		local fiber = trackedPathMatchFiber
-		while fiber ~= nil and shouldFilterFiber(fiber) do
-			fiber = fiber.return_
+		local fiber: Fiber? = trackedPathMatchFiber
+		while fiber ~= nil and shouldFilterFiber(fiber :: Fiber) do
+			fiber = (fiber :: Fiber).return_
 		end
 
 		if fiber == nil then
@@ -3527,7 +3541,7 @@ exports.attach = function(
 		end
 
 		return {
-			id = getFiberID(getPrimaryFiber(fiber)),
+			id = getFiberID(getPrimaryFiber(fiber :: Fiber)),
 			isFullMatch = trackedPathMatchDepth == #(trackedPath :: Array<PathFrame>),
 		}
 	end

@@ -7,7 +7,8 @@ authors = [
 	"Max Mines <mmines@roblox.com>",
 	"Carlo Conte <cconte@roblox.com>",
 	"Henry Allen <hallen@roblox.com>",
-	"Olivier Trepanier <otrepanier@roblox.com>"
+	"Olivier Trepanier <otrepanier@roblox.com>",
+	"Hugh Collins <hcollins@roblox.com>"
 ]
 
 [workspace.dependencies]

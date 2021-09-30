@@ -72,26 +72,28 @@ end
 
 exports.printStore = function(store: Store, includeWeight: boolean?)
 	includeWeight = includeWeight or false
-	local snapshotLines = {}
+	local snapshotLines: Array<string> = {}
 	local rootWeight = 0
 
 	for _, rootID in ipairs(store:getRoots()) do
-		local rootElement = store:getElementByID(rootID)
-		local weight = rootElement.weight
+		local rootElement: Element? = store:getElementByID(rootID)
+		local weight = (rootElement :: Element).weight
 
 		table.insert(
 			snapshotLines,
-			"[root]" .. (includeWeight and (" (%s)"):format(weight) or "")
+			"[root]" .. (includeWeight and (" (%d)"):format(weight) or "")
 		)
-
 		for i = rootWeight, rootWeight + weight - 1 do
-			local element = store:getElementAtIndex(i)
+			local element: Element? = store:getElementAtIndex(i)
 
 			if element == nil then
 				error(("Could not find element at index %d"):format(i))
 			end
 
-			table.insert(snapshotLines, exports.printElement(element, includeWeight))
+			table.insert(
+				snapshotLines,
+				exports.printElement(element :: Element, includeWeight :: boolean)
+			)
 		end
 		rootWeight += weight
 	end
@@ -124,9 +126,9 @@ exports.sanitizeForParse = function(value)
 	return value
 end
 
-exports.smartParse = function(value)
+exports.smartParse = function(value): number?
 	if value == "Infinity" then
-		return math.max
+		return math.huge
 	elseif value == "NaN" then
 		-- ROBLOX deviation: no NaN
 		return 0

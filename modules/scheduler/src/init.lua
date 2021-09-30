@@ -53,10 +53,10 @@ local exports = {
 }
 
 for k, v in pairs(Tracing) do
-    exports.tracing.k = v
+    exports.tracing[k] = v
 end
 for k, v in pairs(TracingSubscriptions) do
-    exports.tracing.k = v
+    exports.tracing[k] = v
 end
 
 return exports

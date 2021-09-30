@@ -9,11 +9,8 @@
 local Packages = script.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
-local Map = LuauPolyfill.Map
-local WeakMap = LuauPolyfill.WeakMap
 
-type Map<K, V> = LuauPolyfill.Map<K, V>
-type WeakMap<K, V> = LuauPolyfill.WeakMap<K, V>
+type Map<K, V> = { [K]: V }
 
 local ReactTypes = require(Packages.Shared)
 export type Thenable<R> = ReactTypes.Thenable<R>
@@ -65,7 +62,7 @@ local Rejected = 2
 local ReactCurrentDispatcher =
 	React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentDispatcher
 
-local function readContext(Context, observedBits)
+local function readContext(Context, observedBits: boolean?)
 	local dispatcher = ReactCurrentDispatcher.current
 	if dispatcher == nil then
 		error(
@@ -83,25 +80,25 @@ local CacheContext = createContext(nil)
 
 type Config = { useWeakMap: boolean? }
 
-local entries: Map<Resource<any, any, any>, Map<any, any> | WeakMap<any, any>> = Map.new()
-local resourceConfigs: Map<Resource<any, any, any>, Config> = Map.new()
+local entries: Map<Resource<any, any, any>, Map<any, any>> = {}
+local resourceConfigs: Map<Resource<any, any, any>, Config> = {}
 
-local function getEntriesForResource(resource: any): Map<any, any> | WeakMap<any, any>
-	local entriesForResource = entries:get(resource)
+local function getEntriesForResource(resource: any): Map<any, any>
+	local entriesForResource: Map<any, any>? = entries[resource]
 	if entriesForResource == nil then
-		local config = resourceConfigs:get(resource)
+		local config: Config? = resourceConfigs[resource]
 
 		entriesForResource = (function()
-			if config ~= nil and config.useWeakMap then
-				return WeakMap.new()
+			if config ~= nil and (config :: Config).useWeakMap then
+				return {}
 			end
-			return Map.new()
+			return {}
 		end)()
 
-		entries:set(resource, entriesForResource)
+		entries[resource] = entriesForResource :: Map<any, any>
 	end
 
-	return entriesForResource
+	return entriesForResource :: Map<any, any>
 end
 
 -- ROBLOX TODO: Support function generics
@@ -119,8 +116,9 @@ local function accessResult(
 		local thenable = fetch(input)
 
 		-- ROBLOX deviation: define before use
-		local newResult = {
+		local newResult: { status: number, value: Thenable<any>? } = {
 			status = Pending,
+			value = nil,
 		}
 
 		thenable:andThen(function(value)
@@ -208,13 +206,13 @@ exports.createResource = function(
 		end,
 	}
 
-	resourceConfigs[resource] = config
+	resourceConfigs[resource] = config :: Config
 
 	return resource
 end
 
 exports.invalidateResources = function(): ()
-	entries = Map.new()
+	entries = {}
 end
 
 return exports

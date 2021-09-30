@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1633037737571,
+  "lastUpdate": 1633039269132,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1072,6 +1072,47 @@
             "extra": "200 samples\nroblox-cli version: 0.498.0.4980396"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b1224be94e4b5d679e8c950e597953f813bc3adb",
+          "message": "RIDE-5275 React devtools inspector integration",
+          "timestamp": "2021-09-30T21:49:35Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/185/commits/b1224be94e4b5d679e8c950e597953f813bc3adb"
+        },
+        "date": 1633039266712,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.1644,
+            "range": "±29.61%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.498.0.4980396"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 23.466,
+            "range": "±220.69%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.498.0.4980396"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 95.8256,
+            "range": "±27.13%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.498.0.4980396"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -1913,6 +1954,40 @@
             "name": "FrameRate#Δt",
             "value": 51.6659,
             "range": "±19.25%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980396"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b1224be94e4b5d679e8c950e597953f813bc3adb",
+          "message": "RIDE-5275 React devtools inspector integration",
+          "timestamp": "2021-09-30T21:49:35Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/185/commits/b1224be94e4b5d679e8c950e597953f813bc3adb"
+        },
+        "date": 1633039267496,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 16.5457,
+            "range": "±13.06%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980396"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 62.0302,
+            "range": "±20.47%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.498.0.4980396"
           }
@@ -2762,6 +2837,40 @@
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b1224be94e4b5d679e8c950e597953f813bc3adb",
+          "message": "RIDE-5275 React devtools inspector integration",
+          "timestamp": "2021-09-30T21:49:35Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/185/commits/b1224be94e4b5d679e8c950e597953f813bc3adb"
+        },
+        "date": 1633039268299,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 12.6705,
+            "range": "±13.69%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 80.7179,
+            "range": "±16.68%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -3603,6 +3712,40 @@
             "name": "FrameRate#Δt",
             "value": 10.9262,
             "range": "±9.92%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b1224be94e4b5d679e8c950e597953f813bc3adb",
+          "message": "RIDE-5275 React devtools inspector integration",
+          "timestamp": "2021-09-30T21:49:35Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/185/commits/b1224be94e4b5d679e8c950e597953f813bc3adb"
+        },
+        "date": 1633039269128,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 82.7136,
+            "range": "±12.09%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 12.2622,
+            "range": "±11.75%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
           }

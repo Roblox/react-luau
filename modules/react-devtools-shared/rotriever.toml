@@ -21,3 +21,4 @@ RobloxJest = { path = "../roblox-jest" }
 Scheduler = { path = "../scheduler" }
 Promise = { workspace = true }
 ReactTestRenderer = { path = "../react-test-renderer" }
+DeveloperTools = "github.com/Roblox/developer-tools@0.2"

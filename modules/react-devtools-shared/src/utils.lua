@@ -91,10 +91,10 @@ end
 
 exports.getDisplayName = function(type_: any, fallbackName: string?): string
 	fallbackName = fallbackName or "Anonymous"
-	local nameFromCache = cachedDisplayNames[type_]
+	local nameFromCache: string? = cachedDisplayNames[type_]
 
 	if nameFromCache ~= nil then
-		return nameFromCache
+		return nameFromCache :: string
 	end
 
 	-- ROBLOX FIXME: Luau type narrowing doesn't understand the or "anonymous" above
@@ -137,8 +137,8 @@ end
 -- ROBLOX deviation: don't binary encode strings, so operations Array can include strings
 exports.printOperationsArray = function(operations: Array<number | string>)
 	-- The first two values are always rendererID and rootID
-	local rendererID = operations[1]
-	local rootID = operations[2]
+	local rendererID = operations[1] :: number
+	local rootID = operations[2] :: number
 	local logs = {
 		("operations for renderer:%s and root:%s"):format(
 			tostring(rendererID),
@@ -157,11 +157,11 @@ exports.printOperationsArray = function(operations: Array<number | string>)
 	end
 
 	-- Reassemble the string table.
-	local stringTable = {
+	local stringTable: Array<string> = {
 		-- ROBLOX deviation: Use the empty string
 		"", -- ID = 0 corresponds to the empty string.
 	}
-	local stringTableSize = operations[POSTFIX_INCREMENT()]
+	local stringTableSize = operations[POSTFIX_INCREMENT()] :: number
 	local stringTableEnd = i + stringTableSize
 
 	-- ROBLOX deviation: adjust bounds due to 1-based indexing
@@ -169,16 +169,16 @@ exports.printOperationsArray = function(operations: Array<number | string>)
 		-- ROBLOX deviation: don't binary encode strings, so store string directly rather than length
 		-- local nextLength = operations[POSTFIX_INCREMENT()]
 		-- local nextString = exports.utfDecodeString(Array.slice(operations, i, i + nextLength)
-		local nextString = operations[POSTFIX_INCREMENT()]
+		local nextString = operations[POSTFIX_INCREMENT()] :: string
 		table.insert(stringTable, nextString)
 	end
 
 	while i < #operations do
-		local operation = operations[i]
+		local operation = operations[i] :: number
 
 		if operation == TREE_OPERATION_ADD then
-			local id: number = operations[i + 1] :: number
-			local type_: ElementType = operations[i + 2] :: number
+			local id = operations[i + 1] :: number
+			local type_ = operations[i + 2] :: ElementType
 
 			i += 3
 
@@ -193,7 +193,7 @@ exports.printOperationsArray = function(operations: Array<number | string>)
 
 				i += 1 -- ownerID
 
-				local displayNameStringID = operations[i]
+				local displayNameStringID = operations[i] :: number
 				local displayName = stringTable[displayNameStringID + 1]
 				i += 1
 
@@ -219,15 +219,15 @@ exports.printOperationsArray = function(operations: Array<number | string>)
 				table.insert(logs, ("Remove node %d"):format(id))
 			end
 		elseif operation == TREE_OPERATION_REORDER_CHILDREN then
-			local id = operations[i + 1]
-			local numChildren = operations[i + 2]
+			local id = operations[i + 1] :: number
+			local numChildren = operations[i + 2] :: number
 			i += 3
 			local children = Array.slice(operations, i, i + numChildren)
 			i += numChildren
 
 			table.insert(
 				logs,
-				("Re-order node %s children %s"):format(id, Array.join(children, ","))
+				("Re-order node %d children %s"):format(id, Array.join(children, ","))
 			)
 		elseif operation == TREE_OPERATION_UPDATE_TREE_BASE_DURATION then
 			-- Base duration updates are only sent while profiling is in progress.
@@ -235,7 +235,7 @@ exports.printOperationsArray = function(operations: Array<number | string>)
 			-- The profiler UI uses them lazily in order to generate the tree.
 			i += 3
 		else
-			error(("Unsupported Bridge operation %s"):format(operation))
+			error(("Unsupported Bridge operation %d"):format(operation))
 		end
 	end
 
@@ -314,7 +314,7 @@ exports.separateDisplayNameAndHOCs =
 			return nil, nil
 		end
 
-		local hocDisplayNames = nil
+		local hocDisplayNames: Array<string>? = nil
 
 		if
 			type_ == ElementTypeClass
@@ -331,9 +331,9 @@ exports.separateDisplayNameAndHOCs =
 					displayName = nextMatch
 					-- ROBLOX deviation: loop through matches to populate array
 					hocDisplayNames = {}
-					while nextMatch ~= nil do
+					while (nextMatch :: any) ~= nil do
 						nextMatch = matches()
-						table.insert(hocDisplayNames, nextMatch)
+						table.insert(hocDisplayNames :: Array<string>, nextMatch)
 					end
 				end
 			end
@@ -343,13 +343,13 @@ exports.separateDisplayNameAndHOCs =
 			if hocDisplayNames == nil then
 				hocDisplayNames = { "Memo" }
 			else
-				Array.unshift(hocDisplayNames, "Memo")
+				Array.unshift(hocDisplayNames :: Array<string>, "Memo")
 			end
 		elseif type_ == ElementTypeForwardRef then
 			if hocDisplayNames == nil then
 				hocDisplayNames = { "ForwardRef" }
 			else
-				Array.unshift(hocDisplayNames, "ForwardRef")
+				Array.unshift(hocDisplayNames :: Array<string>, "ForwardRef")
 			end
 		end
 		return displayName, hocDisplayNames
@@ -381,12 +381,12 @@ exports.getInObject = function(object: Object, path: Array<string | number>): an
 		return nil
 	end, object)
 end
-exports.deletePathInObject = function(object: Object, path: Array<string | number>)
+exports.deletePathInObject = function(object: Object?, path: Array<string | number>)
 	local length = #path
-	local last = path[length]
+	local last = path[length] :: number
 
 	if object ~= nil then
-		local parent = exports.getInObject(object, Array.slice(path, 0, length))
+		local parent = exports.getInObject(object :: Object, Array.slice(path, 0, length))
 
 		if parent then
 			if Array.isArray(parent) then
@@ -398,15 +398,18 @@ exports.deletePathInObject = function(object: Object, path: Array<string | numbe
 	end
 end
 exports.renamePathInObject =
-	function(object: Object, oldPath: Array<string | number>, newPath: Array<string | number>)
+	function(object: Object?, oldPath: Array<string | number>, newPath: Array<string | number>)
 		local length = #oldPath
 
 		if object ~= nil then
-			local parent = exports.getInObject(object, Array.slice(oldPath, 1, length))
+			local parent = exports.getInObject(
+				object :: Object,
+				Array.slice(oldPath, 1, length)
+			)
 
 			if parent then
-				local lastOld = oldPath[length]
-				local lastNew = newPath[length]
+				local lastOld = oldPath[length] :: number
+				local lastNew = newPath[length] :: number
 
 				parent[lastNew] = parent[lastOld]
 
@@ -418,12 +421,12 @@ exports.renamePathInObject =
 			end
 		end
 	end
-exports.setInObject = function(object: Object, path: Array<string | number>, value)
+exports.setInObject = function(object: Object?, path: Array<string | number>, value)
 	local length = #path
 	local last = path[length]
 
 	if object ~= nil then
-		local parent = exports.getInObject(object, Array.slice(path, 1, length))
+		local parent = exports.getInObject(object :: Object, Array.slice(path, 1, length))
 
 		if parent then
 			parent[last] = value
@@ -461,7 +464,7 @@ export type DataType = string
 -- /**
 --  * Get a enhanced/artificial type string based on the object instance
 --  */
-exports.getDataType = function(data: Object): DataType
+exports.getDataType = function(data: Object?): DataType
 	if data == nil then
 		return "null"
 		-- ROBLOX deviation: no undefined in Lua
@@ -586,8 +589,7 @@ local MAX_PREVIEW_STRING_LENGTH = 50
 local function truncateForDisplay(string_: string, length: number?)
 	length = length or MAX_PREVIEW_STRING_LENGTH
 
-	-- ROBLOX FIXME: Luau narrowing doesn't understand or MAX_PREVIEW above
-	if string.len(string_) > length :: number then
+	if string.len(string_) > (length :: number) then
 		return string_:sub(1, (length :: number) + 1) .. "…"
 	else
 		return string_
@@ -617,8 +619,8 @@ end
 -- Would show a preview of...
 --   [123, "abc", Array(2), {…}]
 
-function exports.formatDataForPreview(data, showFormattedValue: boolean): string
-	if data ~= nil and data[meta.type] ~= nil then
+function exports.formatDataForPreview(data: Object, showFormattedValue: boolean): string
+	if data[meta.type] ~= nil then
 		return (function()
 			if showFormattedValue then
 				return data[meta.preview_long]
@@ -651,13 +653,14 @@ function exports.formatDataForPreview(data, showFormattedValue: boolean): string
 		-- elseif type_ == 'array_buffer' then
 		-- elseif type_ == 'data_view' then
 	elseif type_ == "array" then
+		local array: Array<any> = data :: any
 		if showFormattedValue then
 			local formatted = ""
-			for i = 1, #data do
+			for i = 1, #array do
 				if i > 1 then
 					formatted ..= ", "
 				end
-				formatted = formatted .. exports.formatDataForPreview(data[i], false)
+				formatted = formatted .. exports.formatDataForPreview(array[i], false)
 				if string.len(formatted) > MAX_PREVIEW_STRING_LENGTH then
 					-- Prevent doing a lot of unnecessary iteration...
 					break
@@ -666,10 +669,10 @@ function exports.formatDataForPreview(data, showFormattedValue: boolean): string
 			return ("[%s]"):format(truncateForDisplay(formatted))
 		else
 			local length = (function()
-				if data[#meta] ~= nil then
-					return data[#meta]
+				if array[#meta] ~= nil then
+					return array[#meta]
 				end
-				return #data
+				return #array
 			end)()
 			return ("Array(%s)"):format(length)
 		end
@@ -686,7 +689,7 @@ function exports.formatDataForPreview(data, showFormattedValue: boolean): string
 
 			local formatted = ""
 			for i = 1, #keys do
-				local key = keys[i]
+				local key = keys[i] :: string
 				if i > 1 then
 					formatted = formatted .. ", "
 				end

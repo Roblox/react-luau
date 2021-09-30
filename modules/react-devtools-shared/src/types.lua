@@ -7,7 +7,7 @@
 --  */
 
 type Array<T> = { [number]: T }
-type Function = (...any) -> any
+type Function = (...any) -> ...any
 local exports = {}
 
 -- WARNING

@@ -9,7 +9,7 @@ local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local console = require(Packages.Shared).console
 type Array<T> = { [number]: T }
-type Function = (...any) -> any
+type Function = (...any) -> ...any
 
 local EventEmitter = require(script.Parent.events)
 type EventEmitter<T> = EventEmitter.EventEmitter<T>
@@ -203,11 +203,11 @@ local Bridge = setmetatable({}, { __index = EventEmitter })
 local BridgeMetatable = { __index = Bridge }
 
 function Bridge.new(wall: Wall)
-	local self = setmetatable(EventEmitter.new(), BridgeMetatable)
+	local self = setmetatable(EventEmitter.new() :: any, BridgeMetatable)
 
 	-- ROBLOX deviation: initializers from class declaration
 	self._isShutdown = false
-	self._messageQueue = {}
+	self._messageQueue = {} :: Array<Array<any>>
 	self._timeoutID = nil
 	-- _wall
 	self._wallUnlisten = nil
@@ -359,11 +359,11 @@ function Bridge:overrideValueAtPath(_ref: OverrideValueAtPath)
 		})
 	elseif type_ == "state" then
 		self:send("overrideState", {
-			id,
-			path,
-			rendererID,
+			id = id,
+			path = path,
+			rendererID = rendererID,
 			wasForwarded = true,
-			value,
+			value = value,
 		})
 	end
 end

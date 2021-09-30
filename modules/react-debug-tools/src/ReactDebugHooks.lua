@@ -6,8 +6,7 @@
 	* LICENSE file in the root directory of this source tree.
    ]]
 
-local Workspace = script.Parent
-local Packages = Workspace.Parent
+local Packages = script.Parent.Parent
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
@@ -19,6 +18,7 @@ local String = LuauPolyfill.String
 local Object = LuauPolyfill.Object
 type Object = { [string]: any }
 type Map<K, V> = { [K]: V }
+type Function = (...any) -> ...any
 local exports = {}
 
 local ReactTypes = require(Packages.Shared)
@@ -223,11 +223,10 @@ local function useReducer(
 	if hook ~= nil then
 		state = hook.memoizedState
 	else
-		state = (function()
+		state = (function(): any
 			if init ~= nil then
-				return init(initialArg)
+				return (init :: Function)(initialArg)
 			end
-
 			return initialArg
 		end)()
 	end
@@ -313,7 +312,7 @@ local function useImperativeHandle(
 	local instance = nil
 
 	if ref ~= nil and typeof(ref) == "table" then
-		instance = ref.current
+		instance = (ref :: { current: _T | nil }).current
 	end
 
 	table.insert(hookLog, {
@@ -335,7 +334,7 @@ local function useDebugValue(value: _T, formatterFn: ((value: _T) -> any)?): ()
 		stackError = Error.new(),
 		value = (function()
 			if typeof(formatterFn) == "function" then
-				return formatterFn(value)
+				return (formatterFn :: Function)(value)
 			end
 
 			return value
@@ -774,12 +773,15 @@ function processDebugValues(hooksTree: HooksTree, parentHooksNode: HooksNode | n
 	-- (We may warn about this in the future.)
 	if parentHooksNode ~= nil then
 		if #debugValueHooksNodes == 1 then
-			parentHooksNode.value = debugValueHooksNodes[1].value
+			(parentHooksNode :: HooksNode).value = debugValueHooksNodes[1].value
 		elseif #debugValueHooksNodes > 1 then
-			parentHooksNode.value = Array.map(debugValueHooksNodes, function(_ref)
-				local value = _ref.value
-				return value
-			end)
+			(parentHooksNode :: HooksNode).value = Array.map(
+				debugValueHooksNodes,
+				function(_ref)
+					local value = _ref.value
+					return value
+				end
+			)
 		end
 	end
 end
@@ -837,7 +839,7 @@ local function setupContexts(contextMap: Map<ReactContext<any>, any>, fiber: Fib
 			end
 		end
 
-		current = (current :: Fiber).return_
+		current = current.return_ :: Fiber
 	end
 end
 

@@ -101,7 +101,6 @@ exports.createDisplayNameFilter = function(source: string, isEnabled: boolean)
 	if isEnabled == nil then
 		isEnabled = true
 	end
-	local Types = require(script.Parent.Parent.types)
 	-- ROBLOX deviation: Cannot sanitize source as a RegExp so assume valid
 	local isValid = true
 
@@ -117,7 +116,6 @@ exports.createHOCFilter = function(isEnabled: boolean)
 	if isEnabled == nil then
 		isEnabled = true
 	end
-	local Types = require(script.Parent.Parent.types)
 
 	return {
 		type = Types.ComponentFilterHOC,
@@ -130,7 +128,6 @@ exports.createElementTypeFilter = function(elementType: ElementType, isEnabled: 
 	if isEnabled == nil then
 		isEnabled = true
 	end
-	local Types = require(script.Parent.Parent.types)
 
 	return {
 		type = Types.ComponentFilterElementType,
@@ -143,7 +140,6 @@ exports.createLocationFilter = function(source: string, isEnabled: boolean)
 	if isEnabled == nil then
 		isEnabled = true
 	end
-	local Types = require(script.Parent.Parent.types)
 	local isValid = true
 
 	return {
@@ -174,7 +170,6 @@ exports.getRendererID = function(): number
 
 	return tonumber(id)
 end
-
 exports.requireTestRenderer = function()
 	local hook
 	pcall(function()

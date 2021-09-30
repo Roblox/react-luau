@@ -1,9 +1,4 @@
--- When opening examples.rbxp in RobloxStudio, the tests for React can be run in Studio using the following command:
--- debug.loadmodule(game.ReplicatedStorage.RunTests)()
-
-
 local Packages = game.ReplicatedStorage.Packages
-
 local RotrieverWorkspace = Packages._Workspace
 
 -- ROBLOX FIXME: What's the more reasonable way of accessing this? Are all dev
@@ -21,7 +16,7 @@ end)
 
 -- Run all tests, collect results, and report to stdout.
 local result = JestRoblox.TestBootstrap:run(
-	{ RotrieverWorkspace },
+	{ game.StarterPlayer },
 	JestRoblox.Reporters.TextReporterQuiet,
 	{ extraEnvironment = RobloxJest.testEnv }
 )

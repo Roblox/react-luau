@@ -7,6 +7,9 @@
       "$className": "ReplicatedStorage",
       "Packages": {
         "$path": "Packages"
+      },
+      "DeveloperTools": {
+        "$className": "BindableEvent"
       }
     },
 

@@ -36,8 +36,8 @@ type UpdateQueue<T> = ReactReconciler.UpdateQueue<T>
 local ReactShared = require(Packages.Shared)
 type ReactNodeList = ReactShared.ReactNodeList
 type Thenable<T> = ReactShared.Thenable<T>
-
 type RootTag = ReactReconciler.RootTag
+
 local Scheduler = require(Packages.Scheduler)
 -- deviation: These are only used for the JSX logic that's currently omitted
 local ReactSymbols = require(Packages.Shared).ReactSymbols
@@ -1111,17 +1111,17 @@ local function createReactNoop(reconciler, useMutation: boolean)
 					logUpdateQueue(fiber.updateQueue, depth)
 				end
 				-- local childInProgress = fiber.progressedChild
-				-- if (childInProgress and childInProgress ~= fiber.child) {
+				-- if childInProgress and childInProgress ~= fiber.child then
 				--   log(
-				--     '  '.repeat(depth + 1) + 'IN PROGRESS: ' + fiber.pendingWorkPriority,
+				--     string.rep('  ', depth + 1) .. 'IN PROGRESS: ' .. tostring(fiber.pendingWorkPriority)
 				--   )
 				--   logFiber(childInProgress, depth + 1)
-				--   if (fiber.child) {
-				--     log('  '.repeat(depth + 1) + 'CURRENT')
-				--   }
-				-- } else if (fiber.child and fiber.updateQueue) {
-				--   log('  '.repeat(depth + 1) + 'CHILDREN')
-				-- }
+				--   if fiber.child then
+				--     log(string.rep('  ', depth + 1) .. 'CURRENT')
+				--   end
+				-- elseif fiber.child and fiber.updateQueue then
+				--   log(string.rep('  ', depth + 1) .. 'CHILDREN')
+				-- end
 				if fiber.child then
 					logFiber(fiber.child, depth + 1)
 				end

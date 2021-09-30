@@ -12,6 +12,7 @@ type Set<T> = LuauPolyfill.Set<T>
 local console = LuauPolyfill.console
 local JSON = game:GetService("HttpService")
 local global = _G
+type Function = (...any) -> ...any
 type Array<T> = { [number]: T }
 type Object = { [string]: any }
 
@@ -19,7 +20,7 @@ local EventEmitter = require(script.Parent.Parent.events)
 type EventEmitter<Events> = EventEmitter.EventEmitter<Events>
 -- ROBLOX FIXME: need to implement lodash.throttle, pass through for now
 -- import throttle from 'lodash.throttle';
-local throttle = function(fn, _limit: number): (any) -> any
+local throttle = function(fn: Function, _limit: number): Function
 	return fn
 end
 local constants = require(script.Parent.Parent.constants)
@@ -49,7 +50,7 @@ local setTraceUpdatesEnabled = function(enabled: boolean) end
 -- local unpatchConsole = console.unpatch
 -- ROBLOX TODO: stub these for now. they're used to force the debugger to break immediately when console.error is called
 local patchConsole = function(obj) end
-local unpatchConsole = function(obj) end
+local unpatchConsole = function() end
 
 local Bridge = require(script.Parent.Parent.bridge)
 type BackendBridge = Bridge.BackendBridge
@@ -213,7 +214,7 @@ local AgentMetatable = { __index = Agent }
 -- ROBLOX deviation: equivalent of sub-class
 
 function Agent.new(bridge: BackendBridge)
-	local self = setmetatable(EventEmitter.new(), AgentMetatable)
+	local self = setmetatable(EventEmitter.new() :: any, AgentMetatable)
 
 	-- ROBLOX deviation: define fields in constructor
 	self._bridge = bridge
@@ -300,12 +301,12 @@ end
 function Agent:copyElementPath(copyElementParams: CopyElementParams): ()
 	local id, path, rendererID =
 		copyElementParams.id, copyElementParams.path, copyElementParams.rendererID
-	local renderer = self._rendererInterfaces[rendererID]
+	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
-		console.warn(('Invalid renderer id "%s" for element "%s"'):format(rendererID, id))
+		console.warn(('Invalid renderer id "%d" for element "%d"'):format(rendererID, id))
 	else
-		renderer.copyElementPath(id, path)
+		(renderer :: RendererInterface).copyElementPath(id, path)
 	end
 end
 function Agent:deletePath(deletePathParams: DeletePathParams): ()
@@ -315,32 +316,32 @@ function Agent:deletePath(deletePathParams: DeletePathParams): ()
 		deletePathParams.path,
 		deletePathParams.rendererID,
 		deletePathParams.type
-	local renderer = self._rendererInterfaces[rendererID]
+	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
-		console.warn(('Invalid renderer id "%s" for element "%s"'):format(rendererID, id))
+		console.warn(('Invalid renderer id "%d" for element "%d"'):format(rendererID, id))
 	else
-		renderer.deletePath(type_, id, hookID, path)
+		(renderer :: RendererInterface).deletePath(type_, id, hookID, path)
 	end
 end
 function Agent:getInstanceAndStyle(
 	elementAndRendererId: ElementAndRendererID
 ): InstanceAndStyle | nil
 	local id, rendererID = elementAndRendererId.id, elementAndRendererId.rendererID
-	local renderer = self._rendererInterfaces[rendererID]
+	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
-		console.warn(('Invalid renderer id "%s"'):format(rendererID))
+		console.warn(('Invalid renderer id "%d"'):format(rendererID))
 		return nil
 	end
 
-	return renderer.getInstanceAndStyle(id)
+	return (renderer :: RendererInterface).getInstanceAndStyle(id)
 end
 
 function Agent:getIDForNode(node: Object): number | nil
 	for _rendererID, renderer in pairs(self._rendererInterfaces) do
 		local ok, result = pcall(function()
-			local id = renderer.getFiberIDForNative(node, true)
+			local id = (renderer :: RendererInterface).getFiberIDForNative(node, true)
 			return id
 		end)
 		if ok and result ~= nil then
@@ -353,25 +354,25 @@ function Agent:getIDForNode(node: Object): number | nil
 end
 function Agent:getProfilingData(rendererIdObject: { rendererID: RendererID }): ()
 	local rendererID = rendererIdObject.rendererID
-	local renderer = self._rendererInterfaces[rendererID]
+	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
-		console.warn(('Invalid renderer id "%s"'):format(rendererID))
+		console.warn(('Invalid renderer id "%d"'):format(rendererID))
 	end
 
-	self._bridge:send("profilingData", renderer.getProfilingData())
+	self._bridge:send("profilingData", (renderer :: RendererInterface).getProfilingData())
 end
 function Agent:getProfilingStatus()
 	self._bridge:send("profilingStatus", self._isProfiling)
 end
 function Agent:getOwnersList(elementAndRendererID: ElementAndRendererID)
 	local id, rendererID = elementAndRendererID.id, elementAndRendererID.rendererID
-	local renderer = self._rendererInterfaces[rendererID]
+	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
-		console.warn(('Invalid renderer id "%s" for element "%s"'):format(rendererID, id))
+		console.warn(('Invalid renderer id "%d" for element "%d"'):format(rendererID, id))
 	else
-		local owners = renderer.getOwnersList(id)
+		local owners = (renderer :: RendererInterface).getOwnersList(id)
 
 		self._bridge:send("ownersList", {
 			id = id,
@@ -384,23 +385,26 @@ function Agent:inspectElement(inspectElementParams: InspectElementParams)
 		inspectElementParams.id,
 		inspectElementParams.path,
 		inspectElementParams.rendererID
-	local renderer = self._rendererInterfaces[rendererID]
+	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
-		console.warn(('Invalid renderer id "%s" for element "%s"'):format(rendererID, id))
+		console.warn(('Invalid renderer id "%d" for element "%d"'):format(rendererID, id))
 	else
-		self._bridge:send("inspectedElement", renderer.inspectElement(id, path))
+		self._bridge:send(
+			"inspectedElement",
+			(renderer :: RendererInterface).inspectElement(id, path)
+		)
 
 		-- When user selects an element, stop trying to restore the selection,
 		-- and instead remember the current selection for the next reload.
 		if
-			self._persistedSelectionMatch == nil
-			or self._persistedSelectionMatch.id ~= id
+			(self._persistedSelectionMatch :: PathMatch?) == nil
+			or (self._persistedSelectionMatch :: PathMatch).id ~= id
 		then
 			self._persistedSelection = nil
-			self._persistedSelectionMatch = nil
+			self._persistedSelectionMatch = nil;
 
-			renderer.setTrackedPath(nil)
+			(renderer :: RendererInterface).setTrackedPath(nil)
 			self:_throttledPersistSelection(rendererID, id)
 		end
 
@@ -413,12 +417,12 @@ function Agent:inspectElement(inspectElementParams: InspectElementParams)
 end
 function Agent:logElementToConsole(elementAndRendererID: ElementAndRendererID)
 	local id, rendererID = elementAndRendererID.id, elementAndRendererID.rendererID
-	local renderer = self._rendererInterfaces[rendererID]
+	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
-		console.warn(('Invalid renderer id "%s" for element "%s"'):format(rendererID, id))
+		console.warn(('Invalid renderer id "%d" for element "%d"'):format(rendererID, id))
 	else
-		renderer.logElementToConsole(id)
+		(renderer :: RendererInterface).logElementToConsole(id)
 	end
 end
 function Agent:overrideSuspense(overrideSuspenseParams: OverrideSuspenseParams)
@@ -426,12 +430,12 @@ function Agent:overrideSuspense(overrideSuspenseParams: OverrideSuspenseParams)
 		overrideSuspenseParams.id,
 		overrideSuspenseParams.rendererID,
 		overrideSuspenseParams.forceFallback
-	local renderer = self._rendererInterfaces[rendererID]
+	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
-		console.warn(('Invalid renderer id "%s" for element "%s"'):format(rendererID, id))
+		console.warn(('Invalid renderer id "%d" for element "%d"'):format(rendererID, id))
 	else
-		renderer.overrideSuspense(id, forceFallback)
+		(renderer :: RendererInterface).overrideSuspense(id, forceFallback)
 	end
 end
 function Agent:overrideValueAtPath(overrideValueAtPathParams: OverrideValueAtPathParams)
@@ -442,12 +446,18 @@ function Agent:overrideValueAtPath(overrideValueAtPathParams: OverrideValueAtPat
 		overrideValueAtPathParams.rendererID,
 		overrideValueAtPathParams.type,
 		overrideValueAtPathParams.value
-	local renderer = self._rendererInterfaces[rendererID]
+	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
-		console.warn(('Invalid renderer id "%s" for element "%s"'):format(rendererID, id))
+		console.warn(('Invalid renderer id "%d" for element "%d"'):format(rendererID, id))
 	else
-		renderer.overrideValueAtPath(type_, id, hookID, path, value)
+		(renderer :: RendererInterface).overrideValueAtPath(
+			type_,
+			id,
+			hookID,
+			path,
+			value
+		)
 	end
 end
 
@@ -569,12 +579,12 @@ function Agent:renamePath(renamePathParams: RenamePathParams)
 		renamePathParams.oldPath,
 		renamePathParams.rendererID,
 		renamePathParams.type
-	local renderer = self._rendererInterfaces[rendererID]
+	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
-		console.warn(('Invalid renderer id "%s" for element "%s"'):format(rendererID, id))
+		console.warn(('Invalid renderer id "%d" for element "%d"'):format(rendererID, id))
 	else
-		renderer.renamePath(type_, id, hookID, oldPath, newPath)
+		(renderer :: RendererInterface).renamePath(type_, id, hookID, oldPath, newPath)
 	end
 end
 function Agent:selectNode(target: Object): ()
@@ -599,10 +609,13 @@ function Agent:setRendererInterface(
 	-- When the renderer is attached, we need to tell it whether
 	-- we remember the previous selection that we'd like to restore.
 	-- It'll start tracking mounts for matches to the last selection path.
-	local selection = self._persistedSelection
+	local selection: PersistedSelection? = self._persistedSelection
 
-	if selection ~= nil and selection.rendererID == rendererID then
-		rendererInterface.setTrackedPath(selection.path)
+	if
+		selection ~= nil
+		and (selection :: PersistedSelection).rendererID == rendererID
+	then
+		rendererInterface.setTrackedPath((selection :: PersistedSelection).path)
 	end
 end
 function Agent:setTraceUpdatesEnabled(traceUpdatesEnabled: boolean)
@@ -654,12 +667,12 @@ function Agent:storeAsGlobal(storeAsGlobalParams: StoreAsGlobalParams)
 		storeAsGlobalParams.id,
 		storeAsGlobalParams.path,
 		storeAsGlobalParams.rendererID
-	local renderer = self._rendererInterfaces[rendererID]
+	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
-		console.warn(('Invalid renderer id "%s" for element "%s"'):format(rendererID, id))
+		console.warn(('Invalid renderer id "%d" for element "%d"'):format(rendererID, id))
 	else
-		renderer.storeAsGlobal(id, path, count)
+		(renderer :: RendererInterface).storeAsGlobal(id, path, count)
 	end
 end
 
@@ -693,22 +706,22 @@ end
 function Agent:viewAttributeSource(copyElementParams: CopyElementParams)
 	local id, path, rendererID =
 		copyElementParams.id, copyElementParams.path, copyElementParams.rendererID
-	local renderer = self._rendererInterfaces[rendererID]
+	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
-		console.warn(('Invalid renderer id "%s" for element "%s"'):format(rendererID, id))
+		console.warn(('Invalid renderer id "%d" for element "%d"'):format(rendererID, id))
 	else
-		renderer.prepareViewAttributeSource(id, path)
+		(renderer :: RendererInterface).prepareViewAttributeSource(id, path)
 	end
 end
 function Agent:viewElementSource(elementAndRendererID: ElementAndRendererID)
 	local id, rendererID = elementAndRendererID.id, elementAndRendererID.rendererID
-	local renderer = self._rendererInterfaces[rendererID]
+	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
-		console.warn(('Invalid renderer id "%s" for element "%s"'):format(rendererID, id))
+		console.warn(('Invalid renderer id "%d" for element "%d"'):format(rendererID, id))
 	else
-		renderer.prepareViewElementSource(id)
+		(renderer :: RendererInterface).prepareViewElementSource(id)
 	end
 end
 function Agent:onTraceUpdates(nodes: Set<NativeType>)
@@ -743,28 +756,29 @@ function Agent:onHookOperations(operations: Array<number>)
 	if self._persistedSelection ~= nil then
 		local rendererID = operations[1]
 
-		if self._persistedSelection.rendererID == rendererID then
+		if (self._persistedSelection :: PersistedSelection).rendererID == rendererID then
 			-- Check if we can select a deeper match for the persisted selection.
-			local renderer = self._rendererInterfaces[rendererID]
+			local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
 
 			if renderer == nil then
-				console.warn(('Invalid renderer id "%s"'):format(rendererID))
+				console.warn(('Invalid renderer id "%d"'):format(rendererID))
 			else
 				local prevMatch = self._persistedSelectionMatch
-				local nextMatch = renderer.getBestMatchForTrackedPath()
+				local nextMatch =
+					(renderer :: RendererInterface).getBestMatchForTrackedPath()
 
 				self._persistedSelectionMatch = nextMatch
 
-				local prevMatchID = (function()
+				local prevMatchID = (function(): number?
 					if prevMatch ~= nil then
-						return prevMatch.id
+						return (prevMatch :: PathMatch).id
 					end
 
 					return nil
 				end)()
-				local nextMatchID = (function()
+				local nextMatchID = (function(): number?
 					if nextMatch ~= nil then
-						return nextMatch.id
+						return (nextMatch :: PathMatch).id
 					end
 
 					return nil
@@ -776,13 +790,13 @@ function Agent:onHookOperations(operations: Array<number>)
 						self._bridge:send("selectFiber", nextMatchID)
 					end
 				end
-				if nextMatch ~= nil and nextMatch.isFullMatch then
+				if nextMatch ~= nil and (nextMatch :: PathMatch).isFullMatch then
 					-- We've just unlocked the innermost selected node.
 					-- There's no point tracking it further.
 					self._persistedSelection = nil
-					self._persistedSelectionMatch = nil
+					self._persistedSelectionMatch = nil;
 
-					renderer.setTrackedPath(nil)
+					(renderer :: RendererInterface).setTrackedPath(nil)
 				end
 			end
 		end
@@ -797,10 +811,10 @@ Agent._throttledPersistSelection = throttle(function(self, rendererID: number, i
 	-- This is throttled, so both renderer and selected ID
 	-- might not be available by the time we read them.
 	-- This is why we need the defensive checks here.
-	local renderer = self._rendererInterfaces[rendererID]
+	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
 	local path = (function()
 		if renderer ~= nil then
-			return renderer.getPathForElement(id)
+			return (renderer :: RendererInterface).getPathForElement(id)
 		end
 
 		return nil

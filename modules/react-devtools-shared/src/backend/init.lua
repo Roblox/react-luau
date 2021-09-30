@@ -73,7 +73,6 @@ local initBackend = function(hook: DevToolsHook, agent: Agent, global: Object): 
 			else
 				-- Older react-dom or other unsupported renderer version
 			end
-
 			if rendererInterface ~= nil then
 				hook.rendererInterfaces[id] = rendererInterface
 			end

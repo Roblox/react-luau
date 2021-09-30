@@ -211,7 +211,7 @@ local Store = setmetatable({}, { __index = EventEmitter })
 local StoreMetatable = { __index = Store }
 
 function Store.new(bridge: FrontendBridge, config: Config?)
-	local self = setmetatable(EventEmitter.new(), StoreMetatable)
+	local self = setmetatable(EventEmitter.new() :: any, StoreMetatable)
 	config = config or {}
 
 	-- ROBLOX deviation: define fields in constructor
@@ -289,7 +289,7 @@ function Store.new(bridge: FrontendBridge, config: Config?)
 
 	local isProfiling = false
 	if config ~= nil then
-		isProfiling = config.isProfiling == true
+		isProfiling = (config :: Config).isProfiling == true
 
 		local supportsNativeInspection = (config :: Config).supportsNativeInspection
 		local supportsProfiling = (config :: Config).supportsProfiling
@@ -507,11 +507,11 @@ end
 function Store:containsElement(id: number): boolean
 	return self._idToElement[id] ~= nil
 end
-function Store:getElementAtIndex(index: number): Element | nil
+function Store:getElementAtIndex(index: number): Element?
 	if index < 0 or index >= self:getNumElements() then
 		console.warn(
-			("Invalid index %s specified; store contains %s items."):format(
-				tostring(index),
+			("Invalid index %d specified; store contains %d items."):format(
+				index,
 				self:getNumElements()
 			)
 		)
@@ -562,13 +562,12 @@ function Store:getElementAtIndex(index: number): Element | nil
 end
 
 function Store:getElementIDAtIndex(index: number): number | nil
-	local element: Element = self:getElementAtIndex(index)
+	local element: Element? = self:getElementAtIndex(index)
 
-	return (function()
+	return (function(): number?
 		if element == nil then
 			return nil
 		end
-
 		return (element :: Element).id
 	end)()
 end
@@ -584,9 +583,9 @@ function Store:getElementByID(id: number): Element | nil
 	return element
 end
 function Store:getIndexOfElementID(id: number): number | nil
-	local element = self:getElementByID(id)
+	local element: Element? = self:getElementByID(id)
 
-	if element == nil or element.parentID == 0 then
+	if element == nil or (element :: Element).parentID == 0 then
 		return nil
 	end
 
@@ -595,7 +594,7 @@ function Store:getIndexOfElementID(id: number): number | nil
 	-- and by the weight of all nodes to the left of the current one.
 	-- This should be a relatively fast way of determining the index of a node within the tree.
 	local previousID = id
-	local currentID = element.parentID
+	local currentID = (element :: Element).parentID
 	local index = 0
 
 	while true do
@@ -650,6 +649,7 @@ function Store:getOwnersListForElement(ownerID: number): Array<Element>
 			local depthMap = {
 				[ownerID] = 0,
 			}
+			local unsortedIDsDefined: Set<number> = unsortedIDs :: any
 
 			-- Items in a set are ordered based on insertion.
 			-- This does not correlate with their order in the tree.
@@ -657,9 +657,13 @@ function Store:getOwnersListForElement(ownerID: number): Array<Element>
 			-- I wish we could avoid this sorting operation; we could sort at insertion time,
 			-- but then we'd have to pay sorting costs even if the owners list was never used.
 			-- Seems better to defer the cost, since the set of ids is probably pretty small.
-			local sortedIDs = Array.sort(Array.from(unsortedIDs), function(idA, idB)
-				return self:getIndexOfElementID(idA) - self:getIndexOfElementID(idB)
-			end)
+			local sortedIDs = Array.sort(
+				Array.from(unsortedIDsDefined),
+				function(idA: number, idB: number)
+					return (self:getIndexOfElementID(idA) :: number)
+						- (self:getIndexOfElementID(idB) :: number)
+				end
+			)
 
 			-- Next we need to determine the appropriate depth for each element in the list.
 			-- The depth in the list may not correspond to the depth in the tree,
@@ -668,30 +672,33 @@ function Store:getOwnersListForElement(ownerID: number): Array<Element>
 			-- (1) another node that's already in the tree, or (2) the root (owner)
 			-- at which point, our depth is just the depth of that node plus one.
 			for _, id in ipairs(sortedIDs) do
-				local innerElement = self._idToElement[id]
+				local innerElement: Element? = self._idToElement[id]
 
 				if innerElement ~= nil then
-					local parentID = innerElement.parentID
+					local parentID = (innerElement :: Element).parentID
 					local depth = 0
 
 					while parentID > 0 do
-						if parentID == ownerID or unsortedIDs[parentID] then
+						if parentID == ownerID or unsortedIDsDefined[parentID] then
 							depth = depthMap[parentID] + 1
 							depthMap[id] = depth
 							break
 						end
-						local parent = self._idToElement[parentID]
+						local parent: Element? = self._idToElement[parentID]
 						if parent == nil then
 							break
 						end
-						parentID = parent.parentID
+						parentID = (parent :: Element).parentID
 					end
 
 					if depth == 0 then
 						error("Invalid owners list")
 					end
 
-					table.insert(list, Object.assign({}, innerElement, { depth = depth }))
+					table.insert(
+						list,
+						Object.assign({}, innerElement :: Element, { depth = depth })
+					)
 				end
 			end
 		end
@@ -701,17 +708,17 @@ function Store:getOwnersListForElement(ownerID: number): Array<Element>
 end
 
 function Store:getRendererIDForElement(id: number): number | nil
-	local current = self._idToElement[id]
+	local current: Element? = self._idToElement[id]
 
 	while current ~= nil do
-		if current.parentID == 0 then
-			local rendererID = self._rootIDToRendererID[current.id]
+		if (current :: Element).parentID == 0 then
+			local rendererID = self._rootIDToRendererID[(current :: Element).id]
 			if rendererID == nil then
 				return nil
 			end
 			return rendererID
 		else
-			current = self._idToElement[current.parentID]
+			current = self._idToElement[(current :: Element).parentID]
 		end
 	end
 
@@ -719,27 +726,27 @@ function Store:getRendererIDForElement(id: number): number | nil
 end
 
 function Store:getRootIDForElement(id: number): number | nil
-	local current = self._idToElement[id]
+	local current: Element? = self._idToElement[id]
 
 	while current ~= nil do
-		if current.parentID == 0 then
-			return current.id
+		if (current :: Element).parentID == 0 then
+			return (current :: Element).id
 		else
-			current = self._idToElement[current.parentID]
+			current = self._idToElement[(current :: Element).parentID]
 		end
 	end
 	return nil
 end
 function Store:isInsideCollapsedSubTree(id: number): boolean
-	local current = self._idToElement[id]
+	local current: Element? = self._idToElement[id]
 
 	while current ~= nil do
-		if current.parentID == 0 then
+		if (current :: Element).parentID == 0 then
 			return false
 		else
-			current = self._idToElement[current.parentID]
+			current = self._idToElement[(current :: Element).parentID]
 
-			if current ~= nil and current.isCollapsed then
+			if current ~= nil and (current :: Element).isCollapsed then
 				return true
 			end
 		end
@@ -750,64 +757,70 @@ end
 -- TODO Maybe split this into two methods: expand() and collapse()
 function Store:toggleIsCollapsed(id: number, isCollapsed: boolean): ()
 	local didMutate = false
-	local element = self:getElementByID(id)
+	local element: Element? = self:getElementByID(id)
 
 	if element ~= nil then
 		if isCollapsed then
-			if element.type == ElementTypeRoot then
+			if (element :: Element).type == ElementTypeRoot then
 				error("Root nodes cannot be collapsed")
 			end
-			if not element.isCollapsed then
-				didMutate = true
-				element.isCollapsed = true
+			if not (element :: Element).isCollapsed then
+				didMutate = true;
+				(element :: Element).isCollapsed = true
 
-				local weightDelta = 1 - element.weight
-				local parentElement = self._idToElement[element.parentID]
+				local weightDelta = 1 - (element :: Element).weight
+				local parentElement: Element? =
+					self._idToElement[(element :: Element).parentID]
 
 				-- We don't need to break on a collapsed parent in the same way as the expand case below.
 				-- That's because collapsing a node doesn't "bubble" and affect its parents.
 				while parentElement ~= nil do
-					parentElement.weight = parentElement.weight + weightDelta
-					parentElement = self._idToElement[parentElement.parentID]
+					(parentElement :: Element).weight = (parentElement :: Element).weight
+						+ weightDelta
+					parentElement = self._idToElement[(parentElement :: Element).parentID]
 				end
 			end
 		else
-			local currentElement = element
+			local currentElement: Element? = element
 
 			while currentElement ~= nil do
 				local oldWeight = (function()
-					if currentElement.isCollapsed then
+					if (currentElement :: Element).isCollapsed then
 						return 1
 					end
 
-					return currentElement.weight
+					return (currentElement :: Element).weight
 				end)()
 
-				if currentElement.isCollapsed then
-					didMutate = true
-					currentElement.isCollapsed = false
+				if (currentElement :: Element).isCollapsed then
+					didMutate = true;
+					(currentElement :: Element).isCollapsed = false
 
-					local newWeight = currentElement.isCollapsed and 1
-						or currentElement.weight
+					local newWeight = (currentElement :: Element).isCollapsed and 1
+						or (currentElement :: Element).weight
 					local weightDelta = newWeight - oldWeight
-					local parentElement = self._idToElement[currentElement.parentID]
+					local parentElement: Element? = self._idToElement[(
+						currentElement :: Element
+					).parentID]
 
 					while parentElement ~= nil do
-						parentElement.weight = parentElement.weight + weightDelta
+						(parentElement :: Element).weight = (parentElement :: Element).weight
+							+ weightDelta
 
-						if parentElement.isCollapsed then
+						if (parentElement :: Element).isCollapsed then
 							-- It's important to break on a collapsed parent when expanding nodes.
 							-- That's because expanding a node "bubbles" up and expands all parents as well.
 							-- Breaking in this case prevents us from over-incrementing the expanded weights.
 							break
 						end
-						parentElement = self._idToElement[parentElement.parentID]
+						parentElement =
+							self._idToElement[(parentElement :: Element).parentID]
 					end
 				end
 
 				currentElement = (function()
-					if currentElement.parentID ~= 0 then
-						return self:getElementByID(currentElement.parentID)
+					if (currentElement :: Element).parentID ~= 0 then
+						return self:getElementByID((currentElement :: Element).parentID)
 					end
 					return nil
 				end)()
@@ -818,8 +831,8 @@ function Store:toggleIsCollapsed(id: number, isCollapsed: boolean): ()
 		if didMutate then
 			local weightAcrossRoots = 0
 			for _i, rootID in ipairs(self._roots) do
-				local elementById = self:getElementByID(rootID)
-				local weight = elementById.weight
+				local elementById: Element? = self:getElementByID(rootID)
+				local weight = (elementById :: Element).weight
 				weightAcrossRoots = weightAcrossRoots + weight
 			end
 			self._weightAcrossRoots = weightAcrossRoots
@@ -854,7 +867,7 @@ function Store:_adjustParentTreeWeight(parentElement: Element | nil, weightDelta
 
 	-- Additions and deletions within a collapsed subtree should not affect the overall number of elements.
 	if not isInsideCollapsedSubTree then
-		self._weightAcrossRoots = self._weightAcrossRoots + weightDelta
+		self._weightAcrossRoots = (self._weightAcrossRoots :: number) + weightDelta
 	end
 end
 
@@ -910,7 +923,6 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 		local nextString = operations[POSTFIX_INCREMENT()]
 
 		table.insert(stringTable, nextString)
-
 		-- ROBLOX deviation: don't binary encode strings, so no need to move pointer
 		-- i = i + nextLength
 	end
@@ -966,7 +978,6 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 					type = type_,
 					weight = 0,
 				}
-
 				haveRootsChanged = true
 			else
 				parentID = operations[i]
@@ -1004,9 +1015,9 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 					)
 				end
 
-				local parentElement = self._idToElement[parentID]
+				local parentElement: Element? = self._idToElement[parentID]
 
-				table.insert(parentElement.children, id)
+				table.insert((parentElement :: Element).children, id)
 
 				local displayNameWithoutHOCs, hocDisplayNames =
 					separateDisplayNameAndHOCs(
@@ -1016,14 +1027,14 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 
 				local element = {
 					children = {},
-					depth = parentElement.depth + 1,
+					depth = (parentElement :: Element).depth + 1,
 					displayName = displayNameWithoutHOCs,
 					hocDisplayNames = hocDisplayNames,
 					id = id,
 					isCollapsed = self._collapseNodesByDefault,
 					key = key,
 					ownerID = ownerID,
-					parentID = parentElement.id,
+					parentID = (parentElement :: Element).id,
 					type = type_,
 					weight = 1,
 				}
@@ -1033,14 +1044,14 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 				self:_adjustParentTreeWeight(parentElement, 1)
 
 				if ownerID > 0 then
-					local set = self._ownersMap[ownerID]
+					local set: Set<number>? = self._ownersMap[ownerID]
 
 					if set == nil then
 						set = {}
 						self._ownersMap[ownerID] = set
 					end
 
-					set[id] = true
+					(set :: Set<number>)[id] = true
 				end
 			end
 		elseif operation == TREE_OPERATION_REMOVE then
@@ -1072,7 +1083,7 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 
 				self._idToElement[id] = nil
 
-				local parentElement = nil
+				local parentElement: Element? = nil
 
 				if parentID == 0 then
 					if __DEBUG__ then
@@ -1108,8 +1119,8 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 						)
 					end
 
-					local index = Array.indexOf(parentElement.children, id)
-					Array.splice(parentElement.children, index, 1)
+					local index = Array.indexOf((parentElement :: Element).children, id)
+					Array.splice((parentElement :: Element).children, index, 1)
 				end
 
 				self:_adjustParentTreeWeight(parentElement, -weight)
@@ -1119,7 +1130,7 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 				if ownerID > 0 then
 					local set = self._ownersMap[ownerID]
 					if set ~= nil then
-						set[id] = nil
+						(set :: Set<number>)[id] = nil
 					end
 				end
 			end
@@ -1151,9 +1162,12 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 				children[j] = childID
 
 				if _G.__DEV__ then
-					local childElement = self._idToElement[childID]
+					local childElement: Element? = self._idToElement[childID]
 
-					if childElement == nil or childElement.parentID ~= id then
+					if
+						childElement == nil
+						or (childElement :: Element).parentID ~= id
+					then
 						console.error(
 							"Children cannot be added or removed during a reorder operation."
 						)

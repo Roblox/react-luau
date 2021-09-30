@@ -32,13 +32,13 @@ exports.cleanForBridge = function(
 ): DehydratedData | nil
 	path = path or {}
 	if data ~= nil then
-		local cleanedPaths = {}
-		local unserializablePaths = {}
+		local cleanedPaths: Array<Array<string | number>> = {}
+		local unserializablePaths: Array<Array<string | number>> = {}
 		local cleanedData = dehydrate(
-			data,
+			data :: Object,
 			cleanedPaths,
 			unserializablePaths,
-			path,
+			(path :: Array<string | number>),
 			isPathAllowed
 		)
 		return {
@@ -77,7 +77,8 @@ exports.copyWithDelete = function(
 	-- ROBLOX deviation: 1-indexed
 	index = index or 1
 	local key = path[index]
-	local updated = Array.isArray(obj) and Array.slice(obj) or Object.assign({}, obj)
+	local updated = Array.isArray(obj) and Array.slice(obj :: Array<any>)
+		or Object.assign({}, obj :: Object)
 
 	-- ROBLOX deviation: 1-indexed, check for last element
 	if index == #path then
@@ -104,7 +105,8 @@ exports.copyWithRename = function(
 	-- ROBLOX deviation: 1-indexed
 	index = index or 1
 	local oldKey = oldPath[index]
-	local updated = Array.isArray(obj) and Array.slice(obj) or Object.assign({}, obj)
+	local updated = Array.isArray(obj) and Array.slice(obj :: Array<any>)
+		or Object.assign({}, obj :: Object)
 
 	-- ROBLOX deviation: 1-indexed, check for last element
 	if index == #oldPath then
@@ -144,7 +146,8 @@ exports.copyWithSet = function(
 	end
 
 	local key = path[index]
-	local updated = Array.isArray(obj) and Array.slice(obj) or Object.assign({}, obj)
+	local updated = Array.isArray(obj) and Array.slice(obj :: Array<any>)
+		or Object.assign({}, obj :: Object)
 
 	updated[key] = exports.copyWithSet((obj :: any)[key], path, value, index + 1)
 
