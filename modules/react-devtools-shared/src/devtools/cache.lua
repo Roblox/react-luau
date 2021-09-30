@@ -16,7 +16,7 @@ type Map<K, V> = LuauPolyfill.Map<K, V>
 type WeakMap<K, V> = LuauPolyfill.WeakMap<K, V>
 
 local ReactTypes = require(Packages.Shared)
-export type Thenable<R> = ReactTypes.Thenable<R, any>
+export type Thenable<R> = ReactTypes.Thenable<R>
 
 local React = require(Packages.React)
 local createContext = React.createContext

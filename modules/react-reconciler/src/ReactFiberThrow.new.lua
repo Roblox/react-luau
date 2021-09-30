@@ -13,6 +13,8 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
+type Map<K, V> = { [K]: V }
+type Object = { [string]: any }
 type Set<T> = { [T]: boolean }
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
@@ -28,7 +30,7 @@ local ReactUpdateQueue = require(script.Parent["ReactUpdateQueue.new"])
 type Update<T> = ReactInternalTypes.Update<T>
 
 local ReactTypes = require(Packages.Shared)
-type Thenable<T, U> = ReactTypes.Thenable<T, U>
+type Thenable<T> = ReactTypes.Thenable<T>
 type Wakeable = ReactTypes.Wakeable
 
 local ReactFiberSuspenseContext = require(script.Parent["ReactFiberSuspenseContext.new"])
@@ -209,19 +211,19 @@ local function attachPingListener(root: FiberRoot, wakeable: Wakeable, lanes: La
   -- Attach a listener to the promise to "ping" the root and retry. But only if
   -- one does not already exist for the lanes we're currently rendering (which
   -- acts like a "thread ID" here).
-  local pingCache = root.pingCache
+  local pingCache: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)> | nil = root.pingCache
   local threadIDs
   if pingCache == nil then
     -- ROBLOX deviation: use table in place of WeakMap
-    root.pingCache = {}
-    pingCache = root.pingCache
-    threadIDs = {}
-    pingCache[wakeable] = threadIDs
+    root.pingCache = {} :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>
+    pingCache = root.pingCache :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>
+    threadIDs = {} :: Set<any>
+    (pingCache :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>)[wakeable] = threadIDs
   else
-    threadIDs = pingCache[wakeable]
+    threadIDs = pingCache[wakeable] :: Set<any>
     if threadIDs == nil then
-      threadIDs = {}
-      pingCache[wakeable] = threadIDs
+      threadIDs = {} :: Set<any>
+      (pingCache :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>)[wakeable] = threadIDs
     end
   end
   if not threadIDs[lanes] then
@@ -399,8 +401,9 @@ function throwException(
       end
       -- This boundary already captured during this render. Continue to the next
       -- boundary.
-      workInProgress = workInProgress.return_
+      workInProgress = workInProgress.return_ :: Fiber -- ROBLOX TODO: Luau narrowing doesn't understand this loop until nil pattern
     until workInProgress == nil
+
     -- No boundary was found. Fallthrough to error mode.
     -- TODO: Use invariant so the message is stripped in prod?
     value =
@@ -414,7 +417,6 @@ function throwException(
   -- We didn't find a boundary that could handle this type of exception. Start
   -- over and traverse parent path again, this time treating the exception
   -- as an error.
-  -- ROBLOX FIXME: fix the FiberThrow -> WorkLoop:renderDidError import cycle
   renderDidError()
 
   value = createCapturedValue(value, sourceFiber)
@@ -454,7 +456,7 @@ function throwException(
       	return
       end
     end
-    workInProgress = workInProgress.return_
+    workInProgress = workInProgress.return_ :: Fiber -- ROBLOX TODO: Luau narrowing doesn't understand this loop until nil pattern
   until workInProgress == nil
 end
 

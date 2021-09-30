@@ -16,13 +16,14 @@ local Symbol = LuauPolyfill.Symbol
 local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
 local setTimeout = LuauPolyfill.setTimeout
+local ReactTypes = require(Packages.Shared)
+type React_Element<T> = ReactTypes.React_Element<T>
 
 local ReactInternalTypes = require(Packages.ReactReconciler)
 type Fiber = ReactInternalTypes.Fiber
 type FiberRoot = ReactInternalTypes.FiberRoot
 
-local ReactTypes = require(Packages.Shared)
-type Thenable<R, U> = ReactTypes.Thenable<R, U>
+type Thenable<R> = ReactTypes.Thenable<R>
 
 -- ROBLOX TODO: split below to silence analyze, but why is analyze throwing in first place?
 local ReactTestHostConfig = require(script.Parent.ReactTestHostConfig)
@@ -77,8 +78,7 @@ type Array<T> = { [number]: T }
 type Object = { [string]: any }
 
 type TestRendererOptions = {
-	-- createNodeMock: (React$Element<any>) -> any,
-	createNodeMock: (any) -> any,
+	createNodeMock: (element: React_Element<any>) -> any,
 	unstable_isConcurrent: boolean,
 }
 
@@ -299,6 +299,7 @@ toTree = function(nodeInput: Fiber | nil)
 	return
 end
 
+-- ROBLOX TODO: port ReactTestInstance type infered from the upstream class declaration
 local ReactTestInstance = {}
 
 -- ROBLOX deviation: not using Set()
@@ -537,8 +538,7 @@ function ReactTestInstance:findAllByProps(
 	end, options)
 end
 
--- function create(element: React$Element<any>, options: TestRendererOptions) {
-local function create(element, options: TestRendererOptions)
+local function create(element: React_Element<any>, options: TestRendererOptions)
 	local createNodeMock = defaultTestOptions.createNodeMock
 	local isConcurrent = false
 
@@ -617,7 +617,7 @@ local function create(element, options: TestRendererOptions)
 
 			return toTree(root.current)
 		end,
-		update = function(newElement)
+		update = function(newElement: React_Element<any>)
 			if root == nil or root.current == nil then
 				return
 			end
@@ -694,7 +694,7 @@ local actingUpdatesScopeDepth = 0
 -- building an app with React.
 -- TODO: Migrate our tests to use ReactNoop. Although we would need to figure
 -- out a solution for Relay, which has some Concurrent Mode tests.
-local function unstable_concurrentAct(scope: () -> () | Thenable<any, any>)
+local function unstable_concurrentAct(scope: () -> () | Thenable<any>)
 	if Scheduler.unstable_flushAllWithoutAsserting == nil then
 		error("This version of `act` requires a special mock build of Scheduler.")
 	end

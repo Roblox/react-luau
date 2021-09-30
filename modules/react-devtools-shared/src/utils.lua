@@ -13,7 +13,7 @@ local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
 local Number = LuauPolyfill.Number
 type Map<K, V> = { [K]: V }
-type Function = (...any) -> any
+type Function = (...any) -> ...any
 type Object = { [string]: any }
 type Array<T> = { [number]: T }
 local JSON = game:GetService("HttpService")
@@ -89,7 +89,7 @@ exports.getAllEnumerableKeys = function(obj: Object): Array<string | number> -- 
 	return Object.keys(obj)
 end
 
-exports.getDisplayName = function(type_: any, fallbackName: string): string
+exports.getDisplayName = function(type_: any, fallbackName: string?): string
 	fallbackName = fallbackName or "Anonymous"
 	local nameFromCache = cachedDisplayNames[type_]
 
@@ -97,7 +97,8 @@ exports.getDisplayName = function(type_: any, fallbackName: string): string
 		return nameFromCache
 	end
 
-	local displayName = fallbackName
+	-- ROBLOX FIXME: Luau type narrowing doesn't understand the or "anonymous" above
+	local displayName: string = fallbackName :: string
 
 	-- The displayName property is not guaranteed to be a string.
 	-- It's only safe to use for our purposes if it's a string.
@@ -139,7 +140,10 @@ exports.printOperationsArray = function(operations: Array<number | string>)
 	local rendererID = operations[1]
 	local rootID = operations[2]
 	local logs = {
-		("operations for renderer:%s and root:%s"):format(rendererID, rootID),
+		("operations for renderer:%s and root:%s"):format(
+			tostring(rendererID),
+			tostring(rootID)
+		),
 	}
 
 	-- ROBLOX deviation: 1-indexing so start at 3
@@ -284,7 +288,7 @@ end
 exports.setAppendComponentStack = function(value: boolean): ()
 	localStorageSetItem(LOCAL_STORAGE_SHOULD_PATCH_CONSOLE_KEY, JSON:JSONEncode(value))
 end
-exports.getBreakOnConsoleErrors = function()
+exports.getBreakOnConsoleErrors = function(): boolean
 	local ok, result = pcall(function()
 		local raw = localStorageGetItem(LOCAL_STORAGE_SHOULD_BREAK_ON_CONSOLE_ERRORS)
 		if raw ~= nil then
@@ -304,54 +308,52 @@ exports.setBreakOnConsoleErrors = function(value: boolean): ()
 		JSON:JSONEncode(value)
 	)
 end
-exports.separateDisplayNameAndHOCs = function(
-	displayName: string | nil,
-	type_: ElementType
-): Array<string | Array<string> | nil> -- ROBLOX TODO: can Luau express this? [string | null, Array<string> | null]
-	if displayName == nil then
-		return { nil, nil }
-	end
+exports.separateDisplayNameAndHOCs =
+	function(displayName: string | nil, type_: ElementType): (string | nil, Array<string> | nil)
+		if displayName == nil then
+			return nil, nil
+		end
 
-	local hocDisplayNames = nil
+		local hocDisplayNames = nil
 
-	if
-		type_ == ElementTypeClass
-		or type_ == ElementTypeForwardRef
-		or type_ == ElementTypeFunction
-		or type_ == ElementTypeMemo
-	then
-		-- ROBLOX deviation: use match instead of indexOf
-		if (displayName :: string):match("%(") then
-			-- ROBLOX deviation: use gmatch instead of /[^()]+/g
-			local matches = (displayName :: string):gmatch("[^()]+")
-			local nextMatch = matches()
-			if nextMatch then
-				displayName = nextMatch
-				-- ROBLOX deviation: loop through matches to populate array
-				hocDisplayNames = {}
-				while nextMatch ~= nil do
-					nextMatch = matches()
-					table.insert(hocDisplayNames, nextMatch)
+		if
+			type_ == ElementTypeClass
+			or type_ == ElementTypeForwardRef
+			or type_ == ElementTypeFunction
+			or type_ == ElementTypeMemo
+		then
+			-- ROBLOX deviation: use match instead of indexOf
+			if (displayName :: string):match("%(") then
+				-- ROBLOX deviation: use gmatch instead of /[^()]+/g
+				local matches = (displayName :: string):gmatch("[^()]+")
+				local nextMatch = matches()
+				if nextMatch then
+					displayName = nextMatch
+					-- ROBLOX deviation: loop through matches to populate array
+					hocDisplayNames = {}
+					while nextMatch ~= nil do
+						nextMatch = matches()
+						table.insert(hocDisplayNames, nextMatch)
+					end
 				end
 			end
 		end
-	end
 
-	if type_ == ElementTypeMemo then
-		if hocDisplayNames == nil then
-			hocDisplayNames = { "Memo" }
-		else
-			Array.unshift(hocDisplayNames, "Memo")
+		if type_ == ElementTypeMemo then
+			if hocDisplayNames == nil then
+				hocDisplayNames = { "Memo" }
+			else
+				Array.unshift(hocDisplayNames, "Memo")
+			end
+		elseif type_ == ElementTypeForwardRef then
+			if hocDisplayNames == nil then
+				hocDisplayNames = { "ForwardRef" }
+			else
+				Array.unshift(hocDisplayNames, "ForwardRef")
+			end
 		end
-	elseif type_ == ElementTypeForwardRef then
-		if hocDisplayNames == nil then
-			hocDisplayNames = { "ForwardRef" }
-		else
-			Array.unshift(hocDisplayNames, "ForwardRef")
-		end
+		return displayName, hocDisplayNames
 	end
-	return { displayName, hocDisplayNames }
-end
 
 -- Pulled from preact-compat
 -- https://github.com/developit/preact-compat/blob/7c5de00e7c85e2ffd011bf3af02899b63f699d3a/src/index.js#L349
@@ -581,11 +583,12 @@ end
 
 local MAX_PREVIEW_STRING_LENGTH = 50
 
-local function truncateForDisplay(string_: string, length)
+local function truncateForDisplay(string_: string, length: number?)
 	length = length or MAX_PREVIEW_STRING_LENGTH
 
-	if string.len(string_) > length then
-		return string_:sub(1, length + 1) .. "…"
+	-- ROBLOX FIXME: Luau narrowing doesn't understand or MAX_PREVIEW above
+	if string.len(string_) > length :: number then
+		return string_:sub(1, (length :: number) + 1) .. "…"
 	else
 		return string_
 	end
@@ -636,7 +639,7 @@ function exports.formatDataForPreview(data, showFormattedValue: boolean): string
 			return data.name
 		end)()))
 	elseif type_ == "string" then
-		return ('"%s"'):format(data)
+		return ('"%s"'):format(tostring(data))
 		-- ROBLOX TODO? should we support our RegExp and Symbol polyfills here?
 		-- elseif type_ == 'bigint' then
 		-- elseif type_ == 'regexp' then
@@ -655,7 +658,7 @@ function exports.formatDataForPreview(data, showFormattedValue: boolean): string
 					formatted ..= ", "
 				end
 				formatted = formatted .. exports.formatDataForPreview(data[i], false)
-				if #formatted > MAX_PREVIEW_STRING_LENGTH then
+				if string.len(formatted) > MAX_PREVIEW_STRING_LENGTH then
 					-- Prevent doing a lot of unnecessary iteration...
 					break
 				end
@@ -663,8 +666,8 @@ function exports.formatDataForPreview(data, showFormattedValue: boolean): string
 			return ("[%s]"):format(truncateForDisplay(formatted))
 		else
 			local length = (function()
-				if data[meta.size] ~= nil then
-					return data[meta.size]
+				if data[#meta] ~= nil then
+					return data[#meta]
 				end
 				return #data
 			end)()
@@ -692,7 +695,7 @@ function exports.formatDataForPreview(data, showFormattedValue: boolean): string
 						tostring(key),
 						exports.formatDataForPreview(data[key], false)
 					)
-				if #formatted.length > MAX_PREVIEW_STRING_LENGTH then
+				if string.len(formatted) > MAX_PREVIEW_STRING_LENGTH then
 					-- Prevent doing a lot of unnecessary iteration...
 					break
 				end
@@ -709,10 +712,10 @@ function exports.formatDataForPreview(data, showFormattedValue: boolean): string
 		or type_ == "null"
 		or type_ == "undefined"
 	then
-		return data
+		return tostring(data)
 	else
 		local ok, result = pcall(function()
-			return truncateForDisplay("" .. data)
+			return truncateForDisplay("" .. tostring(data))
 		end)
 		return ok and result or "unserializable"
 	end

@@ -17,7 +17,7 @@ local inspect = LuauPolyfill.util.inspect
 
 local ReactTypes = require(Packages.Shared)
 type Wakeable = ReactTypes.Wakeable
-type Thenable<R> = ReactTypes.Thenable<R, any>
+type Thenable<R> = ReactTypes.Thenable<R>
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 
 local REACT_LAZY_TYPE = ReactSymbols.REACT_LAZY_TYPE

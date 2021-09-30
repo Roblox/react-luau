@@ -34,7 +34,7 @@ export type MutableSourceSubscribeFn<Source, Snapshot> =
 export type MutableSourceGetVersionFn = ReactTypes.MutableSourceGetVersionFn
 export type MutableSource<Source> = ReactTypes.MutableSource<Source>
 export type Wakeable = ReactTypes.Wakeable
-export type Thenable<R, U> = ReactTypes.Thenable<R, U>
+export type Thenable<R> = ReactTypes.Thenable<R>
 
 export type Source = ReactElementType.Source
 export type ReactElement = ReactElementType.ReactElement

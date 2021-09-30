@@ -241,7 +241,9 @@ local function useReducer(
 	return state, function(_action: any) end
 end
 
-local function useRef(initialValue)
+-- ROBLOX TODO: function generics
+-- export function useRef<T>(initialValue: T): {|current: T|} {
+local function useRef(initialValue): { current: any }
 	local hook = nextHook()
 	local ref = (function()
 		if hook ~= nil then
@@ -291,6 +293,13 @@ local function useEffect(create: () -> (() -> ()) | nil, inputs: Array<any> | ni
 	})
 end
 
+-- ROBLOX TODO: function generics:
+-- export function useImperativeHandle<T>(
+-- 	ref: {|current: T | null|} | ((inst: T | null) => mixed) | null | void,
+-- 	create: () => T,
+-- 	deps: Array<mixed> | void | null,
+--   ): void {
+
 local function useImperativeHandle(
 	ref: { current: _T | nil } | ((inst: _T | nil) -> any) | nil,
 	create: () -> _T,
@@ -314,7 +323,13 @@ local function useImperativeHandle(
 	})
 end
 
-local function useDebugValue(value, formatterFn)
+-- ROBLOX TODO: function generics
+-- export function useDebugValue<T>(
+-- 	value: T,
+-- 	formatterFn: ?(value: T) => mixed,
+--   ): void {
+
+local function useDebugValue(value: _T, formatterFn: ((value: _T) -> any)?): ()
 	table.insert(hookLog, {
 		primitive = "DebugValue",
 		stackError = Error.new(),
@@ -328,7 +343,12 @@ local function useDebugValue(value, formatterFn)
 	})
 end
 
-local function useCallback(callback, inputs)
+-- ROBLOX TODO: function generics
+-- export function useCallback<T>(
+-- 	callback: T,
+-- 	deps: Array<mixed> | void | null,
+--   ): T {
+local function useCallback(callback: _T, inputs: Array<any> | nil): _T
 	local hook = nextHook()
 
 	table.insert(hookLog, {
@@ -346,7 +366,13 @@ local function useCallback(callback, inputs)
 	return callback
 end
 
-local function useMemo(nextCreate, inputs)
+-- ROBLOX TODO: function generics
+-- export function useMemo<T>(
+-- 	create: () => T,
+-- 	deps: Array<mixed> | void | null,
+--   ): T {
+
+local function useMemo(nextCreate: () -> _T, inputs: Array<any> | nil): _T
 	local hook = nextHook()
 	local value = (function()
 		if hook ~= nil then
@@ -411,7 +437,8 @@ end
 -- 		function() return function() end end,
 -- 		false
 -- end
-
+-- ROBLOX TODO: function generics
+-- export function useDeferredValue<T>(value: T): T {
 -- local function useDeferredValue(value)
 -- 	-- useDeferredValue() composes multiple hooks internally.
 -- 	-- Advance the current hook index the same number of times

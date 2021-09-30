@@ -202,7 +202,16 @@ export type ProfilingDataBackend = {
 	rendererID: number,
 }
 
-export type PathFrame = { key: string | nil, index: number, displayName: string | nil }
+-- ROBLOX deviation: Roact stable keys - slightly widen the type definition of a
+-- stable key so that it's likely to work with existing Roact code. Includes
+-- numbers for mixed/sparse tables
+type RoactStableKey = string | number
+
+export type PathFrame = {
+	key: RoactStableKey | nil,
+	index: number,
+	displayName: string | nil,
+}
 
 export type PathMatch = { id: number, isFullMatch: boolean }
 
@@ -378,6 +387,8 @@ number?,
 				-- Added in v16.9 to support Fast Refresh
 boolean?
 	) -> (),
+	-- ROBLOX deviation: track specific additions to interface needed instead of catch-all
+	supportsFiber: boolean,
 	--   ...
 }
 

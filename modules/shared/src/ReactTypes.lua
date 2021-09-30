@@ -161,9 +161,9 @@ export type ReactScope = {
 }
 
 export type ReactScopeQuery = (
-	string, -- type
-	{ [any]: any }, -- props
-	any -- instance
+	type: string,
+	props: { [string]: any? },
+	instance: any
 ) -> boolean
 
 export type ReactScopeInstance = {
@@ -172,7 +172,7 @@ export type ReactScopeInstance = {
 	containsNode: (Object) -> boolean,
 	-- ROBLOX FIXME: function generics
 	-- getChildContextValues: <T>(context: ReactContext<T>) => Array<T>,
-	getChildContextValues: (ReactContext<any>) -> Array<any>,
+	getChildContextValues: (context: ReactContext<any>) -> Array<any>,
 }
 
 -- Mutable source version can be anything (e.g. number, string, immutable data structure)
@@ -181,15 +181,15 @@ export type ReactScopeInstance = {
 export type MutableSourceVersion = any -- $NonMaybeType<mixed>;
 
 export type MutableSourceGetSnapshotFn<Source, Snapshot> = (
-	Source -- source
+	source: Source
 ) -> Snapshot
 
 export type MutableSourceSubscribeFn<Source, Snapshot> = (
-	Source, -- source
-	Snapshot -- callback
+	source: Source,
+	callback: (snapshot: Snapshot) -> ()
 ) -> (() -> ())
 
-export type MutableSourceGetVersionFn = (any) -> MutableSourceVersion
+export type MutableSourceGetVersionFn = (_source: any) -> MutableSourceVersion
 
 export type MutableSource<Source> = {
 	_source: Source,
@@ -220,13 +220,17 @@ export type MutableSource<Source> = {
 -- -- The subset of a Thenable required by things thrown by Suspense.
 -- -- This doesn't require a value to be passed to either handler.
 export type Wakeable = {
-	andThen: (any, () -> any, () -> any) -> (Wakeable?),
+	andThen: (
+		self: Wakeable,
+		onFulfill: () -> ...any,
+		onReject: () -> ...any
+	) -> Wakeable?,
 	-- Special flag to opt out of tracing interactions across a Suspense boundary.
 	__reactDoNotTraceInteractions: boolean?,
-	[any]: any,
+	-- [any]: any,
 }
 
--- deviation: This declaration uses a number of features not present in Luau's
+-- ROBLOX TODO: function generics
 -- type system
 -- -- The subset of a Promise that React APIs rely on. This resolves a value.
 -- -- This doesn't require a return value neither from the handler nor the
@@ -237,8 +241,13 @@ export type Wakeable = {
 -- 	onReject: (error: mixed) => void | Thenable<U> | U,
 --   ): void | Thenable<U>;
 -- }
-export type Thenable<R, U> = {
-	andThen: (any, (R) -> () | Thenable<R, U> | U, (any) -> () | Thenable<R, U> | U) -> () | Thenable<R, U>,
+type _U = any?
+export type Thenable<R> = {
+	andThen: (
+		self: Thenable<R>,
+		onFulfill: (R) -> () | Thenable<_U> | _U,
+		onReject: (error: any) -> () | Thenable<_U> | _U
+	) -> () | Thenable<_U>,
 }
 
 return exports

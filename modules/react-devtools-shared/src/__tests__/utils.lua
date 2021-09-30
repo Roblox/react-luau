@@ -15,7 +15,7 @@ local jest = jestModule.Globals.jest
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
-type Function = (any) -> any
+type Function = (...any) -> any?
 local global = _G
 local exports = {}
 

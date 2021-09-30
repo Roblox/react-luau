@@ -448,7 +448,7 @@ return function()
                             })
                         end)
                         jestExpect(Scheduler).toHaveYielded({"render: 1", "componentDidUpdate: 1"})
-    
+
                         jestExpect(ReactNoop).toMatchRenderedOutput(React.createElement("span", {prop = 1}))
                     end
             end

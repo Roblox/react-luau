@@ -9,26 +9,41 @@ local Packages = script.Parent.Parent
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
+type Set<T> = { [T]: boolean }
+type Map<K, V> = { [K]: V }
+type Function = (...any) -> any
+local exports = {}
 
 local console = require(script.Parent.backend.console)
 local patchConsole = console.patch
 local registerRendererWithConsole = console.registerRenderer
 
+local BackendTypes = require(script.Parent.backend.types)
+type DevToolsHook = BackendTypes.DevToolsHook
+
 local window = _G
 
-local exports = {}
-
-exports.installHook = function(target)
+exports.installHook = function(target: any): DevToolsHook | nil
 	if target["__REACT_DEVTOOLS_GLOBAL_HOOK__"] then
 		return nil
 	end
 
+	-- ROBLOX deviation: hoist decls to top
+	local hook: DevToolsHook
+	-- ROBLOX deviation: always false, only relevant in context of optimizing bundler
+	local hasDetectedBadDCE = false
+	-- TODO: More meaningful names for "rendererInterfaces" and "renderers".
+	local fiberRoots: Map<any, Set<any>> = {} :: Map<any, Set<any>>
+	local rendererInterfaces = {}
+	local listeners = {}
+	local renderers = {}
+
 	local function detectReactBuildType(renderer)
-		-- ROBLOX deviation: don't need to check build type in the same way as JS
+		-- ROBLOX TODO? do we need to distinguish between prod and dev bundles?
 		return "production"
 	end
-	local function checkDCE(fn)
-		-- ROBLOX deviation: noop
+	local function checkDCE(fn: Function)
+		-- ROBLOX deviation: not needed in the absence of optimizing bundler
 	end
 
 	-- ROBLOX deviation: start at 1
@@ -38,21 +53,7 @@ exports.installHook = function(target)
 		return uidCounter
 	end
 
-	local hasDetectedBadDCE = false
-
-	local fiberRoots = {}
-	local rendererInterfaces = {}
-	local listeners = {}
-	local renderers = {}
-	local hook = {
-		rendererInterfaces = rendererInterfaces,
-		listeners = listeners,
-		renderers = renderers,
-		supportsFiber = true,
-		checkDCE = checkDCE,
-	}
-
-	function hook.inject(renderer)
+	local function inject(renderer)
 		local id = PREFIX_INCREMENT()
 
 		renderers[id] = renderer
@@ -83,8 +84,8 @@ exports.installHook = function(target)
 				if appendComponentStack or breakOnConsoleErrors then
 					registerRendererWithConsole(renderer)
 					patchConsole({
-						appendComponentStack,
-						breakOnConsoleErrors,
+						appendComponentStack = appendComponentStack,
+						breakOnConsoleErrors = breakOnConsoleErrors,
 					})
 				end
 			end)
@@ -105,19 +106,19 @@ exports.installHook = function(target)
 		return id
 	end
 
-	function hook.sub(event: string, fn: (any) -> ())
+	local function sub(event: string, fn: (any) -> ())
 		hook.on(event, fn)
 		return function()
 			return hook.off(event, fn)
 		end
 	end
-	function hook.on(event, fn)
+	local function on(event, fn)
 		if not listeners[event] then
 			listeners[event] = {}
 		end
 		table.insert(listeners[event], fn)
 	end
-	function hook.off(event, fn)
+	local function off(event, fn)
 		if not listeners[event] then
 			return
 		end
@@ -131,14 +132,14 @@ exports.installHook = function(target)
 			listeners[event] = nil
 		end
 	end
-	function hook.emit(event, data)
+	local function emit(event, data)
 		if listeners[event] then
 			for _, fn in pairs(listeners[event]) do
 				fn(data)
 			end
 		end
 	end
-	function hook.getFiberRoots(rendererID)
+	local function getFiberRoots(rendererID)
 		local roots = fiberRoots
 
 		if not roots[rendererID] then
@@ -147,14 +148,14 @@ exports.installHook = function(target)
 
 		return roots[rendererID]
 	end
-	function hook.onCommitFiberUnmount(rendererID, fiber)
+	local function onCommitFiberUnmount(rendererID, fiber)
 		local rendererInterface = rendererInterfaces[rendererID]
 
 		if rendererInterface ~= nil then
 			rendererInterface.handleCommitFiberUnmount(fiber)
 		end
 	end
-	function hook.onCommitFiberRoot(rendererID, root, priorityLevel)
+	local function onCommitFiberRoot(rendererID, root, priorityLevel)
 		local mountedRoots = hook.getFiberRoots(rendererID)
 		local current = root.current
 		local isKnownRoot = mountedRoots[root] ~= nil
@@ -173,6 +174,29 @@ exports.installHook = function(target)
 			rendererInterface.handleCommitFiberRoot(root, priorityLevel)
 		end
 	end
+
+	hook = {
+		rendererInterfaces = rendererInterfaces,
+		listeners = listeners,
+		-- Fast Refresh for web relies on this.
+		renderers = renderers,
+
+		emit = emit,
+		getFiberRoots = getFiberRoots,
+		inject = inject,
+		on = on,
+		off = off,
+		sub = sub,
+
+		-- This is a legacy flag.
+		-- React v16 checks the hook for this to ensure DevTools is new enough.
+		supportsFiber = true,
+
+		-- React calls these methods.
+		checkDCE = checkDCE,
+		onCommitFiberUnmount = onCommitFiberUnmount,
+		onCommitFiberRoot = onCommitFiberRoot,
+	}
 
 	target["__REACT_DEVTOOLS_GLOBAL_HOOK__"] = hook
 	return hook

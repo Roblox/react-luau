@@ -10,14 +10,19 @@ local Packages = script.Parent.Parent.Parent
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
+type Array<T> = LuauPolyfill.Array<T>
 local Object = LuauPolyfill.Object
-
 -- ROBLOX deviation: Use HttpService for JSON
 local JSON = game:GetService("HttpService")
 
 local exports = {}
 
-exports.printElement = function(element, includeWeight)
+local ViewsComponentsTypes = require(script.Parent.views.Components.types)
+type Element = ViewsComponentsTypes.Element
+local Store = require(script.Parent.store)
+type Store = Store.Store
+
+exports.printElement = function(element: Element, includeWeight: boolean?)
 	includeWeight = includeWeight or false
 	local prefix = " "
 
@@ -27,9 +32,8 @@ exports.printElement = function(element, includeWeight)
 
 	local key = ""
 
-	-- ROBLOX deviation: check for empty string
-	if element.key and #element.key > 0 then
-		key = (' key="%s"'):format(element.key)
+	if element.key ~= nil and element.key ~= "" then
+		key = (' key="%s"'):format(tostring(element.key))
 	end
 
 	local hocDisplayNames = nil
@@ -44,7 +48,7 @@ exports.printElement = function(element, includeWeight)
 	local suffix = ""
 
 	if includeWeight then
-		suffix = (" (%s)"):format(element.isCollapsed and 1 or element.weight)
+		suffix = (" (%s)"):format(element.isCollapsed and "1" or tostring(element.weight))
 	end
 	return ("%s%s <%s%s>%s%s"):format(
 		("  "):rep(element.depth + 1),
@@ -56,7 +60,7 @@ exports.printElement = function(element, includeWeight)
 	)
 end
 
-exports.printOwnersList = function(elements, includeWeight)
+exports.printOwnersList = function(elements: Array<Element>, includeWeight: boolean)
 	includeWeight = includeWeight or false
 	return table.concat(
 		Array.map(elements, function(element)
@@ -66,7 +70,7 @@ exports.printOwnersList = function(elements, includeWeight)
 	)
 end
 
-exports.printStore = function(store, includeWeight)
+exports.printStore = function(store: Store, includeWeight: boolean?)
 	includeWeight = includeWeight or false
 	local snapshotLines = {}
 	local rootWeight = 0
@@ -97,7 +101,7 @@ exports.printStore = function(store, includeWeight)
 		error(
 			(
 				"Inconsistent Store state. Individual root weights (%s) do not match total weight (%s)"
-			):format(rootWeight, store:getNumElements())
+			):format(tostring(rootWeight), tostring(store:getNumElements()))
 		)
 	end
 

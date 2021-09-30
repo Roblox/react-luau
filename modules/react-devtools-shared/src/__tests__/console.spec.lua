@@ -290,7 +290,7 @@ return function()
 					return children
 				end
 				-- ROBLOX deviation: switched ordering for variable definition order
-				local Child = function() end
+				local Child = React.Component:extend("Child")
 				local Parent = function(_ref9)
 					local _children = _ref9.children
 

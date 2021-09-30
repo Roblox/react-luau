@@ -3,7 +3,7 @@ local React
 local ReactTestRenderer
 local ReactFeatureFlags
 local Scheduler
--- local SchedulerTracing
+local SchedulerTracing
 local ReactCache
 local Suspense
 local _act
@@ -13,7 +13,9 @@ local textResourceShouldFail
 return function()
     local Packages = script.Parent.Parent.Parent
     local jest = require(Packages.Dev.RobloxJest)
-    local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+    local JestGlobals = require(Packages.Dev.JestRoblox).Globals
+    local jestExpect = JestGlobals.expect
+    local jestMock = JestGlobals.jest
     local Promise = require(Packages.Promise)
     local LuauPolyfill = require(Packages.LuauPolyfill)
     local setTimeout = LuauPolyfill.setTimeout
@@ -27,12 +29,12 @@ return function()
 
             ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
             ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback = false
-            -- ReactFeatureFlags.enableSchedulerTracing = true
+            ReactFeatureFlags.enableSchedulerTracing = true
             React = require(Packages.React)
             ReactTestRenderer = require(Packages.Dev.ReactTestRenderer)
             _act = ReactTestRenderer.unstable_concurrentAct
             Scheduler = require(Packages.Scheduler)
-            -- SchedulerTracing = require('scheduler/tracing')
+            SchedulerTracing = Scheduler.tracing
             ReactCache = require(Packages.Dev.ReactCache)
             Suspense = React.Suspense
             TextResource = ReactCache.unstable_createResource(
@@ -1690,83 +1692,93 @@ return function()
         --             'C',
         --         })
         --     end)
-        --     it('should call onInteractionScheduledWorkCompleted after suspending', function()
-        --         local subscriber = {
-        --             onInteractionScheduledWorkCompleted = jest:fn(),
-        --             onInteractionTraced = jest:fn(),
-        --             onWorkCanceled = jest:fn(),
-        --             onWorkScheduled = jest:fn(),
-        --             onWorkStarted = jest:fn(),
-        --             onWorkStopped = jest:fn(),
-        --         }
+            -- ROBLOX FIXME: onInteractionScheduledWorkCompleted never gets called
+            -- one of these lines is getting hit one too many times: interaction.__count += 1
+            xit('should call onInteractionScheduledWorkCompleted after suspending', function()
+                -- ROBLOX deviation: mock performance.now
+                local performanceNowCounter = 0
+                _G.performance = {
+                    now = function()
+                        performanceNowCounter +=1
+                        return performanceNowCounter
+                    end
+                }
+                local subscriber = {
+                    onInteractionScheduledWorkCompleted = jestMock:fn(),
+                    onInteractionTraced = jestMock:fn(),
+                    onWorkCanceled = jestMock:fn(),
+                    onWorkScheduled = jestMock:fn(),
+                    onWorkStarted = jestMock:fn(),
+                    onWorkStopped = jestMock:fn(),
+                }
 
-        --         SchedulerTracing.unstable_subscribe(subscriber)
-        --         SchedulerTracing.unstable_trace('test', performance.now(), function()
-        --             local function App()
-        --                 return React.createElement(React.Suspense, {
-        --                     fallback = React.createElement(Text, {
-        --                         text = 'Loading...',
-        --                     }),
-        --                 }, React.createElement(AsyncText, {
-        --                     text = 'A',
-        --                     ms = 1000,
-        --                 }), React.createElement(AsyncText, {
-        --                     text = 'B',
-        --                     ms = 2000,
-        --                 }), React.createElement(AsyncText, {
-        --                     text = 'C',
-        --                     ms = 3000,
-        --                 }))
-        --             end
+                SchedulerTracing.unstable_subscribe(subscriber)
+                SchedulerTracing.unstable_trace('test', _G.performance.now(), function()
+                    local function App()
+                        return React.createElement(React.Suspense, {
+                            fallback = React.createElement(Text, {
+                                text = 'Loading...',
+                            }),
+                        }, React.createElement(AsyncText, {
+                            text = 'A',
+                            ms = 1000,
+                        }), React.createElement(AsyncText, {
+                            text = 'B',
+                            ms = 2000,
+                        }), React.createElement(AsyncText, {
+                            text = 'C',
+                            ms = 3000,
+                        }))
+                    end
 
-        --             local root = ReactTestRenderer.create(nil)
+                    local root = ReactTestRenderer.create()
 
-        --             root.update(React.createElement(App, nil))
-        --             jestExpect(Scheduler).toHaveYielded({
-        --                 'Suspend! [A]',
-        --                 'Suspend! [B]',
-        --                 'Suspend! [C]',
-        --                 'Loading...',
-        --             })
+                    root.update(React.createElement(App))
+                    jestExpect(Scheduler).toHaveYielded({
+                        'Suspend! [A]',
+                        'Suspend! [B]',
+                        'Suspend! [C]',
+                        'Loading...',
+                    })
 
-        --             -- Resolve A
-        --             jest.advanceTimersByTime(1000)
-        --             jestExpect(Scheduler).toHaveYielded({
-        --                 'Promise resolved [A]',
-        --             })
-        --             jestExpect(Scheduler).toFlushExpired({
-        --                 'A',
-        --                 -- The promises for B and C have now been thrown twice
-        --                 'Suspend! [B]',
-        --                 'Suspend! [C]',
-        --             })
+                    -- Resolve A
+                    jest.advanceTimersByTime(1000)
+                    jestExpect(Scheduler).toHaveYielded({
+                        'Promise resolved [A]',
+                    })
+                    jestExpect(Scheduler).toFlushExpired({
+                        'A',
+                        -- The promises for B and C have now been thrown twice
+                        'Suspend! [B]',
+                        'Suspend! [C]',
+                    })
 
-        --             -- Resolve B
-        --             jest.advanceTimersByTime(1000)
-        --             jestExpect(Scheduler).toHaveYielded({
-        --                 'Promise resolved [B]',
-        --             })
-        --             jestExpect(Scheduler).toFlushExpired({
-        --                 -- Even though the promise for B was thrown twice, we should only
-        --                 -- re-render once.
-        --                 'B',
-        --                 -- The promise for C has now been thrown three times
-        --                 'Suspend! [C]',
-        --             })
+                    -- Resolve B
+                    jest.advanceTimersByTime(1000)
+                    jestExpect(Scheduler).toHaveYielded({
+                        'Promise resolved [B]',
+                    })
+                    jestExpect(Scheduler).toFlushExpired({
+                        -- Even though the promise for B was thrown twice, we should only
+                        -- re-render once.
+                        'B',
+                        -- The promise for C has now been thrown three times
+                        'Suspend! [C]',
+                    })
 
-        --             -- Resolve C
-        --             jest.advanceTimersByTime(1000)
-        --             jestExpect(Scheduler).toHaveYielded({
-        --                 'Promise resolved [C]',
-        --             })
-        --             jestExpect(Scheduler).toFlushAndYield({
-        --                 -- Even though the promise for C was thrown three times, we should only
-        --                 -- re-render once.
-        --                 'C',
-        --             })
-        --         end)
-        --         jestExpect(subscriber.onInteractionScheduledWorkCompleted).toHaveBeenCalledTimes(1)
-        --     end)
+                    -- Resolve C
+                    jest.advanceTimersByTime(1000)
+                    jestExpect(Scheduler).toHaveYielded({
+                        'Promise resolved [C]',
+                    })
+                    jestExpect(Scheduler).toFlushAndYield({
+                        -- Even though the promise for C was thrown three times, we should only
+                        -- re-render once.
+                        'C',
+                    })
+                end)
+                jestExpect(subscriber.onInteractionScheduledWorkCompleted).toHaveBeenCalledTimes(1)
+            end)
         --     it('#14162', function()
         --         local fetchComponent = _async(function()
         --             return Promise(function(r)

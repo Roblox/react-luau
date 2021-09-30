@@ -13,12 +13,10 @@ local Packages = script.Parent.Parent
 local console = require(Packages.Shared).console
 
 -- FIXME (roblox): remove this when our unimplemented
-local function unimplemented(message)
+local function unimplemented(message: string)
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("UNIMPLEMENTED ERROR: " .. tostring(message))
+  print("UNIMPLEMENTED ERROR: " .. message)
   error("FIXME (roblox): " .. message .. " is unimplemented", 2)
 end
 

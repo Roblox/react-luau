@@ -58,6 +58,7 @@ function startProfilerTimer(fiber: Fiber): ()
 
   profilerStartTime = now()
 
+  -- ROBLOX deviation: JS can compare null/undefined to 0, but Lua can't
   if fiber.actualStartTime ~= nil and (fiber.actualStartTime :: number) < 0 then
     fiber.actualStartTime = now()
   end

@@ -14,7 +14,7 @@ type Array<T> = { [number]: T }
 type Object = { [string]: any }
 
 -- ROBLOX FIXME: !!! THIS FILE IS A STUB WITH BAREBONES FOR UTILS TEST
-local function unimplemented(functionName)
+local function unimplemented(functionName: string)
 	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 	print("!!! " .. functionName .. " was called, but is stubbed! ")

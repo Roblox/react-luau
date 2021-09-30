@@ -12,10 +12,9 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local inspect = LuauPolyfill.util.inspect
 local Object = LuauPolyfill.Object
-local Set = LuauPolyfill.Set
-type Array<T> = { [number]: T }
+type Array<T> = LuauPolyfill.Array<T>
 type Map<K, V> = { [K]: V }
-type Object = { [string]: any }
+type Object = LuauPolyfill.Object
 type Set<K> = { [K]: boolean }
 local console = require(Packages.Shared).console
 
@@ -40,8 +39,6 @@ local storage = require(script.Parent.Parent.storage)
 local localStorageGetItem = storage.localStorageGetItem
 local localStorageSetItem = storage.localStorageSetItem
 local __DEBUG__ = constants.__DEBUG__
-local devtoolsUtils = require(script.Parent.utils)
-local printStore = devtoolsUtils.printStore
 
 -- ROBLOX TODO: implement ProfilerStore
 -- local ProfilerStoreModule = require(script.Parent.ProfilerStore)
@@ -153,6 +150,61 @@ export type Store = EventEmitter<{
 	-- Total number of visible elements (within all roots).
 	-- Used for windowing purposes.
 	_weightAcrossRoots: number,
+	assertExpectedRootMapSizes: (self: Store) -> (),
+	assertMapSizeMatchesRootCount: (
+		self: Store,
+		map: Map<any, any>,
+		mapName: string
+	) -> (),
+	getCollapseNodesByDefault: (self: Store) -> boolean,
+	setCollapseNodesByDefault: (self: Store, boolean) -> (),
+	getComponentFilters: (self: Store) -> Array<ComponentFilter>,
+	setComponentFilters: (self: Store, Array<ComponentFilter>) -> (),
+	getHasOwnerMetadata: (self: Store) -> boolean,
+	getNativeStyleEditorValidAttributes: (self: Store) -> Array<string> | nil,
+	getNumElements: (self: Store) -> number,
+	getProfilerStore: (self: Store) -> ProfilerStore,
+	getRecordChangeDescriptions: (self: Store) -> boolean,
+	setRecordChangeDescriptions: (self: Store, value: boolean) -> (),
+	getRevision: (self: Store) -> number,
+	getRootIDToRendererID: (self: Store) -> Map<number, number>,
+	getRoots: (self: Store) -> Array<number>,
+	getSupportsNativeInspection: (self: Store) -> boolean,
+	getSupportsNativeStyleEditor: (self: Store) -> boolean,
+	getSupportsProfiling: (self: Store) -> boolean,
+	getSupportsReloadAndProfile: (self: Store) -> boolean,
+	getSupportsTraceUpdates: (self: Store) -> boolean,
+	getUnsupportedRendererVersionDetected: (self: Store) -> boolean,
+	containsElement: (self: Store, id: number) -> boolean,
+	getElementAtIndex: (self: Store, index: number) -> Element | nil,
+	getElementIDAtIndex: (self: Store, index: number) -> number | nil,
+	getElementByID: (self: Store, id: number) -> Element | nil,
+	getIndexOfElementID: (self: Store, id: number) -> number | nil,
+	getOwnersListForElement: (self: Store, ownerID: number) -> Array<Element>,
+	getRendererIDForElement: (self: Store, id: number) -> number | nil,
+	getRootIDForElement: (self: Store, id: number) -> number | nil,
+	isInsideCollapsedSubTree: (self: Store, id: number) -> boolean,
+	toggleIsCollapsed: (self: Store, id: number, isCollapsed: boolean) -> (),
+	_adjustParentTreeWeight: (
+		self: Store,
+		parentElement: Element | nil,
+		weightDelta: number
+	) -> (),
+	onBridgeNativeStyleEditorSupported: (
+		self: Store,
+		options: {
+			isSupported: boolean,
+			validAttributes: Array<string>,
+		}
+	) -> (),
+	onBridgeOperations: (self: Store, operations: Array<number>) -> (),
+	onBridgeOverrideComponentFilters: (
+		self: Store,
+		componentFilters: Array<ComponentFilter>
+	) -> (),
+	onBridgeShutdown: (self: Store) -> (),
+	onBridgeStorageSupported: (self: Store, isBackendStorageAPISupported: boolean) -> (),
+	onBridgeUnsupportedRendererVersion: (self: Store) -> (),
 }
 -- ROBLOX deviation: equivalent of sub-class
 local Store = setmetatable({}, { __index = EventEmitter })
@@ -327,8 +379,8 @@ function Store:assertMapSizeMatchesRootCount(map: Map<any, any>, mapName: string
 		error(
 			("Expected %s to contain %s items, but it contains %s items\n\n%s"):format(
 				mapName,
-				expectedSize,
-				mapSize,
+				tostring(expectedSize),
+				tostring(mapSize),
 				inspect(map, { depth = 20 })
 			)
 		)
@@ -353,7 +405,7 @@ function Store:getComponentFilters(): Array<ComponentFilter>
 	return self._componentFilters
 end
 
-function Store:setComponentFilters(value: Array<ComponentFilter>)
+function Store:setComponentFilters(value: Array<ComponentFilter>): ()
 	if self._profilerStore.isProfiling then
 		-- Re-mounting a tree while profiling is in progress might break a lot of assumptions.
 		-- If necessary, we could support this- but it doesn't seem like a necessary use case.
@@ -416,7 +468,7 @@ end
 function Store:getRecordChangeDescriptions(): boolean
 	return self._recordChangeDescriptions
 end
-function Store:setRecordChangeDescriptions(value: boolean)
+function Store:setRecordChangeDescriptions(value: boolean): ()
 	self._recordChangeDescriptions = value
 
 	localStorageSetItem(
@@ -517,7 +569,7 @@ function Store:getElementIDAtIndex(index: number): number | nil
 			return nil
 		end
 
-		return element.id
+		return (element :: Element).id
 	end)()
 end
 function Store:getElementByID(id: number): Element | nil
@@ -820,7 +872,7 @@ function Store:onBridgeNativeStyleEditorSupported(
 	self:emit("supportsNativeStyleEditor")
 end
 
-function Store:onBridgeOperations(operations: Array<number>)
+function Store:onBridgeOperations(operations: Array<number>): ()
 	if __DEBUG__ then
 		console.groupCollapsed("onBridgeOperations")
 		debug_("onBridgeOperations", table.concat(operations, ","))
@@ -836,7 +888,7 @@ function Store:onBridgeOperations(operations: Array<number>)
 	-- We'll use the parent ID to adjust selection if it gets deleted.
 	-- ROBLOX deviation: 1-indexed means this is 3, not 2
 	local i = 3
-	local stringTable = {
+	local stringTable: Array<any> = {
 		-- ROBLOX deviation: element 1 corresponds to empty string
 		"", -- ID = 0 corresponds to the null string.
 	}
@@ -876,7 +928,7 @@ function Store:onBridgeOperations(operations: Array<number>)
 				error(
 					(
 						"Cannot add node %s because a node with that id is already in the Store."
-					):format(id)
+					):format(tostring(id))
 				)
 			end
 
@@ -885,7 +937,7 @@ function Store:onBridgeOperations(operations: Array<number>)
 
 			if type_ == ElementTypeRoot then
 				if __DEBUG__ then
-					debug_("Add", ("new root node %s"):format(id))
+					debug_("Add", ("new root node %s"):format(tostring(id)))
 				end
 
 				local supportsProfiling = operations[i] > 0
@@ -938,9 +990,9 @@ function Store:onBridgeOperations(operations: Array<number>)
 					debug_(
 						"Add",
 						("node %s (%s) as child of %s"):format(
-							id,
+							tostring(id),
 							displayName or "null",
-							parentID
+							tostring(parentID)
 						)
 					)
 				end
@@ -948,7 +1000,7 @@ function Store:onBridgeOperations(operations: Array<number>)
 					error(
 						(
 							"Cannot add child %s to parent %s because parent node was not found in the Store."
-						):format(id, parentID)
+						):format(tostring(id), tostring(parentID))
 					)
 				end
 
@@ -956,9 +1008,11 @@ function Store:onBridgeOperations(operations: Array<number>)
 
 				table.insert(parentElement.children, id)
 
-				local result = separateDisplayNameAndHOCs(displayName, type_)
-				local displayNameWithoutHOCs = result[1]
-				local hocDisplayNames = result[2]
+				local displayNameWithoutHOCs, hocDisplayNames =
+					separateDisplayNameAndHOCs(
+						displayName,
+						type_
+					)
 
 				local element = {
 					children = {},
@@ -982,11 +1036,11 @@ function Store:onBridgeOperations(operations: Array<number>)
 					local set = self._ownersMap[ownerID]
 
 					if set == nil then
-						set = Set.new()
+						set = {}
 						self._ownersMap[ownerID] = set
 					end
 
-					set:add(id)
+					set[id] = true
 				end
 			end
 		elseif operation == TREE_OPERATION_REMOVE then
@@ -1011,7 +1065,9 @@ function Store:onBridgeOperations(operations: Array<number>)
 					element.children, element.ownerID, element.parentID, element.weight
 
 				if #children > 0 then
-					error(("Node %s was removed before its children."):format(id))
+					error(
+						("Node %s was removed before its children."):format(tostring(id))
+					)
 				end
 
 				self._idToElement[id] = nil
@@ -1020,7 +1076,7 @@ function Store:onBridgeOperations(operations: Array<number>)
 
 				if parentID == 0 then
 					if __DEBUG__ then
-						debug_("Remove", ("node %s root"):format(id))
+						debug_("Remove", ("node %s root"):format(tostring(id)))
 					end
 
 					self._roots = Array.filter(self._roots, function(rootID)
@@ -1033,7 +1089,13 @@ function Store:onBridgeOperations(operations: Array<number>)
 					haveRootsChanged = true
 				else
 					if __DEBUG__ then
-						debug_("Remove", ("node %s from parent %s"):format(id, parentID))
+						debug_(
+							"Remove",
+							("node %s from parent %s"):format(
+								tostring(id),
+								tostring(parentID)
+							)
+						)
 					end
 
 					parentElement = self._idToElement[parentID]
@@ -1042,7 +1104,7 @@ function Store:onBridgeOperations(operations: Array<number>)
 						error(
 							(
 								"Cannot remove node %s from parent %s because no matching node was found in the Store."
-							):format(id, parentID)
+							):format(tostring(id), tostring(parentID))
 						)
 					end
 
@@ -1071,7 +1133,7 @@ function Store:onBridgeOperations(operations: Array<number>)
 				error(
 					(
 						"Cannot reorder children for node %s because no matching node was found in the Store."
-					):format(id)
+					):format(tostring(id))
 				)
 			end
 
@@ -1102,7 +1164,13 @@ function Store:onBridgeOperations(operations: Array<number>)
 			i = i + numChildren
 
 			if _G.__DEBUG__ then
-				debug_("Re-order", ("Node %s children %s"):format(id, children.join(",")))
+				debug_(
+					"Re-order",
+					("Node %s children %s"):format(
+						tostring(id),
+						Array.join(children, ",")
+					)
+				)
 			end
 		elseif operation == TREE_OPERATION_UPDATE_TREE_BASE_DURATION then
 			-- Base duration updates are only sent while profiling is in progress.
@@ -1110,7 +1178,7 @@ function Store:onBridgeOperations(operations: Array<number>)
 			-- The profiler UI uses them lazily in order to generate the tree.
 			i += 3
 		else
-			error("Unsupported Bridge operation " .. operation)
+			error("Unsupported Bridge operation " .. tostring(operation))
 		end
 	end
 
@@ -1140,6 +1208,9 @@ function Store:onBridgeOperations(operations: Array<number>)
 		end
 	end
 	if __DEBUG__ then
+		-- ROBLOX deviation: inline require here to work around circular dependency
+		local devtoolsUtils = require(script.Parent.utils) :: any
+		local printStore = devtoolsUtils.printStore
 		console.log(printStore(self, true))
 		console.groupEnd()
 	end
@@ -1147,13 +1218,15 @@ function Store:onBridgeOperations(operations: Array<number>)
 	self:emit("mutated", { addedElementIDs, removedElementIDs })
 end
 
-function Store:onBridgeOverrideComponentFilters(componentFilters: Array<ComponentFilter>)
+function Store:onBridgeOverrideComponentFilters(
+	componentFilters: Array<ComponentFilter>
+): ()
 	self._componentFilters = componentFilters
 
 	saveComponentFilters(componentFilters)
 end
 
-function Store:onBridgeShutdown()
+function Store:onBridgeShutdown(): ()
 	if __DEBUG__ then
 		debug_("onBridgeShutdown", "unsubscribing from Bridge")
 	end
@@ -1166,12 +1239,12 @@ function Store:onBridgeShutdown()
 	)
 end
 
-function Store:onBridgeStorageSupported(isBackendStorageAPISupported: boolean)
+function Store:onBridgeStorageSupported(isBackendStorageAPISupported: boolean): ()
 	self._isBackendStorageAPISupported = isBackendStorageAPISupported
 	self:emit("supportsReloadAndProfile")
 end
 
-function Store:onBridgeUnsupportedRendererVersion()
+function Store:onBridgeUnsupportedRendererVersion(): ()
 	self._unsupportedRendererVersionDetected = true
 	self:emit("unsupportedRendererVersionDetected")
 end

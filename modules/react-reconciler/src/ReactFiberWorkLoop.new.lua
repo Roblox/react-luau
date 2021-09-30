@@ -9,7 +9,7 @@
 ]]
 
 -- FIXME (roblox): remove this when our unimplemented
-local function unimplemented(message)
+local function unimplemented(message: string)
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   print("UNIMPLEMENTED ERROR: " .. tostring(message))
@@ -22,16 +22,16 @@ local console = require(Packages.Shared).console
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Set = LuauPolyfill.Set
 type Set<T> = LuauPolyfill.Set<T>
-type Array<T> = { [number]: T }
+type Array<T> = LuauPolyfill.Array<T>
 
 local exports: any = {}
 
-local function copySet(from)
+local function copySet(from: Set<any>?): Set<any>
 	local to = Set.new()
 	if from == nil then
 		return to
 	end
-	for _, v in from:ipairs() do
+	for _, v in (from :: Set<any>):ipairs() do
 		to:add(v)
 	end
 
@@ -42,9 +42,8 @@ local function collectionHasEntries(collection)
   return next(collection) ~= nil
 end
 
-
 local ReactTypes = require(Packages.Shared)
-type Thenable<T, U> = ReactTypes.Thenable<T, U>
+type Thenable<T> = ReactTypes.Thenable<T>
 type Wakeable = ReactTypes.Wakeable
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
@@ -62,7 +61,7 @@ type Interaction = Scheduler.Interaction
 local ReactFiberSuspenseComponent = require(script.Parent["ReactFiberSuspenseComponent.new"])
 type SuspenseState = ReactFiberSuspenseComponent.SuspenseState
 local ReactFiberStack = require(script.Parent["ReactFiberStack.new"])
-type StackCursor<T> = ReactFiberStack.StackCursor<T>;
+type StackCursor<T> = ReactFiberStack.StackCursor<T>
 -- ROBLOX TODO: avoid a circular dependency
 -- local type {FunctionComponentUpdateQueue} = require(script.Parent["ReactFiberHooks.new"])
 
@@ -77,8 +76,11 @@ local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 -- local enableSchedulingProfiler = ReactFeatureFlags.enableSchedulingProfiler
 local skipUnmountedBoundaries = ReactFeatureFlags.skipUnmountedBoundaries
 local enableDoubleInvokingEffects = ReactFeatureFlags.enableDoubleInvokingEffects
-local ReactSharedInternals = require(Packages.Shared).ReactSharedInternals
-local invariant = require(Packages.Shared).invariant
+local ReactShared = require(Packages.Shared)
+-- ROBLOX deviation: we pull in Dispatcher type because we need it for our lazy loading deviations to typecheck
+type Dispatcher = ReactShared.Dispatcher
+local ReactSharedInternals = ReactShared.ReactSharedInternals
+local invariant = ReactShared.invariant
 
 local SchedulerWithReactIntegration = require(script.Parent["SchedulerWithReactIntegration.new"])
 local scheduleCallback = SchedulerWithReactIntegration.scheduleCallback
@@ -131,7 +133,7 @@ local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
 -- local scheduleTimeout = ReactFiberHostConfig.scheduleTimeout
 -- local cancelTimeout = ReactFiberHostConfig.cancelTimeout
 -- local noTimeout = ReactFiberHostConfig.noTimeout
-local warnsIfNotActing = ReactFiberHostConfig.warnsIfNotActing
+-- local warnsIfNotActing = ReactFiberHostConfig.warnsIfNotActing
 -- local beforeActiveInstanceBlur = ReactFiberHostConfig.beforeActiveInstanceBlur
 -- local afterActiveInstanceBlur = ReactFiberHostConfig.afterActiveInstanceBlur
 -- local clearContainer = ReactFiberHostConfig.clearContainer
@@ -251,18 +253,26 @@ local lazyInitRefs = {
 }
 
 -- ROBLOX deviation: lazy initialize beginwork to break cyclic dependencies
-local originalBeginWork = function(...)
+local originalBeginWork = function(
+  current: Fiber | nil,
+  workInProgress: Fiber,
+  renderLanes: Lanes
+): Fiber | nil
   if not lazyInitRefs.originalBeginWorkRef then
     lazyInitRefs.originalBeginWorkRef = require(script.Parent["ReactFiberBeginWork.new"]).beginWork
   end
-  return lazyInitRefs.originalBeginWorkRef(...)
+  return lazyInitRefs.originalBeginWorkRef(current, workInProgress, renderLanes)
 end
 
-local completeWork = function(...)
+local completeWork = function(
+  current: Fiber | nil,
+  workInProgress: Fiber,
+  renderLanes: Lanes
+): Fiber | nil
   if not lazyInitRefs.completeWorkRef then
     lazyInitRefs.completeWorkRef = require(script.Parent["ReactFiberCompleteWork.new"]).completeWork
   end
-  return lazyInitRefs.completeWorkRef(...)
+  return lazyInitRefs.completeWorkRef(current, workInProgress, renderLanes)
 end
 
 
@@ -276,15 +286,15 @@ local function initReactFiberHooks()
 end
 
 -- ROBLOX deviation: lazy init for resetHooksAfterThrow from ReactFiberHooks
-local resetHooksAfterThrow = function(...)
+local resetHooksAfterThrow = function(): ()
   if not lazyInitRefs.resetHooksAfterThrowRef then
     initReactFiberHooks()
   end
-  return lazyInitRefs.resetHooksAfterThrowRef(...)
+  return lazyInitRefs.resetHooksAfterThrowRef()
 end
 
 -- ROBLOX deviation: lazy init for ContextOnlyDispatcher from ReactFiberHooks
-local ContextOnlyDispatcher = function()
+local ContextOnlyDispatcher = function(): Dispatcher
   if not lazyInitRefs.ContextOnlyDispatcherRef then
     initReactFiberHooks()
   end
@@ -292,11 +302,11 @@ local ContextOnlyDispatcher = function()
 end
 
 -- ROBLOX deviation: lazy init for getIsUpdatingOpaqueValueInRenderPhaseInDEV from ReactFiberHooks
-local getIsUpdatingOpaqueValueInRenderPhaseInDEV = function(...)
+local getIsUpdatingOpaqueValueInRenderPhaseInDEV = function(): boolean?
   if not lazyInitRefs.getIsUpdatingOpaqueValueInRenderPhaseInDEVRef then
     initReactFiberHooks()
   end
-  return lazyInitRefs.getIsUpdatingOpaqueValueInRenderPhaseInDEVRef(...)
+  return lazyInitRefs.getIsUpdatingOpaqueValueInRenderPhaseInDEVRef()
 end
 
 local createCapturedValue = require(script.Parent.ReactCapturedValue).createCapturedValue
@@ -395,7 +405,7 @@ local workInProgressRootIncludedLanes: Lanes = ReactFiberLane.NoLanes
 -- The work left over by components that were visited during this render. Only
 -- includes unprocessed updates, not work in bailed out children.
 local ReactFiberWorkInProgress = require(script.Parent.ReactFiberWorkInProgress)
-local workInProgressRootSkippedLanes = ReactFiberWorkInProgress.workInProgressRootSkippedLanes --: Lanes = ReactFiberLane.NoLanes
+local workInProgressRootSkippedLanes: (value: Lanes?) -> Lanes = ReactFiberWorkInProgress.workInProgressRootSkippedLanes --: Lanes = ReactFiberLane.NoLanes
 -- Lanes that were updated (in an interleaved event) during this render.
 local workInProgressRootUpdatedLanes: Lanes = ReactFiberLane.NoLanes
 -- Lanes that were pinged (in an interleaved event) during this render.
@@ -1611,7 +1621,7 @@ mod.prepareFreshStack = function(root: ReactInternalTypes.FiberRoot, lanes: Lane
   end
 end
 
-mod.handleError = function(root, thrownValue)
+mod.handleError = function(root, thrownValue): ()
   while true do
     local erroredWork = workInProgress
     local ok, yetAnotherThrownValue = pcall(function()
@@ -1713,21 +1723,21 @@ mod.popInteractions = function(prevInteractions)
   end
 end
 
-exports.markCommitTimeOfFallback = function()
+exports.markCommitTimeOfFallback = function(): ()
   globalMostRecentFallbackTime = now()
 end
 
-exports.markSkippedUpdateLanes = function(lane: Lane | Lanes)
+exports.markSkippedUpdateLanes = function(lane: Lane | Lanes): ()
   ReactFiberWorkInProgress.markSkippedUpdateLanes(lane)
 end
 
-exports.renderDidSuspend = function()
+exports.renderDidSuspend = function(): ()
   if workInProgressRootExitStatus == RootExitStatus.Incomplete then
     workInProgressRootExitStatus = RootExitStatus.Suspended
   end
 end
 
-exports.renderDidSuspendDelayIfPossible = function()
+exports.renderDidSuspendDelayIfPossible = function(): ()
   if
     workInProgressRootExitStatus == RootExitStatus.Incomplete or
     workInProgressRootExitStatus == RootExitStatus.Suspended
@@ -3638,7 +3648,7 @@ end
 exports.warnIfNotCurrentlyActingEffectsInDEV = function(fiber: Fiber): ()
   if _G.__DEV__ then
     if
-      warnsIfNotActing == true and
+      ReactFiberHostConfig.warnsIfNotActing == true and
       bit32.band(fiber.mode, ReactTypeOfMode.StrictMode) ~= ReactTypeOfMode.NoMode and
       IsSomeRendererActing.current == false and
       exports.IsThisRendererActing.current == false
@@ -3664,7 +3674,7 @@ end
 exports.warnIfNotCurrentlyActingUpdatesInDEV = function (fiber: Fiber): ()
   if _G.__DEV__ then
     if
-      warnsIfNotActing == true and
+      ReactFiberHostConfig.warnsIfNotActing == true and
       executionContext == NoContext and
       IsSomeRendererActing.current == false and
       exports.IsThisRendererActing.current == false then
@@ -4030,7 +4040,7 @@ local function flushWorkAndMicroTasks(onDone: (any?) -> ())
   end
 end
 
-exports.act = function(callback: () -> Thenable<any, any>): Thenable<any?, any?>
+exports.act = function(callback: () -> Thenable<any>): Thenable<any?>
   if not _G.__DEV__ then
     if didWarnAboutUsingActInProd == false then
       didWarnAboutUsingActInProd = true
@@ -4169,7 +4179,7 @@ exports.act = function(callback: () -> Thenable<any, any>): Thenable<any?, any?>
 
     -- in the sync case, the returned thenable only warns *if* await-ed
     return {
-      andThen = function(self, resolve)
+      andThen = function(self, resolve, reject_)
         if _G.__DEV__ then
           console.error(
             "Do not await the result of calling act(...) with sync logic, it is not a Promise."

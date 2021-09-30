@@ -8,25 +8,33 @@
 --  * @flow
 --  */
 
-local console = {}
+local Types = require(script.Parent.types)
+type ReactRenderer = Types.ReactRenderer
+
+local exports = {}
 
 -- ROBLOX FIXME: Stub for now
-function console.patch() end
+function exports.patch(
+	_object: {
+		appendComponentStack: boolean,
+		breakOnConsoleErrors: boolean,
+	}
+): () end
 
-function console.unpatch() end
+function exports.unpatch(): () end
 
-function console.error(...)
+function exports.error(...)
 	error(...)
 end
 
-function console.warn(...)
+function exports.warn(...)
 	warn(...)
 end
 
-function console.log(...)
+function exports.log(...)
 	print(...)
 end
 
-function console.registerRenderer() end
+function exports.registerRenderer(_renderer: ReactRenderer): () end
 
-return console
+return exports

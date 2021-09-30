@@ -35,7 +35,7 @@ type Fiber = ReactReconciler.Fiber
 type UpdateQueue<T> = ReactReconciler.UpdateQueue<T>
 local ReactShared = require(Packages.Shared)
 type ReactNodeList = ReactShared.ReactNodeList
-type Thenable<T> = ReactShared.Thenable<T, any>
+type Thenable<T> = ReactShared.Thenable<T>
 
 type RootTag = ReactReconciler.RootTag
 local Scheduler = require(Packages.Scheduler)

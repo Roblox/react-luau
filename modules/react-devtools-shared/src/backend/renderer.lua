@@ -1995,7 +1995,7 @@ exports.attach = function(
 		end
 	end
 
-	local function handleCommitFiberRoot(root, priorityLevel)
+	local function handleCommitFiberRoot(root: Object, priorityLevel: number?)
 		local current = root.current
 		local alternate = current.alternate
 
@@ -2395,7 +2395,7 @@ exports.attach = function(
 		local isCurrent = isMostRecentlyInspectedElementCurrent(id)
 
 		if isCurrent then
-			window["$attribute"] = getInObject(mostRecentlyInspectedElement, path)
+			window["$attribute"] = getInObject(mostRecentlyInspectedElement :: any, path)
 		end
 	end
 	local function prepareViewElementSource(id: number): ()
@@ -2805,7 +2805,7 @@ exports.attach = function(
 		local isCurrent = isMostRecentlyInspectedElementCurrent(id)
 
 		if isCurrent then
-			local value = getInObject(mostRecentlyInspectedElement, path)
+			local value = getInObject(mostRecentlyInspectedElement :: any, path)
 			local key = ("$reactTemp%s"):format(tostring(count))
 
 			window[key] = value
@@ -2819,7 +2819,7 @@ exports.attach = function(
 		local isCurrent = isMostRecentlyInspectedElementCurrent(id)
 
 		if isCurrent then
-			copyToClipboard(getInObject(mostRecentlyInspectedElement, path))
+			copyToClipboard(getInObject(mostRecentlyInspectedElement :: any, path))
 		end
 	end
 
@@ -2846,7 +2846,7 @@ exports.attach = function(
 					type = "hydrated-path",
 					path = path,
 					value = cleanForBridge(
-						getInObject(mostRecentlyInspectedElement, path),
+						getInObject(mostRecentlyInspectedElement :: any, path),
 						createIsPathAllowed(nil, secondaryCategory),
 						path
 					),
@@ -2919,8 +2919,8 @@ exports.attach = function(
 		end
 	end
 
-	local function logElementToConsole(id)
-		local result = (function()
+	local function logElementToConsole(id: number)
+		local result: InspectedElement = (function()
 			if isMostRecentlyInspectedElementCurrent(id) then
 				return mostRecentlyInspectedElement
 			end
@@ -2929,8 +2929,7 @@ exports.attach = function(
 		end)()
 
 		if result == nil then
-			console.warn(('Could not find Fiber with id "%s"'):format(id))
-
+			console.warn(('Could not find Fiber with id "%s"'):format(tostring(id)))
 			return
 		end
 

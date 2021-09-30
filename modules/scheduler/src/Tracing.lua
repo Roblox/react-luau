@@ -135,7 +135,7 @@ local function copySet(from)
 	return to
 end
 
-exports.unstable_trace = function(name: string, timestamp: number, callback: Function, threadID: number): any
+exports.unstable_trace = function(name: string, timestamp: number, callback: Function, threadID: number?): any
 	-- ROBLOX: default argument value
 	if threadID == nil then
 		threadID = DEFAULT_THREAD_ID
@@ -242,11 +242,7 @@ exports.unstable_wrap =
 		-- Update the pending async work count for the current interactions.
 		-- Update after calling subscribers in case of error.
 		for _, interaction in wrappedInteractions:ipairs() do
-			(function()
-				local preIncrement__ = interaction.__count
-				interaction.__count += 1
-				return preIncrement__
-			end)()
+			interaction.__count += 1
 		end
 
 		local hasRun = false

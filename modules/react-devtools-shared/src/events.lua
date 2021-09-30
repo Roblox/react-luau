@@ -73,6 +73,7 @@ function EventEmitter:emit(
 				local listener = clonedListeners[i]
 				local ok, error_ = pcall(function(...)
 					listener(...)
+					return nil
 				end, ...)
 				if not ok then
 					didThrow = true

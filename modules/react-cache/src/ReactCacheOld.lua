@@ -17,7 +17,7 @@ type Map<K, V> = { [K]: V }
 type Object = { [string]: any }
 local ReactTypes = require(Packages.Shared)
 local React = require(Packages.React)
-type Thenable<R> = ReactTypes.Thenable<R, any>
+type Thenable<R> = ReactTypes.Thenable<R>
 
 -- ROBLOX deviation: predeclare methods to fix declaration ordering
 local deleteEntry
