@@ -1,5 +1,5 @@
 [workspace]
-version = "17.0.1-rc.3"
+version = "17.0.1-rc.4"
 members = ["modules/*"]
 authors = [
 	"Paul Doyle <pdoyle@roblox.com>",
