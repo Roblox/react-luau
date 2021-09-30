@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1633039269132,
+  "lastUpdate": 1633042758752,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1113,6 +1113,47 @@
             "extra": "200 samples\nroblox-cli version: 0.498.0.4980396"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b28927f22559f567348efe7f0c63157baedf6a16",
+          "message": "#nojira - Switch promise to proper semver dep",
+          "timestamp": "2021-09-30T22:07:19Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/218/commits/b28927f22559f567348efe7f0c63157baedf6a16"
+        },
+        "date": 1633042757013,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.6507,
+            "range": "±27.84%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.498.0.4980396"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.7051,
+            "range": "±222.00%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.498.0.4980396"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 78.7269,
+            "range": "±20.88%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.498.0.4980396"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -1988,6 +2029,40 @@
             "name": "FrameRate#Δt",
             "value": 62.0302,
             "range": "±20.47%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980396"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b28927f22559f567348efe7f0c63157baedf6a16",
+          "message": "#nojira - Switch promise to proper semver dep",
+          "timestamp": "2021-09-30T22:07:19Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/218/commits/b28927f22559f567348efe7f0c63157baedf6a16"
+        },
+        "date": 1633042757632,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 19.3586,
+            "range": "±12.60%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980396"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 52.9222,
+            "range": "±19.54%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.498.0.4980396"
           }
@@ -2871,6 +2946,40 @@
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b28927f22559f567348efe7f0c63157baedf6a16",
+          "message": "#nojira - Switch promise to proper semver dep",
+          "timestamp": "2021-09-30T22:07:19Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/218/commits/b28927f22559f567348efe7f0c63157baedf6a16"
+        },
+        "date": 1633042758188,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 14.4817,
+            "range": "±12.55%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 70.486,
+            "range": "±16.51%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -3746,6 +3855,40 @@
             "name": "FrameRate#Δt",
             "value": 12.2622,
             "range": "±11.75%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b28927f22559f567348efe7f0c63157baedf6a16",
+          "message": "#nojira - Switch promise to proper semver dep",
+          "timestamp": "2021-09-30T22:07:19Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/218/commits/b28927f22559f567348efe7f0c63157baedf6a16"
+        },
+        "date": 1633042758749,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 88.6473,
+            "range": "±11.48%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 11.4661,
+            "range": "±14.63%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
           }
