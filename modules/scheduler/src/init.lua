@@ -12,6 +12,11 @@ local TracingSubscriptions = require(script.TracingSubscriptions)
 -- ROBLOX deviation export Tracing type from the package exports to avoid direct file access
 export type Interaction = Tracing.Interaction
 
+-- Enables `act` to use mock scheduling logic when running tests
+if _G.__ROACT_17_INLINE_ACT__ then
+    return require(script.unstable_mock)
+end
+
 local exports = {
     getJestMatchers = Scheduler.getJestMatcher,
     unstable_ImmediatePriority = Scheduler.unstable_ImmediatePriority,

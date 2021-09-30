@@ -44,4 +44,6 @@ return {
 	-- Binding interface entry-point for Roact-specific 'bindings' feature
 	createBinding = React.createBinding,
 	joinBindings = React.joinBindings,
+
+	act = ReactRoblox.act,
 }

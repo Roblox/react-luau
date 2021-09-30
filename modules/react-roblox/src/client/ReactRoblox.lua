@@ -249,7 +249,24 @@ local exports = {
   Event = Event,
   Change = Change,
   unstable_isNewReconciler = enableNewReconciler,
+
+  -- ROBLOX deviation: Export `act` function for testing purposes; in
+  -- production (and with the global off), it will give an instructive error
+  act = function()
+    error(
+      "ReactRoblox.act is only available in testing environments, not "
+      .. "production. Enable the `__ROACT_17_INLINE_ACT__` global in your test "
+      .. "configuration in order to use `act`."
+    )
+  end
 }
+
+if _G.__ROACT_17_INLINE_ACT__ then
+  -- ROBLOX deviation: When the __ROACT_17_INLINE_ACT__ is enabled, we re-export
+  -- the `act` function from ReactReconciler. The global will additionally force
+  -- the scheduler to use the mock interface
+  exports.act = ReactReconciler.act
+end
 
 -- local foundDevTools = injectIntoDevTools({
 --   findFiberByHostInstance = getClosestInstanceFromNode,

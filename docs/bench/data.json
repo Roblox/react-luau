@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1632878708042,
+  "lastUpdate": 1632961628958,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -908,6 +908,47 @@
             "extra": "200 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "737e2a29452e082b7398f2f4f561675309147df2",
+          "message": "LUAFDN-622 - Export `act` from the top level; enable it behind tests",
+          "timestamp": "2021-09-29T17:33:55Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/214/commits/737e2a29452e082b7398f2f4f561675309147df2"
+        },
+        "date": 1632961626411,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.386,
+            "range": "±26.79%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.7327,
+            "range": "±223.32%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 87.9777,
+            "range": "±20.54%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -1613,6 +1654,40 @@
             "name": "FrameRate#Δt",
             "value": 51.3202,
             "range": "±17.47%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "737e2a29452e082b7398f2f4f561675309147df2",
+          "message": "LUAFDN-622 - Export `act` from the top level; enable it behind tests",
+          "timestamp": "2021-09-29T17:33:55Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/214/commits/737e2a29452e082b7398f2f4f561675309147df2"
+        },
+        "date": 1632961627152,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 17.2068,
+            "range": "±14.33%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 59.7636,
+            "range": "±20.60%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.497.0.4970359"
           }
@@ -2326,6 +2401,40 @@
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "737e2a29452e082b7398f2f4f561675309147df2",
+          "message": "LUAFDN-622 - Export `act` from the top level; enable it behind tests",
+          "timestamp": "2021-09-29T17:33:55Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/214/commits/737e2a29452e082b7398f2f4f561675309147df2"
+        },
+        "date": 1632961628087,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 13.1177,
+            "range": "±13.54%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 77.9108,
+            "range": "±16.83%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -3031,6 +3140,40 @@
             "name": "FrameRate#Δt",
             "value": 10.6381,
             "range": "±18.89%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "737e2a29452e082b7398f2f4f561675309147df2",
+          "message": "LUAFDN-622 - Export `act` from the top level; enable it behind tests",
+          "timestamp": "2021-09-29T17:33:55Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/214/commits/737e2a29452e082b7398f2f4f561675309147df2"
+        },
+        "date": 1632961628954,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 94.3201,
+            "range": "±11.51%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 10.7507,
+            "range": "±12.14%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.497.0.4970359"
           }
