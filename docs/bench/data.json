@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1633042758752,
+  "lastUpdate": 1633109550229,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1154,6 +1154,47 @@
             "extra": "200 samples\nroblox-cli version: 0.498.0.4980396"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "3705df6efca1811e9cd025eaecabd2b49d034605",
+          "message": "#nojira - Strict mode seems to stumble sometimes when using the 'convert' command",
+          "timestamp": "2021-09-30T23:05:29Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/219/commits/3705df6efca1811e9cd025eaecabd2b49d034605"
+        },
+        "date": 1633109547593,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.2945,
+            "range": "±24.61%",
+            "unit": "ops/sec",
+            "extra": "600 samples\nroblox-cli version: 0.498.0.4980396"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.64,
+            "range": "±224.22%",
+            "unit": "ms/op",
+            "extra": "600 samples\nroblox-cli version: 0.498.0.4980396"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 80.3916,
+            "range": "±20.17%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.498.0.4980396"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -2063,6 +2104,40 @@
             "name": "FrameRate#Δt",
             "value": 52.9222,
             "range": "±19.54%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980396"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "3705df6efca1811e9cd025eaecabd2b49d034605",
+          "message": "#nojira - Strict mode seems to stumble sometimes when using the 'convert' command",
+          "timestamp": "2021-09-30T23:05:29Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/219/commits/3705df6efca1811e9cd025eaecabd2b49d034605"
+        },
+        "date": 1633109548286,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 18.918,
+            "range": "±15.36%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980396"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 54.5209,
+            "range": "±21.01%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.498.0.4980396"
           }
@@ -2980,6 +3055,40 @@
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "3705df6efca1811e9cd025eaecabd2b49d034605",
+          "message": "#nojira - Strict mode seems to stumble sometimes when using the 'convert' command",
+          "timestamp": "2021-09-30T23:05:29Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/219/commits/3705df6efca1811e9cd025eaecabd2b49d034605"
+        },
+        "date": 1633109549553,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 14.9893,
+            "range": "±14.18%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 68.2713,
+            "range": "±16.73%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -3889,6 +3998,40 @@
             "name": "FrameRate#Δt",
             "value": 11.4661,
             "range": "±14.63%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "3705df6efca1811e9cd025eaecabd2b49d034605",
+          "message": "#nojira - Strict mode seems to stumble sometimes when using the 'convert' command",
+          "timestamp": "2021-09-30T23:05:29Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/219/commits/3705df6efca1811e9cd025eaecabd2b49d034605"
+        },
+        "date": 1633109550227,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 114.9687,
+            "range": "±12.70%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 8.8524,
+            "range": "±13.99%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
           }

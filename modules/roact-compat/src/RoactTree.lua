@@ -7,7 +7,7 @@ type RootType = ReactRoblox.RootType
 
 local warnOnce = require(script.Parent.warnOnce)
 
-local function mount(element, parent, key)
+local function mount(element: any, parent: any, key: string?)
 	if _G.__DEV__ then
 		warnOnce("mount", "Please use the createRoot API in ReactRoblox")
 	end
