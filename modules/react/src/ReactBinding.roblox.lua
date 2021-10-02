@@ -50,10 +50,8 @@ function BindingInternalApi.create(initialValue)
 	end
 
 	function impl.update(newValue)
-		if impl.value ~= newValue then
-			impl.value = newValue
-			impl.changeSignal:fire(newValue)
-		end
+		impl.value = newValue
+		impl.changeSignal:fire(newValue)
 	end
 
 	function impl.getValue()

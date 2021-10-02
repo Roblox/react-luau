@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1633109550229,
+  "lastUpdate": 1633134828376,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1195,6 +1195,47 @@
             "extra": "200 samples\nroblox-cli version: 0.498.0.4980396"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b7a75292e97de978e822d69371f6f1a0435f6cf1",
+          "message": "Remove troublesome optimization",
+          "timestamp": "2021-10-01T17:39:47Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/221/commits/b7a75292e97de978e822d69371f6f1a0435f6cf1"
+        },
+        "date": 1633134826563,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 58.4136,
+            "range": "±22.65%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 21.7897,
+            "range": "±228.82%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 67.0458,
+            "range": "±17.93%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -2140,6 +2181,40 @@
             "range": "±21.01%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.498.0.4980396"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b7a75292e97de978e822d69371f6f1a0435f6cf1",
+          "message": "Remove troublesome optimization",
+          "timestamp": "2021-10-01T17:39:47Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/221/commits/b7a75292e97de978e822d69371f6f1a0435f6cf1"
+        },
+        "date": 1633134827136,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 22.9928,
+            "range": "±12.81%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 44.5838,
+            "range": "±19.99%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
       }
@@ -3089,6 +3164,40 @@
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b7a75292e97de978e822d69371f6f1a0435f6cf1",
+          "message": "Remove troublesome optimization",
+          "timestamp": "2021-10-01T17:39:47Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/221/commits/b7a75292e97de978e822d69371f6f1a0435f6cf1"
+        },
+        "date": 1633134827768,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 17.1401,
+            "range": "±12.53%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 59.5101,
+            "range": "±16.14%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -4034,6 +4143,40 @@
             "range": "±13.99%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980396"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b7a75292e97de978e822d69371f6f1a0435f6cf1",
+          "message": "Remove troublesome optimization",
+          "timestamp": "2021-10-01T17:39:47Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/221/commits/b7a75292e97de978e822d69371f6f1a0435f6cf1"
+        },
+        "date": 1633134828373,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 108.7327,
+            "range": "±9.51%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 9.2835,
+            "range": "±9.88%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
       }
