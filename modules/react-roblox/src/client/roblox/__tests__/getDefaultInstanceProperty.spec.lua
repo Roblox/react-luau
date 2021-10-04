@@ -1,7 +1,7 @@
 return function()
 	local Packages = script.Parent.Parent.Parent.Parent.Parent
-	local jestModule = require(Packages.Dev.JestRoblox)
-	local jestExpect = jestModule.Globals.expect
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
 	local getDefaultInstanceProperty = require(script.Parent.Parent.getDefaultInstanceProperty)
 
 	it("should get default name string values", function()

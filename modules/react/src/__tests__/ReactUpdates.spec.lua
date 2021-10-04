@@ -23,7 +23,7 @@ local jest = require(Packages.Dev.RobloxJest)
 -- ROBLOX TODO: split non-DOM test into separate file, make upstream PR for this division
 
 return function()
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 
 	describe("ReactUpdates", function()
 		beforeEach(function()

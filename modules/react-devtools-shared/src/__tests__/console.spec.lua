@@ -8,9 +8,9 @@
 return function()
 	local Packages = script.Parent.Parent.Parent
 	local RobloxJest = require(Packages.Dev.RobloxJest)
-	local jestModule = require(Packages.Dev.JestRoblox)
-	local jestExpect = jestModule.Globals.expect
-	local jest = jestModule.Globals.jest
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
+	local jest = JestGlobals.jest
 
 	-- ROBLOX deviation: Use lua's _G global table
 	local global = _G

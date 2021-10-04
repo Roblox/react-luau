@@ -13,7 +13,7 @@ local RotrieverWorkspace = Packages._Workspace
 -- ROBLOX FIXME: What's the more reasonable way of accessing this? Are all dev
 -- dependencies hoisted to the top level in addition to existing as their
 -- relevant interdependency links?
-local JestRoblox = require(RotrieverWorkspace.React.Dev.JestRoblox)
+local TestEZ = require(RotrieverWorkspace.React.Dev.JestGlobals).TestEZ
 local RobloxJest = require(RotrieverWorkspace.React.Dev.RobloxJest)
 
 -- ROBLOX deviation: upstream mocks both of these via
@@ -24,9 +24,9 @@ RobloxJest.mock(RotrieverWorkspace.Scheduler.Scheduler, function()
 end)
 
 -- Run all tests, collect results, and report to stdout.
-local result = JestRoblox.TestBootstrap:run(
+local result = TestEZ.TestBootstrap:run(
 	{ RotrieverWorkspace },
-	JestRoblox.Reporters.TextReporterQuiet,
+	TestEZ.Reporters.TextReporterQuiet,
 	{ extraEnvironment = RobloxJest.testEnv }
 )
 

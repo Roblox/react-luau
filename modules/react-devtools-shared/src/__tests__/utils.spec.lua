@@ -9,8 +9,8 @@
 --  */
 return function()
 	local Packages = script.Parent.Parent.Parent
-	local jest = require(Packages.Dev.JestRoblox)
-	local jestExpect = jest.Globals.expect
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
 	local LuauPolyfill = require(Packages.LuauPolyfill)
 	local Symbol = LuauPolyfill.Symbol
 

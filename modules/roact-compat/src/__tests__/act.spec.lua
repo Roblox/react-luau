@@ -1,8 +1,7 @@
 return function()
 	local Packages = script.Parent.Parent.Parent
 	local RobloxJest = require(Packages.Dev.RobloxJest)
-	local jest = require(Packages.Dev.JestRoblox)
-	local jestExpect = jest.Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 	local RoactCompat
 
 	describe("production mode", function()

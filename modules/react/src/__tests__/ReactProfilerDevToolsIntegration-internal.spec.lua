@@ -8,9 +8,9 @@ local Set = LuauPolyfill.Set
 
 return function()
     describe('ReactProfiler DevTools integration', function()
-        local JestRoblox = require(Packages.Dev.JestRoblox)
-        local jestExpect = JestRoblox.Globals.expect
-        local jest = JestRoblox.Globals.jest
+        local JestGlobals = require(Packages.Dev.JestGlobals)
+        local jestExpect = JestGlobals.expect
+        local jest = JestGlobals.jest
         local ReactFeatureFlags
         local ReactTestRenderer
         local SchedulerTracing
@@ -21,7 +21,7 @@ return function()
         beforeEach(function()
             hook = {
                 inject = function() end,
-                onCommitFiberRoot = jest:fn(function(rendererId, root) end),
+                onCommitFiberRoot = jest.fn(function(rendererId, root) end),
                 onCommitFiberUnmount = function() end,
                 supportsFiber = true,
             }
@@ -61,7 +61,7 @@ return function()
 
         it('should auto-Profile all fibers if the DevTools hook is detected', function()
             -- ROBLOX deviation: hoist declaration so the value is captured correctly
-            local onRender = jest:fn(function() end)
+            local onRender = jest.fn(function() end)
             local App = function(props)
                 local multiplier = props.multiplier
 

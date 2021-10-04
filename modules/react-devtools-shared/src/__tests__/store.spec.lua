@@ -16,8 +16,8 @@ end
 
 return function()
 	local Packages = script.Parent.Parent.Parent
-	local jestModule = require(Packages.Dev.JestRoblox)
-	local jestExpect = jestModule.Globals.expect
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
 
 	local Promise = require(Packages.Dev.Promise)
 	local LuauPolyfill = require(Packages.LuauPolyfill)

@@ -8,17 +8,16 @@
 --  * @emails react-core
 --  * @jest-environment node
 --  */
-
-local Packages = script.Parent.Parent.Parent
-local ReactVersion = require(Packages.Shared).ReactVersion
-local jest = require(Packages.Dev.RobloxJest)
-local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
-local LuauPolyfill = require(Packages.LuauPolyfill)
-local Array = LuauPolyfill.Array
-local Error = LuauPolyfill.Error
-local Promise = require(Packages.Promise)
-
 return function()
+	local Packages = script.Parent.Parent.Parent
+	local ReactVersion = require(Packages.Shared).ReactVersion
+	local jest = require(Packages.Dev.RobloxJest)
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
+	local LuauPolyfill = require(Packages.LuauPolyfill)
+	local Array = LuauPolyfill.Array
+	local Error = LuauPolyfill.Error
+	local Promise = require(Packages.Promise)
+
 	describe("SchedulingProfiler", function()
 		local React
 		local ReactTestRenderer

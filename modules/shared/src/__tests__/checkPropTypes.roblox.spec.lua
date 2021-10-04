@@ -5,7 +5,7 @@ return function ()
 
     local ReactNoop
     local Scheduler
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
     local LuauPolyfill = require(Packages.LuauPolyfill)
     local Error = LuauPolyfill.Error
 

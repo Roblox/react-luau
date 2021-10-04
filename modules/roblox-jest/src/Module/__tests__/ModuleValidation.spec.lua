@@ -1,8 +1,8 @@
 return function()
 	local Module = require(script.Parent.Parent)
 	local Packages = script.Parent.Parent.Parent.Parent
-	local jestModule = require(Packages.Dev.JestRoblox)
-	local jestExpect = jestModule.Globals.expect
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
 
 	local warnings = {}
 	local function overrideWarn(fn, ...)

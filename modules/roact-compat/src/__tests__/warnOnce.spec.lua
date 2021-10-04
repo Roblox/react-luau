@@ -1,8 +1,8 @@
 return function()
 	local Packages = script.Parent.Parent.Parent
 	local RobloxJest = require(Packages.Dev.RobloxJest)
-	local jest = require(Packages.Dev.JestRoblox)
-	local jestExpect = jest.Globals.expect
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
 	local warnOnce
 
 	beforeEach(function()

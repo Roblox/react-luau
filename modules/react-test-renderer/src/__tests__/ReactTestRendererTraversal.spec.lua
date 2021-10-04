@@ -25,7 +25,7 @@ local View = function(props)
 end
 
 return function()
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 	describe("ReactTestRendererTraversal", function()
 		beforeEach(function()
 			RobloxJest.resetModules()

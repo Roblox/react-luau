@@ -17,7 +17,7 @@ type ComparisonTestsProps = {
 
 return function()
 	local Packages = script.Parent.Parent.Parent
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 
 	local Cryo = require(Packages.Cryo)
 	local RobloxJest = require(Packages.Dev.RobloxJest)

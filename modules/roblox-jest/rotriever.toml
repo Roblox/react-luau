@@ -8,6 +8,7 @@ files = ["*", "!**/__tests__/**"]
 
 [dependencies]
 LuauPolyfill = { workspace = true }
+JestDiff = "github.com/roblox/jest-roblox@2.1.4"
 
 [dev_dependencies]
-JestRoblox = { workspace = true }
+JestGlobals = { workspace = true }

@@ -3,7 +3,7 @@
 return function()
 	local Packages = script.Parent.Parent.Parent
 	local ReactElement = require(script.Parent.Parent.ReactElement)
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 	local isValidElementType = require(Packages.Shared).isValidElementType
 	local ReactSymbols = require(Packages.Shared).ReactSymbols
 	local element

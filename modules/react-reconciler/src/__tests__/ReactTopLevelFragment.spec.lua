@@ -19,7 +19,7 @@ local Scheduler
 -- probably move to one of the other test files once it is official.
 return function()
   local RobloxJest = require(Packages.Dev.RobloxJest)
-  local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+  local jestExpect = require(Packages.Dev.JestGlobals).expect
 
   beforeEach(function()
     RobloxJest.resetModules()

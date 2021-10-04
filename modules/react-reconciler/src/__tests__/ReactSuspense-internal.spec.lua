@@ -13,9 +13,8 @@ local textResourceShouldFail
 return function()
     local Packages = script.Parent.Parent.Parent
     local jest = require(Packages.Dev.RobloxJest)
-    local JestGlobals = require(Packages.Dev.JestRoblox).Globals
-    local jestExpect = JestGlobals.expect
-    local jestMock = JestGlobals.jest
+    local jestExpect = require(Packages.Dev.JestGlobals).expect
+    local jestMock = require(Packages.Dev.JestGlobals).jest
     local Promise = require(Packages.Promise)
     local LuauPolyfill = require(Packages.LuauPolyfill)
     local setTimeout = LuauPolyfill.setTimeout

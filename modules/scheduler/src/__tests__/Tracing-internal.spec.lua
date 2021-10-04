@@ -15,9 +15,9 @@ local Set = LuauPolyfill.Set
 
 return function()
 	describe("Tracing", function()
-		local JestRoblox = require(Packages.Dev.JestRoblox)
-		local jestExpect = JestRoblox.Globals.expect
-		local jest = JestRoblox.Globals.jest
+		local JestGlobals = require(Packages.Dev.JestGlobals)
+		local jestExpect = JestGlobals.expect
+		local jest = JestGlobals.jest
 
 		local SchedulerTracing
 		local ReactFeatureFlags
@@ -161,7 +161,7 @@ return function()
 				local innerTestReached = false
 				local wrappedIndirection
 
-				local indirection = jest:fn(function()
+				local indirection = jest.fn(function()
 					jestExpect(SchedulerTracing.unstable_getCurrent()).toMatchInteractions({
 						{ name = "outer event" },
 					})

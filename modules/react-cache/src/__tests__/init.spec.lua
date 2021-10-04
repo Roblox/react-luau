@@ -1,6 +1,6 @@
 return function()
 	local Packages = script.Parent.Parent.Parent
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 	local getTestRendererJestMatchers = require(Packages.Dev.JestReact).getJestMatchers
 	local getSchedulerJestMatchers = require(Packages.Scheduler).getJestMatchers

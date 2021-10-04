@@ -1,8 +1,8 @@
 return function()
 	local Packages = script.Parent.Parent.Parent
-	local jestModule = require(Packages.Dev.JestRoblox)
-	local jestExpect = jestModule.Globals.expect
-	local jest = jestModule.Globals.jest
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
+	local jest = JestGlobals.jest
 
 	local Binding = require(script.Parent.Parent["ReactBinding.roblox"])
 	local ReactCreateRef = require(script.Parent.Parent.ReactCreateRef)
@@ -52,7 +52,7 @@ return function()
 		it("should let users subscribe and unsubscribe to its updates", function()
 			local binding, update = Binding.create(1)
 
-			local spy = jest:fn()
+			local spy = jest.fn()
 			local disconnect = Binding.subscribe(
 				binding,
 				function(...) spy(...) end
@@ -95,7 +95,7 @@ return function()
 			-- base binding
 			local word, updateWord = Binding.create("hi")
 
-			local wordSpy = jest:fn()
+			local wordSpy = jest.fn()
 			local disconnectWord = Binding.subscribe(
 				word,
 				function(...) wordSpy(...) end
@@ -104,7 +104,7 @@ return function()
 			-- binding -> base binding
 			local length = word:map(string.len)
 
-			local lengthSpy = jest:fn()
+			local lengthSpy = jest.fn()
 			local disconnectLength = Binding.subscribe(
 				length,
 				function(...) lengthSpy(...) end
@@ -115,7 +115,7 @@ return function()
 				return value % 2 == 0
 			end)
 
-			local isEvenLengthSpy = jest:fn()
+			local isEvenLengthSpy = jest.fn()
 			local disconnectIsEvenLength = Binding.subscribe(
 				isEvenLength,
 				function(...) isEvenLengthSpy(...) end
@@ -201,7 +201,7 @@ return function()
 				foo = binding3,
 			})
 
-			local spy = jest:fn()
+			local spy = jest.fn()
 			Binding.subscribe(
 				joinedBinding,
 				function(...) spy(...) end
@@ -243,7 +243,7 @@ return function()
 
 			local joined = Binding.join({binding1, binding2})
 
-			local spy = jest:fn()
+			local spy = jest.fn()
 			local disconnect = Binding.subscribe(
 				joined,
 				function(...) spy(...) end

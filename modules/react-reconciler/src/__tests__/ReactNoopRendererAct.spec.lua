@@ -18,7 +18,7 @@ local Scheduler
 return function()
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 	local Promise = require(Packages.Promise)
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 
 	beforeEach(function()
 		RobloxJest.resetModules()

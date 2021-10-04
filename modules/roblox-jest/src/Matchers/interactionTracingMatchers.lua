@@ -1,6 +1,6 @@
 -- ROBLOX upstream https://github.com/facebook/react/blob/v17.0.1/scripts/jest/matchers/interactionTracingMatchers.js
 local Packages = script.Parent.Parent.Parent
-local jestDiff = require(script.Parent.jestDiff)
+local JestDiff = require(Packages.JestDiff)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 -- ROBLOX deviation: hoist and pre-declare functions
@@ -60,7 +60,7 @@ function toHaveBeenLastNotifiedOfWork(
     if expectedThreadID ~= actualThreadID then
       return {
         message = function()
-            return jestDiff(tostring(expectedThreadID), tostring(actualThreadID))
+            return JestDiff.diff(tostring(expectedThreadID), tostring(actualThreadID))
         end,
         pass = false,
       }
@@ -75,9 +75,7 @@ function toMatchInteraction(self, actual, expected)
     if actual[attribute] ~= expected[attribute] then
       return {
         message = function()
-            -- return jestDiff(expected, actual),
-            -- ROBLOX FIXME: make this more meaningful
-            return string.format("Expected %s, got %s", tostring(expected), tostring(actual))
+            return JestDiff.diff(expected, actual)
         end,
 
         pass = false,

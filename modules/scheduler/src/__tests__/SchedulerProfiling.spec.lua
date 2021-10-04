@@ -1,11 +1,11 @@
 -- ROBLOX upstream: https://github.com/facebook/react/blob/8af27aeedbc6b00bc2ef49729fc84f116c70a27c/packages/scheduler/src/__tests__/SchedulerProfiling-test.js
-local Packages = script.Parent.Parent.Parent
-local RobloxJest = require(Packages.Dev.RobloxJest)
-local JestRoblox = require(Packages.Dev.JestRoblox)
-local jestExpect = JestRoblox.Globals.expect
--- ROBLOX note: this uses a post-17.0.1 commit that removes a reliance on SharedArrayBuffer, but remains API compatible with 17.x
-
 return function()
+	local Packages = script.Parent.Parent.Parent
+	local RobloxJest = require(Packages.Dev.RobloxJest)
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
+	-- ROBLOX note: this uses a post-17.0.1 commit that removes a reliance on SharedArrayBuffer, but remains API compatible with 17.x
+
 	local Scheduler
 	local ImmediatePriority
 	local UserBlockingPriority

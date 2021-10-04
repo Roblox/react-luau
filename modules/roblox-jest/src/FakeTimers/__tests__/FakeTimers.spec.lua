@@ -1,5 +1,5 @@
 local Packages = script.Parent.Parent.Parent.Parent
-local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+local jestExpect = require(Packages.Dev.JestGlobals).expect
 
 return function()
 	-- ROBLOX FIXME: remove :: any once CLI understands call metamethods, JIRA ticket CLI-40294

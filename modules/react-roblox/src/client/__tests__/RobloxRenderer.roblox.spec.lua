@@ -1,9 +1,9 @@
 return function()
 	local Packages = script.Parent.Parent.Parent.Parent
 
-	local JestRoblox = require(Packages.Dev.JestRoblox)
-	local jestExpect = JestRoblox.Globals.expect
-	local jest = JestRoblox.Globals.jest
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
+	local jest = JestGlobals.jest
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 
 	local React
@@ -91,7 +91,7 @@ return function()
 
 		it("names instances with their key value using legacy key syntax and updates them", function()
 			local key = "Some Key"
-			local fnMock = jest:fn()
+			local fnMock = jest.fn()
 			local ref = function(...)
 				return fnMock(...)
 			end
@@ -119,8 +119,9 @@ return function()
 			Scheduler.unstable_flushAllWithoutAsserting()
 
 			jestExpect(fnMock).toHaveBeenCalledTimes(3)
-			-- the second call should be nil
-			jestExpect(fnMock.mock.calls[2]).toHaveLength(0)
+			-- the second call should be passed nil; jest-roblox still
+			-- understands it as an explicit arg
+			jestExpect(fnMock.mock.calls[2]).toHaveLength(1)
 
 			local lastRefValue = fnMock.mock.calls[3][1]
 			jestExpect(lastRefValue.Name).toEqual(updatedKey)

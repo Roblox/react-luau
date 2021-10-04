@@ -11,5 +11,5 @@ LuauPolyfill = { workspace = true }
 Shared = { path = "../shared" }
 
 [dev_dependencies]
-JestRoblox = { workspace = true }
+JestGlobals ={ workspace = true }
 RobloxJest = { path = "../roblox-jest" }

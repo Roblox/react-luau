@@ -2,7 +2,7 @@ return function()
 	local Packages = script.Parent.Parent.Parent
     local LuauPolyfill = require(Packages.LuauPolyfill)
     local Error = LuauPolyfill.Error
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 	local RobloxJest = require(Packages.Dev.RobloxJest)
     local ReactInternalTypes = require(script.Parent.Parent.ReactInternalTypes)
     type Fiber = ReactInternalTypes.Fiber

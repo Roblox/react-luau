@@ -1,8 +1,8 @@
 return function()
 	local Packages = script.Parent.Parent.Parent.Parent.Parent
-	local jestModule = require(Packages.Dev.JestRoblox)
-	local jestExpect = jestModule.Globals.expect
-	local jest = jestModule.Globals.jest
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
+	local jest = JestGlobals.jest
 	-- ROBLOX FIXME
 	-- local Logging = require(script.Parent.Parent.Logging)
 
@@ -20,7 +20,7 @@ return function()
 		it("should connect to events", function()
 			local instance = Instance.new("BindableEvent")
 			local manager = SingleEventManager.new(instance)
-			local eventSpy = jest:fn()
+			local eventSpy = jest.fn()
 
 			manager:connectEvent(
 				"Event",
@@ -45,7 +45,7 @@ return function()
 		it("should drop events until resumed initially", function()
 			local instance = Instance.new("BindableEvent")
 			local manager = SingleEventManager.new(instance)
-			local eventSpy = jest:fn()
+			local eventSpy = jest.fn()
 
 			manager:connectEvent(
 				"Event",
@@ -65,7 +65,7 @@ return function()
 		it("should invoke suspended events when resumed", function()
 			local instance = Instance.new("BindableEvent")
 			local manager = SingleEventManager.new(instance)
-			local eventSpy = jest:fn()
+			local eventSpy = jest.fn()
 
 			manager:connectEvent(
 				"Event",
@@ -92,7 +92,7 @@ return function()
 			local manager = SingleEventManager.new(instance)
 
 			local recordedValues = {}
-			local eventSpy = jest:fn(function(_, value)
+			local eventSpy = jest.fn(function(_, value)
 				table.insert(recordedValues, value)
 
 				if value == 2 then
@@ -119,7 +119,7 @@ return function()
 		it("should not invoke events fired during suspension but disconnected before resumption", function()
 			local instance = Instance.new("BindableEvent")
 			local manager = SingleEventManager.new(instance)
-			local eventSpy = jest:fn()
+			local eventSpy = jest.fn()
 
 			manager:connectEvent(
 				"Event",
@@ -201,7 +201,7 @@ return function()
 			-- triggered again in response to reconciliation. Without
 			-- appropriate guards, the inner resume() call will process the
 			-- Fire(1) event again, causing a nasty stack overflow.
-			local eventSpy = jest:fn(function(_, value)
+			local eventSpy = jest.fn(function(_, value)
 				if value == 1 then
 					manager:suspend()
 					instance:Fire(2)
@@ -229,7 +229,7 @@ return function()
 		it("should connect to property changes", function()
 			local instance = Instance.new("Folder")
 			local manager = SingleEventManager.new(instance)
-			local eventSpy = jest:fn()
+			local eventSpy = jest.fn()
 
 			manager:connectPropertyChange(
 				"Name",

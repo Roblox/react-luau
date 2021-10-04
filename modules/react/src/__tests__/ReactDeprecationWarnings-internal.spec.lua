@@ -1,14 +1,14 @@
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react-dom/src/__tests__/ReactDeprecationWarnings-test.internal.js
-local Packages = script.Parent.Parent.Parent
-local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
-local jest = require(Packages.Dev.RobloxJest)
-
 local React
 local ReactFeatureFlags
 local ReactNoop
 local Scheduler
 -- local JSXDEVRuntime
 return function()
+	local Packages = script.Parent.Parent.Parent
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
+	local jest = require(Packages.Dev.RobloxJest)
+
 	describe("ReactDeprecationWarnings", function()
 		beforeEach(function()
 			jest.resetModules()

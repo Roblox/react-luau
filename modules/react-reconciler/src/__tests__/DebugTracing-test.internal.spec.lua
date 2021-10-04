@@ -9,13 +9,6 @@
 --  * @jest-environment node
 --  */
 
-local Packages = script.Parent.Parent.Parent
-local RobloxJest = require(Packages.Dev.RobloxJest)
-local JestRoblox = require(Packages.Dev.JestRoblox)
-local jestExpect = JestRoblox.Globals.expect
-local console = require(Packages.Shared).console
-local Promise = require(Packages.Promise)
-
 -- local function spyOnDevAndProd(object, methodName, fake)
 -- 	local originalMethods = originalObjects[tostring(object)]
 -- 	if originalMethods == nil then
@@ -37,6 +30,13 @@ local Promise = require(Packages.Promise)
 -- end
 
 return function()
+	local Packages = script.Parent.Parent.Parent
+	local RobloxJest = require(Packages.Dev.RobloxJest)
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
+	local console = require(Packages.Shared).console
+	local Promise = require(Packages.Promise)
+
 	describe("DebugTracing", function()
 		local React
 		local ReactTestRenderer

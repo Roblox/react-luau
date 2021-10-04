@@ -1,7 +1,6 @@
 -- upstream https://github.com/facebook/react/blob/6d50a9d090a2a672fc3dea5ce77a3a05332a6caa/fixtures/legacy-jsx-runtimes/setupTests.js
 local Packages = script.Parent.Parent.Parent
-local jestDiff = require(script.Parent.jestDiff)
--- deviation: until we can require jest, use a simple implementation
+local JestDiff = require(Packages.JestDiff)
 
 local function shouldIgnoreConsoleError(format, args)
 	-- deviation: instead of checking if `process.env.NODE_ENV ~= "production"`
@@ -198,10 +197,10 @@ return function(consoleMethod, matcherName)
 					errorMessage = "Unexpected warning recorded: " .. normalizedMessage
 				elseif #expectedMessages == 1 then
 					errorMessage = "Unexpected warning recorded: "
-						.. jestDiff(expectedMessages[1], normalizedMessage)
+						.. tostring(JestDiff.diff(expectedMessages[1], normalizedMessage))
 				else
 					errorMessage = "Unexpected warning recorded: "
-						.. jestDiff(expectedMessages, { normalizedMessage })
+						.. tostring(JestDiff.diff(expectedMessages, { normalizedMessage }))
 				end
 
 				-- // Record the call stack for unexpected warnings.

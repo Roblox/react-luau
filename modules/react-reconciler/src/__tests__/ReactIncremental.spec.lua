@@ -16,7 +16,7 @@ local Scheduler
 local PropTypes = nil
 local HttpService = game:GetService("HttpService")
 return function()
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 
 	describe("ReactIncremental", function()
 		local RobloxJest = require(Packages.Dev.RobloxJest)

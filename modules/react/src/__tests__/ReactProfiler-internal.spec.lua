@@ -1,6 +1,4 @@
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react/src/__tests__/ReactProfiler-test.internal.js
-local Packages = script.Parent.Parent.Parent
-local RobloxJest = require(Packages.Dev.RobloxJest)
 local React
 local ReactFeatureFlags
 local ReactNoop
@@ -15,16 +13,18 @@ local _ComponentWithPassiveEffect
 local _Text
 local TextResource
 local resourcePromise
-
-local JestRoblox = require(Packages.Dev.JestRoblox)
-local jestExpect = JestRoblox.Globals.expect
-local jest = JestRoblox.Globals.jest
-local Promise = require(Packages.Dev.Promise)
-local LuauPolyfill = require(Packages.LuauPolyfill)
-local setTimeout = LuauPolyfill.setTimeout
-local Set = LuauPolyfill.Set
+local setTimeout
+local Set
 
 return function()
+	local Packages = script.Parent.Parent.Parent
+	local RobloxJest = require(Packages.Dev.RobloxJest)
+
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
+	local jest = JestGlobals.jest
+	local Promise = require(Packages.Dev.Promise)
+
 	local function loadModules(config)
 		local enableProfilerTimer = (function()
 			if config.enableProfilerTimer ~= nil then
@@ -63,6 +63,10 @@ return function()
 		ReactFeatureFlags.enableSchedulerTracing = enableSchedulerTracing
 		ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback =
 			replayFailedUnitOfWorkWithInvokeGuardedCallback
+
+		local LuauPolyfill = require(Packages.LuauPolyfill)
+		setTimeout = LuauPolyfill.setTimeout
+		Set = LuauPolyfill.Set
 
 		React = require(script.Parent.Parent)
 		Scheduler = require(Packages.Dev.Scheduler)
@@ -185,7 +189,7 @@ return function()
 								jestExpect(function()
 									ReactTestRenderer.create(React.createElement(React.Profiler, {
 										id = "label",
-										onRender = jest:fn(),
+										onRender = jest.fn(),
 									})):toJSON()
 									-- ROBLOX TODO: toJSON needs to work, use toMatchSnapshot
 								end).never.toThrow()
@@ -202,7 +206,7 @@ return function()
 									React.createElement("span", nil, "outside span"),
 									React.createElement(
 										React.Profiler,
-										{ id = "label", onRender = jest:fn() },
+										{ id = "label", onRender = jest.fn() },
 										React.createElement("span", nil, "inside span"),
 										React.createElement(FunctionComponent, {
 											label = "function component",
@@ -227,13 +231,13 @@ return function()
 								end
 								local renderer = ReactTestRenderer.create(React.createElement(
 									React.Profiler,
-									{ id = "outer", onRender = jest:fn() },
+									{ id = "outer", onRender = jest.fn() },
 									React.createElement(FunctionComponent, {
 										label = "outer function component",
 									}),
 									React.createElement(
 										React.Profiler,
-										{ id = "inner", onRender = jest:fn() },
+										{ id = "inner", onRender = jest.fn() },
 										React.createElement(ClassComponent, {
 											label = "inner class component",
 										}),
@@ -271,7 +275,7 @@ return function()
 				end)
 
 				it("should handle errors thrown", function()
-					local callback = jest:fn(function(id)
+					local callback = jest.fn(function(id)
 						if id == "throw" then
 							error("expected")
 						end
@@ -309,7 +313,7 @@ return function()
 				end)
 
 				it("is not invoked until the commit phase", function()
-					local callback = jest:fn()
+					local callback = jest.fn()
 
 					local Yield = function(props)
 						local value = props.value
@@ -339,7 +343,7 @@ return function()
 				-- skipped translating some tests
 
 				it("does not report work done on a sibling", function()
-					local callback = jest:fn()
+					local callback = jest.fn()
 
 					local DoesNotUpdate = React.memo(function()
 						Scheduler.unstable_advanceTime(10)
@@ -451,7 +455,7 @@ return function()
 				end)
 
 				it("logs render times for both mount and update", function()
-					local callback = jest:fn()
+					local callback = jest.fn()
 
 					Scheduler.unstable_advanceTime(5) -- 0 -> 5
 
@@ -563,7 +567,7 @@ return function()
 				end)
 
 				it("includes render times of nested Profilers in their parent times", function()
-					local callback = jest:fn()
+					local callback = jest.fn()
 
 					Scheduler.unstable_advanceTime(5) -- 0 -> 5
 
@@ -606,7 +610,7 @@ return function()
 				end)
 
 				it("traces sibling Profilers separately", function()
-					local callback = jest:fn()
+					local callback = jest.fn()
 
 					Scheduler.unstable_advanceTime(5) -- 0 -> 5
 
@@ -648,7 +652,7 @@ return function()
 				end)
 
 				it("does not include time spent outside of profile root", function()
-					local callback = jest:fn()
+					local callback = jest.fn()
 
 					Scheduler.unstable_advanceTime(5) -- 0 -> 5
 
@@ -678,7 +682,7 @@ return function()
 				end)
 
 				it("is not called when blocked by sCU false", function()
-					local callback = jest:fn()
+					local callback = jest.fn()
 
 					local instance
 					local Updater = React.Component:extend("Updater")
@@ -725,7 +729,7 @@ return function()
 				end)
 
 				it("decreases actual time but not base time when sCU prevents an update", function()
-					local callback = jest:fn()
+					local callback = jest.fn()
 
 					Scheduler.unstable_advanceTime(5) -- 0 -> 5
 
@@ -792,7 +796,7 @@ return function()
 						return nil
 					end
 
-					local callback = jest:fn()
+					local callback = jest.fn()
 
 					Scheduler.unstable_advanceTime(5) -- 0 -> 5
 
@@ -848,7 +852,7 @@ return function()
 							end)
 
 							it("should accumulate actual time after an error handled by componentDidCatch()", function()
-								local callback = jest:fn()
+								local callback = jest.fn()
 
 								local ThrowsError = function(props)
 									local _unused = props.unused
@@ -938,7 +942,7 @@ return function()
 							end)
 
 							it("should accumulate actual time after an error handled by getDerivedStateFromError()", function()
-								local callback = jest:fn()
+								local callback = jest.fn()
 
 								local ThrowsError = function(props)
 									local _unused = props.unused
@@ -1014,7 +1018,7 @@ return function()
 								-- Simulate a renderer error during the "complete" phase.
 								-- This mimics behavior like React Native's View/Text nesting validation.
 								ReactNoop.render(
-								  React.createElement(React.Profiler, {id="profiler", onRender=jest:fn()},
+								  React.createElement(React.Profiler, {id="profiler", onRender=jest.fn()},
 									React.createElement("errorInCompletePhase", nil, "hi")
 							      )
 								);
@@ -1023,7 +1027,7 @@ return function()
 								-- A similar case we've seen caused by an invariant in ReactDOM.
 								-- It didn't reproduce without a host component inside.
 								ReactNoop.render(
-									React.createElement(React.Profiler, {id="profiler", onRender=jest:fn()},
+									React.createElement(React.Profiler, {id="profiler", onRender=jest.fn()},
 									  React.createElement("errorInCompletePhase", nil,
 									    React.createElement("span", nil, "hi")
 									)
@@ -1034,7 +1038,7 @@ return function()
 								-- So long as the profiler timer's fiber stack is reset correctly,
 								-- Subsequent renders should not error.
 								ReactNoop.render(
-								  React.createElement(React.Profiler, {id="profiler", onRender=jest:fn()},
+								  React.createElement(React.Profiler, {id="profiler", onRender=jest.fn()},
     								  React.createElement("span", nil, "hi")
 							      )
 								)

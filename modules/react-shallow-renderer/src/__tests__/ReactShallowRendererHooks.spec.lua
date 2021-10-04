@@ -9,7 +9,7 @@
 ]]
 return function()
 	local Packages = script.Parent.Parent.Parent
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 	local React = require(Packages.React)
 	local ReactShallowRenderer = require(script.Parent.Parent)
 

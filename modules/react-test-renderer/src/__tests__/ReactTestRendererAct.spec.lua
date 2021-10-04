@@ -1,9 +1,3 @@
-local Packages = script.Parent.Parent.Parent
-local RobloxJest = require(Packages.Dev.RobloxJest)
-
-local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
-
-local Promise = require(Packages.Dev.Promise)
 local React
 local ReactTestRenderer
 local Scheduler
@@ -11,6 +5,13 @@ local act
 local useState, useEffect, useReducer
 
 return function()
+	local Packages = script.Parent.Parent.Parent
+	local RobloxJest = require(Packages.Dev.RobloxJest)
+
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
+
+	local Promise = require(Packages.Dev.Promise)
+
 	describe("ReactTestRenderer.act()", function()
 		beforeEach(function()
 			RobloxJest.resetModules()

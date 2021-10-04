@@ -8,5 +8,5 @@ files = ["*", "!**/__tests__/**"]
 
 [dependencies]
 LuauPolyfill = { workspace = true }
-JestRoblox = { workspace = true }
+JestGlobals ={ workspace = true }
 Shared = { path = "../shared" }

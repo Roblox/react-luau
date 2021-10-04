@@ -1,7 +1,7 @@
 return function()
 	local Module = require(script.Parent.Parent)
 	local Packages = script.Parent.Parent.Parent.Parent
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 
 	beforeEach(function()
 		Module.resetModules()

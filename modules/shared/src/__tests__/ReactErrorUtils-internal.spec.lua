@@ -12,9 +12,9 @@ return function()
 	local Packages = script.Parent.Parent.Parent
 	local LuauPolyfill = require(Packages.LuauPolyfill)
 	local Error = LuauPolyfill.Error
-	local jestModule = require(Packages.Dev.JestRoblox)
-	local jestExpect = jestModule.Globals.expect
-	local jest = jestModule.Globals.jest
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
+	local jest = JestGlobals.jest
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 	local ReactErrorUtils
 
@@ -47,7 +47,7 @@ return function()
 		-- nil, the function is presumed to not rely on `self` and is called
 		-- without the `context` argument. For this test, we validate both
 		-- cases.
-		local callback = jest:fn()
+		local callback = jest.fn()
 		ReactErrorUtils.invokeGuardedCallback("foo", callback, nil, "arg1", "arg2")
 		jestExpect(callback).toBeCalledWith("arg1", "arg2")
 	end)
@@ -71,7 +71,7 @@ return function()
 	end)
 
 	it("should return false from clearCaughtError if no error was thrown", function()
-		local callback = jest:fn()
+		local callback = jest.fn()
 		ReactErrorUtils.invokeGuardedCallback("foo", callback, nil)
 		jestExpect(ReactErrorUtils.hasCaughtError()).toBe(false)
 		jestExpect(ReactErrorUtils.clearCaughtError).toThrow("no error was captured")

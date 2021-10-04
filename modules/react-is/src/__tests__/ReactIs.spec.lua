@@ -2,9 +2,9 @@
 
 return function()
 	local Packages = script.Parent.Parent.Parent
-	local jestModule = require(Packages.Dev.JestRoblox)
-	local jestExpect = jestModule.Globals.expect
-	local jest = jestModule.Globals.jest
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
+	local jest = JestGlobals.jest
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 	local React
 	local ReactIs
@@ -243,7 +243,7 @@ return function()
 				ReactIs.typeOf(
 					React.createElement(
 						React.Profiler,
-						{ id = "foo", onRender = jest:fn() }
+						{ id = "foo", onRender = jest.fn() }
 					)
 				)
 			).toBe(ReactIs.Profiler)
@@ -251,7 +251,7 @@ return function()
 				ReactIs.isProfiler(
 					React.createElement(
 						React.Profiler,
-						{ id = "foo", onRender = jest:fn() }
+						{ id = "foo", onRender = jest.fn() }
 					)
 				)
 			).toBe(true)

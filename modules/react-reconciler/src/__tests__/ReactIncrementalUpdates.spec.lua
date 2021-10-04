@@ -16,7 +16,7 @@ local Scheduler
 local InputContinuousLanePriority = 10
 return function()
     local RobloxJest = require(Packages.Dev.RobloxJest)
-    local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+    local jestExpect = require(Packages.Dev.JestGlobals).expect
 
     describe('ReactIncrementalUpdates', function()
         local function gate(fn)

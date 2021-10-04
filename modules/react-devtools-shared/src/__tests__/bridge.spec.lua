@@ -7,10 +7,10 @@
 ]]
 return function()
 	local Packages = script.Parent.Parent.Parent
-	local jestModule = require(Packages.Dev.JestRoblox)
 	local RobloxJest = require(Packages.Dev.RobloxJest)
-	local jestExpect = jestModule.Globals.expect
-	local jest = jestModule.Globals.jest
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
+	local jest = JestGlobals.jest
 
 	describe("bridge", function()
 		local Bridge
@@ -23,10 +23,10 @@ return function()
 
 		it("should shutdown properly", function()
 			local wall = {
-				listen = jest:fn(function()
+				listen = jest.fn(function()
 					return function() end
 				end),
-				send = jest:fn(),
+				send = jest.fn(),
 			}
 			local bridge = Bridge.new(wall)
 

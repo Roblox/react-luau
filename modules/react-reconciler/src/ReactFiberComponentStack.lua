@@ -86,7 +86,11 @@ return {
 
 		if not ok then
 			local message = "\nError generating stack: "
-			if typeof(result) == "table" and (result :: Error).message and (result :: Error).stack then
+			if
+				typeof(result) == "table"
+				and (result :: Error).message
+				and (result :: Error).stack
+			then
 				return message
 					.. (result :: Error).message
 					.. "\n"

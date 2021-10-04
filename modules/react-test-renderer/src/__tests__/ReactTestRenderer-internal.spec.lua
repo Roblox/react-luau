@@ -60,7 +60,7 @@ end
 
 return function()
 	RobloxJest = require(Packages.Dev.RobloxJest)
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 
 	describe("ReactTestRenderer", function()
 		beforeEach(function()

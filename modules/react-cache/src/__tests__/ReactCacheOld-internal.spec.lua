@@ -26,8 +26,8 @@ return function()
 	local LuauPolyfill = require(Packages.LuauPolyfill)
 	local Promise = require(Packages.Dev.Promise)
 	local setTimeout = LuauPolyfill.setTimeout
-	local jest = require(Packages.Dev.JestRoblox)
-	local jestExpect = jest.Globals.expect
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 	describe("ReactCache", function()
 		beforeEach(function()

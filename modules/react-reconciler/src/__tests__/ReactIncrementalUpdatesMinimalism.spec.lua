@@ -14,7 +14,7 @@ local ReactNoop
 local Packages = script.Parent.Parent.Parent
 local jest
 return function()
-    local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+    local jestExpect = require(Packages.Dev.JestGlobals).expect
 
     describe('ReactIncrementalUpdatesMinimalism', function()
         jest = require(Packages.Dev.RobloxJest)

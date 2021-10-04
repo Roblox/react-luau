@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1633134828376,
+  "lastUpdate": 1633358802102,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1236,6 +1236,47 @@
             "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b76de6b4be3953f6b4da77b36e6d0d4a030609bc",
+          "message": "Adopt jest roblox with rotriever 0.5",
+          "timestamp": "2021-10-02T00:38:57Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/181/commits/b76de6b4be3953f6b4da77b36e6d0d4a030609bc"
+        },
+        "date": 1633358799030,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.1711,
+            "range": "±27.20%",
+            "unit": "ops/sec",
+            "extra": "600 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.9264,
+            "range": "±222.88%",
+            "unit": "ms/op",
+            "extra": "600 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 88.7817,
+            "range": "±23.13%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -2213,6 +2254,40 @@
             "name": "FrameRate#Δt",
             "value": 44.5838,
             "range": "±19.99%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b76de6b4be3953f6b4da77b36e6d0d4a030609bc",
+          "message": "Adopt jest roblox with rotriever 0.5",
+          "timestamp": "2021-10-02T00:38:57Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/181/commits/b76de6b4be3953f6b4da77b36e6d0d4a030609bc"
+        },
+        "date": 1633358799929,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 18.0961,
+            "range": "±11.85%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 56.2743,
+            "range": "±16.00%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
           }
@@ -3198,6 +3273,40 @@
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b76de6b4be3953f6b4da77b36e6d0d4a030609bc",
+          "message": "Adopt jest roblox with rotriever 0.5",
+          "timestamp": "2021-10-02T00:38:57Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/181/commits/b76de6b4be3953f6b4da77b36e6d0d4a030609bc"
+        },
+        "date": 1633358801110,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 12.8861,
+            "range": "±11.92%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 79.0098,
+            "range": "±15.24%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -4175,6 +4284,40 @@
             "name": "FrameRate#Δt",
             "value": 9.2835,
             "range": "±9.88%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "b76de6b4be3953f6b4da77b36e6d0d4a030609bc",
+          "message": "Adopt jest roblox with rotriever 0.5",
+          "timestamp": "2021-10-02T00:38:57Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/181/commits/b76de6b4be3953f6b4da77b36e6d0d4a030609bc"
+        },
+        "date": 1633358802098,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 93.4441,
+            "range": "±9.58%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 10.8052,
+            "range": "±10.11%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }

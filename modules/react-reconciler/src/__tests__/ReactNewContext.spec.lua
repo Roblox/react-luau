@@ -19,7 +19,7 @@ local Scheduler
 -- local gen
 
 return function()
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 
 	beforeEach(function()

@@ -7,15 +7,16 @@
 --  *
 --  * @flow
 --  */
-local Packages = script.Parent.Parent.Parent
-local RobloxJest = require(Packages.Dev.RobloxJest)
-local JestRoblox = require(Packages.Dev.JestRoblox)
-local jestExpect = JestRoblox.Globals.expect
-local jest = JestRoblox.Globals.jest
-local LuauPolyfill = require(Packages.LuauPolyfill)
-local Set = LuauPolyfill.Set
 
 return function()
+	local Packages = script.Parent.Parent.Parent
+	local RobloxJest = require(Packages.Dev.RobloxJest)
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
+	local jest = JestGlobals.jest
+	local LuauPolyfill = require(Packages.LuauPolyfill)
+	local Set = LuauPolyfill.Set
+
 describe("TracingSubscriptions", function()
 	local SchedulerTracing
 	local ReactFeatureFlags
@@ -63,32 +64,32 @@ describe("TracingSubscriptions", function()
 		throwInOnWorkStarted = false
 		throwInOnWorkStopped = false
 
-		onInteractionScheduledWorkCompleted = jest:fn(function()
+		onInteractionScheduledWorkCompleted = jest.fn(function()
 			if throwInOnInteractionScheduledWorkCompleted then
         		error('Expected error onInteractionScheduledWorkCompleted')
 			end
 		end)
-		onInteractionTraced = jest:fn(function()
+		onInteractionTraced = jest.fn(function()
 			if throwInOnInteractionTraced then
         		error('Expected error onInteractionTraced');
 			end
 		end)
-		onWorkCanceled = jest:fn(function()
+		onWorkCanceled = jest.fn(function()
 			if throwInOnWorkCanceled then
         		error('Expected error onWorkCanceled');
 			end
 		end)
-		onWorkScheduled = jest:fn(function()
+		onWorkScheduled = jest.fn(function()
 			if throwInOnWorkScheduled then
         		error('Expected error onWorkScheduled');
 			end
 		end)
-		onWorkStarted = jest:fn(function()
+		onWorkStarted = jest.fn(function()
 			if throwInOnWorkStarted then
         		error('Expected error onWorkStarted');
 			end
 		end)
-		onWorkStopped = jest:fn(function()
+		onWorkStopped = jest.fn(function()
 			if throwInOnWorkStopped then
         		error('Expected error onWorkStopped');
 			end
@@ -104,12 +105,12 @@ describe("TracingSubscriptions", function()
 		}
 
 		secondSubscriber = {
-			onInteractionScheduledWorkCompleted = jest:fn(),
-			onInteractionTraced = jest:fn(),
-			onWorkCanceled = jest:fn(),
-			onWorkScheduled = jest:fn(),
-			onWorkStarted = jest:fn(),
-			onWorkStopped = jest:fn(),
+			onInteractionScheduledWorkCompleted = jest.fn(),
+			onInteractionTraced = jest.fn(),
+			onWorkCanceled = jest.fn(),
+			onWorkScheduled = jest.fn(),
+			onWorkStarted = jest.fn(),
+			onWorkStopped = jest.fn(),
 		}
 		if autoSubscribe then
       		SchedulerTracing.unstable_subscribe(firstSubscriber);
@@ -138,7 +139,7 @@ describe("TracingSubscriptions", function()
 		describe("error handling", function()
 			it("should cover onInteractionTraced/onWorkStarted within", function()
 				SchedulerTracing.unstable_trace(firstEvent.name, currentTime, function()
-					local mock = jest:fn()
+					local mock = jest.fn()
 
 					-- It should call the callback before re-throwing
 					throwInOnInteractionTraced = true
@@ -174,7 +175,7 @@ describe("TracingSubscriptions", function()
 			it("should cover onWorkStopped within trace", function()
 				SchedulerTracing.unstable_trace(firstEvent.name, currentTime, function()
 					local innerInteraction
-					local mock = jest:fn(function()
+					local mock = jest.fn(function()
 						innerInteraction = SchedulerTracing.unstable_getCurrent()._array[2] --[[ ROBLOX adaptation: added 1 to array index ]]
 					end)
 
@@ -197,7 +198,7 @@ describe("TracingSubscriptions", function()
 			end)
 			it("should cover onInteractionScheduledWorkCompleted within trace", function()
 				SchedulerTracing.unstable_trace(firstEvent.name, currentTime, function()
-					local mock = jest:fn()
+					local mock = jest.fn()
 					throwInOnInteractionScheduledWorkCompleted = true
 					jestExpect(function()
 						return SchedulerTracing.unstable_trace(secondEvent.name, currentTime, mock)
@@ -234,7 +235,7 @@ describe("TracingSubscriptions", function()
 				end)
 			end)
 			it("should cover onWorkStarted within wrap", function()
-				local mock = jest:fn()
+				local mock = jest.fn()
 				local interaction, wrapped
 				SchedulerTracing.unstable_trace(firstEvent.name, currentTime, function()
 					-- ROBLOX FIXME: Array.from() polyfill doesn't recognize Set correctly
@@ -262,7 +263,7 @@ describe("TracingSubscriptions", function()
 					innerInteraction = SchedulerTracing.unstable_getCurrent()._array[2] --[[ ROBLOX adaptation: added 1 to array index ]]
 						jestExpect(outerInteraction.__count).toBe(1)
 						jestExpect(innerInteraction.__count).toBe(1)
-						wrapped = SchedulerTracing.unstable_wrap(jest:fn())
+						wrapped = SchedulerTracing.unstable_wrap(jest.fn())
 						jestExpect(outerInteraction.__count).toBe(2)
 						jestExpect(innerInteraction.__count).toBe(2)
 					end)
@@ -313,7 +314,7 @@ describe("TracingSubscriptions", function()
 				SchedulerTracing.unstable_trace(firstEvent.name, currentTime, function()
 					-- ROBLOX FIXME: Array.from() polyfill doesn't recognize Set correctly
 					interaction = SchedulerTracing.unstable_getCurrent()._array[1] --[[ ROBLOX adaptation: added 1 to array index ]]
-					wrapped = SchedulerTracing.unstable_wrap(jest:fn())
+					wrapped = SchedulerTracing.unstable_wrap(jest.fn())
 				end)
 				jestExpect(interaction.__count).toBe(1)
 				throwInOnWorkCanceled = true
@@ -377,7 +378,7 @@ describe("TracingSubscriptions", function()
 			)
 		end)
 		it("calls lifecycle methods for wrap", function()
-			local unwrapped = jest:fn()
+			local unwrapped = jest.fn()
 			local wrapped
 			SchedulerTracing.unstable_trace(firstEvent.name, currentTime, function()
 				jestExpect(onInteractionTraced).toHaveBeenCalledTimes(1)
@@ -419,8 +420,8 @@ describe("TracingSubscriptions", function()
 		it(
 			"should call the correct interaction subscriber methods when a wrapped callback is canceled",
 			function()
-				local fnOne = jest:fn()
-				local fnTwo = jest:fn()
+				local fnOne = jest.fn()
+				local fnTwo = jest.fn()
 				local wrappedOne, wrappedTwo
 				SchedulerTracing.unstable_trace(firstEvent.name, currentTime, function()
 					wrappedOne = SchedulerTracing.unstable_wrap(fnOne, threadID)
@@ -461,8 +462,8 @@ describe("TracingSubscriptions", function()
 			"should not end an interaction twice if wrap is used to schedule follow up work within another wrap",
 			function()
 				local wrappedOne, wrappedTwo
-				local fnTwo = jest:fn()
-				local fnOne = jest:fn(function()
+				local fnTwo = jest.fn()
+				local fnOne = jest.fn(function()
 					wrappedTwo = SchedulerTracing.unstable_wrap(fnTwo, threadID)
 				end)
 				SchedulerTracing.unstable_trace(firstEvent.name, currentTime, function()
@@ -484,8 +485,8 @@ describe("TracingSubscriptions", function()
 		it(
 			"should not decrement the interaction count twice if a wrapped function is run twice",
 			function()
-				local unwrappedOne = jest:fn()
-				local unwrappedTwo = jest:fn()
+				local unwrappedOne = jest.fn()
+				local unwrappedTwo = jest.fn()
 				local wrappedOne, wrappedTwo
 				SchedulerTracing.unstable_trace(firstEvent.name, currentTime, function()
 					wrappedOne = SchedulerTracing.unstable_wrap(unwrappedOne, threadID)

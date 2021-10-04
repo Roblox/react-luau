@@ -22,9 +22,9 @@ local Promise = require(Packages.Promise)
 local Array = LuauPolyfill.Array
 
 return function()
-    local JestRoblox = require(Packages.Dev.JestRoblox)
-    local jestExpect = JestRoblox.Globals.expect
-    local jest = JestRoblox.Globals.jest
+    local JestGlobals = require(Packages.Dev.JestGlobals)
+    local jestExpect = JestGlobals.expect
+    local jest = JestGlobals.jest
 
     local function loadModules()
         RobloxJest.resetModules()
@@ -388,8 +388,8 @@ return function()
                 return param.version
             end)
 
-            local unsubscribeA = jest:fn()
-            local subscribeA = jest:fn(function(s)
+            local unsubscribeA = jest.fn()
+            local subscribeA = jest.fn(function(s)
                 local unsubscribe = defaultSubscribe(s)
 
                 return function()
@@ -398,8 +398,8 @@ return function()
                 end
             end)
 
-            local unsubscribeB = jest:fn()
-            local subscribeB = jest:fn(function(s)
+            local unsubscribeB = jest.fn()
+            local subscribeB = jest.fn(function(s)
                 local unsubscribe = defaultSubscribe(s)
 
                 return function()
@@ -923,8 +923,8 @@ return function()
             local mutableSource = createMutableSource(source, function(param)
                 return param.version
             end)
-            local onRenderA = jest:fn()
-            local onRenderB = jest:fn()
+            local onRenderA = jest.fn()
+            local onRenderB = jest.fn()
             local getSnapshot, updateGetSnapshot
 
             local function WrapperWithState()

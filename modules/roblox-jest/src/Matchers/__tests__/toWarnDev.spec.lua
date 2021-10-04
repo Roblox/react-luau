@@ -10,7 +10,7 @@
 return function()
 	local RobloxJest = script.Parent.Parent.Parent
 	local Packages = RobloxJest.Parent
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 	local toErrorDev = require(RobloxJest.Matchers.toErrorDev)
 	local toWarnDev = require(RobloxJest.Matchers.toWarnDev)
 

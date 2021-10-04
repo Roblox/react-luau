@@ -9,9 +9,3 @@ content_root = "src"
 LuauPolyfill = { workspace = true }
 Shared = { path = "../shared" }
 ReactReconciler = { path = "../react-reconciler" }
-ReactIs = { path = "../react-is" }
-
-[dev_dependencies]
-JestRoblox = { workspace = true }
-RobloxJest = { path = "../roblox-jest" }
-Scheduler = { path = "../scheduler" }

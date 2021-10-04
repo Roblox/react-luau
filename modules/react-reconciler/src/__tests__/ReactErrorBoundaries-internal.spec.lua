@@ -7,39 +7,38 @@
 --  * @emails react-core
 --  */
 -- !strict
-local Packages = script.Parent.Parent.Parent
-local RobloxJest = require(Packages.Dev.RobloxJest)
+return function()
+	local Packages = script.Parent.Parent.Parent
+	local RobloxJest = require(Packages.Dev.RobloxJest)
 
--- local PropTypes
-local React
--- local ReactDOM
-local ReactNoop
--- local act
-local Scheduler
-local LuauPolyfill = require(Packages.LuauPolyfill)
-local Array = LuauPolyfill.Array
-local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
+	-- local PropTypes
+	local React
+	-- local ReactDOM
+	local ReactNoop
+	-- local act
+	local Scheduler
+	local LuauPolyfill = require(Packages.LuauPolyfill)
+	local Array = LuauPolyfill.Array
+	local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 
--- ROBLOX deviation: using textContent helper in place of upstream .textContent()
-local function textContent(node)
-	local res
-	local queue = Array.slice(node.getChildren())
-	while #queue > 0 do
-		local currentNode = table.remove(queue)
-		if currentNode.text then
-			res = currentNode.text .. (res or "")
-		end
-		if currentNode.children then
-			for _, value in ipairs(currentNode.children) do
-				table.insert(queue, value)
+	-- ROBLOX deviation: using textContent helper in place of upstream .textContent()
+	local function textContent(node)
+		local res
+		local queue = Array.slice(node.getChildren())
+		while #queue > 0 do
+			local currentNode = table.remove(queue)
+			if currentNode.text then
+				res = currentNode.text .. (res or "")
+			end
+			if currentNode.children then
+				for _, value in ipairs(currentNode.children) do
+					table.insert(queue, value)
+				end
 			end
 		end
+		return res or ""
 	end
-	return res or ""
-end
-
-return function()
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
 
 	describe("ReactErrorBoundaries", function()
 		local BrokenConstructor
@@ -2100,9 +2099,11 @@ return function()
 				err2 = result
 			end
 
-			-- ROBLOX deviation: workaround for toMatch()
-			jestExpect(err1.message:find("but got: nil") ~= nil).toEqual(true)
-			jestExpect(err2.message:find("but got: nil") ~= nil).toEqual(true)
+			-- ROBLOX deviation: workaround for Error definition; looks like we
+			-- have errors nested inside errors, where err1.message is also of
+			-- type Error?
+			jestExpect(err1.message.message).toMatch("but got: nil")
+			jestExpect(err2.message.message).toMatch("but got: nil")
 		end)
 		it("renders empty output if error boundary does not handle the error", function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM

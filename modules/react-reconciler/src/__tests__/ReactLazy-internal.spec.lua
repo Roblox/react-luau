@@ -5,28 +5,28 @@ local Scheduler
 local ReactFeatureFlags
 local Suspense
 local lazy
-local Packages = script.Parent.Parent.Parent
-
-local LuauPolyfill = require(Packages.LuauPolyfill)
-local Error = LuauPolyfill.Error
-local setTimeout = LuauPolyfill.setTimeout
-
-local function normalizeCodeLocInfo(str)
-	if typeof(str) ~= "string" then
-		return str
-	end
-
-	str = str:gsub("Check your code at .*:%d+", "Check your code at **")
-	-- ROBLOX deviation: In roblox/luau, we're using the stack frame from luau,
-	-- which looks like:
-	--     in Component (at ModulePath.FileName.lua:123)
-	return (str:gsub("\n    in ([%w%-%._]+)[^\n]*", "\n    in %1 (at **)"))
-end
 
 return function()
+    local Packages = script.Parent.Parent.Parent
+
+    local LuauPolyfill = require(Packages.LuauPolyfill)
+    local Error = LuauPolyfill.Error
+    local setTimeout = LuauPolyfill.setTimeout
     local RobloxJest = require(Packages.Dev.RobloxJest)
     local Promise = require(Packages.Promise)
-    local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+    local jestExpect = require(Packages.Dev.JestGlobals).expect
+
+    local function normalizeCodeLocInfo(str)
+        if typeof(str) ~= "string" then
+            return str
+        end
+
+        str = str:gsub("Check your code at .*:%d+", "Check your code at **")
+        -- ROBLOX deviation: In roblox/luau, we're using the stack frame from luau,
+        -- which looks like:
+        --     in Component (at ModulePath.FileName.lua:123)
+        return (str:gsub("\n    in ([%w%-%._]+)[^\n]*", "\n    in %1 (at **)"))
+    end
 
     describe('ReactLazy', function()
         beforeEach(function()

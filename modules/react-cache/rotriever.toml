@@ -12,7 +12,7 @@ React = { path = "../react" }
 LuauPolyfill = { workspace = true }
 
 [dev_dependencies]
-JestRoblox = { workspace = true }
+JestGlobals = { workspace = true }
 Promise = { workspace = true }
 JestReact = { path = "../jest-react" }
 ReactTestRenderer = { path = "../react-test-renderer" }

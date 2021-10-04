@@ -9,8 +9,8 @@
 local Packages = script.Parent.Parent.Parent
 local Promise = require(Packages.Dev.Promise)
 local RobloxJest = require(Packages.Dev.RobloxJest)
-local jestModule = require(Packages.Dev.JestRoblox)
-local jest = jestModule.Globals.jest
+local JestGlobals = require(Packages.Dev.JestGlobals)
+local jest = JestGlobals.jest
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array

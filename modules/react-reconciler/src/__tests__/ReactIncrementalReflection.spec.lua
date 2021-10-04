@@ -15,7 +15,7 @@ local Scheduler
 local console = require(Packages.Shared).console
 
 return function()
-    local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+    local jestExpect = require(Packages.Dev.JestGlobals).expect
 
     describe('ReactIncrementalReflection', function()
         local RobloxJest = require(Packages.Dev.RobloxJest)

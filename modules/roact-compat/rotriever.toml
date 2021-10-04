@@ -15,5 +15,5 @@ Shared = { path = "../shared" }
 [dev_dependencies]
 RobloxJest = { path = "../roblox-jest" }
 Roact = "github.com/roblox/roact@1.4.0"
-JestRoblox = { workspace = true }
+JestGlobals ={ workspace = true }
 Scheduler = { path = "../scheduler" }

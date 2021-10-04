@@ -15,7 +15,7 @@ local ReactNoop
 local Scheduler
 return function()
     local RobloxJest = require(Packages.Dev.RobloxJest)
-    local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+    local jestExpect = require(Packages.Dev.JestGlobals).expect
 
     describe('ReactIncrementalScheduling', function()
         beforeEach(function()

@@ -7,7 +7,7 @@ local REACT_ELEMENT_TYPE = ReactSymbols.REACT_ELEMENT_TYPE
 local REACT_FRAGMENT_TYPE = ReactSymbols.REACT_FRAGMENT_TYPE
 local invariant = require(Packages.Shared).invariant
 local LuauPolyfill = require(Packages.LuauPolyfill)
-local jestExpect = require(Packages.JestRoblox).Globals.expect
+local jestExpect = require(Packages.JestGlobals).expect
 
 local function captureAssertion(fn)
 	-- Trick to use a TestEZ expectation matcher inside another Jest
@@ -19,8 +19,9 @@ local function captureAssertion(fn)
 	if not ok then
 		-- deviation: The message here will be a string with some extra info
 		-- that's not helpful, so we trim it down a bit
-		local subMessageIndex = string.find(result, " ")
-		local message = string.sub(result, subMessageIndex + 1)
+		local stringResult = tostring(result)
+		local subMessageIndex = string.find(stringResult, " ")
+		local message = string.sub(stringResult, subMessageIndex + 1)
 
 		return {
 			pass = false,

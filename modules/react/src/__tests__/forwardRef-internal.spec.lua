@@ -12,7 +12,7 @@
 return function()
   local Packages = script.Parent.Parent.Parent
   local RobloxJest = require(Packages.Dev.RobloxJest)
-  local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+  local jestExpect = require(Packages.Dev.JestGlobals).expect
   local Error = require(Packages.LuauPolyfill).Error
   local Cryo = require(Packages.Cryo)
 

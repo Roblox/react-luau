@@ -13,4 +13,5 @@ ReactIs = { path = "../react-is" }
 Shared = { path = "../shared" }
 
 [dev_dependencies]
-JestRoblox = { workspace = true }
+JestGlobals = { workspace = true }
+RobloxJest = { path = "../roblox-jest" }

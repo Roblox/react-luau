@@ -10,7 +10,7 @@ files = ["*", "!**/__tests__/**"]
 LuauPolyfill = { workspace = true }
 
 [dev_dependencies]
-JestRoblox = { workspace = true }
+JestGlobals ={ workspace = true }
 RobloxJest = { path = "../roblox-jest" }
 React = { path = "../react" }
 Scheduler = { path = "../scheduler" }

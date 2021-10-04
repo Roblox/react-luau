@@ -2,14 +2,14 @@ return function()
 	local createSignal = require(script.Parent.Parent["createSignal.roblox"])
 
 	local Packages = script.Parent.Parent.Parent
-	local jestModule = require(Packages.Dev.JestRoblox)
-	local jestExpect = jestModule.Globals.expect
-	local jest = jestModule.Globals.jest
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
+	local jest = JestGlobals.jest
 
 	it("should fire subscribers and disconnect them", function()
 		local signal = createSignal()
 
-		local spy = jest:fn()
+		local spy = jest.fn()
 		local disconnect = signal:subscribe(
 			function(...) spy(...) end
 		)
@@ -34,8 +34,8 @@ return function()
 	it("should handle multiple subscribers", function()
 		local signal = createSignal()
 
-		local spyA = jest:fn()
-		local spyB = jest:fn()
+		local spyA = jest.fn()
+		local spyB = jest.fn()
 
 		local disconnectA = signal:subscribe(
 			function(...) spyA(...) end
@@ -79,11 +79,11 @@ return function()
 		local disconnectA
 		local disconnectB
 
-		local spyA = jest:fn(function()
+		local spyA = jest.fn(function()
 			disconnectB()
 		end)
 
-		local spyB = jest:fn(function()
+		local spyB = jest.fn(function()
 			disconnectA()
 		end)
 

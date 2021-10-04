@@ -1,6 +1,6 @@
 return function()
 	local Packages = script.Parent.Parent.Parent.Parent.Parent.Parent
-	local jestExpect = require(Packages.Dev.JestRoblox).Globals.expect
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 	local Type = require(script.Parent.Parent.Parent.Type)
 
 	local Change = require(script.Parent.Parent.Change)
