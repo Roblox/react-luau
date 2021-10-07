@@ -65,12 +65,18 @@ return function ()
             function Foo:render()
                 return React.createElement("div")
             end
-            jestExpect(function()
+            local function testValidation()
                 ReactNoop.render(
                     React.createElement(Foo, {myProp = "hello"})
                 )
                 jestExpect(Scheduler).toFlushWithoutYielding()
-            end).toWarnDev("no no no no no", {withoutStack = true})
+            end
+            if _G.__DEV__ then
+                -- For legacy compatibility, this test throws as well as warning
+                jestExpect(testValidation).toThrow("no no no no no")
+            else
+                jestExpect(testValidation).never.toThrow()
+            end
         end)
         it("validateProps defined, returns true", function()
             local Foo = React.Component:extend("Foo")
@@ -84,7 +90,7 @@ return function ()
             end
 
             ReactNoop.render(React.createElement(Foo, {myProp = "hello"}))
-			jestExpect(Scheduler).toFlushWithoutYielding()
+            jestExpect(Scheduler).toFlushWithoutYielding()
         end)
         it("warning when both methods are defined", function()
             local Foo = React.Component:extend("Foo")
@@ -130,16 +136,25 @@ return function ()
                 return React.createElement("div")
             end
 
-            jestExpect(function()
-                ReactNoop.act(function()
-                    ReactNoop.render(
-                        React.createElement(Foo, {myProp = "hello"})
-                    )
-                    jestExpect(Scheduler).toFlushWithoutYielding()
-                end)
-            end).toWarnDev(
-                    {"You've defined both propTypes and validateProps on Foo", "no no no no no", "no no no no no"},
-                    {withoutStack = 2})
+            local function testValidation()
+                jestExpect(function()
+                    ReactNoop.act(function()
+                        ReactNoop.render(
+                            React.createElement(Foo, {myProp = "hello"})
+                        )
+                        jestExpect(Scheduler).toFlushWithoutYielding()
+                    end)
+                end).toWarnDev(
+                    "You've defined both propTypes and validateProps on Foo",
+                    {withoutStack = 2}
+                )
+            end
+            if _G.__DEV__ then
+                -- For legacy compatibility, this test throws as well as warning
+                jestExpect(testValidation).toThrow("no no no no no")
+            else
+                jestExpect(testValidation).never.toThrow()
+            end
         end)
         it("validateProps succeeds, propTypes fails", function()
             local Foo = React.Component:extend("Foo")
@@ -186,16 +201,25 @@ return function ()
                 return React.createElement("div")
             end
 
-            jestExpect(function()
-                ReactNoop.act(function()
-                    ReactNoop.render(
-                        React.createElement(Foo, {myProp = "hello"})
-                    )
-                    jestExpect(Scheduler).toFlushWithoutYielding()
-                end)
-            end).toWarnDev(
-                    {"You've defined both propTypes and validateProps on Foo", "no no no no no"},
-                    {withoutStack = 2})
+            local function testValidation()
+                jestExpect(function()
+                    ReactNoop.act(function()
+                        ReactNoop.render(
+                            React.createElement(Foo, {myProp = "hello"})
+                        )
+                        jestExpect(Scheduler).toFlushWithoutYielding()
+                    end)
+                end).toWarnDev(
+                    "You've defined both propTypes and validateProps on Foo",
+                    {withoutStack = 2}
+                )
+            end
+            if _G.__DEV__ then
+                -- For legacy compatibility, this test throws as well as warning
+                jestExpect(testValidation).toThrow("no no no no no")
+            else
+                jestExpect(testValidation).never.toThrow()
+            end
         end)
         it("bad propTypes method", function()
             local Foo = React.Component:extend("Foo")
