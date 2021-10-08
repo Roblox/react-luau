@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1633636749395,
+  "lastUpdate": 1633715657101,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1318,6 +1318,47 @@
             "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "63272527248f7791e9aa6c28f975a563c2743af9",
+          "message": "LUAFDN-637 Split compatibility layer warnings",
+          "timestamp": "2021-10-07T20:50:49Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/224/commits/63272527248f7791e9aa6c28f975a563c2743af9"
+        },
+        "date": 1633715655019,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.9943,
+            "range": "±25.20%",
+            "unit": "ops/sec",
+            "extra": "602 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.275,
+            "range": "±228.20%",
+            "unit": "ms/op",
+            "extra": "602 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 78.5566,
+            "range": "±24.52%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -2363,6 +2404,40 @@
             "name": "FrameRate#Δt",
             "value": 50.2368,
             "range": "±17.16%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "63272527248f7791e9aa6c28f975a563c2743af9",
+          "message": "LUAFDN-637 Split compatibility layer warnings",
+          "timestamp": "2021-10-07T20:50:49Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/224/commits/63272527248f7791e9aa6c28f975a563c2743af9"
+        },
+        "date": 1633715655737,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 21.6928,
+            "range": "±12.42%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 46.984,
+            "range": "±15.84%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
           }
@@ -3416,6 +3491,40 @@
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "63272527248f7791e9aa6c28f975a563c2743af9",
+          "message": "LUAFDN-637 Split compatibility layer warnings",
+          "timestamp": "2021-10-07T20:50:49Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/224/commits/63272527248f7791e9aa6c28f975a563c2743af9"
+        },
+        "date": 1633715656402,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 16.5993,
+            "range": "±13.95%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 61.628,
+            "range": "±16.99%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -4461,6 +4570,40 @@
             "name": "FrameRate#Δt",
             "value": 9.0889,
             "range": "±9.40%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "63272527248f7791e9aa6c28f975a563c2743af9",
+          "message": "LUAFDN-637 Split compatibility layer warnings",
+          "timestamp": "2021-10-07T20:50:49Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/224/commits/63272527248f7791e9aa6c28f975a563c2743af9"
+        },
+        "date": 1633715657098,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 114.8182,
+            "range": "±11.63%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 8.8265,
+            "range": "±11.51%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }

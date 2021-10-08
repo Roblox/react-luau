@@ -4,7 +4,7 @@ local React = require(Packages.React)
 local warnOnce = require(script.Parent.warnOnce)
 
 return function(elements)
-	if _G.__DEV__ then
+	if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
 		warnOnce(
 			"createFragment",
 			"Please instead use:\n\tReact.createElement(React.Fragment, ...)"

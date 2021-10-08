@@ -1,7 +1,7 @@
 local warnOnce = require(script.Parent.warnOnce)
 
 return function(_config)
-	if _G.__DEV__ then
+	if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
 		warnOnce(
 			"setGlobalConfig",
 			"Roact 17 uses a `_G.__DEV__` flag to enable development behavior. "

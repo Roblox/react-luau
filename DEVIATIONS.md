@@ -760,3 +760,4 @@ Error boundaries are ported and exposed via the component lifecycle methods `get
 DEV Mode can be enabled by setting the `__DEV__` global to `true` before the initial require of any Roact package. You can accomplish this either by:
 * In Roblox Studio, executing `_G.__DEV__ = true` at the entry point of your test or application (before requiring any React packages)
 * In roblox-cli, including the argument `--lua.globals=__DEV__=true` when using the `run` command
+* If `__COMPAT_WARNINGS__` is set, it will output Legacy Roact compatibility layer warnings, which will help teams write code that will be forward compatible at the next major version update to Roact.

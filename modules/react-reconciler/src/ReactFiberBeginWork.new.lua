@@ -3148,7 +3148,7 @@ function updateContextConsumer(
   -- ROBLOX deviation: compatibility for old Roact's context consumer API
   local render
   if newProps.render then
-    if _G.__DEV__ then
+    if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
       if not hasWarnedAbout.usingLegacyConsumer then
         hasWarnedAbout.usingLegacyConsumer = true
         console.warn("Your Context.Consumer component is using legacy Roact syntax, which won't be supported in future versions of Roact. \n" ..

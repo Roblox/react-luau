@@ -4,7 +4,7 @@ local React = require(Packages.React)
 local warnOnce = require(script.Parent.warnOnce)
 
 local function oneChild(children)
-	if _G.__DEV__ then
+	if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
 		warnOnce(
 			"oneChild",
 			"You likely don't need this at all! If you were assigning children "

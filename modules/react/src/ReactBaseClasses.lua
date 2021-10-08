@@ -58,7 +58,7 @@ local function warnAboutExistingLifecycle(componentName, newName, existingName)
 end
 
 local function warnAboutDeprecatedLifecycleName(componentName, newName, existingName)
-  if _G.__DEV__ then
+  if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
     local path, linenum = debug.info(3, "sln")
     console.warn(
       "%s is using method '%s', which is no longer supported and should be updated to '%s'\nFile: %s:%s",
@@ -115,8 +115,10 @@ function Component:extend(name)
   -- ROBLOX note: legacy Roact will accept nil here and default to empty string
   -- ROBLOX TODO: if name in "" in ReactComponentStack frame, we should try and get the variable name it was assigned to
   if name == nil then
-    console.warn("Component:extend() accepting no arguments is deprecated, and will "
-        .. "not be supported in a future version of Roact. Please provide an explicit name.")
+    if _G.__COMPAT_WARNINGS__ then
+      console.warn("Component:extend() accepting no arguments is deprecated, and will "
+          .. "not be supported in a future version of Roact. Please provide an explicit name.")
+    end
     name = ""
   end
 
