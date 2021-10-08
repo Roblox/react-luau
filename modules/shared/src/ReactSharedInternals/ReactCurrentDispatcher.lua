@@ -53,11 +53,13 @@ export type Dispatcher = {
 	) -> _T,
 	useRef: (initialValue: _T) -> {current: _T},
 	useEffect: (
-		create: () -> (() -> ()) | nil,
+		-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+		create: (() -> ()) | ((() -> ()) -> ()),
 		deps: Array<any> | nil
 	) -> (),
 	useLayoutEffect: (
-		create: () -> (() -> ()) | nil,
+		-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+		create: (() -> ()) | ((() -> ()) -> ()),
 		deps: Array<any> | nil
 	) -> (),
 	useCallback: (callback: _T, deps: Array<any> | nil) -> _T,

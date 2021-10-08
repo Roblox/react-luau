@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1633715657101,
+  "lastUpdate": 1633719578293,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1359,6 +1359,47 @@
             "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "d77d7c6b84a4092ce2124bc2aa2ec77fe3693778",
+          "message": "#nojira Fix use*Effect create function type",
+          "timestamp": "2021-10-08T18:05:52Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/225/commits/d77d7c6b84a4092ce2124bc2aa2ec77fe3693778"
+        },
+        "date": 1633719576259,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.3081,
+            "range": "±24.56%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.4806,
+            "range": "±224.80%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 84.0414,
+            "range": "±21.44%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -2438,6 +2479,40 @@
             "name": "FrameRate#Δt",
             "value": 46.984,
             "range": "±15.84%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "d77d7c6b84a4092ce2124bc2aa2ec77fe3693778",
+          "message": "#nojira Fix use*Effect create function type",
+          "timestamp": "2021-10-08T18:05:52Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/225/commits/d77d7c6b84a4092ce2124bc2aa2ec77fe3693778"
+        },
+        "date": 1633719576923,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 19.7853,
+            "range": "±12.71%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 51.6291,
+            "range": "±17.59%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
           }
@@ -3525,6 +3600,40 @@
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "d77d7c6b84a4092ce2124bc2aa2ec77fe3693778",
+          "message": "#nojira Fix use*Effect create function type",
+          "timestamp": "2021-10-08T18:05:52Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/225/commits/d77d7c6b84a4092ce2124bc2aa2ec77fe3693778"
+        },
+        "date": 1633719577572,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 14.5196,
+            "range": "±14.65%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 70.5467,
+            "range": "±17.26%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -4604,6 +4713,40 @@
             "name": "FrameRate#Δt",
             "value": 8.8265,
             "range": "±11.51%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "d77d7c6b84a4092ce2124bc2aa2ec77fe3693778",
+          "message": "#nojira Fix use*Effect create function type",
+          "timestamp": "2021-10-08T18:05:52Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/225/commits/d77d7c6b84a4092ce2124bc2aa2ec77fe3693778"
+        },
+        "date": 1633719578290,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 108.0228,
+            "range": "±10.24%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 9.3552,
+            "range": "±10.31%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }

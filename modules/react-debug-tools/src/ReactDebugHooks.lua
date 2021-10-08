@@ -267,7 +267,8 @@ end
 -- 	inputs: Array<mixed> | void | null,
 --   ): void {
 local function useLayoutEffect(
-	create: () -> (() -> ()) | nil,
+	-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+	create: (() -> ()) | ((() -> ()) -> ()),
 	inputs: Array<any> | nil
 ): ()
 	nextHook()
@@ -283,7 +284,11 @@ end
 -- 	create: () => (() => void) | void,
 -- 	inputs: Array<mixed> | void | null,
 --   ): void {
-local function useEffect(create: () -> (() -> ()) | nil, inputs: Array<any> | nil): ()
+local function useEffect(
+	-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+	create: (() -> ()) | ((() -> ()) -> ()),
+	inputs: Array<any> | nil
+): ()
 	nextHook()
 	table.insert(hookLog, {
 		primitive = "Effect",

@@ -162,6 +162,7 @@ export type Hook = {
 
 export type Effect = {
   tag: HookFlags,
+  -- ROBLOX TODO: this needs Luau type pack support to express accurately
   create: (() -> (() -> ())) | () -> (),
   destroy: (() -> ())?,
   deps: Array<any>?,
@@ -1266,7 +1267,8 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps)
 end
 
 local function mountEffect(
-  create: () -> (() -> ()) | nil,
+  -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+  create: (() -> ()) | ((() -> ()) -> ()),
   deps: Array<any>?
 )
   if _G.__DEV__ then
@@ -1295,7 +1297,8 @@ local function mountEffect(
 end
 
 local function updateEffect(
-  create: () -> (() -> ()) | nil,
+  -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+  create: (() -> ()) | ((() -> ()) -> ()),
   deps: Array<any>?
 )
   if _G.__DEV__ then
@@ -1314,7 +1317,8 @@ local function updateEffect(
 end
 
 local function mountLayoutEffect(
-  create: () -> (() -> ()) | nil,
+  -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+  create: (() -> ()) | ((() -> ()) -> ()),
   deps: Array<any>?
 )
   if _G.__DEV__ and enableDoubleInvokingEffects then
@@ -1330,7 +1334,8 @@ local function mountLayoutEffect(
 end
 
 local function updateLayoutEffect(
-  create: () -> (() -> ()) | nil,
+  -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+  create: (() -> ()) | ((() -> ()) -> ()),
   deps: Array<any>?
 )
   return updateEffectImpl(UpdateEffect, HookLayout, create, deps)
@@ -2042,7 +2047,8 @@ if _G.__DEV__ then
       return readContext(context, observedBits)
     end,
     useEffect = function(
-      create: () -> (() -> ()) | nil,
+      -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+      create: (() -> ()) | ((() -> ()) -> ()),
       deps: Array<any>?
     ): ()
       currentHookNameInDev = "useEffect"
@@ -2067,7 +2073,8 @@ if _G.__DEV__ then
       return mountImperativeHandle(ref, create, deps)
     end,
     useLayoutEffect = function(
-      create: () -> (() -> ()) | nil,
+      -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+      create: (() -> ()) | ((() -> ()) -> ()),
       deps: Array<any>?
     ): ()
       currentHookNameInDev = 'useLayoutEffect'
@@ -2221,7 +2228,8 @@ if _G.__DEV__ then
         return readContext(context, observedBits)
       end,
       useEffect = function(
-        create: () -> (() -> ()) | nil,
+        -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+        create: (() -> ()) | ((() -> ()) -> ()),
         deps: Array<any>?
       ): ()
         currentHookNameInDev = "useEffect"
@@ -2244,7 +2252,8 @@ if _G.__DEV__ then
         return mountImperativeHandle(ref, create, deps)
       end,
     useLayoutEffect = function(
-      create: () -> (() -> ()) | nil,
+      -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+      create: (() -> ()) | ((() -> ()) -> ()),
       deps: Array<any>?
     ): ()
       currentHookNameInDev = 'useLayoutEffect'
@@ -2395,7 +2404,8 @@ if _G.__DEV__ then
         return readContext(context, observedBits)
       end,
       useEffect = function(
-        create: () -> (() -> ()) | nil,
+        -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+        create: (() -> ()) | ((() -> ()) -> ()),
         deps: Array<any>?
       ): ()
         currentHookNameInDev = "useEffect"
@@ -2418,7 +2428,8 @@ if _G.__DEV__ then
       return updateImperativeHandle(ref, create, deps)
     end,
     useLayoutEffect = function(
-      create: () -> (() -> ()) | nil,
+      -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+      create: (() -> ()) | ((() -> ()) -> ()),
       deps: Array<any>?
     ): ()
       currentHookNameInDev = 'useLayoutEffect'
@@ -2574,7 +2585,8 @@ if _G.__DEV__ then
       --   deps: Array<any> | nil,
       -- ): void {
       useEffect = function(
-        create: () -> (() -> ()) | nil,
+        -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+        create: (() -> ()) | ((() -> ()) -> ()),
         deps: Array<any> | nil
       ): ()
       currentHookNameInDev = 'useEffect'
@@ -2597,7 +2609,8 @@ if _G.__DEV__ then
       return updateImperativeHandle(ref, create, deps)
     end,
     useLayoutEffect = function(
-      create: () -> (() -> ()) | nil,
+      -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+      create: (() -> ()) | ((() -> ()) -> ()),
       deps: Array<any>?
     )
       currentHookNameInDev = 'useLayoutEffect'
@@ -2746,7 +2759,8 @@ if _G.__DEV__ then
       return readContext(context, observedBits)
     end,
     useEffect = function(
-      create: () -> (() -> ()) | nil,
+      -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+      create: (() -> ()) | ((() -> ()) -> ()),
       deps: Array<any> | nil
     ): ()
       currentHookNameInDev = 'useEffect'
@@ -2765,7 +2779,8 @@ if _G.__DEV__ then
       return mountImperativeHandle(ref, create, deps)
     end,
     useLayoutEffect = function(
-      create: () -> (() -> ()) | nil,
+      -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+      create: (() -> ()) | ((() -> ()) -> ()),
       deps: Array<any> | nil
     ): ()
       currentHookNameInDev = 'useLayoutEffect'
@@ -2922,7 +2937,8 @@ if _G.__DEV__ then
     --   deps: Array<any> | nil,
     -- ): void {
     useEffect = function(
-      create: () -> (() -> ()) | nil,
+      -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+      create: (() -> ()) | ((() -> ()) -> ()),
       deps: Array<any> | nil
     ): ()
       currentHookNameInDev = 'useEffect'
@@ -2947,7 +2963,8 @@ if _G.__DEV__ then
       return updateImperativeHandle(ref, create, deps)
     end,
     useLayoutEffect = function(
-      create: () -> (() -> ()) | nil,
+      -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+	  	create: (() -> ()) | ((() -> ()) -> ()),
       deps: Array<any>?
     ): ()
       currentHookNameInDev = 'useLayoutEffect'
@@ -3118,7 +3135,8 @@ if _G.__DEV__ then
     --   deps: Array<any> | nil,
     -- ): void {
     useEffect = function(
-      create: () -> (() -> ()) | nil,
+      -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+      create: (() -> ()) | ((() -> ()) -> ()),
       deps: Array<any> | nil
     ): ()
       currentHookNameInDev = 'useEffect'
@@ -3143,7 +3161,8 @@ if _G.__DEV__ then
       return updateImperativeHandle(ref, create, deps)
     end,
     useLayoutEffect = function(
-      create: () -> (() -> ()) | nil,
+      -- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+      create: (() -> ()) | ((() -> ()) -> ()),
       deps: Array<any>?
     ): ()
       currentHookNameInDev = 'useLayoutEffect'

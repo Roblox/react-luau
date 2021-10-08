@@ -228,17 +228,19 @@ end
 
 exports.emptyObject = {}
 
-exports.useTransition = function(): ((() -> ()) -> (), boolean)
-	local dispatcher = resolveDispatcher()
-	return dispatcher.useTransition()
-end
+-- ROBLOX TODO: enable useTransition later
+-- exports.useTransition = function(): ((() -> ()) -> (), boolean)
+-- 	local dispatcher = resolveDispatcher()
+-- 	return dispatcher.useTransition()
+-- end
 
 -- ROBLOX TODO: function generics
 -- export function useDeferredValue<T>(value: T): T {
-	exports.useDeferredValue = function(value: _T): _T
-	local dispatcher = resolveDispatcher()
-	return dispatcher.useDeferredValue(value)
-end
+-- ROBLOX TODO: enable useTransition later
+-- exports.useDeferredValue = function(value: _T): _T
+-- 	local dispatcher = resolveDispatcher()
+-- 	return dispatcher.useDeferredValue(value)
+-- end
 
 -- deviation: Stripped types from function signature
 exports.useOpaqueIdentifier = function(): OpaqueIDType | nil
