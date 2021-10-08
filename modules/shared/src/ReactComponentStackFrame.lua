@@ -381,8 +381,8 @@ local function describeUnknownElementTypeFrameInDEV(type, source, ownerFn): stri
 			local init = lazyComponent._init
 
 			local ok, result = pcall(function()
-				-- // Lazy may contain any component type so we recursively resolve it.
-				return describeUnknownElementTypeFrameInDEV(
+				describeUnknownElementTypeFrameInDEV(
+					-- // Lazy may contain any component type so we recursively resolve it.
 					init(payload),
 					source,
 					ownerFn

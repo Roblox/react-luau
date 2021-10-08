@@ -177,7 +177,7 @@ exports.initializeUpdateQueue = initializeUpdateQueue
 
 -- deviation: FIXME generics in function signatures
 -- 'cloneUpdateQueue<State>(...)'
-exports.cloneUpdateQueue = function(
+local function cloneUpdateQueue(
 	current: Fiber,
 	workInProgress: Fiber
 )
@@ -195,9 +195,10 @@ exports.cloneUpdateQueue = function(
 		workInProgress.updateQueue = clone
 	end
 end
+exports.cloneUpdateQueue = cloneUpdateQueue
 
-exports.createUpdate = function(eventTime: number, lane: Lane): Update<any>
-	local update: Update<any> = {
+local function createUpdate(eventTime: number, lane: Lane): Update<any>
+	local update = {
 		eventTime = eventTime,
 		lane = lane,
 
@@ -209,10 +210,11 @@ exports.createUpdate = function(eventTime: number, lane: Lane): Update<any>
 	}
 	return update
 end
+exports.createUpdate = createUpdate
 
 -- deviation: FIXME proper function signature once we have better luau generics
 -- enqueueUpdate<State>(fiber: Fiber, update: Update<State>)
-exports.enqueueUpdate = function(fiber: Fiber, update: Update<any>)
+local function enqueueUpdate(fiber: Fiber, update: Update<any>)
 	local updateQueue = fiber.updateQueue
 	if updateQueue == nil then
 		-- Only occurs if the fiber has been unmounted.
@@ -245,13 +247,13 @@ exports.enqueueUpdate = function(fiber: Fiber, update: Update<any>)
 		end
 	end
 end
-
+exports.enqueueUpdate = enqueueUpdate
 -- deviation: FIXME proper function signature once we have better luau generics
 -- exports.enqueueCapturedUpdate<State>(
 -- 	workInProgress: Fiber,
 -- 	capturedUpdate: Update<State>,
 -- )
-exports.enqueueCapturedUpdate = function(
+local function enqueueCapturedUpdate(
 	workInProgress: Fiber,
 	capturedUpdate: Update<any>
 )
@@ -332,7 +334,7 @@ exports.enqueueCapturedUpdate = function(
 	end
 	queue.lastBaseUpdate = capturedUpdate
 end
-
+exports.enqueueCapturedUpdate = enqueueCapturedUpdate
 -- FIXME (roblox): function generics
 -- function getStateFromUpdate<State>(
 -- 	workInProgress: Fiber,
@@ -371,9 +373,7 @@ local function getStateFromUpdate(
 					-- ROBLOX deviation: YOLO flag for disabling pcall
 					local ok, result
 					if not _G.__YOLO__ then
-						ok, result = pcall(function()
-							payload(prevState, nextProps)
-						end)
+						ok, result = pcall(payload, prevState, nextProps)
 					else
 						ok = true
 						payload(prevState, nextProps)
@@ -419,9 +419,7 @@ local function getStateFromUpdate(
 					-- ROBLOX deviation: YOLO flag for disabling pcall
 					local ok, result
 					if not _G.__YOLO__ then
-						ok, result = pcall(function()
-							payload(prevState, nextProps)
-						end)
+						ok, result = pcall(payload, prevState, nextProps)
 					else
 						ok = true
 						payload(prevState, nextProps)
@@ -456,7 +454,7 @@ exports.getStateFromUpdate = getStateFromUpdate
 
 -- FIXME (roblox): function generics
 -- processUpdateQueue<State>(...)
-exports.processUpdateQueue = function(
+local function processUpdateQueue(
 	workInProgress: Fiber,
 	props: any,
 	instance: any,
@@ -651,6 +649,7 @@ exports.processUpdateQueue = function(
 		currentlyProcessingQueue = nil
 	end
 end
+exports.processUpdateQueue = processUpdateQueue
 
 function callCallback(callback, context)
 	invariant(
@@ -672,7 +671,7 @@ end
 
 -- deviation: FIXME generics in function signatures
 -- 'commitUpdateQueue<State>(...): void'
-exports.commitUpdateQueue = function(
+local function commitUpdateQueue(
 	finishedWork: Fiber,
 	finishedQueue: UpdateQueue<any>,
 	instance: any
@@ -691,5 +690,6 @@ exports.commitUpdateQueue = function(
 		end
 	end
 end
+exports.commitUpdateQueue = commitUpdateQueue
 
 return exports

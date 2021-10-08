@@ -80,7 +80,8 @@ type Iterator<T> = {
 		done: boolean,
 	},
 }
-exports.getIteratorFn = function(maybeIterable): nil | () -> Iterator<any>
+-- ROBLOX deviation: upstream type is incorrect, as returned function takes a parameter in reconcileChildrenIterator()
+exports.getIteratorFn = function(maybeIterable): nil | (...any) -> Iterator<any>
 	if typeof(maybeIterable) == "table" then
 		return function()
 			local currentKey: any, currentValue: any

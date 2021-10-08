@@ -55,7 +55,7 @@ type OffscreenState = ReactFiberOffscreenComponent.OffscreenState
 local checkPropTypes = require(Packages.Shared).checkPropTypes
 
 local ReactWorkTags = require(script.Parent.ReactWorkTags)
-local IndeterminateComponent = ReactWorkTags.IndeterminateComponent
+-- local IndeterminateComponent = ReactWorkTags.IndeterminateComponent
 local FunctionComponent = ReactWorkTags.FunctionComponent
 local ClassComponent = ReactWorkTags.ClassComponent
 local HostRoot = ReactWorkTags.HostRoot
@@ -167,7 +167,7 @@ local lazyRefs = {
   shouldSuspendRef = nil
 }
 
-local shouldSuspend = function(fiber: Fiber): boolean
+local function shouldSuspend(fiber: Fiber): boolean
   if not lazyRefs.shouldSuspendRef then
     lazyRefs.shouldSuspendRef = require(script.Parent.ReactFiberReconciler).shouldSuspend
   end
@@ -175,14 +175,14 @@ local shouldSuspend = function(fiber: Fiber): boolean
 end
 
 -- ROBLOX deviation: collective lazy init methods from ReactFiberHooks
-local initReactFiberHooks = function()
+local function initReactFiberHooks()
   local ReactFiberHooks = require(script.Parent["ReactFiberHooks.new"])
   lazyRefs.renderWithHooksRef = ReactFiberHooks.renderWithHooks
   lazyRefs.bailoutHooksRef = ReactFiberHooks.bailoutHooks
 end
 
 -- ROBLOX deviation: Lazy init renderWithHooks from ReactFiberHooks
-local renderWithHooks = function(...)
+local function renderWithHooks(...)
   if not lazyRefs.renderWithHooksRef then
     initReactFiberHooks()
   end
@@ -190,7 +190,7 @@ local renderWithHooks = function(...)
 end
 
 -- ROBLOX deviation: Lazy init bailoutHooks from ReactFiberHooks
-local bailoutHooks = function(...)
+local function bailoutHooks(...)
   if not lazyRefs.bailoutHooksRef then
     initReactFiberHooks()
   end
@@ -815,7 +815,7 @@ local function markRef(current: Fiber | nil, workInProgress: Fiber)
   end
 end
 
-updateFunctionComponent = function(
+function updateFunctionComponent(
   current,
   workInProgress,
   Component,
@@ -1133,10 +1133,8 @@ function finishClassComponent(
         bit32.band(workInProgress.mode, StrictMode) ~= 0
       then
         disableLogs()
-        local ok, result = pcall(function()
-          -- deviation: Call with ':' instead of '.' so that render can access self
-          instance:render()
-        end)
+        -- deviation: Pass instance so that render can access self
+        local ok, result = pcall(instance.render, instance)
         -- finally
         reenableLogs()
         if not ok then
@@ -3218,7 +3216,7 @@ exports.markWorkInProgressReceivedUpdate = function()
   didReceiveUpdate = true
 end
 
-bailoutOnAlreadyFinishedWork = function(
+function bailoutOnAlreadyFinishedWork(
   current: Fiber | nil,
   workInProgress: Fiber,
   renderLanes: Lanes
@@ -3313,7 +3311,7 @@ end
 
 -- FIXME (roblox): restore types when refinement is better:
 -- current: Fiber | nil,
-exports.beginWork = function(
+local function beginWork(
   current: any,
   workInProgress: Fiber,
   renderLanes: Lanes
@@ -3533,7 +3531,7 @@ exports.beginWork = function(
   -- move this assignment out of the common path and into each branch.
   workInProgress.lanes = ReactFiberLane.NoLanes
 
-  if workInProgress.tag == IndeterminateComponent then
+  if workInProgress.tag == ReactWorkTags.IndeterminateComponent then
     return mountIndeterminateComponent(
       current,
       workInProgress,
@@ -3695,5 +3693,6 @@ exports.beginWork = function(
   )
   return nil
 end
+exports.beginWork = beginWork
 
 return exports

@@ -150,9 +150,7 @@ return function()
 		RobloxJest.mock(script.Parent.Parent.invokeGuardedCallbackImpl, function()
 			return function(reporter, name, func, context, a)
 				table.insert(ops, a)
-				local ok, result = pcall(function()
-					func(context, a)
-				end)
+				local ok, result = pcall(func, context, a)
 
 				if not ok then
 					reporter.onError(result)

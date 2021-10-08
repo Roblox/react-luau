@@ -369,13 +369,14 @@ if _G.__DEV__ then
   end
 
   ReactStrictModeWarnings.discardPendingWarnings = function()
-    pendingComponentWillMountWarnings = {}
-    pendingUNSAFE_ComponentWillMountWarnings = {}
-    pendingComponentWillReceivePropsWarnings = {}
-    pendingUNSAFE_ComponentWillReceivePropsWarnings = {}
-    pendingComponentWillUpdateWarnings = {}
-    pendingUNSAFE_ComponentWillUpdateWarnings = {}
-    pendingLegacyContextWarning = {}
+    -- ROBLOX performance? use table.clear instead of assigning new array
+    table.clear(pendingComponentWillMountWarnings)
+    table.clear(pendingUNSAFE_ComponentWillMountWarnings)
+    table.clear(pendingComponentWillReceivePropsWarnings)
+    table.clear(pendingUNSAFE_ComponentWillReceivePropsWarnings)
+    table.clear(pendingComponentWillUpdateWarnings)
+    table.clear(pendingUNSAFE_ComponentWillUpdateWarnings)
+    table.clear(pendingLegacyContextWarning)
   end
 end
 

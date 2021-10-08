@@ -97,9 +97,7 @@ exports.unstable_clear = function(callback: Function)
 	interactionsRef.current = Set.new()
 
 	-- ROBLOX try
-	local ok, result = pcall(function()
-		return callback()
-	end)
+	local ok, result = pcall(callback)
 	-- ROBLOX finally
 	interactionsRef.current = prevInteractions
 

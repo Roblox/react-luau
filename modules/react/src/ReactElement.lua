@@ -344,7 +344,7 @@ end
  * See https://reactjs.org/docs/react-api.html#createelement
  ]]
 
-exports.createElement = function(type_, config, ...)
+local function createElement(type_, config, ...)
 	local props = {}
 	local key = nil
 	local ref = nil
@@ -450,6 +450,7 @@ exports.createElement = function(type_, config, ...)
 
 	return ReactElement(type_, key, ref, self, source, ReactCurrentOwner.current, props)
 end
+exports.createElement = createElement
 
 ----[[*
 -- * Return a function that produces ReactElements of a given type.

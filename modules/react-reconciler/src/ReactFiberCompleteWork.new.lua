@@ -257,7 +257,7 @@ if supportsMutation then
   updateHostContainer = function(current: nil | Fiber, workInProgress: Fiber)
     -- Noop
   end
-  updateHostComponent = function(
+  function updateHostComponent(
     current: Fiber,
     workInProgress: Fiber,
     type: Type,
@@ -298,7 +298,7 @@ if supportsMutation then
       markUpdate(workInProgress)
     end
   end
-  updateHostText = function(
+  function updateHostText(
     current: Fiber,
     workInProgress: Fiber,
     oldText: string,
@@ -500,7 +500,7 @@ elseif supportsPersistence then
     -- end
   end
 
-  updateHostContainer = function(current: nil | Fiber, workInProgress: Fiber)
+  function updateHostContainer(current: nil | Fiber, workInProgress: Fiber)
     local portalOrRoot: {
       containerInfo: Container,
       pendingChildren: ChildSet,

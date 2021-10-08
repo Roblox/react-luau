@@ -717,9 +717,7 @@ function exports.formatDataForPreview(data: Object, showFormattedValue: boolean)
 	then
 		return tostring(data)
 	else
-		local ok, result = pcall(function()
-			return truncateForDisplay("" .. tostring(data))
-		end)
+		local ok, result = pcall(truncateForDisplay, "" .. tostring(data))
 		return ok and result or "unserializable"
 	end
 end

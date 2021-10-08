@@ -43,32 +43,33 @@ local ConcurrentRoot = ReactRootTags.ConcurrentRoot
 local exports = {}
 
 local function FiberRootNode(containerInfo, tag, hydrate)
-	local rootNode = {}
+	-- ROBLOX performance: See if this kind of object init is faster in Luau
+	local rootNode = {
+		tag = tag,
+		containerInfo = containerInfo,
+		pendingChildren = nil,
+		current = nil,
+		pingCache = nil,
+		finishedWork = nil,
+		timeoutHandle = noTimeout,
+		context = nil,
+		pendingContext = nil,
+		hydrate = hydrate,
+		callbackNode = nil,
+		callbackPriority = NoLanePriority,
+		eventTimes = createLaneMap(NoLanes),
+		expirationTimes = createLaneMap(NoTimestamp),
 
-	rootNode.tag = tag
-	rootNode.containerInfo = containerInfo
-	rootNode.pendingChildren = nil
-	rootNode.current = nil
-	rootNode.pingCache = nil
-	rootNode.finishedWork = nil
-	rootNode.timeoutHandle = noTimeout
-	rootNode.context = nil
-	rootNode.pendingContext = nil
-	rootNode.hydrate = hydrate
-	rootNode.callbackNode = nil
-	rootNode.callbackPriority = NoLanePriority
-	rootNode.eventTimes = createLaneMap(NoLanes)
-	rootNode.expirationTimes = createLaneMap(NoTimestamp)
+		pendingLanes = NoLanes,
+		suspendedLanes = NoLanes,
+		pingedLanes = NoLanes,
+		expiredLanes = NoLanes,
+		mutableReadLanes = NoLanes,
+		finishedLanes = NoLanes,
 
-	rootNode.pendingLanes = NoLanes
-	rootNode.suspendedLanes = NoLanes
-	rootNode.pingedLanes = NoLanes
-	rootNode.expiredLanes = NoLanes
-	rootNode.mutableReadLanes = NoLanes
-	rootNode.finishedLanes = NoLanes
-
-	rootNode.entangledLanes = NoLanes
-	rootNode.entanglements = createLaneMap(NoLanes)
+		entangledLanes = NoLanes,
+		entanglements = createLaneMap(NoLanes),
+	}
 
 	if supportsHydration then
 		rootNode.mutableSourceEagerHydrationData = nil

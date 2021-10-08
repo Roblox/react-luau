@@ -28,7 +28,7 @@ local exports: { [string]: any } = {}
 exports.setInitialProperties = RobloxComponentProps.setInitialProperties
 
 -- Calculate the diff between the two objects.
-exports.diffProperties = function(
+local function diffProperties(
   domElement: HostInstance,
   tag: string,
   lastRawProps: Object,
@@ -235,7 +235,7 @@ exports.diffProperties = function(
   -- }
   return updatePayload;
 end
-
+exports.diffProperties = diffProperties
 -- Apply the diff.
 exports.updateProperties = RobloxComponentProps.updateProperties
 

@@ -60,9 +60,7 @@ function onInteractionTraced(interaction: Interaction): ()
 
 	for subscriber, _ in pairs(subscribers) do
 		-- ROBLOX try
-		local ok, result = pcall(function()
-			subscriber.onInteractionTraced(interaction)
-		end)
+		local ok, result = pcall(subscriber.onInteractionTraced, interaction)
 		-- ROBLOX catch
 		if not ok then
 			local error_ = result
@@ -84,9 +82,7 @@ function onInteractionScheduledWorkCompleted(interaction: Interaction): ()
 
 	for subscriber, _ in pairs(subscribers) do
 		-- ROBLOX try
-		local ok, result = pcall(function()
-			subscriber.onInteractionScheduledWorkCompleted(interaction)
-		end)
+		local ok, result = pcall(subscriber.onInteractionScheduledWorkCompleted, interaction)
 		-- ROBLOX catch
 		if not ok then
 			local error_ = result
@@ -108,9 +104,7 @@ function onWorkScheduled(interactions: Set<Interaction>, threadID: number): ()
 
 	for subscriber, _ in pairs(subscribers) do
 		-- ROBLOX try
-		local ok, result = pcall(function()
-			subscriber.onWorkScheduled(interactions, threadID)
-		end)
+		local ok, result = pcall(subscriber.onWorkScheduled, interactions, threadID)
 		-- ROBLOX catch
 		if not ok then
 			local error_ = result
@@ -132,9 +126,7 @@ function onWorkStarted(interactions: Set<Interaction>, threadID: number): ()
 
 	for subscriber, _ in pairs(subscribers) do
 		-- ROBLOX try
-		local ok, result = pcall(function()
-			subscriber.onWorkStarted(interactions, threadID)
-		end)
+		local ok, result = pcall(subscriber.onWorkStarted, interactions, threadID)
 		-- ROBLOX catch
 		if not ok then
 			local error_ = result
@@ -156,9 +148,7 @@ function onWorkStopped(interactions: Set<Interaction>, threadID: number): ()
 
 	for subscriber, _ in pairs(subscribers) do
 		-- ROBLOX try
-		local ok, result = pcall(function()
-			subscriber.onWorkStopped(interactions, threadID)
-		end)
+		local ok, result = pcall(subscriber.onWorkStopped, interactions, threadID)
 		-- ROBLOX catch
 		if not ok then
 			local error_ = result
@@ -180,9 +170,7 @@ function onWorkCanceled(interactions: Set<Interaction>, threadID: number): ()
 
 	for subscriber, _ in pairs(subscribers) do
 		-- ROBLOX try
-		local ok, result = pcall(function()
-			subscriber.onWorkCanceled(interactions, threadID)
-		end)
+		local ok, result = pcall(subscriber.onWorkCanceled, interactions, threadID)
 		-- ROBLOX catch
 		if not ok then
 			local error_ = result

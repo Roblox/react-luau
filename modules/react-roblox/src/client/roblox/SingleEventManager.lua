@@ -55,9 +55,7 @@ function SingleEventManager:connectEvent(key, listener)
 end
 
 function SingleEventManager:connectPropertyChange(key, listener)
-	local success, event = pcall(function()
-		return self._instance:GetPropertyChangedSignal(key)
-	end)
+	local success, event = pcall(self._instance.GetPropertyChangedSignal, self._instance, key)
 
 	if not success then
 		error(("Cannot get changed signal on property %q: %s"):format(
@@ -143,7 +141,7 @@ function SingleEventManager:resume()
 
 	self._isResuming = false
 	self._status = EventStatus.Enabled
-	self._suspendedEventQueue = {}
+	table.clear(self._suspendedEventQueue)
 end
 
 return SingleEventManager

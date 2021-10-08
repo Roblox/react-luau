@@ -2159,11 +2159,9 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			local ok, result = pcall(function()
-				-- Here, we test the behavior where there is no error boundary and we
-				-- delegate to the host root.
-				root.render(React.createElement(Parent))
-			end)
+			-- Here, we test the behavior where there is no error boundary and we
+			-- delegate to the host root.
+			local ok, result = pcall(root.render, React.createElement(Parent))
 			if not ok then
 				if not (result:sub(-#"parent sad") == "parent sad") and not (result:sub(-#"child sad") == "child sad") then
 					error(result)
@@ -2223,9 +2221,7 @@ return function()
 			local root = ReactNoop.createLegacyRoot()
 
 			root.render(React.createElement(Parent, { value = 1 }))
-			local ok, result = pcall(function()
-				root.render(React.createElement(Parent, { value = 2 }))
-			end)
+			local ok, result = pcall(root.render, React.createElement(Parent, { value = 2 }))
 			if not ok then
 				if not (result:sub(-#"parent sad") == "parent sad") and not (result:sub(-#"child sad") == "child sad") then
 					error(result)

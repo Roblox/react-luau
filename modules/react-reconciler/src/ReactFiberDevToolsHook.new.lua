@@ -110,9 +110,7 @@ exports.onScheduleRoot = function(root: FiberRoot, children: ReactNodeList)
       -- ROBLOX deviation: our mocked functions are tables with __call, since they have fields
       and isCallable(injectedHook.onScheduleFiberRoot)
     then
-      local ok, err = pcall(function()
-        injectedHook.onScheduleFiberRoot(rendererID, root, children)
-      end)
+      local ok, err = pcall(injectedHook.onScheduleFiberRoot, rendererID, root, children)
 
       if not ok then
         if _G.__DEV__ and not hasLoggedError then
@@ -161,9 +159,7 @@ exports.onCommitUnmount = function(fiber: Fiber)
       -- ROBLOX deviation: our mocked functions are tables with __call, since they have fields
       and isCallable(injectedHook.onCommitFiberUnmount)
   then
-    local ok, err = pcall(function()
-      injectedHook.onCommitFiberUnmount(rendererID, fiber)
-    end)
+    local ok, err = pcall(injectedHook.onCommitFiberUnmount, rendererID, fiber)
     if not ok then
       if _G.__DEV__ then
         if not hasLoggedError then

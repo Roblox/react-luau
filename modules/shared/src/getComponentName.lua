@@ -104,7 +104,7 @@ local function getComponentName(type): string?
 			local init = lazyComponent._init
 
 			local ok, result = pcall(function()
-				return getComponentName(init(payload))
+				getComponentName(init(payload))
 			end)
 
 			if not ok then

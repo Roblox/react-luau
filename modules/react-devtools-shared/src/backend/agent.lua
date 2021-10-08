@@ -340,10 +340,11 @@ end
 
 function Agent:getIDForNode(node: Object): number | nil
 	for _rendererID, renderer in pairs(self._rendererInterfaces) do
-		local ok, result = pcall(function()
-			local id = (renderer :: RendererInterface).getFiberIDForNative(node, true)
-			return id
-		end)
+		local ok, result = pcall(
+			(renderer :: RendererInterface).getFiberIDForNative,
+			node,
+			true
+		)
 		if ok and result ~= nil then
 			return result
 		end

@@ -125,7 +125,7 @@ if _G.__DEV__ then
 
   local didWarnOnInvalidCallback = {}
 
-  warnOnInvalidCallback = function(callback: any, callerName: string)
+  function warnOnInvalidCallback(callback: any, callerName: string)
     if callback == nil or typeof(callback) == "function" then
       return
     end
@@ -141,7 +141,7 @@ if _G.__DEV__ then
     end
   end
 
-  warnOnUndefinedDerivedState = function(type_, partialState)
+  function warnOnUndefinedDerivedState(type_, partialState)
     -- ROBLOX deviation: `nil` is a valid return for getDerivedStateFromProps, but
     -- `undefined` is not possible for us to return; we could try to detect
     -- returning zero values, but that's likely not possible without tracking it
@@ -198,10 +198,8 @@ local function applyDerivedStateFromProps(
       bit32.band(workInProgress.mode, StrictMode) ~= 0
     then
       disableLogs()
-      local ok, result = pcall(function()
-        -- Invoke the function an extra time to help detect side-effects.
-        getDerivedStateFromProps(nextProps, prevState)
-      end)
+      -- Invoke the function an extra time to help detect side-effects.
+      local ok, result = pcall(getDerivedStateFromProps, nextProps, prevState)
 
       reenableLogs()
 
@@ -361,11 +359,9 @@ function checkShouldComponentUpdate(
         bit32.band(workInProgress.mode, StrictMode) ~= 0
       then
         disableLogs()
-        local ok, result = pcall(function()
-          -- deviation: Call with ":" so that the method receives self
-          -- Invoke the function an extra time to help detect side-effects.
-          instance:shouldComponentUpdate(newProps, newState, nextContext)
-        end)
+        -- deviation: Pass instance so that the method receives self
+        -- Invoke the function an extra time to help detect side-effects.
+        local ok, result = pcall(instance.shouldComponentUpdate, instance, newProps, newState, nextContext)
         -- finally
         reenableLogs()
         if not ok then
@@ -702,7 +698,8 @@ local function constructClassInstance(
     end
   end
 
-  if typeof(contextType) == "table" and contextType ~= nil then
+  -- ROBLOX performance: check for nil first to avoid typeof when possible
+  if contextType ~= nil and typeof(contextType) == "table"  then
     context = readContext(contextType)
   elseif not disableLegacyContext then
     unmaskedContext = getUnmaskedContext(workInProgress, ctor, true)
@@ -720,11 +717,9 @@ local function constructClassInstance(
       bit32.band(workInProgress.mode, StrictMode) ~= 0
     then
       disableLogs()
-      local ok, result = pcall(function()
-        -- deviation: ctor will actually refer to a class component, we use the
-        -- `__ctor` function that it exposes
-        ctor.__ctor(props, context) -- eslint-disable-line no-new
-      end)
+      -- deviation: ctor will actually refer to a class component, we use the
+    -- `__ctor` function that it exposes
+      local ok, result = pcall(ctor.__ctor, props, context) -- eslint-disable-line no-new
       -- finally
       reenableLogs()
 
@@ -947,12 +942,13 @@ local function mountClassInstance(
 
   initializeUpdateQueue(workInProgress)
 
-  -- RObLOX deviation: don't access field on a function
+  -- ROBLOX deviation: don't access field on a function
   local contextType
-  if typeof(ctor) ~= "function" then
+  if typeof(ctor) == "table" then
     contextType = ctor.contextType
   end
-  if typeof(contextType) == "table" and contextType ~= nil then
+  -- ROBLOX deviation: nil check first so we don't call typeof() unnecessarily
+  if contextType ~= nil and typeof(contextType) == "table" then
     instance.context = readContext(contextType)
   elseif disableLegacyContext then
     instance.context = emptyContextObject
@@ -1048,7 +1044,9 @@ function resumeMountClassInstance(
   local oldContext = instance.context
   local contextType = ctor.contextType
   local nextContext = emptyContextObject
-  if typeof(contextType) == 'table' and contextType ~= nil then
+
+  -- ROBLOX performance: check for nil first to avoid typeof when possible
+  if contextType ~= nil and typeof(contextType) == 'table' then
     nextContext = readContext(contextType)
   elseif not disableLegacyContext then
     local nextLegacyUnmaskedContext = getUnmaskedContext(

@@ -2090,9 +2090,7 @@ if _G.__DEV__ then
       checkDepsAreArrayDev(deps)
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnMountInDEV
-      local ok, result = pcall(function()
-        return mountMemo(create, deps)
-      end)
+      local ok, result = pcall(mountMemo, create, deps)
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
         error(result)
@@ -2114,9 +2112,7 @@ if _G.__DEV__ then
       mountHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnMountInDEV
-      local ok, result, setResult = pcall(function()
-        return mountReducer(reducer, initialArg, init)
-      end)
+      local ok, result, setResult = pcall(mountReducer, reducer, initialArg, init)
       -- ROBLOX finally
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
@@ -2143,9 +2139,7 @@ if _G.__DEV__ then
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnMountInDEV
       -- deviation: Lua version of mountState return two items, not list like upstream.
-      local ok, result, setResult = pcall(function()
-        return mountState(initialState)
-      end)
+      local ok, result, setResult = pcall(mountState, initialState)
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
         error(result)
@@ -2267,9 +2261,7 @@ if _G.__DEV__ then
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnMountInDEV
-      local ok, result = pcall(function()
-        return mountMemo(create, deps)
-      end)
+      local ok, result = pcall(mountMemo, create, deps)
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
         error(result)
@@ -2291,9 +2283,7 @@ if _G.__DEV__ then
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnMountInDEV
-      local ok, result, setResult = pcall(function()
-        return mountReducer(reducer, initialArg, init)
-      end)
+      local ok, result, setResult = pcall(mountReducer, reducer, initialArg, init)
       -- ROBLOX finally
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
@@ -2321,9 +2311,7 @@ if _G.__DEV__ then
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnMountInDEV
       -- deviation: Lua version of mountState return two items, not list like upstream
-      local ok, result, setResult = pcall(function()
-        return mountState(initialState)
-      end)
+      local ok, result, setResult = pcall(mountState, initialState)
         ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
         error(result)
@@ -2443,9 +2431,7 @@ if _G.__DEV__ then
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV
-      local ok, result = pcall(function()
-        return updateMemo(create, deps)
-      end)
+      local ok, result = pcall(updateMemo, create, deps)
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
         error(result)
@@ -2467,9 +2453,7 @@ if _G.__DEV__ then
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV
-      local ok, result, setResult = pcall(function()
-        return updateReducer(reducer, initialArg, init)
-      end)
+      local ok, result, setResult = pcall(updateReducer, reducer, initialArg, init)
       -- ROBLOX finally
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
@@ -2496,9 +2480,7 @@ if _G.__DEV__ then
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV
       -- deviation: Lua version of updateState returns two items, not list like upstream
-      local ok, result, setResult = pcall(function()
-        return updateState(initialState)
-      end)
+      local ok, result, setResult = pcall(updateState, initialState)
         ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
         error(result)
@@ -2625,9 +2607,7 @@ if _G.__DEV__ then
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnRerenderInDEV
-      local ok, result = pcall(function()
-        return updateMemo(create, deps)
-      end)
+      local ok, result = pcall(updateMemo, create, deps)
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
         error(result)
@@ -2649,9 +2629,7 @@ if _G.__DEV__ then
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnRerenderInDEV
-      local ok, result, setResult = pcall(function()
-        return rerenderReducer(reducer, initialArg, init)
-      end)
+      local ok, result, setResult = pcall(rerenderReducer, reducer, initialArg, init)
       -- ROBLOX finally
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
@@ -2678,9 +2656,7 @@ if _G.__DEV__ then
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnRerenderInDEV
       -- deviation: Lua version of useState returns two items, not list like upstream
-      local ok, result, setResult = pcall(function()
-        return rerenderState(initialState)
-      end)
+      local ok, result, setResult = pcall(rerenderState, initialState)
         ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
         error(result)
@@ -2794,9 +2770,7 @@ if _G.__DEV__ then
       mountHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnMountInDEV
-      local ok, result = pcall(function()
-        return mountMemo(create, deps)
-      end)
+      local ok, result = pcall(mountMemo, create, deps)
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
         error(result)
@@ -2813,9 +2787,7 @@ if _G.__DEV__ then
       mountHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnMountInDEV
-      local ok, result, setResult = pcall(function()
-        return mountReducer(reducer, initialArg, init)
-      end)
+      local ok, result, setResult = pcall(mountReducer, reducer, initialArg, init)
       -- ROBLOX finally
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
@@ -2844,9 +2816,7 @@ if _G.__DEV__ then
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnMountInDEV
       -- deviation: Lua version of useState returns two items, not list like upstream
-      local ok, result, setResult = pcall(function()
-        return mountState(initialState)
-      end)
+      local ok, result, setResult = pcall(mountState, initialState)
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
         error(result)
@@ -2980,9 +2950,7 @@ if _G.__DEV__ then
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV
-      local ok, result = pcall(function()
-        return updateMemo(create, deps)
-      end)
+      local ok, result = pcall(updateMemo, create, deps)
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
         error(result)
@@ -3005,9 +2973,7 @@ if _G.__DEV__ then
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV
-      local ok, result, setResult = pcall(function()
-        return updateReducer(reducer, initialArg, init)
-      end)
+      local ok, result, setResult = pcall(updateReducer, reducer, initialArg, init)
       -- ROBLOX finally
       ReactCurrentDispatcher.current = prevDispatcher
 
@@ -3037,9 +3003,7 @@ if _G.__DEV__ then
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV
       -- deviation: Lua version of useState returns two items, not list like upstream
-      local ok, result, setResult = pcall(function()
-        return updateState(initialState)
-      end)
+      local ok, result, setResult = pcall(updateState, initialState)
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
         error(result)
@@ -3178,9 +3142,7 @@ if _G.__DEV__ then
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV
-      local ok, result = pcall(function()
-        return updateMemo(create, deps)
-      end)
+      local ok, result = pcall(updateMemo, create, deps)
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
         error(result)
@@ -3203,9 +3165,7 @@ if _G.__DEV__ then
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV
-      local ok, result, setResult = pcall(function()
-        return rerenderReducer(reducer, initialArg, init)
-      end)
+      local ok, result, setResult = pcall(rerenderReducer, reducer, initialArg, init)
       -- ROBLOX finally
       ReactCurrentDispatcher.current = prevDispatcher
       if not ok then
@@ -3234,9 +3194,7 @@ if _G.__DEV__ then
         local prevDispatcher = ReactCurrentDispatcher.current
         ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV
         -- deviation: Lua version of useState returns two items, not list like upstream
-        local ok, result, setResult = pcall(function()
-          return rerenderState(initialState)
-        end)
+        local ok, result, setResult = pcall(rerenderState, initialState)
         ReactCurrentDispatcher.current = prevDispatcher
         if not ok then
           error(result)
@@ -3301,7 +3259,7 @@ end
 --   secondArg: SecondArg,
 --   nextRenderLanes: Lanes
 -- ): any {
-exports.renderWithHooks = function(
+local function renderWithHooks(
   current,
   workInProgress: Fiber,
   Component: (any, any) -> any,
@@ -3442,5 +3400,6 @@ exports.renderWithHooks = function(
 
   return children
 end
+exports.renderWithHooks = renderWithHooks
 
 return exports

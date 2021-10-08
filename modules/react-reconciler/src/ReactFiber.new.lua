@@ -657,7 +657,7 @@ local function createFiberFromElement(
 	return fiber
 end
 
-createFiberFromFragment = function(
+function createFiberFromFragment(
 	elements: ReactFragment,
 	mode: TypeOfMode,
 	lanes: Lanes,
@@ -668,7 +668,7 @@ createFiberFromFragment = function(
 	return fiber
 end
 
-createFiberFromFundamental = function(
+function createFiberFromFundamental(
 	fundamentalComponent: ReactFundamentalComponent<any, any>,
 	pendingProps: any,
 	mode: TypeOfMode,
@@ -682,7 +682,7 @@ createFiberFromFundamental = function(
 	return fiber
 end
 
-createFiberFromScope = function(
+function createFiberFromScope(
 	scope: ReactScope,
 	pendingProps: any,
 	mode: TypeOfMode,
@@ -696,7 +696,7 @@ createFiberFromScope = function(
 	return fiber
 end
 
-createFiberFromProfiler = function(
+function createFiberFromProfiler(
 	pendingProps: any,
 	mode: TypeOfMode,
 	lanes: Lanes,
@@ -724,7 +724,7 @@ createFiberFromProfiler = function(
 	return fiber
 end
 
-createFiberFromSuspense = function(
+function createFiberFromSuspense(
 	pendingProps: any,
 	mode: TypeOfMode,
 	lanes: Lanes,
@@ -742,7 +742,7 @@ createFiberFromSuspense = function(
 	return fiber
 end
 
-createFiberFromSuspenseList = function(
+function createFiberFromSuspenseList(
 	pendingProps: any,
 	mode: TypeOfMode,
 	lanes: Lanes,
@@ -760,7 +760,7 @@ createFiberFromSuspenseList = function(
 	return fiber
 end
 
-createFiberFromOffscreen = function(
+function createFiberFromOffscreen(
 	pendingProps: OffscreenProps,
 	mode: TypeOfMode,
 	lanes: Lanes,
@@ -778,7 +778,7 @@ createFiberFromOffscreen = function(
 	return fiber
 end
 
-createFiberFromLegacyHidden = function(
+function createFiberFromLegacyHidden(
 	pendingProps: OffscreenProps,
 	mode: TypeOfMode,
 	lanes: Lanes,

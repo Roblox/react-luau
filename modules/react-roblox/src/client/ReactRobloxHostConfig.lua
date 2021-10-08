@@ -392,7 +392,7 @@ exports.finalizeInitialChildren = function(
   -- return shouldAutoFocusHostComponent(type_, props)
 end
 
-exports.prepareUpdate = function(
+local function prepareUpdate(
   domElement: Instance,
   type_: string,
   oldProps: Props,
@@ -423,6 +423,7 @@ exports.prepareUpdate = function(
     rootContainerInstance
   )
 end
+exports.prepareUpdate = prepareUpdate
 
 exports.shouldSetTextContent = function(_type: string, _props: Props): boolean
   -- ROBLOX deviation: Ignore TextInstance logic, which isn't applicable to Roblox
