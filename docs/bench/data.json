@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1633733657704,
+  "lastUpdate": 1633738141913,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1441,6 +1441,47 @@
             "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "a7f90fc02f826dd5240e57c4b351486b64404eab",
+          "message": "#nojira another fix that Alan's in-development analyze feature turned up",
+          "timestamp": "2021-10-08T23:23:58Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/228/commits/a7f90fc02f826dd5240e57c4b351486b64404eab"
+        },
+        "date": 1633738139886,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 56.9271,
+            "range": "±25.10%",
+            "unit": "ops/sec",
+            "extra": "600 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.7,
+            "range": "±223.11%",
+            "unit": "ms/op",
+            "extra": "600 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 85.4012,
+            "range": "±20.57%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -2588,6 +2629,40 @@
             "name": "FrameRate#Δt",
             "value": 44.4146,
             "range": "±17.56%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "a7f90fc02f826dd5240e57c4b351486b64404eab",
+          "message": "#nojira another fix that Alan's in-development analyze feature turned up",
+          "timestamp": "2021-10-08T23:23:58Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/228/commits/a7f90fc02f826dd5240e57c4b351486b64404eab"
+        },
+        "date": 1633738140518,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 18.3246,
+            "range": "±12.59%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 55.5537,
+            "range": "±14.60%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
           }
@@ -3743,6 +3818,40 @@
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "a7f90fc02f826dd5240e57c4b351486b64404eab",
+          "message": "#nojira another fix that Alan's in-development analyze feature turned up",
+          "timestamp": "2021-10-08T23:23:58Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/228/commits/a7f90fc02f826dd5240e57c4b351486b64404eab"
+        },
+        "date": 1633738141136,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 13.1604,
+            "range": "±12.80%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 77.6299,
+            "range": "±17.09%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -4890,6 +4999,40 @@
             "name": "FrameRate#Δt",
             "value": 9.1028,
             "range": "±9.49%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "a7f90fc02f826dd5240e57c4b351486b64404eab",
+          "message": "#nojira another fix that Alan's in-development analyze feature turned up",
+          "timestamp": "2021-10-08T23:23:58Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/228/commits/a7f90fc02f826dd5240e57c4b351486b64404eab"
+        },
+        "date": 1633738141909,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 97.9342,
+            "range": "±11.55%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 10.3541,
+            "range": "±12.11%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }

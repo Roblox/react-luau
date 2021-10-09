@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/8e5adfbd7e605bda9c5e96c10e015b3dc0df688e/packages/react-dom/src/client/ReactDOMComponentTree.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -91,15 +92,16 @@ end
 -- pass the Container node as the targetNode, you will not actually get the
 -- HostRoot back. To get to the HostRoot, you need to pass a child of it.
 -- The same thing applies to Suspense boundaries.
-exports.getClosestInstanceFromNode = function(targetNode): Fiber?
-	local targetInst = targetNode[internalInstanceKey]
+-- ROBLOX TODO: This function is untested and may not work!
+exports.getClosestInstanceFromNode = function(targetNode: Instance): Fiber?
+	local targetInst = (targetNode :: any)[internalInstanceKey]
 	if targetInst then
 		-- Don't return HostRoot or SuspenseComponent here.
 		return targetInst
 	end
 	-- If the direct event target isn't a React owned DOM node, we need to look
 	-- to see if one of its parents is a React owned DOM node.
-	local parentNode = targetNode.parentNode
+	local parentNode = targetNode.Parent
 	while parentNode do
 		-- We'll check if this is a container root that could include
 		-- React nodes in the future. We need to check this first because
@@ -109,8 +111,8 @@ exports.getClosestInstanceFromNode = function(targetNode): Fiber?
 		-- itself because the fibers are conceptually between the container
 		-- node and the first child. It isn't surrounding the container node.
 		-- If it's not a container, we check if it's an instance.
-		targetInst = parentNode[internalContainerInstanceKey]
-			or parentNode[internalInstanceKey]
+		targetInst = (parentNode :: any)[internalContainerInstanceKey]
+			or (parentNode :: any)[internalInstanceKey]
 		if targetInst then
 			-- Since this wasn't the direct target of the event, we might have
 			-- stepped past dehydrated DOM nodes to get here. However they could
@@ -166,7 +168,7 @@ exports.getClosestInstanceFromNode = function(targetNode): Fiber?
 			return targetInst
 		end
 		targetNode = parentNode
-		parentNode = targetNode.parentNode
+		parentNode = targetNode.Parent
 	end
 	return nil
 end

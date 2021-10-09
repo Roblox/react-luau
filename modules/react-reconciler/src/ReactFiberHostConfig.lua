@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/9ac42dd074c42b66ecc0334b75200b1d2989f892/packages/react-reconciler/src/ReactFiberHostConfig.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -10,43 +11,29 @@
 
 --[[ eslint-disable react-internal/invariant-args ]]
 
-if _G.__NO_LOADMODULE__ then
-	-- When __NO_LOADMODULE__ is enabled, this module's contents will not be
-	-- overwritten; we need to return before we hit the invariant below
-	return {}
-end
-
 -- ROBLOX FIXME: Cannot carry types over via the module overriding that's in use
 -- here; this is a particularly tricky case of cross-dependency type definitions
+-- Use a common set of typedefs across ReactTestHostConfig and ReactRobloxHostTypes
+type Object = { [string]: any }
 
--- export type Instance = ReactRobloxHostTypes.HostInstance;
--- -- ROBLOX FIXME: Figure out what we're doing about text instances
--- export type TextInstance = any;
--- export type Container = ReactRobloxHostTypes.Container;
--- export type HostContext = ReactRobloxHostTypes.HostContext;
--- export type HydratableInstance = ReactRobloxHostTypes.HydratableInstance;
--- export type SuspenseInstance = ReactRobloxHostTypes.SuspenseInstance;
--- export type PublicInstance = ReactRobloxHostTypes.PublicInstance;
--- export type Type = ReactRobloxHostTypes.Type;
--- export type Props = ReactRobloxHostTypes.Props;
--- -- ROBLOX FIXME: Can't create type equal to void
--- export type ChildSet = any;
--- -- ROBLOX FIXME: Can't create equivalent type: $ReadOnly<{or}>
--- export type RendererInspectionConfig = any;
-export type Instance = any;
-export type TextInstance = any;
-export type Container = any;
-export type HostContext = any;
-export type HydratableInstance = any;
-export type SuspenseInstance = any;
-export type PublicInstance = any;
-export type Type = any;
-export type Props = any;
-export type ChildSet = any;
-export type RendererInspectionConfig = any;
+export type Instance = Object
+export type HostInstance = Instance
+export type TextInstance = Instance
+export type Container = Object
+export type HostContext = Object
+export type HydratableInstance = Instance | SuspenseInstance
+export type SuspenseInstance = Object
+export type PublicInstance = HostInstance
 
-local module: { [string]: any } = {}
-return module
+export type Type = string
+export type Props = Object
+export type ChildSet = {} -- void, unused
+export type RendererInspectionConfig = Object
+
+-- if _G.__NO_LOADMODULE__ then
+local exports: { [string]: any } = {}
+return exports
+-- end
 
 -- -- We expect that our Rollup, Jest, and Flow configurations
 -- -- always shim this module with the corresponding host config
@@ -58,20 +45,4 @@ return module
 
 -- -- deviation: FIXME (roblox): is there a way to configure luau to account for this module
 -- -- being shimmed?
--- export type Instance = any;
--- export type TextInstance = any;
--- export type HydratableInstance = any;
--- export type Container = any;
--- export type PublicInstance = any;
--- export type RendererInspectionConfig = any;
--- export type SuspenseInstance = any;
--- export type HostContext = any;
--- export type Type = any;
--- export type Props = any;
--- export type ChildSet = any;
-
--- -- deviation: roblox-cli doesn't have any way of understanding that this file is
--- -- expected to be mocked/replaced, and we don't yet have "build" scripts that
--- -- simulate react's handling of this stub
--- local exports: {[any]: any} = {}
--- return exports
+-- error('This module must be shimmed by a specific renderer.')
