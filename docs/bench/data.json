@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1633738826071,
+  "lastUpdate": 1633747702668,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1523,6 +1523,47 @@
             "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "bbbf7f1d1dcdaa33aebf99092913f23ee5829655",
+          "message": "robloxdev-cli convert can fail in strict mode",
+          "timestamp": "2021-10-09T01:49:01Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/229/commits/bbbf7f1d1dcdaa33aebf99092913f23ee5829655"
+        },
+        "date": 1633747700921,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.4832,
+            "range": "±31.49%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 23.0788,
+            "range": "±220.69%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 87.3145,
+            "range": "±21.40%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -2738,6 +2779,40 @@
             "name": "FrameRate#Δt",
             "value": 55.477,
             "range": "±20.00%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "bbbf7f1d1dcdaa33aebf99092913f23ee5829655",
+          "message": "robloxdev-cli convert can fail in strict mode",
+          "timestamp": "2021-10-09T01:49:01Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/229/commits/bbbf7f1d1dcdaa33aebf99092913f23ee5829655"
+        },
+        "date": 1633747701500,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 17.5626,
+            "range": "±11.59%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 57.8745,
+            "range": "±14.70%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
           }
@@ -3961,6 +4036,40 @@
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "bbbf7f1d1dcdaa33aebf99092913f23ee5829655",
+          "message": "robloxdev-cli convert can fail in strict mode",
+          "timestamp": "2021-10-09T01:49:01Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/229/commits/bbbf7f1d1dcdaa33aebf99092913f23ee5829655"
+        },
+        "date": 1633747702072,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 12.9613,
+            "range": "±12.44%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 78.5425,
+            "range": "±14.81%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -5176,6 +5285,40 @@
             "name": "FrameRate#Δt",
             "value": 11.9904,
             "range": "±13.20%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "bbbf7f1d1dcdaa33aebf99092913f23ee5829655",
+          "message": "robloxdev-cli convert can fail in strict mode",
+          "timestamp": "2021-10-09T01:49:01Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/229/commits/bbbf7f1d1dcdaa33aebf99092913f23ee5829655"
+        },
+        "date": 1633747702664,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 92.4659,
+            "range": "±13.35%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 11.0154,
+            "range": "±13.83%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
