@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1633738141913,
+  "lastUpdate": 1633738826071,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1482,6 +1482,47 @@
             "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "fa677ba23ad2df4754d2721ae1fa2d2217973a8f",
+          "message": "#nojira - Bump version for rc.5",
+          "timestamp": "2021-10-09T00:15:48Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/226/commits/fa677ba23ad2df4754d2721ae1fa2d2217973a8f"
+        },
+        "date": 1633738824210,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 58.0882,
+            "range": "±28.15%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.459,
+            "range": "±225.15%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 79.9764,
+            "range": "±17.91%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -2663,6 +2704,40 @@
             "name": "FrameRate#Δt",
             "value": 55.5537,
             "range": "±14.60%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "fa677ba23ad2df4754d2721ae1fa2d2217973a8f",
+          "message": "#nojira - Bump version for rc.5",
+          "timestamp": "2021-10-09T00:15:48Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/226/commits/fa677ba23ad2df4754d2721ae1fa2d2217973a8f"
+        },
+        "date": 1633738824824,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 18.4752,
+            "range": "±12.99%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 55.477,
+            "range": "±20.00%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
           }
@@ -3852,6 +3927,40 @@
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "fa677ba23ad2df4754d2721ae1fa2d2217973a8f",
+          "message": "#nojira - Bump version for rc.5",
+          "timestamp": "2021-10-09T00:15:48Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/226/commits/fa677ba23ad2df4754d2721ae1fa2d2217973a8f"
+        },
+        "date": 1633738825439,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 13.635,
+            "range": "±12.78%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 74.7593,
+            "range": "±15.32%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -5033,6 +5142,40 @@
             "name": "FrameRate#Δt",
             "value": 10.3541,
             "range": "±12.11%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "fa677ba23ad2df4754d2721ae1fa2d2217973a8f",
+          "message": "#nojira - Bump version for rc.5",
+          "timestamp": "2021-10-09T00:15:48Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/226/commits/fa677ba23ad2df4754d2721ae1fa2d2217973a8f"
+        },
+        "date": 1633738826068,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 84.7773,
+            "range": "±12.48%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 11.9904,
+            "range": "±13.20%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
