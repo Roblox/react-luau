@@ -252,7 +252,7 @@ local exports = {
 
   -- ROBLOX deviation: Export `act` function for testing purposes; in
   -- production (and with the global off), it will give an instructive error
-  act = function()
+  act = function(_: () -> ())
     error(
       "ReactRoblox.act is only available in testing environments, not "
       .. "production. Enable the `__ROACT_17_INLINE_ACT__` global in your test "

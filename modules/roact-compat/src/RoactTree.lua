@@ -32,18 +32,26 @@ local function mount(element: any, parent: any, key: string?)
 	end
 
 	-- Since we use portals to actually parent to the provided parent argument,
-	-- the container instance that we provide to createLegacyRoot is just a
+	-- the container instance that we provide to createRoot is just a
 	-- dummy instance.
-	local root = ReactRoblox.createLegacyRoot(Instance.new("Folder"))
+	local root = ReactRoblox.createRoot(Instance.new("Folder"))
 	if parent == nil then
 		parent = Instance.new("Folder")
 		parent.Name = "Target"
 	end
 	if key == nil then
-		key = "ReactLegacyRoot"
+		key = "ReactRoot"
 	end
 
-	root:render(ReactRoblox.createPortal({ [key] = element }, parent))
+	-- ROBLOX TODO: remove INLINE_ACT flag when all tests are updated to use
+	-- `act` explicitly
+	if _G.__ROACT_17_INLINE_ACT__ then
+		ReactRoblox.act(function()
+			root:render(ReactRoblox.createPortal({ [key] = element }, parent))
+		end)
+	else
+		root:render(ReactRoblox.createPortal({ [key] = element }, parent))
+	end
 
 	return {
 		root = root,
@@ -61,22 +69,39 @@ type RoactHandle = {
 }
 
 local function update(roactHandle: RoactHandle, element)
-	if _G.__DEV__ then
+	if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
 		warnOnce("update", "Please use the createRoot API in ReactRoblox")
 	end
 
 	local key = roactHandle.key
 	local parent = roactHandle.parent
-	roactHandle.root:render(ReactRoblox.createPortal({ [key] = element }, parent))
+	-- ROBLOX TODO: remove INLINE_ACT flag when all tests are updated to use
+	-- `act` explicitly
+	if _G.__ROACT_17_INLINE_ACT__ then
+		ReactRoblox.act(function()
+			roactHandle.root:render(ReactRoblox.createPortal({ [key] = element }, parent))
+		end)
+	else
+		roactHandle.root:render(ReactRoblox.createPortal({ [key] = element }, parent))
+	end
 
 	return roactHandle
 end
 
 local function unmount(roactHandle: RoactHandle)
-	if _G.__DEV__ then
+	if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
 		warnOnce("unmount", "Please use the createRoot API in ReactRoblox")
 	end
-	roactHandle.root:unmount()
+
+	-- ROBLOX TODO: remove INLINE_ACT flag when all tests are updated to use
+	-- `act` explicitly
+	if _G.__ROACT_17_INLINE_ACT__ then
+		ReactRoblox.act(function()
+			roactHandle.root:unmount()
+		end)
+	else
+		roactHandle.root:unmount()
+	end
 end
 
 return {

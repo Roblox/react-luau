@@ -6,10 +6,17 @@ return function()
 	local Roact
 	local RoactCompat
 
+	local previousGlobalValue
 	beforeEach(function()
+		previousGlobalValue = _G.__ROACT_17_INLINE_ACT__
+		_G.__ROACT_17_INLINE_ACT__ = true
 		RobloxJest.resetModules()
 		Roact = require(Packages.Dev.Roact)
 		RoactCompat = require(script.Parent.Parent)
+	end)
+
+	afterEach(function()
+		_G.__ROACT_17_INLINE_ACT__ = previousGlobalValue
 	end)
 
 	it("should create an orphaned instance to mount under if none is provided", function()
@@ -20,7 +27,7 @@ return function()
 		jestExpect(ref.current.Parent).never.toBeNil()
 		jestExpect(ref.current.Parent.ClassName).toBe("Folder")
 
-		jestExpect(ref.current.Name).toBe("ReactLegacyRoot")
+		jestExpect(ref.current.Name).toBe("ReactRoot")
 
 		RoactCompat.unmount(tree)
 	end)

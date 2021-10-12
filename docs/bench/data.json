@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1633747702668,
+  "lastUpdate": 1634056130210,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1564,6 +1564,47 @@
             "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "837d50d8d7f22fdcb28ec02b6e05919d2c50f057",
+          "message": "LUAFDN-623 - Use `act` in compat layer when the `__ROACT_17_INLINE_ACT__` global is enabled",
+          "timestamp": "2021-10-09T02:54:03Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/232/commits/837d50d8d7f22fdcb28ec02b6e05919d2c50f057"
+        },
+        "date": 1634056127998,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.5657,
+            "range": "±28.59%",
+            "unit": "ops/sec",
+            "extra": "601 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.8167,
+            "range": "±222.80%",
+            "unit": "ms/op",
+            "extra": "601 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 78.7666,
+            "range": "±16.77%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -2813,6 +2854,40 @@
             "name": "FrameRate#Δt",
             "value": 57.8745,
             "range": "±14.70%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "837d50d8d7f22fdcb28ec02b6e05919d2c50f057",
+          "message": "LUAFDN-623 - Use `act` in compat layer when the `__ROACT_17_INLINE_ACT__` global is enabled",
+          "timestamp": "2021-10-09T02:54:03Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/232/commits/837d50d8d7f22fdcb28ec02b6e05919d2c50f057"
+        },
+        "date": 1634056128797,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 19.8421,
+            "range": "±10.95%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 51.1523,
+            "range": "±13.91%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
           }
@@ -4070,6 +4145,40 @@
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "837d50d8d7f22fdcb28ec02b6e05919d2c50f057",
+          "message": "LUAFDN-623 - Use `act` in compat layer when the `__ROACT_17_INLINE_ACT__` global is enabled",
+          "timestamp": "2021-10-09T02:54:03Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/232/commits/837d50d8d7f22fdcb28ec02b6e05919d2c50f057"
+        },
+        "date": 1634056129479,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 14.4607,
+            "range": "±12.62%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 70.5386,
+            "range": "±15.96%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -5319,6 +5428,40 @@
             "name": "FrameRate#Δt",
             "value": 11.0154,
             "range": "±13.83%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "837d50d8d7f22fdcb28ec02b6e05919d2c50f057",
+          "message": "LUAFDN-623 - Use `act` in compat layer when the `__ROACT_17_INLINE_ACT__` global is enabled",
+          "timestamp": "2021-10-09T02:54:03Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/232/commits/837d50d8d7f22fdcb28ec02b6e05919d2c50f057"
+        },
+        "date": 1634056130205,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 91.1503,
+            "range": "±11.16%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 11.1085,
+            "range": "±11.19%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }

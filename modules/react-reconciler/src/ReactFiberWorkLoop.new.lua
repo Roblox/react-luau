@@ -4041,7 +4041,9 @@ local function flushWorkAndMicroTasks(onDone: (any?) -> ())
 end
 
 exports.act = function(callback: () -> Thenable<any>): Thenable<any?>
-  if not _G.__DEV__ then
+  -- ROBLOX TODO: remove INLINE_ACT flag when all tests are updated to use `act`
+  -- explicitly
+  if not (_G.__DEV__ or _G.__ROACT_17_INLINE_ACT__) then
     if didWarnAboutUsingActInProd == false then
       didWarnAboutUsingActInProd = true
       -- eslint-disable-next-line react-internal/no-production-logging
