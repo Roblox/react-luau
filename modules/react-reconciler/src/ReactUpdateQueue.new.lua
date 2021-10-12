@@ -159,6 +159,15 @@ if _G.__DEV__ then
 	end
 end
 
+-- ROBLOX performance: use a recycle pool for update tables
+local poolInitSize = 210 -- TODO: Tune to LuaApps
+local poolAdditionalSize = 0
+local updatePool = table.create(poolInitSize)
+local updatePoolIndex = poolInitSize
+for i = 1, poolInitSize do
+	updatePool[i] = { }
+end
+
 -- deviation: FIXME generics in function signatures
 -- 'initializeUpdateQueue<State>(fiber: Fiber)'
 local function initializeUpdateQueue(fiber: Fiber)
@@ -198,6 +207,28 @@ end
 exports.cloneUpdateQueue = cloneUpdateQueue
 
 local function createUpdate(eventTime: number, lane: Lane): Update<any>
+	-- ROBLOX performance: Use pooled update object when available
+	if updatePoolIndex>0 then
+		local update = updatePool[updatePoolIndex]
+		updatePool[updatePoolIndex] = nil
+		updatePoolIndex -= 1
+
+		update.eventTime = eventTime
+		update.lane = lane
+		update.tag = UpdateState
+
+		return update :: Update<any>
+	end
+
+	if _G.__DEV__ then
+		poolAdditionalSize += 1
+		console.warn(
+			"ReactUpdateQueue createUpdate's object pool exhausted, allocating fresh table."
+				.. "\nConsider setting poolInitSize to " .. poolInitSize + poolAdditionalSize
+				.. " to avoid this occuring in the future."
+		)
+	end
+
 	local update = {
 		eventTime = eventTime,
 		lane = lane,
@@ -208,7 +239,7 @@ local function createUpdate(eventTime: number, lane: Lane): Update<any>
 
 		next = nil,
 	}
-	return update
+	return update :: Update<any>
 end
 exports.createUpdate = createUpdate
 
@@ -651,7 +682,7 @@ local function processUpdateQueue(
 end
 exports.processUpdateQueue = processUpdateQueue
 
-function callCallback(callback, context)
+local function callCallback(callback, context)
 	invariant(
 		typeof(callback) == 'function',
 		'Invalid argument passed as callback. Expected a function. Instead ' ..
@@ -680,13 +711,16 @@ local function commitUpdateQueue(
 	local effects = finishedQueue.effects
 	finishedQueue.effects = nil
 	if effects ~= nil then
-		for i = 1, #effects do
-			local effect = effects[i]
+		for _, effect in ipairs(effects) do
 			local callback = effect.callback
 			if callback ~= nil then
-				effect.callback = nil
 				callCallback(callback, instance)
 			end
+
+			-- ROBLOX performance: return this object to the pool
+			table.clear(effect)
+			table.insert(updatePool, effect)
+			updatePoolIndex += 1
 		end
 	end
 end

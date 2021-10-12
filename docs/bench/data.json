@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1634056130210,
+  "lastUpdate": 1634078782008,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1605,6 +1605,47 @@
             "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "733f87608ee9d26fe5d0e678a537b7840128a7a5",
+          "message": "LUAFDN-311: Use recycle pool for queue update objects",
+          "timestamp": "2021-10-12T16:50:10Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/231/commits/733f87608ee9d26fe5d0e678a537b7840128a7a5"
+        },
+        "date": 1634078780090,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 60.7028,
+            "range": "±21.75%",
+            "unit": "ops/sec",
+            "extra": "602 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 21.0232,
+            "range": "±237.38%",
+            "unit": "ms/op",
+            "extra": "602 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 63.6544,
+            "range": "±16.25%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -2888,6 +2929,40 @@
             "name": "FrameRate#Δt",
             "value": 51.1523,
             "range": "±13.91%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "733f87608ee9d26fe5d0e678a537b7840128a7a5",
+          "message": "LUAFDN-311: Use recycle pool for queue update objects",
+          "timestamp": "2021-10-12T16:50:10Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/231/commits/733f87608ee9d26fe5d0e678a537b7840128a7a5"
+        },
+        "date": 1634078780701,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 24.3762,
+            "range": "±12.65%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 41.848,
+            "range": "±16.50%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
           }
@@ -4179,6 +4254,40 @@
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "733f87608ee9d26fe5d0e678a537b7840128a7a5",
+          "message": "LUAFDN-311: Use recycle pool for queue update objects",
+          "timestamp": "2021-10-12T16:50:10Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/231/commits/733f87608ee9d26fe5d0e678a537b7840128a7a5"
+        },
+        "date": 1634078781354,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 17.8031,
+            "range": "±14.49%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 57.6019,
+            "range": "±17.84%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -5462,6 +5571,40 @@
             "name": "FrameRate#Δt",
             "value": 11.1085,
             "range": "±11.19%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "733f87608ee9d26fe5d0e678a537b7840128a7a5",
+          "message": "LUAFDN-311: Use recycle pool for queue update objects",
+          "timestamp": "2021-10-12T16:50:10Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/231/commits/733f87608ee9d26fe5d0e678a537b7840128a7a5"
+        },
+        "date": 1634078782006,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 107.9921,
+            "range": "±16.20%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 9.535,
+            "range": "±18.35%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
