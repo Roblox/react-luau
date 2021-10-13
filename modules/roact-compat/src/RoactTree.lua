@@ -34,13 +34,22 @@ local function mount(element: any, parent: any, key: string?)
 	-- Since we use portals to actually parent to the provided parent argument,
 	-- the container instance that we provide to createRoot is just a
 	-- dummy instance.
-	local root = ReactRoblox.createRoot(Instance.new("Folder"))
+	local root
+	if _G.__ROACT_17_COMPAT_LEGACY_ROOT__ then
+		root = ReactRoblox.createLegacyRoot(Instance.new("Folder"))
+	else
+		root = ReactRoblox.createRoot(Instance.new("Folder"))
+	end
 	if parent == nil then
 		parent = Instance.new("Folder")
 		parent.Name = "Target"
 	end
 	if key == nil then
-		key = "ReactRoot"
+		if _G.__ROACT_17_COMPAT_LEGACY_ROOT__ then
+			key = "ReactLegacyRoot"
+		else
+			key = "ReactRoot"
+		end
 	end
 
 	-- ROBLOX TODO: remove INLINE_ACT flag when all tests are updated to use

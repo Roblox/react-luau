@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1634078782008,
+  "lastUpdate": 1634083022738,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1646,6 +1646,47 @@
             "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "30a019de74755f03651f9d84ac961df1f7ce1d71",
+          "message": "#nojira - Add global for legacy root",
+          "timestamp": "2021-10-12T22:53:00Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/233/commits/30a019de74755f03651f9d84ac961df1f7ce1d71"
+        },
+        "date": 1634083020761,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 58.6708,
+            "range": "±28.32%",
+            "unit": "ops/sec",
+            "extra": "600 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.0282,
+            "range": "±227.77%",
+            "unit": "ms/op",
+            "extra": "600 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 74.7729,
+            "range": "±15.66%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -2963,6 +3004,40 @@
             "name": "FrameRate#Δt",
             "value": 41.848,
             "range": "±16.50%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "30a019de74755f03651f9d84ac961df1f7ce1d71",
+          "message": "#nojira - Add global for legacy root",
+          "timestamp": "2021-10-12T22:53:00Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/233/commits/30a019de74755f03651f9d84ac961df1f7ce1d71"
+        },
+        "date": 1634083021404,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 19.3447,
+            "range": "±13.20%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 53.025,
+            "range": "±19.84%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
           }
@@ -4288,6 +4363,40 @@
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "30a019de74755f03651f9d84ac961df1f7ce1d71",
+          "message": "#nojira - Add global for legacy root",
+          "timestamp": "2021-10-12T22:53:00Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/233/commits/30a019de74755f03651f9d84ac961df1f7ce1d71"
+        },
+        "date": 1634083022029,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 14.8933,
+            "range": "±11.99%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 68.2192,
+            "range": "±13.50%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -5605,6 +5714,40 @@
             "name": "FrameRate#Δt",
             "value": 9.535,
             "range": "±18.35%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "30a019de74755f03651f9d84ac961df1f7ce1d71",
+          "message": "#nojira - Add global for legacy root",
+          "timestamp": "2021-10-12T22:53:00Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/233/commits/30a019de74755f03651f9d84ac961df1f7ce1d71"
+        },
+        "date": 1634083022735,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 91.8054,
+            "range": "±11.83%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 11.0592,
+            "range": "±12.94%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
