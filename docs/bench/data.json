@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1634161547238,
+  "lastUpdate": 1634161825811,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1851,6 +1851,47 @@
             "extra": "200 samples\nroblox-cli version: 0.499.0.4990382"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "cc4a52d1082b6b9dba96db3ca6cd8a9d98640536",
+          "message": "#nojira Update rotriever.toml for rc.6",
+          "timestamp": "2021-10-13T21:46:59Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/235/commits/cc4a52d1082b6b9dba96db3ca6cd8a9d98640536"
+        },
+        "date": 1634161824007,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 58.8127,
+            "range": "±22.95%",
+            "unit": "ops/sec",
+            "extra": "600 samples\nroblox-cli version: 0.499.0.4990382"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 21.5951,
+            "range": "±230.03%",
+            "unit": "ms/op",
+            "extra": "600 samples\nroblox-cli version: 0.499.0.4990382"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 63.2549,
+            "range": "±15.35%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.499.0.4990382"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -3338,6 +3379,40 @@
             "name": "FrameRate#Δt",
             "value": 50.8742,
             "range": "±18.22%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.499.0.4990382"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "cc4a52d1082b6b9dba96db3ca6cd8a9d98640536",
+          "message": "#nojira Update rotriever.toml for rc.6",
+          "timestamp": "2021-10-13T21:46:59Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/235/commits/cc4a52d1082b6b9dba96db3ca6cd8a9d98640536"
+        },
+        "date": 1634161824605,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 23.6701,
+            "range": "±11.97%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.499.0.4990382"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 43.1308,
+            "range": "±18.23%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.499.0.4990382"
           }
@@ -4833,6 +4908,40 @@
             "extra": "50 samples\nroblox-cli version: 0.499.0.4990382"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "cc4a52d1082b6b9dba96db3ca6cd8a9d98640536",
+          "message": "#nojira Update rotriever.toml for rc.6",
+          "timestamp": "2021-10-13T21:46:59Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/235/commits/cc4a52d1082b6b9dba96db3ca6cd8a9d98640536"
+        },
+        "date": 1634161825179,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 17.6136,
+            "range": "±12.64%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.499.0.4990382"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 57.9539,
+            "range": "±16.65%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.499.0.4990382"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -6320,6 +6429,40 @@
             "name": "FrameRate#Δt",
             "value": 11.3545,
             "range": "±19.46%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.499.0.4990382"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "cc4a52d1082b6b9dba96db3ca6cd8a9d98640536",
+          "message": "#nojira Update rotriever.toml for rc.6",
+          "timestamp": "2021-10-13T21:46:59Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/235/commits/cc4a52d1082b6b9dba96db3ca6cd8a9d98640536"
+        },
+        "date": 1634161825808,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 111.2714,
+            "range": "±12.91%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.499.0.4990382"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 9.1306,
+            "range": "±12.29%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.499.0.4990382"
           }
