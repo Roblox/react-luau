@@ -3124,7 +3124,7 @@ function updateContextConsumer(
   -- a property called "_context", which also gives us the ability to check
   -- in DEV mode if this property exists or not and warn if it does not.
   if  _G.__DEV__ then
-    if context._context == nil then
+    if (context :: any)._context == nil then
       -- This may be because it's a Context (rather than a Consumer).
       -- Or it may be because it's older React where they're the same thing.
       -- We only want to warn if we're sure it's a new React.
@@ -3138,7 +3138,7 @@ function updateContextConsumer(
         end
       end
     else
-      context = context._context
+      context = (context :: any)._context
     end
   end
   local newProps = workInProgress.pendingProps

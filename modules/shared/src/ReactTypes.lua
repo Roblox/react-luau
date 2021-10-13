@@ -1,3 +1,4 @@
+--!strict
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -48,44 +49,49 @@ export type ReactNodeList = ReactEmpty | React_Node
 
 -- export type ReactText = string | number;
 
--- export type ReactProvider<T> = {
---   $$typeof: Symbol | number,
---   type: ReactProviderType<T>,
---   key: null | string,
---   ref: null,
---   props: {
--- 	value: T,
--- 	children?: ReactNodeList,
--- 	...
---   },
---   ...
--- };
-
-export type ReactProviderType<T> = {
+export type ReactProvider<T> = {
+	-- ROBLOX TODO: remove [string] once we can express ["$$typeof"] as a type key
 	-- $$typeof: Symbol | number,
-	-- _context: ReactContext<T>,
-	_context: any, --
-	-- [any]: any,
+	[string]: number,
+	type: ReactProviderType<T>,
+	key: nil | string,
+	ref: nil,
+	props: {
+		value: T,
+		children: ReactNodeList?,
+		-- ...
+	},
 	-- ...
 }
 
--- export type ReactConsumer<T> = {
---   $$typeof: Symbol | number,
---   type: ReactContext<T>,
---   key: null | string,
---   ref: null,
---   props: {
--- 	children: (value: T) => ReactNodeList,
--- 	unstable_observedBits?: number,
--- 	...
---   },
---   ...
--- };
+export type ReactProviderType<T> = {
+	-- ROBLOX TODO: remove [string] once we can express ["$$typeof"] as a type key
+	-- $$typeof: Symbol | number,
+	[string]: number,
+	_context: ReactContext<T>,
+	-- ...
+}
+
+export type ReactConsumer<T> = {
+	-- ROBLOX TODO: remove [string] once we can express ["$$typeof"] as a type key
+	-- $$typeof: Symbol | number,
+	[string]: number,
+	type: ReactContext<T>,
+	key: nil | string,
+	ref: nil,
+	props: {
+		children: (value: T) -> ReactNodeList,
+		unstable_observedBits: number?,
+		-- ...
+	},
+  -- ...
+}
 
 export type ReactContext<T> = {
+	-- ROBLOX TODO: remove [string] once we can express ["$$typeof"] as a type key
 	-- $$typeof: Symbol | number,
-	-- Consumer: ReactContext<T>,
-	Consumer: any,
+	[string]: number,
+	Consumer: ReactContext<T>,
 	Provider: ReactProviderType<T>,
 	_calculateChangedBits: ((T, T) -> number)?,
 	_currentValue: T,
@@ -98,18 +104,18 @@ export type ReactContext<T> = {
 	-- to improve DEV tooling display names
 	displayName: string?,
 	-- ...
-	[any]: any,
 }
 
 export type ReactPortal = {
+	-- ROBLOX TODO: remove [string] once we can express ["$$typeof"] as a type key
 	-- $$typeof: Symbol | number,
+	[string]: number,
 	key: string?,
 	containerInfo: any,
 	children: ReactNodeList,
 	-- TODO: figure out the API for cross-renderer implementation.
 	implementation: any,
 	-- ...
-	[any]: any,
 }
 
 export type RefObject = { current: any }
@@ -145,19 +151,18 @@ export type ReactFundamentalImpl<C, H> = {
 	onUnmount: nil | (C, any, Object, Object) -> (),
 	onHydrate: nil | (C, Object, Object) -> boolean,
 	onFocus: nil | (C, Object, Object) -> boolean,
-	-- ...
-	[any]: any,
 }
-
 export type ReactFundamentalComponent<C, H> = {
+	-- ROBLOX TODO: remove [string] once we can express ["$$typeof"] as a type key
 	-- $$typeof: Symbol | number,
-	[string]: any, -- FIXME (roblox): types
+	[string]: number,
 	impl: ReactFundamentalImpl<C, H>,
 }
 
 export type ReactScope = {
+	-- ROBLOX TODO: remove [string] once we can express ["$$typeof"] as a type key
 	-- $$typeof: Symbol | number,
-	[string]: any, -- FIXME (roblox): types
+	[string]: number
 }
 
 export type ReactScopeQuery = (
@@ -242,12 +247,21 @@ export type Wakeable = {
 --   ): void | Thenable<U>;
 -- }
 type _U = any?
+-- ROBLOX FIXME: workaround for Luau recursive type used with different parameters. delete this copy once that issue is resolved.
+export type _Thenable<R> = {
+	andThen: (
+		self: _Thenable<R>,
+		onFulfill: (R) -> () | any | _U,
+		onReject: (error: any) -> () | any | _U
+	) -> () | any,
+}
+
 export type Thenable<R> = {
 	andThen: (
 		self: Thenable<R>,
-		onFulfill: (R) -> () | Thenable<_U> | _U,
-		onReject: (error: any) -> () | Thenable<_U> | _U
-	) -> () | Thenable<_U>,
+		onFulfill: (R) -> () | _Thenable<_U> | _U,
+		onReject: (error: any) -> () | _Thenable<_U> | _U
+	) -> () | _Thenable<_U>,
 }
 
 return exports

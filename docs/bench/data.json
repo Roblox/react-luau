@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1634083022738,
+  "lastUpdate": 1634092706786,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1687,6 +1687,47 @@
             "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "149598c92cfe72abc16c1b101903b1f65f95882b",
+          "message": "#nojira Work around new Luau recursive type error",
+          "timestamp": "2021-10-13T00:04:10Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/234/commits/149598c92cfe72abc16c1b101903b1f65f95882b"
+        },
+        "date": 1634092703381,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.6676,
+            "range": "±23.49%",
+            "unit": "ops/sec",
+            "extra": "600 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 22.3496,
+            "range": "±226.78%",
+            "unit": "ms/op",
+            "extra": "600 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 84.2389,
+            "range": "±21.01%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -3038,6 +3079,40 @@
             "name": "FrameRate#Δt",
             "value": 53.025,
             "range": "±19.84%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "149598c92cfe72abc16c1b101903b1f65f95882b",
+          "message": "#nojira Work around new Luau recursive type error",
+          "timestamp": "2021-10-13T00:04:10Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/234/commits/149598c92cfe72abc16c1b101903b1f65f95882b"
+        },
+        "date": 1634092704038,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 18.953,
+            "range": "±14.16%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 54.2651,
+            "range": "±21.25%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
           }
@@ -4397,6 +4472,40 @@
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "149598c92cfe72abc16c1b101903b1f65f95882b",
+          "message": "#nojira Work around new Luau recursive type error",
+          "timestamp": "2021-10-13T00:04:10Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/234/commits/149598c92cfe72abc16c1b101903b1f65f95882b"
+        },
+        "date": 1634092706115,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 13.6805,
+            "range": "±14.69%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 75.0156,
+            "range": "±18.32%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -5748,6 +5857,40 @@
             "name": "FrameRate#Δt",
             "value": 11.0592,
             "range": "±12.94%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "149598c92cfe72abc16c1b101903b1f65f95882b",
+          "message": "#nojira Work around new Luau recursive type error",
+          "timestamp": "2021-10-13T00:04:10Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/234/commits/149598c92cfe72abc16c1b101903b1f65f95882b"
+        },
+        "date": 1634092706783,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 98.7981,
+            "range": "±10.20%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 10.2301,
+            "range": "±10.51%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }

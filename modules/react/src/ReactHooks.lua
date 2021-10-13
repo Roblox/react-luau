@@ -82,8 +82,8 @@ exports.useContext = function(
 		end
 
 		-- TODO: add a more generic warning for invalid values.
-		if Context._context ~= nil then
-			local realContext = Context._context
+		if (Context :: any)._context ~= nil then
+			local realContext = (Context :: any)._context
 			-- Don't deduplicate because this legitimately causes bugs
 			-- and nobody should be using this in existing code.
 			if realContext.Consumer == Context then
