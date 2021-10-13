@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1634092706786,
+  "lastUpdate": 1634152387018,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -1728,6 +1728,47 @@
             "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "a3fe1e8dd69f257f26fc29f589ae094fdc660a5d",
+          "message": "#nojira - Comment out object pool warning for now",
+          "timestamp": "2021-10-13T15:42:15Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/237/commits/a3fe1e8dd69f257f26fc29f589ae094fdc660a5d"
+        },
+        "date": 1634152384622,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 57.7006,
+            "range": "±31.22%",
+            "unit": "ops/sec",
+            "extra": "602 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 23.277,
+            "range": "±221.41%",
+            "unit": "ms/op",
+            "extra": "602 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FirstRender#Δt",
+            "value": 96.6531,
+            "range": "±27.17%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Mount Deep Tree": [
@@ -3113,6 +3154,40 @@
             "name": "FrameRate#Δt",
             "value": 54.2651,
             "range": "±21.25%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "a3fe1e8dd69f257f26fc29f589ae094fdc660a5d",
+          "message": "#nojira - Comment out object pool warning for now",
+          "timestamp": "2021-10-13T15:42:15Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/237/commits/a3fe1e8dd69f257f26fc29f589ae094fdc660a5d"
+        },
+        "date": 1634152385433,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 16.6561,
+            "range": "±12.30%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 61.331,
+            "range": "±17.86%",
             "unit": "ms/op",
             "extra": "100 samples\nroblox-cli version: 0.498.0.4980398"
           }
@@ -4506,6 +4581,40 @@
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "a3fe1e8dd69f257f26fc29f589ae094fdc660a5d",
+          "message": "#nojira - Comment out object pool warning for now",
+          "timestamp": "2021-10-13T15:42:15Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/237/commits/a3fe1e8dd69f257f26fc29f589ae094fdc660a5d"
+        },
+        "date": 1634152386254,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 12.3315,
+            "range": "±14.03%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 82.8969,
+            "range": "±16.34%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
       }
     ],
     "Sierpinski Triangle Benchmark": [
@@ -5891,6 +6000,40 @@
             "name": "FrameRate#Δt",
             "value": 10.2301,
             "range": "±10.51%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "a3fe1e8dd69f257f26fc29f589ae094fdc660a5d",
+          "message": "#nojira - Comment out object pool warning for now",
+          "timestamp": "2021-10-13T15:42:15Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/237/commits/a3fe1e8dd69f257f26fc29f589ae094fdc660a5d"
+        },
+        "date": 1634152387014,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 83.0522,
+            "range": "±10.38%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 12.1658,
+            "range": "±9.98%",
             "unit": "ms/op",
             "extra": "50 samples\nroblox-cli version: 0.498.0.4980398"
           }

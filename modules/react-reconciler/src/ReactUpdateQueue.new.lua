@@ -161,7 +161,7 @@ end
 
 -- ROBLOX performance: use a recycle pool for update tables
 local poolInitSize = 210 -- TODO: Tune to LuaApps
-local poolAdditionalSize = 0
+-- local poolAdditionalSize = 0
 local updatePool = table.create(poolInitSize)
 local updatePoolIndex = poolInitSize
 for i = 1, poolInitSize do
@@ -220,14 +220,19 @@ local function createUpdate(eventTime: number, lane: Lane): Update<any>
 		return update :: Update<any>
 	end
 
-	if _G.__DEV__ then
-		poolAdditionalSize += 1
-		console.warn(
-			"ReactUpdateQueue createUpdate's object pool exhausted, allocating fresh table."
-				.. "\nConsider setting poolInitSize to " .. poolInitSize + poolAdditionalSize
-				.. " to avoid this occuring in the future."
-		)
-	end
+	-- ROBLOX performance FIXME: This warning is very noisy in practice and not
+	-- actionable by Roact developers in any way. We should re-establish the
+	-- warning once we've done some tuning and thought more about what messaging
+	-- we want to convey to Roact users
+
+	-- if _G.__DEV__ then
+	-- 	poolAdditionalSize += 1
+	-- 	console.warn(
+	-- 		"ReactUpdateQueue createUpdate's object pool exhausted, allocating fresh table."
+	-- 			.. "\nConsider setting poolInitSize to " .. poolInitSize + poolAdditionalSize
+	-- 			.. " to avoid this occurring in the future."
+	-- 	)
+	-- end
 
 	local update = {
 		eventTime = eventTime,
