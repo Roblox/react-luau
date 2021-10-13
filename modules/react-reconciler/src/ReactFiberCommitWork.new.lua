@@ -94,7 +94,7 @@ local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 local enableSchedulerTracing = ReactFeatureFlags.enableSchedulerTracing
 local enableProfilerTimer = ReactFeatureFlags.enableProfilerTimer
 local enableProfilerCommitHooks = ReactFeatureFlags.enableProfilerCommitHooks
-local enableSuspenseServerRenderer = ReactFeatureFlags.enableSuspenseServerRenderer
+-- local enableSuspenseServerRenderer = ReactFeatureFlags.enableSuspenseServerRenderer
 local enableFundamentalAPI = ReactFeatureFlags.enableFundamentalAPI
 local enableSuspenseCallback = ReactFeatureFlags.enableSuspenseCallback
 local enableScopeAPI = ReactFeatureFlags.enableScopeAPI
@@ -183,14 +183,14 @@ local clearContainer = ReactFiberHostConfig.clearContainer
 -- ROBLOX deviation: Lazy init to avoid circular dependencies
 local ReactFiberWorkLoop
 
-local resolveRetryWakeable = function(boundaryFiber: Fiber, wakeable: Wakeable): ()
+local function resolveRetryWakeable(boundaryFiber: Fiber, wakeable: Wakeable): ()
   if not ReactFiberWorkLoop then
     ReactFiberWorkLoop = require(script.Parent["ReactFiberWorkLoop.new"]) :: any
   end
   ReactFiberWorkLoop.resolveRetryWakeable(boundaryFiber, wakeable)
 end
 
-local markCommitTimeOfFallback = function(): ()
+local function markCommitTimeOfFallback(): ()
   if not ReactFiberWorkLoop then
     ReactFiberWorkLoop = require(script.Parent["ReactFiberWorkLoop.new"]) :: any
   end
@@ -198,16 +198,14 @@ local markCommitTimeOfFallback = function(): ()
 end
 
 -- deviation: stub to allow dependency injection that breaks circular dependency
-local schedulePassiveEffectCallback
-schedulePassiveEffectCallback = function(): ()
+local function schedulePassiveEffectCallback(): ()
   console.warn("ReactFiberCommitWork: schedulePassiveEffectCallback causes a dependency cycle\n" .. debug.traceback())
 end
 
 -- deviation: stub to allow dependency injection that breaks circular dependency
-local captureCommitPhaseError
-captureCommitPhaseError = function(
+local function captureCommitPhaseError(
   rootFiber: Fiber,
-  sourceFiber: Fiber,
+  sourceFiber: Fiber | nil,
   error_: any?
 ): ()
   console.warn("ReactFiberCommitWork: captureCommitPhaseError causes a dependency cycle")
@@ -248,7 +246,7 @@ local nearestProfilerOnStack: Fiber | nil = nil
 
 -- local PossiblyWeakSet = typeof WeakSet == 'function' ? WeakSet : Set
 
-local callComponentWillUnmountWithTimer = function(current, instance)
+local function callComponentWillUnmountWithTimer(current, instance)
   instance.props = current.memoizedProps
   instance.state = current.memoizedState
   if
@@ -339,7 +337,7 @@ end
 
 local function safelyCallDestroy(
   current: Fiber,
-  nearestMountedAncestor: Fiber?,
+  nearestMountedAncestor: Fiber | nil,
   destroy: () -> ()
 ): ()
   if _G.__DEV__ then
@@ -580,7 +578,7 @@ local function recursivelyCommitLayoutEffects(
   finishedWork: Fiber,
   finishedRoot: FiberRoot,
   -- ROBLOX deviation: pass in these functions to avoid dependency cycle
-  _captureCommitPhaseError: (any, Fiber, any) -> (),
+  _captureCommitPhaseError: (sourceFiber: Fiber, nearestMountedAncestor: Fiber?, error: any) -> (),
   _schedulePassiveEffectCallback: () -> ()
 )
   if _captureCommitPhaseError ~= nil then
@@ -664,9 +662,8 @@ local function recursivelyCommitLayoutEffects(
             resetCurrentDebugFiberInDEV()
           end
         else
-          local ok, error_ = pcall(
-            -- ROBLOX TODO? pass in captureCommitPhaseError?
-            commitLayoutEffectsForProfiler, finishedWork, finishedRoot)
+          -- ROBLOX TODO? pass in captureCommitPhaseError?
+          local ok, error_ = pcall(commitLayoutEffectsForProfiler, finishedWork, finishedRoot)
           if not ok then
             captureCommitPhaseError(finishedWork, finishedWork.return_, error_)
           end
@@ -718,9 +715,9 @@ local function recursivelyCommitLayoutEffects(
             end
           else
             -- ROBLOX DEVIATION: Warn the first time we go over the pcall limit.
-            if not warnedRunDepth and runDepth == MAX_RUN_DEPTH then
-              warnedRunDepth = true
-              if _G.__DEV__ then
+            if _G.__DEV__ then
+              if not warnedRunDepth and runDepth == MAX_RUN_DEPTH then
+                warnedRunDepth = true
                 console.warn("Hit maximum pcall depth of " .. MAX_RUN_DEPTH .. ", entering UNSAFE call mode. Suspense and Error "..
                              "Boundaries will no longer work correctly. This will be resolved in React 18.")
               end
@@ -751,10 +748,10 @@ local function recursivelyCommitLayoutEffects(
 
               runDepth -= 1
             else
-              -- ROBLOX DEVIATION: Warn the first time we go over the pcall limit.
-              if not warnedRunDepth and runDepth == MAX_RUN_DEPTH then
-                warnedRunDepth = true
-                if _G.__DEV__ then
+              if _G.__DEV__ then
+                -- ROBLOX DEVIATION: Warn the first time we go over the pcall limit.
+                if not warnedRunDepth and runDepth == MAX_RUN_DEPTH then
+                  warnedRunDepth = true
                   console.warn("Hit maximum pcall depth of " .. MAX_RUN_DEPTH .. ", entering UNSAFE call mode. Suspense and Error "..
                                "Boundaries will no longer work correctly. This will be resolved in React 18.")
                 end
@@ -943,7 +940,7 @@ function commitLayoutEffectsForProfiler(
   end
 end
 
-commitLayoutEffectsForClassComponent = function(finishedWork: Fiber)
+function commitLayoutEffectsForClassComponent(finishedWork: Fiber)
   local instance = finishedWork.stateNode
   local current = finishedWork.alternate
   if bit32.band(finishedWork.flags, Update) ~= 0 then
@@ -1101,7 +1098,7 @@ commitLayoutEffectsForClassComponent = function(finishedWork: Fiber)
   end
 end
 
-commitLayoutEffectsForHostRoot = function(finishedWork: Fiber)
+function commitLayoutEffectsForHostRoot(finishedWork: Fiber)
   -- TODO: I think this is now always non-null by the time it reaches the
   -- commit phase. Consider removing the type check.
   local updateQueue: UpdateQueue<any> | nil = finishedWork.updateQueue
@@ -1120,7 +1117,7 @@ commitLayoutEffectsForHostRoot = function(finishedWork: Fiber)
   end
 end
 
-commitLayoutEffectsForHostComponent = function(finishedWork: Fiber)
+function commitLayoutEffectsForHostComponent(finishedWork: Fiber)
   local instance: Instance = finishedWork.stateNode
   local current = finishedWork.alternate
 
@@ -1238,7 +1235,7 @@ end
 -- User-originating errors (lifecycles and refs) should not interrupt
 -- deletion, so don't local them throw. Host-originating errors should
 -- interrupt deletion, so it's okay
-commitUnmount = function(
+function commitUnmount(
   finishedRoot: FiberRoot,
   current: Fiber,
   nearestMountedAncestor: Fiber,
@@ -1341,7 +1338,7 @@ commitUnmount = function(
   end
 end
 
-commitNestedUnmounts = function(
+function commitNestedUnmounts(
   finishedRoot: FiberRoot,
   root: Fiber,
   nearestMountedAncestor: Fiber,
@@ -1471,14 +1468,14 @@ local function getHostParentFiber(fiber: Fiber): Fiber
   return parent
 end
 
-isHostParent = function(fiber: Fiber): boolean
+function isHostParent(fiber: Fiber): boolean
   return
     fiber.tag == HostComponent or
     fiber.tag == HostRoot or
     fiber.tag == HostPortal
 end
 
-getHostSibling = function(fiber: Fiber): Instance?
+function getHostSibling(fiber: Fiber): Instance?
   -- We're going to search forward into the tree until we find a sibling host
   -- node. Unfortunately, if multiple insertions are done in a row we have to
   -- search past them. This leads to exponential search for the next sibling.
@@ -1583,7 +1580,7 @@ local function commitPlacement(finishedWork: Fiber)
   end
 end
 
-insertOrAppendPlacementNodeIntoContainer = function(
+function insertOrAppendPlacementNodeIntoContainer(
   node: Fiber,
   before: Instance?,
   parent: Container
@@ -1619,7 +1616,7 @@ insertOrAppendPlacementNodeIntoContainer = function(
   end
 end
 
-insertOrAppendPlacementNode = function(
+function insertOrAppendPlacementNode(
   node: Fiber,
   before: Instance?,
   parent: Instance
@@ -1655,7 +1652,7 @@ insertOrAppendPlacementNode = function(
   end
 end
 
-unmountHostComponents = function(
+function unmountHostComponents(
   finishedRoot: FiberRoot,
   current: Fiber,
   nearestMountedAncestor: Fiber,
@@ -1679,11 +1676,12 @@ unmountHostComponents = function(
     if not currentParentIsValid then
       local parent = node.return_
       while true do
-        invariant(
-          parent ~= nil,
-          "Expected to find a host parent. This error is likely caused by " ..
-            "a bug in React. Please file an issue."
-        )
+        -- ROBLOX performance? eliminate compare in hot path
+        -- invariant(
+        --   parent ~= nil,
+        --   "Expected to find a host parent. This error is likely caused by " ..
+        --     "a bug in React. Please file an issue."
+        -- )
         local parentStateNode = parent.stateNode
         if parent.tag == HostComponent then
           currentParent = parentStateNode
@@ -1733,58 +1731,59 @@ unmountHostComponents = function(
         removeChild(currentParent, node.stateNode)
       end
       -- Don't visit children because we already visited them.
-    elseif enableFundamentalAPI and node.tag == FundamentalComponent then
-      local fundamentalNode = node.stateNode.instance
-      commitNestedUnmounts(
-        finishedRoot,
-        node,
-        nearestMountedAncestor,
-        renderPriorityLevel
-      )
-      -- After all the children have unmounted, it is now safe to remove the
-      -- node from the tree.
-      if currentParentIsContainer then
-        -- removeChildFromContainer(
-        --   ((currentParent: any): Container),
-        --   (fundamentalNode: Instance),
-        -- )
-        -- ROBLOX FIXME: type coercion
-        removeChildFromContainer(currentParent, fundamentalNode)
-      else
-        -- removeChild(
-        --   ((currentParent: any): Instance),
-        --   (fundamentalNode: Instance),
-        -- )
-        -- ROBLOX FIXME: type coercion
-        removeChild(currentParent, fundamentalNode)
-      end
-    elseif
-      enableSuspenseServerRenderer and
-      node.tag == DehydratedFragment
-    then
-      unimplemented("clearSuspenseBoundary")
-      -- if enableSuspenseCallback then
-      --   local hydrationCallbacks = finishedRoot.hydrationCallbacks
-      --   if hydrationCallbacks ~= nil)
-      --     local onDeleted = hydrationCallbacks.onDeleted
-      --     if onDeleted)
-      --       onDeleted((node.stateNode: SuspenseInstance))
-      --     end
-      --   end
-      -- end
+      -- ROBLOX performance? fundamentalAPI  and suspenseServerRender are always false for Roblox. avoid unnecessary cmp in hot path
+    -- elseif enableFundamentalAPI and node.tag == FundamentalComponent then
+    --   local fundamentalNode = node.stateNode.instance
+    --   commitNestedUnmounts(
+    --     finishedRoot,
+    --     node,
+    --     nearestMountedAncestor,
+    --     renderPriorityLevel
+    --   )
+    --   -- After all the children have unmounted, it is now safe to remove the
+    --   -- node from the tree.
+    --   if currentParentIsContainer then
+    --     -- removeChildFromContainer(
+    --     --   ((currentParent: any): Container),
+    --     --   (fundamentalNode: Instance),
+    --     -- )
+    --     -- ROBLOX FIXME: type coercion
+    --     removeChildFromContainer(currentParent, fundamentalNode)
+    --   else
+    --     -- removeChild(
+    --     --   ((currentParent: any): Instance),
+    --     --   (fundamentalNode: Instance),
+    --     -- )
+    --     -- ROBLOX FIXME: type coercion
+    --     removeChild(currentParent, fundamentalNode)
+    --   end
+    -- elseif
+    --   enableSuspenseServerRenderer and
+    --   node.tag == DehydratedFragment
+    -- then
+    --   unimplemented("clearSuspenseBoundary")
+    --   -- if enableSuspenseCallback then
+    --   --   local hydrationCallbacks = finishedRoot.hydrationCallbacks
+    --   --   if hydrationCallbacks ~= nil)
+    --   --     local onDeleted = hydrationCallbacks.onDeleted
+    --   --     if onDeleted)
+    --   --       onDeleted((node.stateNode: SuspenseInstance))
+    --   --     end
+    --   --   end
+    --   -- end
 
-      -- -- Delete the dehydrated suspense boundary and all of its content.
-      -- if currentParentIsContainer)
-      --   clearSuspenseBoundaryFromContainer(
-      --     ((currentParent: any): Container),
-      --     (node.stateNode: SuspenseInstance),
-      --   )
-      -- } else {
-      --   clearSuspenseBoundary(
-      --     ((currentParent: any): Instance),
-      --     (node.stateNode: SuspenseInstance),
-      --   )
-      -- end
+    --   -- -- Delete the dehydrated suspense boundary and all of its content.
+    --   -- if currentParentIsContainer)
+    --   --   clearSuspenseBoundaryFromContainer(
+    --   --     ((currentParent: any): Container),
+    --   --     (node.stateNode: SuspenseInstance),
+    --   --   )
+    --   -- } else {
+    --   --   clearSuspenseBoundary(
+    --   --     ((currentParent: any): Instance),
+    --   --     (node.stateNode: SuspenseInstance),
+    --   --   )
+    --   -- end
     elseif node.tag == HostPortal then
       if node.child ~= nil then
         -- When we go into a portal, it becomes the parent to remove from.
@@ -1835,7 +1834,8 @@ local function commitDeletion(
   nearestMountedAncestor: Fiber,
   renderPriorityLevel: ReactPriorityLevel
 )
-  if supportsMutation then
+  -- ROBLOX performance? supportsMutation always true, eliminate cmp on hot path
+  -- if supportsMutation then
     -- Recursively delete all host nodes from the parent.
     -- Detach refs and call componentWillUnmount() on the whole subtree.
     unmountHostComponents(
@@ -1844,15 +1844,15 @@ local function commitDeletion(
       nearestMountedAncestor,
       renderPriorityLevel
     )
-  else
-    -- Detach refs and call componentWillUnmount() on the whole subtree.
-    commitNestedUnmounts(
-      finishedRoot,
-      current,
-      nearestMountedAncestor,
-      renderPriorityLevel
-    )
-  end
+  -- else
+  --   -- Detach refs and call componentWillUnmount() on the whole subtree.
+  --   commitNestedUnmounts(
+  --     finishedRoot,
+  --     current,
+  --     nearestMountedAncestor,
+  --     renderPriorityLevel
+  --   )
+  -- end
   local alternate = current.alternate
   detachFiberMutation(current)
   if alternate ~= nil then
@@ -2286,9 +2286,7 @@ local function commitPassiveMount(
     then
       startPassiveEffectTimer()
       -- ROBLOX try
-      local ok, error_ = pcall(function()
-        commitHookEffectListMount(bit32.bor(HookPassive, HookHasEffect), finishedWork)
-      end)
+      local ok, error_ = pcall(commitHookEffectListMount, bit32.bor(HookPassive, HookHasEffect), finishedWork)
       -- ROBLOX finally
       recordPassiveEffectDuration(finishedWork)
       if not ok then

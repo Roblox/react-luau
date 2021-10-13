@@ -619,10 +619,11 @@ function updateReducer(
 ): (any, Dispatch<any>)
   local hook = updateWorkInProgressHook()
   local queue = hook.queue
-  invariant(
-    queue ~= nil,
-    'Should have a queue. This is likely a bug in React. Please file an issue.'
-  )
+  -- ROBLOX performance: eliminate this check in the hot path
+  -- invariant(
+  --   queue ~= nil,
+  --   'Should have a queue. This is likely a bug in React. Please file an issue.'
+  -- )
 
   queue.lastRenderedReducer = reducer
 

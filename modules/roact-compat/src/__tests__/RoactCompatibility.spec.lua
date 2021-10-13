@@ -67,8 +67,7 @@ return function()
 			)
 		end)
 
-		-- FIXME: Underlying ReactChildren API not yet ported
-		xit("warns about oneChild", function()
+		it("warns about oneChild", function()
 			jestExpect(function()
 				RoactCompat.oneChild({ RoactCompat.createElement("div") })
 			end).toWarnDev(

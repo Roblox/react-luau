@@ -47,7 +47,8 @@ return function(type)
 		return true
 	end
 
-	if typeof(type) == "table" and type ~= nil then
+ 	 -- ROBLOX performance: check for nil first to avoid typeof when possible
+	if type ~= nil and typeof(type) == "table" then
 		-- ROBLOX deviation: In React, component classes are of type 'function'; for
 		-- us, they're tables with a special value on their metatable
 		if type.isReactComponent then

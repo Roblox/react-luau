@@ -165,7 +165,14 @@ local poolInitSize = 210 -- TODO: Tune to LuaApps
 local updatePool = table.create(poolInitSize)
 local updatePoolIndex = poolInitSize
 for i = 1, poolInitSize do
-	updatePool[i] = { }
+	updatePool[i] = {
+		eventTime = -1,
+		lane = -1,
+		tag = -1,
+		payload = nil,
+		callback = nil,
+		next = nil,
+	}
 end
 
 -- deviation: FIXME generics in function signatures

@@ -99,9 +99,10 @@ local function attachBinding(hostInstance, key, newBinding)
 end
 
 local function applyProp(hostInstance, key, newValue, oldValue)
-  if key == "ref" or key == "children" then
-    return
-  end
+  -- ROBLOX performance: gets checked in applyProps so we can assume the key is valid
+  -- if key == "ref" or key == "children" then
+  --   return
+  -- end
 
   local internalKeyType = Type.of(key)
 
@@ -140,7 +141,12 @@ end
 
 local function applyProps(hostInstance, props)
   for propKey, value in pairs(props) do
-    applyProp(hostInstance, propKey, value, nil)
+    -- ROBLOX performance: avoid the function call by inlining check here
+    if propKey == "ref" or propKey == "children" then
+      continue
+    end
+
+    applyProp(hostInstance, propKey, value)
   end
 end
 
@@ -190,7 +196,10 @@ local function updateProperties(
       if value == Object.None then
         value = nil
       end
-      applyProp(domElement, propKey, value, lastProps[propKey])
+      -- ROBLOX performance: avoid the function call by inlining check here
+      if propKey ~= "ref" and propKey ~= "children" then
+        applyProp(domElement, propKey, value, lastProps[propKey])
+      end
       i += 2
     end
   end, identity)

@@ -157,11 +157,12 @@ local function hasContextChanged(): boolean
 end
 
 -- deviation: `type: Function` - lock down component type def
-isContextProvider = function(type): boolean
+function isContextProvider(type): boolean
 	if disableLegacyContext then
 		return false
 	else
-		-- deviation: context types only valid for class components
+		-- ROBLOX deviation: context types only valid for class components
+		-- ROBLOX performance: this table already had typeof called in mountClassInstance(), does Luau cache that?
 		if typeof(type) == "function" then
 			return false
 		end
@@ -341,7 +342,8 @@ local function findCurrentUnmaskedContext(fiber: Fiber): Object
 				return node.stateNode.context
 			elseif node.tag == ClassComponent then
 				local Component = node.type
-				if isContextProvider(Component) then
+				-- ROBLOX deviation: inline specialized check for isContextProvider since we know it's a class
+				if Component.childContextTypes ~= nil then
 					return node.stateNode.__reactInternalMemoizedMergedChildContext
 				end
 			end

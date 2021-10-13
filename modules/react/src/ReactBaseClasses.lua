@@ -30,8 +30,9 @@ local UninitializedState = require(Packages.Shared).UninitializedState
 -- FIXME: Due to metatable inheritance, this field will be accessible and true
 -- on class component _instances_ as well as class component definitions; this
 -- is probably not correct
-local componentClassPrototype = {}
-componentClassPrototype.isReactComponent = true
+local componentClassPrototype = {
+  isReactComponent = true
+}
 
 -- ROBLOX deviation: logic to support old Roact lifecycle method names
 -- ROBLOX FIXME: remove below table and function once we've formally stopped
@@ -111,6 +112,23 @@ Component.__componentName = "Component"
   Components can not be extended beyond this point, with the exception of
   PureComponent.
 ]]
+
+-- ROBLOX performance: pool size tuned for benchmarks
+local InstancePoolSize = not _G.__TESTEZ_RUNNING_TEST__ and 900 or 0
+local InstancePoolIndex = 1
+local InstancePool = table.create(InstancePoolSize)
+for i=1, InstancePoolSize do
+	table.insert(InstancePool, {
+    -- pre-initialize instance fields with known static values
+    props = nil,
+    context = nil,
+    state = UninitializedState,
+    __refs = emptyObject,
+    __updater = ReactNoopUpdateQueue,
+})
+end
+
+
 function Component:extend(name)
   -- ROBLOX note: legacy Roact will accept nil here and default to empty string
   -- ROBLOX TODO: if name in "" in ReactComponentStack frame, we should try and get the variable name it was assigned to
@@ -125,36 +143,61 @@ function Component:extend(name)
   assert(typeof(name) == "string", "Component class name must be a string")
 
 
-  local class = {}
-
-  for key, value in pairs(self) do
-    -- Roact opts to make consumers use composition over inheritance, which
-    -- lines up with React.
-    -- https://reactjs.org/docs/composition-vs-inheritance.html
-    if key ~= "extend" then
-      class[key] = value
-    end
-  end
+  -- ROBLOX performance? do table literal in one shot instead a field at a time in a pairs() loop
+  local class = {
+    __componentName = name,
+    setState = self.setState,
+    forceUpdate = self.forceUpdate,
+    init = nil -- ROBLOX note: required to make Luau analyze happy, should be removed by bytecode compiler
+  }
+  -- for key, value in pairs(self) do
+  --   -- Roact opts to make consumers use composition over inheritance, which
+  --   -- lines up with React.
+  --   -- https://reactjs.org/docs/composition-vs-inheritance.html
+  --   if key ~= "extend" then
+  --     class[key] = value
+  --   end
+  -- end
 
   class.__index = class
-  class.__componentName = name
+  -- class.__componentName = name
 
   function class.__ctor(props, context, updater)
-    local instance = {}
+    local instance
+    -- ROBLOX performance: use a pooled object
+    if InstancePoolIndex <= InstancePoolSize then
+      instance = InstancePool[InstancePoolIndex]
+      -- fill in the dynamic fields
+      instance.props = props
+      instance.context = context
+      -- release the premade object from the pool -- we aren't recycling objects right now
+      InstancePool[InstancePoolIndex] = nil
+      InstancePoolIndex += 1
+    else
+  		-- ROBLOX note: uncomment to tune pool size for lua-apps
+      -- print("!!!!! hit ReactBaseClass instance pool limit")
+      instance = {
+        props = props,
+        context = context,
+        state = UninitializedState,
+        __refs = emptyObject,
+        __updater = updater or ReactNoopUpdateQueue,
+      }
 
-    instance.props = props
-    instance.context = context
-    -- ROBLOX DEVIATION: Initialize state to a singleton that warns on attempts
-    -- to access this pseudo-uninitialized state and errors on attempts to directly mutate
-    -- state.
-    instance.state = UninitializedState
-    -- If a component has string refs, we will assign a different object later.
-    -- ROBLOX deviation: Uses __refs instead of refs to avoid conflicts
-    -- instance.refs = emptyObject
-    instance.__refs = emptyObject
-    -- We initialize the default updater but the real one gets injected by the
-    -- renderer.
-    instance.__updater = updater or ReactNoopUpdateQueue
+      -- instance.props = props
+      -- instance.context = context
+      -- ROBLOX DEVIATION: Initialize state to a singleton that warns on attempts
+      -- to access this pseudo-uninitialized state and errors on attempts to directly mutate
+      -- state.
+      -- instance.state = UninitializedState
+      -- If a component has string refs, we will assign a different object later.
+      -- ROBLOX deviation: Uses __refs instead of refs to avoid conflicts
+      -- instance.refs = emptyObject
+      -- instance.__refs = emptyObject
+      -- We initialize the default updater but the real one gets injected by the
+      -- renderer.
+      -- instance.__updater = updater or ReactNoopUpdateQueue
+    end
 
     -- ROBLOX TODO: We should consider using a more idiomatic Lua approach for
     -- warning/blocking lifecycle calls during initialization. For now,
@@ -166,7 +209,8 @@ function Component:extend(name)
     -- deviation: TODO: revisit this; make sure that we properly initialize
     -- things like `state` if its necessary, consider if we want some sort of
     -- alternate naming or syntax for the constructor equivalent
-    if typeof(class.init) == 'function' then
+    -- ROBLOX performance: only do typeof if it's non-nil to begin with
+    if class.init and typeof(class.init) == "function" then
       function instance.setState(_, initialState)
         instance.state = initialState
       end
@@ -280,9 +324,12 @@ PureComponent.extend = Component.extend
 -- deviation: We copy members directly from the Component prototype above; we
 -- don't need to redefine the constructor or do dummy function trickery to apply
 -- it without jumping around
-local pureComponentClassPrototype = {}
-Object.assign(pureComponentClassPrototype, componentClassPrototype)
-pureComponentClassPrototype.isPureReactComponent = true
+-- ROBLOX performance? inline (duplicate) explicit assignments to avoid loop overhead in hot path
+-- Object.assign(pureComponentClassPrototype, componentClassPrototype)
+local pureComponentClassPrototype = {
+  isReactComponent = true,
+  isPureReactComponent = true
+}
 
 -- ROBLOX: FIXME: we should clean this up and align the implementations of
 -- Component and PureComponent more clearly and explicitly

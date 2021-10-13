@@ -10,3 +10,6 @@ Packages/_Workspace/*
 **/luacov.*
 .idea/
 site/
+
+default_modules
+modules_*

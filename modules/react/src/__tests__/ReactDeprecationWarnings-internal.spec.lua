@@ -52,11 +52,12 @@ return function()
 				return React.createElement(RefComponent, { ref = "refComponent" })
 			end
 			ReactNoop.render(React.createElement(Component))
+			local expectedName = _G.__DEV__ and "Component" or "<enable __DEV__ mode for component names>"
 			-- ROBLOX deviation: we removed string ref support ahead of upstream schedule
 			jestExpect(function()
 				return jestExpect(Scheduler).toFlushWithoutYielding()
 			end).toThrow(
-				'Component "Component" contains the string ref "refComponent". '
+				'Component "' .. expectedName .. '" contains the string ref "refComponent". '
 					.. "Support for string refs has been removed. "
 					.. "We recommend using useRef() or createRef() instead. "
 					.. "Learn more about using refs safely here: "
@@ -100,10 +101,11 @@ return function()
 			ReactNoop.render(React.createElement(Component, nil))
 
 			-- ROBLOX deviation: we removed string ref support ahead of upstream schedule
+			local expectedName = _G.__DEV__ and "Component" or "<enable __DEV__ mode for component names>"
 			jestExpect(function()
 				return jestExpect(Scheduler).toFlushWithoutYielding()
 			end).toThrow(
-				'Component "Component" contains the string ref "refComponent". '
+				'Component "' .. expectedName .. '" contains the string ref "refComponent". '
 					.. "Support for string refs has been removed. "
 					.. "We recommend using useRef() or createRef() instead. "
 					.. "Learn more about using refs safely here: "
