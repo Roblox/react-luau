@@ -256,6 +256,7 @@ local callComponentWillUnmountWithTimer = function(current, instance)
     enableProfilerCommitHooks and
     bit32.band(current.mode, ProfileMode) ~= 0
   then
+    -- ROBLOX performance? we could hoist start...Timer() out and eliminate the anon function, but then the timer would incldue the pcall overhead
     local ok, exception = pcall(function()
       startLayoutEffectTimer()
       -- ROBLOX deviation: Call with ":" so that the method receives self
@@ -295,9 +296,7 @@ function safelyCallComponentWillUnmount(
     -- ROBLOX deviation: YOLO flag for disabling pcall
     local ok, unmountError
     if not _G.__YOLO__ then
-      ok, unmountError = pcall(function()
-        callComponentWillUnmountWithTimer(current, instance)
-      end)
+      ok, unmountError = pcall(callComponentWillUnmountWithTimer, current, instance)
     else
       ok = true
       callComponentWillUnmountWithTimer(current, instance)
@@ -323,9 +322,7 @@ local function safelyDetachRef(current: Fiber, nearestMountedAncestor: Fiber): (
         -- ROBLOX deviation: YOLO flag for disabling pcall
         local ok, refError
         if not _G.__YOLO__ then
-          ok, refError = pcall(function()
-            ref(nil)
-          end)
+          ok, refError = pcall(ref, nil)
         else
           ok = true
           ref(nil)
@@ -352,9 +349,7 @@ local function safelyCallDestroy(
       captureCommitPhaseError(current, nearestMountedAncestor, error_)
     end
   else
-    local ok, error_ = pcall(function()
-      destroy()
-    end)
+    local ok, error_ = pcall(destroy)
     if not ok then
       captureCommitPhaseError(current, nearestMountedAncestor, error_)
     end
@@ -630,15 +625,14 @@ local function recursivelyCommitLayoutEffects(
             resetCurrentDebugFiberInDEV()
           end
         else
-          local ok, error_ = pcall(function()
+          local ok, error_ = pcall(
             -- ROBLOX deviation: pass in captureCommitPhaseError function to avoid dependency cycle
-            recursivelyCommitLayoutEffects(
+            recursivelyCommitLayoutEffects,
               child,
               finishedRoot,
               captureCommitPhaseError,
               schedulePassiveEffectCallback
             )
-          end)
           if not ok then
             captureCommitPhaseError(child, finishedWork, error_)
           end
@@ -670,10 +664,9 @@ local function recursivelyCommitLayoutEffects(
             resetCurrentDebugFiberInDEV()
           end
         else
-          local ok, error_ = pcall(function()
+          local ok, error_ = pcall(
             -- ROBLOX TODO? pass in captureCommitPhaseError?
-            commitLayoutEffectsForProfiler(finishedWork, finishedRoot)
-          end)
+            commitLayoutEffectsForProfiler, finishedWork, finishedRoot)
           if not ok then
             captureCommitPhaseError(finishedWork, finishedWork.return_, error_)
           end
@@ -751,10 +744,10 @@ local function recursivelyCommitLayoutEffects(
             if runDepth < MAX_RUN_DEPTH then
               runDepth += 1
 
-              ok, error_ = pcall(function()
+              ok, error_ = pcall(
               -- ROBLOX deviation: pass in this function to avoid dependency cycle
-                recursivelyCommitLayoutEffects(child, finishedRoot, captureCommitPhaseError, schedulePassiveEffectCallback)
-              end)
+                recursivelyCommitLayoutEffects, child, finishedRoot, captureCommitPhaseError, schedulePassiveEffectCallback
+              )
 
               runDepth -= 1
             else

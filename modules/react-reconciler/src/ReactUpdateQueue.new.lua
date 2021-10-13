@@ -711,7 +711,7 @@ local function commitUpdateQueue(
 	finishedWork: Fiber,
 	finishedQueue: UpdateQueue<any>,
 	instance: any
-)
+): ()
 	-- Commit the effects
 	local effects = finishedQueue.effects
 	finishedQueue.effects = nil

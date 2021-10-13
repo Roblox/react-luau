@@ -16,17 +16,15 @@ local function invokeGuardedCallbackProd(reporter, name, func, context, ...)
 	-- ROBLOX deviation: YOLO flag for disabling pcall
 	local ok, result
 	if not _G.__YOLO__ then
-		ok, result = pcall(function(...)
-			-- deviation: Since functions in lua _explicitly_ accept 'self' as a
-			-- first argument when they use it, it becomes incorrect for us to call
-			-- a function with a nil "context", where context in this case is
-			-- analogous to the implicit `self` that we get with a `:` call
-			if context == nil then
-				func(...)
-			else
-				func(context, ...)
-			end
-		end, ...)
+		-- deviation: Since functions in lua _explicitly_ accept 'self' as a
+		-- first argument when they use it, it becomes incorrect for us to call
+		-- a function with a nil "context", where context in this case is
+		-- analogous to the implicit `self` that we get with a `:` call
+		if context == nil then
+			ok, result = pcall(func, ...)
+		else
+			ok, result = pcall(func, context, ...)
+		end
 	else
 		ok = true
 		if context == nil then

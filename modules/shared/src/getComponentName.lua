@@ -103,15 +103,13 @@ local function getComponentName(type): string?
 			local payload = lazyComponent._payload
 			local init = lazyComponent._init
 
-			local ok, result = pcall(function()
-				getComponentName(init(payload))
-			end)
-
-			if not ok then
-				result = nil
+			-- ROBLOX performance: getComponentName won't throw, but init() might, extract it out to eliminate an anon function
+			local ok, result = pcall(init, payload)
+			if ok then
+				return getComponentName(result)
+			else
+				return nil
 			end
-
-			return result
 		else
 			-- ROBLOX deviation: Normally, the `typeofType == "function"` check would
 			-- cover this case, but in Lua, class components are tables. We need

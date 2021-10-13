@@ -335,12 +335,11 @@ end
 function resolveLazyType(
 	lazyComponent: LazyComponent<any, any>
 ): LazyComponent<any, any> | any
-	local ok, result = pcall(function()
-		-- If we can, let's peek at the resulting type.
-		local payload = lazyComponent._payload
-		local init = lazyComponent._init
-		return init(payload)
-	end)
+	-- ROBLOX performance: hoist non-throwable lines so we eliminate an anon function for the pcall
+	-- If we can, let's peek at the resulting type.
+	local payload = lazyComponent._payload
+	local init = lazyComponent._init
+	local ok, result = pcall(init, payload)
 	if not ok then
 		-- Leave it in place and let it throw again in the begin phase.
 		return lazyComponent
@@ -644,7 +643,9 @@ local function ChildReconciler(shouldTrackSideEffects)
 				end
 			end
 
-			if isArray(newChild) or getIteratorFn(newChild) then
+			-- ROBLOX deviation peformance: this is the equiv of checking for a table, so just do that
+			-- if isArray(newChild) or getIteratorFn(newChild) then
+			if typeof(newChild) == "table" then
 				local created = createFiberFromFragment(
 					newChild,
 					returnFiber.mode,
@@ -727,7 +728,9 @@ local function ChildReconciler(shouldTrackSideEffects)
 				end
 			end
 
-			if isArray(newChild) or getIteratorFn(newChild) then
+			-- ROBLOX deviation peformance: this is the equiv of checking for a table, so just do that
+			-- if isArray(newChild) or getIteratorFn(newChild) then
+			if typeof(newChild) == "table" then
 				if key ~= nil then
 					return nil
 				end
@@ -809,7 +812,9 @@ local function ChildReconciler(shouldTrackSideEffects)
 				end
 			end
 
-			if isArray(newChild) or getIteratorFn(newChild) then
+			-- ROBLOX deviation peformance: this is the equiv of checking for a table, so just do that
+			-- if isArray(newChild) or getIteratorFn(newChild) then
+			if type(newChild) == "table" then
 				local matchedFiber = existingChildren[newIdx]
 				return updateFragment(returnFiber, matchedFiber, newChild, lanes, nil)
 			end

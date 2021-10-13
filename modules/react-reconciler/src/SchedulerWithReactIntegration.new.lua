@@ -218,23 +218,25 @@ flushSyncCallbackQueueImpl = function()
     if decoupleUpdatePriorityFromScheduler then
       local previousLanePriority = getCurrentUpdateLanePriority()
       -- ROBLOX deviation: YOLO flag for disabling pcall
-      local ok, result
+      local ok = true
+      local result
     	if not _G.__YOLO__ then
-        ok, result = pcall(function()
+          -- ROBLOX performance: hoist non-throwables out of try{} to eliminate anon function
           local isSync = true
           local queue = syncQueue
 
           setCurrentUpdateLanePriority(SyncLanePriority)
-          runWithPriority(ImmediatePriority, function()
-            for index, callback in ipairs(queue) do
-              i = index
-              repeat
-                callback = callback(isSync)
-              until callback == nil
+          ok, result = pcall(runWithPriority, ImmediatePriority,
+            function()
+              for index, callback in ipairs(queue) do
+                i = index
+                repeat
+                  callback = callback(isSync)
+                until callback == nil
+              end
             end
-          end)
+          )
           syncQueue = nil
-        end)
       else
         ok = true
         local isSync = true
@@ -273,19 +275,21 @@ flushSyncCallbackQueueImpl = function()
       -- ROBLOX deviation: YOLO flag for disabling pcall
       local ok, result
     	if not _G.__YOLO__ then
-        ok, result = pcall(function()
-          local isSync = true
-          local queue = syncQueue
-          runWithPriority(ImmediatePriority, function()
+        -- ROBLOX performance: hoist non-throwables out of try{} to eliminate anon function
+        local isSync = true
+        local queue = syncQueue
+
+        ok, result = pcall(runWithPriority, ImmediatePriority,
+          function()
             for index, callback in ipairs(queue) do
               i = index
               repeat
                 callback = callback(isSync)
               until callback == nil
             end
-          end)
-          syncQueue = nil
-        end)
+          end
+        )
+        syncQueue = nil
       else
         ok = true
         local isSync = true

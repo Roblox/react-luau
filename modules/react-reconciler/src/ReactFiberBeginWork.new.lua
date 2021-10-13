@@ -402,8 +402,7 @@ local function updateForwardRef(
       bit32.band(workInProgress.mode, StrictMode) ~= 0
     then
       disableLogs()
-      local ok, result = pcall(function()
-        nextChildren = renderWithHooks(
+      local ok, result = pcall(renderWithHooks,
           current,
           workInProgress,
           render,
@@ -411,7 +410,9 @@ local function updateForwardRef(
           ref,
           renderLanes
         )
-      end)
+      if ok then
+        nextChildren = result
+      end
       -- finally
       reenableLogs()
 
@@ -587,10 +588,10 @@ function updateSimpleMemoComponent(
         local lazyComponent: LazyComponentType<any, any> = outerMemoType
         local payload = lazyComponent._payload
         local init = lazyComponent._init
-        local ok, _result = pcall(function()
-          outerMemoType = init(payload)
-        end)
-        if not ok then
+        local ok, result = pcall(init, payload)
+        if ok then
+          outerMemoType = result
+        else
           outerMemoType = nil
         end
         -- Inner propTypes will be validated in the function component path.
@@ -872,8 +873,7 @@ function updateFunctionComponent(
       bit32.band(workInProgress.mode, StrictMode) ~= 0
     then
       disableLogs()
-      local ok, result = pcall(function()
-        nextChildren = renderWithHooks(
+      local ok, result = pcall(renderWithHooks,
           current,
           workInProgress,
           Component,
@@ -881,10 +881,11 @@ function updateFunctionComponent(
           context,
           renderLanes
         )
-      end)
       -- finally
       reenableLogs()
-      if not ok then
+      if ok then
+        nextChildren = result
+      else
         error(result)
       end
     end
@@ -1713,8 +1714,7 @@ local function mountIndeterminateComponent(
         bit32.band(workInProgress.mode, StrictMode) ~= 0
       then
         disableLogs()
-        local ok, result = pcall(function()
-          value = renderWithHooks(
+        local ok, result = pcall(renderWithHooks,
             nil,
             workInProgress,
             Component,
@@ -1722,10 +1722,11 @@ local function mountIndeterminateComponent(
             context,
             renderLanes
           )
-        end)
         -- finally
         reenableLogs()
-        if not ok then
+        if ok then
+          value = result
+        else
           error(result)
         end
       end

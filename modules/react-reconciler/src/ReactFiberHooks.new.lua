@@ -1003,6 +1003,7 @@ function useMutableSource(
       local latestGetSnapshot = refs.getSnapshot
       local latestSetSnapshot = refs.setSnapshot
 
+      -- ROBLOX performance? only latestGet..() is throwable. hoist the rest out to eliminate anon func overhead?
       local ok, result = pcall(function()
         latestSetSnapshot(latestGetSnapshot(source._source))
 

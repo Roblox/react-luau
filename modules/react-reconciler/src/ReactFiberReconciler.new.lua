@@ -491,10 +491,9 @@ end
 -- exports.runWithPriority<T>(priority: LanePriority, fn: () => T)
 exports.runWithPriority = function(priority: LanePriority, fn: () -> any)
 	local previousPriority = getCurrentUpdateLanePriority()
-	local ok, result = pcall(function()
-		setCurrentUpdateLanePriority(priority)
-		return fn()
-	end)
+	-- ROBLOX performance: hoist non-throwable out of try{} to eliminate anon function
+	setCurrentUpdateLanePriority(priority)
+	local ok, result = pcall(fn)
 	setCurrentUpdateLanePriority(previousPriority)
 	if not ok then
 		error(result)

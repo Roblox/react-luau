@@ -396,10 +396,11 @@ local function createElement(type_, config, ...)
 
 	if childrenLength == 1 then
 		props.children = select(1, ...)
-	end
-
-	local childArray = {}
-	if childrenLength > 1 then
+	elseif childrenLength > 1 then
+		-- ROBLOX performance: allocate a table, only when necessary with the exact number of entries needed
+		-- ROBLOX TODO: see if we can avoid the insertion loop below
+		-- local childArray = {...}
+		local childArray = table.create(childrenLength)
 		for i = 1, childrenLength do
 			local toInsert = select(i, ...)
 			table.insert(childArray, toInsert)
@@ -415,7 +416,7 @@ local function createElement(type_, config, ...)
 	end
 
 	-- Resolve default props
-	-- deviation: Lua can't index defaultProps on a function
+	-- ROBLOX deviation: Lua can't index defaultProps on a function
 	if typeof(type_) == "table" and type_.defaultProps then
 		local defaultProps = type_.defaultProps
 
@@ -433,7 +434,9 @@ local function createElement(type_, config, ...)
 			if typeof(type_) == "function" then
 				-- deviation: Can't get displayName for functions
 				-- displayName = (type_.displayName or type_.name) or "Unknown"
-				displayName = "<function>"
+				displayName = debug.info(type_, "n") or "<function>"
+			elseif typeof(type_) == "table" then
+				displayName = (type_.displayName or type_.name) or "Unknown"
 			else
 				displayName = type_
 			end
@@ -541,12 +544,13 @@ exports.cloneElement = function(element, config, ...)
 	if childrenLength == 1 then
 		props.children = select(1, ...)
 	elseif childrenLength > 1 then
-		local childArray = {}
-		for i = 1, childrenLength do
-			local toInsert = select(i, ...)
-			table.insert(childArray, toInsert)
-		end
-		props.children = childArray
+		-- ROBLOX performance: allocate exact number of elements needed
+		-- local childArray = {...}
+		-- for i = 1, childrenLength do
+		-- 	local toInsert = select(i, ...)
+		-- 	table.insert(childArray, toInsert)
+		-- end
+		props.children = {...}
 	end
 
 	return ReactElement(element.type, key, ref, self, source, owner, props)

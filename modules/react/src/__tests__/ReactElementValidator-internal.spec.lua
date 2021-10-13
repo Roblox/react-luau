@@ -80,9 +80,10 @@ return function()
 		end)
 
 		it("warns for keys for arrays with no owner or parent info", function()
-			local function Anonymous()
-				return React.createElement("Frame")
-			end
+			-- ROBLOX deviation: we can't nil out the function's name, so use a real anonymous function
+			-- local function Anonymous()
+			-- 	return React.createElement("Frame")
+			-- end
 			-- Object.defineProperty(Anonymous, "name", {value = nil})
 
 			local divs = {
@@ -91,7 +92,11 @@ return function()
 			}
 
 			jestExpect(function()
-				ReactTestUtils.renderIntoDocument(React.createElement(Anonymous, nil, divs))
+				ReactTestUtils.renderIntoDocument(React.createElement(
+					function() return React.createElement("Frame") end,
+					nil,
+					divs)
+				)
 			end).toErrorDev(
 				"Warning: Each child in a list should have a unique " ..
 					'"key" prop. See https://reactjs.org/link/warning-keys for more information.\n' ..

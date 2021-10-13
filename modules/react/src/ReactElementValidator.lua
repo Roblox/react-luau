@@ -107,12 +107,16 @@ local function getCurrentComponentErrorInfo(parentType):string
 
 	if not info or info == "" then
 		local parentName
-		if typeof(parentType) == "string" then
+		local typeofParentType = typeof(parentType)
+		if typeofParentType == "string" then
 			parentName = parentType
-		else
-			if typeof(parentType) == "table" then
-				parentName = parentType.displayName or parentType.name
-			end
+		elseif typeofParentType == "function" then
+			-- ROBLOX deviation: Lua doesn't store fields on functions, so try and get the name via reflection
+			local functionName = debug.info(parentType, "n")
+			-- ROBLOX note: unlike other places, upstream doesn't default the component name string in this message
+			parentName = functionName ~= "" and functionName
+		elseif typeof(parentType) == "table" then
+			parentName = parentType.displayName or parentType.name
 		end
 
 		if parentName then

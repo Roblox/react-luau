@@ -1351,56 +1351,74 @@ xit('should not throw when updating an auxiliary component', function()
     })
   end)
 
---   -- This would be hard to get working without more DOM logic simulation
---   xit('should not override state with stale values if prevState is spread within getDerivedStateFromProps', function()
---     local divRef = React.createRef()
---     local childInstance
+  -- ROBLOX TODO: possibly a bug in the test due to divRef deviations, but a function state update doesn't get all the way through
+  xit('should not override state with stale values if prevState is spread within getDerivedStateFromProps', function()
+    local divRef = React.createRef()
+    local childInstance
+    -- ROBLOX deviation: Noop renderer doesn't udpated the divRef like reactDOM does. figure out idiomatic way to update
+    local capturedValue
 
---     class Child extends React.Component {
---       state = {local: 0}
---       static getDerivedStateFromProps(nextProps, prevState)
---         return {...prevState, remote: nextProps.remote}
---       end
---       updateState = function()
---         this.setState(state => ({local: state.local + 1}))
---         this.props.onChange(this.state.remote + 1)
---       end
---       render()
---         childInstance = this
---         return (
---           <div
---             onClick={this.updateState}
---             ref={
---               divRef
---             }>{`remote:${this.state.remote}, local:${this.state.local}`}</div>
---         )
---       end
---  end
+    local Child = React.Component:extend("Child")
+    function Child:init()
+      self.state = {local_ = 0}
+    end
+    function Child.getDerivedStateFromProps(nextProps, prevState)
+        prevState.remote = nextProps.remote
+        return prevState
+    end
+    function Child:updateState()
+        self:setState(function(state)
+          return {local_ = state.local_ + 1}
+        end)
+        self.props.onChange(self, self.state.remote + 1)
+    end
+    function Child:render()
+        capturedValue = "remote:" .. tostring(self.state.remote) .. ", local:" .. tostring(self.state.local_)
+        childInstance = self
+        local renderedDiv =
+          React.createElement("div", {
+            onClick=self.updateState,
+            ref=divRef
+          },
+          capturedValue
+        )
+        divRef.current = renderedDiv
+        return renderedDiv
+    end
 
---     class Parent extends React.Component {
---       state = {value: 0}
---       handleChange = value => {
---         this.setState({value})
---       end
---       render()
---         return <Child remote={this.state.value} onChange={this.handleChange} />
---       end
---  end
+    local Parent = React.Component:extend("Parent")
+    function Parent:init()
+      self.state = {value = 0}
+    end
+    function Parent:handleChange(value)
+        self:setState({value = value})
+    end
+    function Parent:render()
+        return React.createElement(Child,
+          {remote=self.state.value, onChange=self.handleChange}
+        )
+    end
 
---     ReactNoop.act(function()
---       ReactNoop.render(<Parent />)
---     })
+    ReactNoop.act(function()
+      ReactNoop.render(React.createElement(Parent))
+    end)
 
---     jestExpect(divRef.current.textContent).toBe('remote:0, local:0')
+    -- ROBLOX TODO: divRef doesn't get updated with Noop renderer like it does in DOM
+    -- jestExpect(divRef.current.textContent).toBe('remote:0, local:0')
+    jestExpect(capturedValue).toBe('remote:0, local:0')
 
---     -- Trigger setState() calls
---     childInstance.updateState()
---     jestExpect(divRef.current.textContent).toBe('remote:1, local:1')
+    ReactNoop.act(function()
+      -- Trigger setState() calls
+      childInstance:updateState()
+    end)
+    -- ROBLOX TODO: remote is still 0 on this next line
+    -- jestExpect(divRef.current.textContent).toBe('remote:1, local:1')
+    jestExpect(capturedValue).toBe('remote:1, local:1')
 
---     -- Trigger batched setState() calls
---     divRef.current.click()
---     jestExpect(divRef.current.textContent).toBe('remote:2, local:2')
---   })
+    -- Trigger batched setState() calls
+    divRef.current.click()
+    jestExpect(divRef.current.textContent).toBe('remote:2, local:2')
+  end)
 
   it('should pass the return value from getSnapshotBeforeUpdate to componentDidUpdate', function()
     local log = {}
@@ -1511,6 +1529,7 @@ xit('should not throw when updating an auxiliary component', function()
       )
     end
 
+    -- ROBLOX TODO: upstream uses reactDOM renderer, which means divRef gets updated properly. figure out what can work for Noop
     ReactNoop.act(function()
       ReactNoop.render(React.createElement(SimpleComponent, {value = "initial"}))
     end)

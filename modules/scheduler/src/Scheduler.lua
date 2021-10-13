@@ -146,27 +146,22 @@ return function(hostConfig)
 		-- ROBLOX deviation: YOLO flag for disabling pcall
 		local ok, result
 		if not _G.__YOLO__ then
-			ok, result = pcall(function()
-				if enableProfiling then
-					local enableProfilingOk, enableProfilingResult = pcall(function()
-						return workLoop(hasTimeRemaining, initialTime)
-					end)
+			-- ROBLOX performance: don't nest try/catch here, Lua can do better, and it eliminated an anon function creation
+			if enableProfiling then
+				ok, result = pcall(workLoop, hasTimeRemaining, initialTime)
 
-					if not enableProfilingOk then
-						local error_ = enableProfilingResult
-						if currentTask ~= nil then
-							local currentTime = getCurrentTime()
-							markTaskErrored(currentTask, currentTime)
-							currentTask.isQueued = false
-						end
-						error(error_)
+				if not ok then
+					if currentTask ~= nil then
+						local currentTime = getCurrentTime()
+						markTaskErrored(currentTask, currentTime)
+						currentTask.isQueued = false
 					end
-					return enableProfilingResult
-				else
-					-- No catch in prod code path.
-					return workLoop(hasTimeRemaining, initialTime)
 				end
-			end)
+			else
+				-- No catch in prod code path.
+				ok = true
+				result = workLoop(hasTimeRemaining, initialTime)
+			end
 		else
 			ok = true
 			result = workLoop(hasTimeRemaining, initialTime)
@@ -328,9 +323,7 @@ return function(hostConfig)
 			-- ROBLOX deviation: YOLO flag for disabling pcall
 			local ok, result
 			if not _G.__YOLO__ then
-				ok, result = pcall(function(...)
-					return callback(...)
-				end, ...)
+				ok, result = pcall(callback, ...)
 			else
 				ok = true
 				result = callback(...)
