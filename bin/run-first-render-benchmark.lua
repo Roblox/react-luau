@@ -9,6 +9,11 @@ local firstRenderBenchmark =
 		RotrieverWorkspace.React.Dev.PerformanceBenchmarks
 	).firstRenderBenchmark
 
-firstRenderBenchmark(Roact, ReactRoblox, Scheduler)({
+local config = {
 	minSamples = 200,
-})
+}
+if _G.minSamples ~= nil then
+	config.minSamples = tonumber(_G.minSamples)
+end
+
+firstRenderBenchmark(Roact, ReactRoblox, Scheduler)(config)

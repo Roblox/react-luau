@@ -7,6 +7,11 @@ local Scheduler = require(RotrieverWorkspace.Scheduler.Scheduler)
 local frameRateBenchmark =
 	require(RotrieverWorkspace.React.Dev.PerformanceBenchmarks).frameRateBenchmark
 
-frameRateBenchmark(Roact, ReactRoblox, Scheduler)({
+local config = {
 	minSamples = 600,
-})
+}
+if _G.minSamples ~= nil then
+	config.minSamples = tonumber(_G.minSamples)
+end
+
+frameRateBenchmark(Roact, ReactRoblox, Scheduler)(config)
