@@ -10,7 +10,8 @@ return function()
 
 	describe("new", function()
 		it("should create a SingleEventManager", function()
-			local manager = SingleEventManager.new()
+			local instance = Instance.new("BindableEvent")
+			local manager = SingleEventManager.new(instance)
 
 			jestExpect(manager).never.toBeNil()
 		end)

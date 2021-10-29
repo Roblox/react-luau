@@ -5,6 +5,7 @@
 local Packages = script.Parent.Parent.Parent.Parent
 
 local console = require(Packages.Shared).console
+type Function = (...any) -> ...any
 
 local CHANGE_PREFIX = "Change."
 
@@ -19,10 +20,18 @@ local EventStatus = {
 	Enabled = "Enabled",
 }
 
+
+export type EventManager = {
+	connectPropertyChange: (self: any, eventName: string, newValue: any) -> (),
+	connectEvent: (self: any, eventName: string, newValue: any) -> (),
+	resume: (self: any) -> (),
+	suspend: (self: any) -> (),
+}
+
 local SingleEventManager = {}
 SingleEventManager.__index = SingleEventManager
 
-function SingleEventManager.new(instance)
+function SingleEventManager.new(instance: Instance): EventManager
 	local self = setmetatable({
 		-- The queue of suspended events
 		_suspendedEventQueue = {},
@@ -47,7 +56,7 @@ function SingleEventManager.new(instance)
 		_instance = instance,
 	}, SingleEventManager)
 
-	return self
+	return (self :: any) :: EventManager
 end
 
 function SingleEventManager:connectEvent(key, listener)
@@ -108,12 +117,9 @@ function SingleEventManager:resume()
 
 	self._isResuming = true
 
-	local index = 1
-
 	-- More events might be added to the queue when evaluating events, so we
 	-- need to be careful in order to preserve correct evaluation order.
-	while index <= #self._suspendedEventQueue do
-		local eventInvocation = self._suspendedEventQueue[index]
+	for _, eventInvocation in ipairs(self._suspendedEventQueue) do
 		local listener = self._listeners[eventInvocation[1]]
 		local argumentCount = eventInvocation[2]
 
@@ -135,8 +141,6 @@ function SingleEventManager:resume()
 				console.warn("%s", result)
 			end
 		end
-
-		index = index + 1
 	end
 
 	self._isResuming = false

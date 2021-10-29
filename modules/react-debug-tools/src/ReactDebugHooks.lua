@@ -127,7 +127,7 @@ local function getPrimitiveStackCache(): Map<string, Array<any>>
 			end)
 		end)
 		readHookLog = hookLog
-		hookLog = {}
+		table.clear(hookLog)
 		for i = 1, #readHookLog do
 			local hook = readHookLog[i]
 			cache[hook.primitive] = ErrorStackParser.parse(hook.stackError)

@@ -7,6 +7,7 @@ local console = require(Packages.Shared).console
 local React = require(Packages.React)
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 local SingleEventManager = require(script.Parent.SingleEventManager)
+type EventManager = SingleEventManager.EventManager
 local Type = require(script.Parent.Type)
 local getDefaultInstanceProperty = require(script.Parent.getDefaultInstanceProperty)
 local ReactRobloxHostTypes = require(script.Parent.Parent["ReactRobloxHostTypes.roblox"])
@@ -22,7 +23,7 @@ type Object = { [any]: any }
 -- store associated data for host instance features like binding and event
 -- management
 -- ROBLOX FIXME: Stronger typing for EventManager
-type EventManager = Object;
+
 local instanceToEventManager: { [HostInstance]: EventManager } = {}
 local instanceToBindings: { [HostInstance]: { [string]: any } } = {}
 
@@ -52,7 +53,7 @@ local function identity(...)
   return ...
 end
 
-local function setRobloxInstanceProperty(hostInstance, key, newValue)
+local function setRobloxInstanceProperty(hostInstance, key, newValue): ()
   if newValue == nil then
     local hostClass = hostInstance.ClassName
     local _, defaultValue = getDefaultInstanceProperty(hostClass, key)
@@ -73,11 +74,13 @@ local function removeBinding(hostInstance, key)
   end
 end
 
-local function attachBinding(hostInstance, key, newBinding)
+local function attachBinding(hostInstance, key, newBinding): ()
   local function updateBoundProperty(newValue)
-    local success, errorMessage = xpcall(function()
-      setRobloxInstanceProperty(hostInstance, key, newValue)
-    end, identity)
+    local success, errorMessage = xpcall(
+      setRobloxInstanceProperty,
+      identity,
+      hostInstance, key, newValue
+    )
 
     if not success then
       local source = newBinding._source or "<enable DEV mode for stack>"
@@ -98,7 +101,7 @@ local function attachBinding(hostInstance, key, newBinding)
   updateBoundProperty(newBinding:getValue())
 end
 
-local function applyProp(hostInstance, key, newValue, oldValue)
+local function applyProp(hostInstance: Instance, key, newValue, oldValue): ()
   -- ROBLOX performance: gets checked in applyProps so we can assume the key is valid
   -- if key == "ref" or key == "children" then
   --   return
@@ -109,7 +112,7 @@ local function applyProp(hostInstance, key, newValue, oldValue)
   if internalKeyType == Type.HostEvent or internalKeyType == Type.HostChangeEvent then
     local eventManager = instanceToEventManager[hostInstance]
     if eventManager == nil then
-      eventManager = SingleEventManager.new(hostInstance)
+      eventManager = (SingleEventManager.new(hostInstance) :: any) :: EventManager
       instanceToEventManager[hostInstance] = eventManager
     end
 
@@ -126,8 +129,7 @@ local function applyProp(hostInstance, key, newValue, oldValue)
 
   -- Handle bindings
   local newIsBinding = typeof(newValue) == "table" and newValue["$$typeof"] == ReactSymbols.REACT_BINDING_TYPE
-  local oldIsBinding = typeof(oldValue) == "table" and oldValue["$$typeof"] == ReactSymbols.REACT_BINDING_TYPE
-
+  local oldIsBinding = oldValue ~= nil and typeof(oldValue) == "table" and oldValue["$$typeof"] == ReactSymbols.REACT_BINDING_TYPE
   if oldIsBinding then
     removeBinding(hostInstance, key)
   end
@@ -139,14 +141,14 @@ local function applyProp(hostInstance, key, newValue, oldValue)
   end
 end
 
-local function applyProps(hostInstance, props)
+local function applyProps(hostInstance: Instance, props: Object): ()
   for propKey, value in pairs(props) do
     -- ROBLOX performance: avoid the function call by inlining check here
     if propKey == "ref" or propKey == "children" then
       continue
     end
 
-    applyProp(hostInstance, propKey, value)
+    applyProp(hostInstance, propKey, value, nil)
   end
 end
 
@@ -156,12 +158,13 @@ local function setInitialProperties(
   _tag: string,
   rawProps: Object,
   _rootContainerElement: HostInstance
-)
+): ()
   -- deviation: Use Roact's prop application logic
-  local success, errorMessage = xpcall(function()
-    applyProps(domElement, rawProps)
-  end, identity)
-
+  local success, errorMessage = xpcall(
+    applyProps,
+    identity,
+    domElement, rawProps
+  )
   -- ROBLOX deviation: Roblox renderer doesn't currently track where instances
   -- were created the way that legacy Roact did, but DEV mode should include
   -- component stack traces as a separate warning
@@ -178,31 +181,42 @@ local function setInitialProperties(
   end
 end
 
+local function safelyApplyProperties(
+  domElement: HostInstance,
+  updatePayload: Array<any>,
+  lastProps: Object
+): ()
+  local updatePayloadCount = #updatePayload
+  for i=1, updatePayloadCount, 2 do
+    local propKey = updatePayload[i]
+    local value = updatePayload[i+1]
+    if value == Object.None then
+      value = nil
+    end
+    -- ROBLOX performance: avoid the function call by inlining check here
+    if propKey ~= "ref" and propKey ~= "children" then
+        applyProp(domElement, propKey, value, lastProps[propKey])
+    end
+  end
+end
+
 local function updateProperties(
   domElement: HostInstance,
   updatePayload: Array<any>,
   lastProps: Object
-)
+): ()
   -- deviation: Use Roact's prop application logic
   if instanceToEventManager[domElement] ~= nil then
     instanceToEventManager[domElement]:suspend()
   end
 
-  local success, errorMessage = xpcall(function()
-    local i = 1
-    while i <= #updatePayload do
-      local propKey = updatePayload[i]
-      local value = updatePayload[i+1]
-      if value == Object.None then
-        value = nil
-      end
-      -- ROBLOX performance: avoid the function call by inlining check here
-      if propKey ~= "ref" and propKey ~= "children" then
-        applyProp(domElement, propKey, value, lastProps[propKey])
-      end
-      i += 2
-    end
-  end, identity)
+  local success, errorMessage = xpcall(
+    safelyApplyProperties,
+    identity,
+    domElement,
+    updatePayload,
+    lastProps
+  )
 
   if not success then
     -- ROBLOX deviation: Roblox renderer doesn't currently track where instances

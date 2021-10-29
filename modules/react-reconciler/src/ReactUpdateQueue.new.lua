@@ -102,9 +102,23 @@ local NoLane = ReactFiberLane.NoLane
 local NoLanes = ReactFiberLane.NoLanes
 local isSubsetOfLanes = ReactFiberLane.isSubsetOfLanes
 local mergeLanes = ReactFiberLane.mergeLanes
--- local ReactFiberNewContext = require(script.Parent["ReactFiberNewContext.new"])
+
+-- ROBLOX deviation: lazy instantiate to avoid circular require
+local ReactFiberNewContext --= require(script.Parent["ReactFiberNewContext.new"])
 -- local enterDisallowedContextReadInDEV = ReactFiberNewContext.enterDisallowedContextReadInDEV
 -- local exitDisallowedContextReadInDEV = ReactFiberNewContext.exitDisallowedContextReadInDEV
+local function enterDisallowedContextReadInDEV()
+	if not ReactFiberNewContext then
+		ReactFiberNewContext = require(script.Parent["ReactFiberNewContext.new"]) :: any
+	end
+	ReactFiberNewContext.enterDisallowedContextReadInDEV()
+end
+local function exitDisallowedContextReadInDEV()
+	if not ReactFiberNewContext then
+		ReactFiberNewContext = require(script.Parent["ReactFiberNewContext.new"]) :: any
+	end
+	ReactFiberNewContext.exitDisallowedContextReadInDEV()
+end
 local ReactFiberFlags = require(script.Parent.ReactFiberFlags)
 local Callback = ReactFiberFlags.Callback
 local ShouldCapture = ReactFiberFlags.ShouldCapture
@@ -400,8 +414,7 @@ local function getStateFromUpdate(
 		if typeof(payload) == "function" then
 			-- Updater function
 			if _G.__DEV__ then
-				warn("Skip `enterDisallowedContextReadInDEV` (cycles)")
-				-- enterDisallowedContextReadInDEV()
+				enterDisallowedContextReadInDEV()
 			end
 			-- ROBLOX deviation: Upstream binds this callback to the instance;
 			-- in order for us to get the same behavior, we'd need to change the
@@ -428,8 +441,7 @@ local function getStateFromUpdate(
 						error(result)
 					end
 				end
-				warn("Skip `exitDisallowedContextReadInDEV` (cycles)")
-				-- exitDisallowedContextReadInDEV()
+				exitDisallowedContextReadInDEV()
 			end
 			return nextState
 		end
@@ -446,8 +458,7 @@ local function getStateFromUpdate(
 		if typeof(payload) == "function" then
 			-- Updater function
 			if _G.__DEV__ then
-				warn("Skip `enterDisallowedContextReadInDEV` (cycles)")
-				-- enterDisallowedContextReadInDEV()
+				enterDisallowedContextReadInDEV()
 			end
 			-- ROBLOX deviation: Upstream binds this callback to the instance;
 			-- in order for us to get the same behavior, we'd need to change the
@@ -474,8 +485,7 @@ local function getStateFromUpdate(
 						error(result)
 					end
 				end
-				warn("Skip `exitDisallowedContextReadInDEV` (cycles)")
-				-- exitDisallowedContextReadInDEV()
+				exitDisallowedContextReadInDEV()
 			end
 		else
 			-- Partial state object

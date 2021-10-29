@@ -12,6 +12,9 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
 type Object = { [string]: any? }
 type Function = (...any) -> any?
+local ReactElementType = require(Packages.Shared.ReactElementType)
+type ReactElement = ReactElementType.ReactElement
+
 
 -- ROBLOX: use patched console from shared
 local console = require(script.Parent.console)
@@ -26,7 +29,7 @@ local ReactSharedInternals = require(script.Parent.ReactSharedInternals)
 
 local ReactDebugCurrentFrame = ReactSharedInternals.ReactDebugCurrentFrame
 
-local function setCurrentlyValidatingElement(element)
+local function setCurrentlyValidatingElement(element: ReactElement?)
 	if _G.__DEV__ then
 		if element then
 			local owner = element._owner
@@ -49,7 +52,7 @@ local function checkPropTypes(
 	props,
 	location: string,
 	componentName: string?,
-	element: any?
+	element: ReactElement
 ): ()
 	if _G.__DEV__ then
 		-- deviation: hasOwnProperty shouldn't be relevant to lua objects
@@ -147,12 +150,13 @@ local function checkPropTypes(
 					setCurrentlyValidatingElement(nil)
 				end
 
-				if isErrorObject and loggedTypeFailures[result.message] == nil then
+				-- ROBLOX FIXME: Luau analyze doesn't understand isErrorObject's effect as a predicate meaning result ~= nil
+				if isErrorObject and loggedTypeFailures[(result :: any).message] == nil then
 					-- Only monitor this failure once because there tends to be a lot of the
 					-- same error.
-					loggedTypeFailures[tostring(result.message)] = true
+					loggedTypeFailures[tostring((result :: any).message)] = true
 					setCurrentlyValidatingElement(element)
-					console.warn(string.format('Failed %s type: %s', location, tostring(result.message)))
+					console.warn(string.format('Failed %s type: %s', location, tostring((result :: any).message)))
 					setCurrentlyValidatingElement(nil)
 				end
 			end

@@ -13,6 +13,10 @@ local Symbol = require(script.Parent.Symbol)
 local Nil = Symbol.named("Nil")
 local _cachedPropertyValues = {}
 
+local function tryPropertyName(instance, propertyName)
+	return instance[propertyName]
+end
+
 local function getDefaultInstanceProperty(className, propertyName)
 	local classCache = _cachedPropertyValues[className]
 
@@ -34,9 +38,7 @@ local function getDefaultInstanceProperty(className, propertyName)
 	end
 
 	local created = Instance.new(className)
-	local ok, defaultValue = pcall(function()
-		return created[propertyName]
-	end)
+	local ok, defaultValue = pcall(tryPropertyName, created, propertyName)
 
 	created:Destroy()
 

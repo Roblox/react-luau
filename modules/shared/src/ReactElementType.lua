@@ -1,3 +1,4 @@
+--!strict
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -6,6 +7,8 @@
  *
  * @flow
 ]]
+local ReactTypes = require(script.Parent.ReactTypes)
+type React_Element<ElementType> = ReactTypes.React_Element<ElementType>
 
 export type Source = {
 	fileName: string,
@@ -27,11 +30,10 @@ export type ReactElement = {
 	-- __DEV__
 	_store: {
 		validated: boolean,
-		[any]: any,
+		[string]: any,
 	},
 	-- deviation: No built in element flow types
-	-- _self: React$Element<any>,
-	_self: any,
+	_self: React_Element<any>,
 	_shadowChildren: any,
 	_source: Source,
 }

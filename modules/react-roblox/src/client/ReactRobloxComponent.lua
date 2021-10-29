@@ -119,13 +119,14 @@ local function diffProperties(
     -- } else {
       -- For all other deleted properties we add it to the queue. We use
       -- the allowed property list in the commit phase instead.
-      updatePayload = updatePayload or {}
+      -- ROBLOX performance: prealloc table size 2 for these 2 items at least
+      updatePayload = updatePayload or table.create(2)
       table.insert(updatePayload, propKey)
       table.insert(updatePayload, Object.None)
     -- }
   end
   for propKey, nextProp in pairs(nextProps) do
-    local lastProp = lastProps ~= nil and lastProps[propKey] or nil;
+    local lastProp = lastProps ~= nil and lastProps[propKey] or nil
     if nextProp == lastProp then
       continue
     end
@@ -222,7 +223,8 @@ local function diffProperties(
     -- } else {
       -- For any other property we always add it to the queue and then we
       -- filter it out using the allowed property list during the commit.
-      updatePayload = updatePayload or {}
+      -- ROBLOX performance: prealloc table size 2 for these 2 items at least
+      updatePayload = updatePayload or table.create(2)
       table.insert(updatePayload, propKey)
       table.insert(updatePayload, nextProp)
     -- }
@@ -233,7 +235,7 @@ local function diffProperties(
   --   }
   --   (updatePayload = updatePayload || []).push(STYLE, styleUpdates);
   -- }
-  return updatePayload;
+  return updatePayload
 end
 exports.diffProperties = diffProperties
 -- Apply the diff.

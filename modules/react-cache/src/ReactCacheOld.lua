@@ -121,11 +121,15 @@ local function accessResult(
 	key: any
 ): Result<any>
 	local entriesForResource = entries[resource]
+	local entry
 	if entriesForResource == nil then
 		entriesForResource = {}
 		entries[resource] = entriesForResource
+	else
+		-- ROBLOX performance: only assign the entry if its not a new table
+		entry = entriesForResource[key]
 	end
-	local entry = entriesForResource[key]
+
 	if entry == nil then
 		local thenable = fetch(input)
 
