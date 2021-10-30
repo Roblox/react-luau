@@ -16,7 +16,8 @@ return function()
 	end)
 
 	describe("pcall depth", function()
-		it("should warn when pcall depth limit is hit", function()
+		-- ROBLOX: we no longer warn, but this test is a good way to programmaitcally create a complex tree
+		it("should render even when pcall depth limit is hit", function()
 			local function LayoutEffect(props)
 				React.useLayoutEffect(function()
 					Scheduler.unstable_yieldValue("Layout Effect")
@@ -44,15 +45,15 @@ return function()
 				{ RoactCompat.createElement(constructDeepTree(500)) }
 			)
 
-			local root = ReactRoblox.createRoot(Instance.new("Folder"))
-
+			local instance = Instance.new("Folder")
+			local root = ReactRoblox.createRoot(instance)
 			jestExpect(function()
 				root:render(DeepTree)
 				Scheduler.unstable_flushAllWithoutAsserting()
-			end).toWarnDev(
-				"Hit maximum pcall depth of 20, entering UNSAFE call mode. Suspense and Error "
-					.. "Boundaries will no longer work correctly. This will be resolved in React 18."
-			)
+			end).toWarnDev({})
+			local children = instance:GetChildren()
+
+			jestExpect(#children).toBe(1)
 		end)
 	end)
 end

@@ -138,12 +138,7 @@ exports.decoupleUpdatePriorityFromScheduler = true
 
 exports.enableDiscreteEventFlushingChange = false
 
--- https://github.com/facebook/react/pull/19654
-exports.enablePassiveEventIntervention = true
-
 exports.enableEagerRootListeners = false
-
-exports.disableSchedulerTimeoutInWorkLoop = false
 
 exports.enableDoubleInvokingEffects = false
 return exports

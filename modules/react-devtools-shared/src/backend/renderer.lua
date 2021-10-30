@@ -9,7 +9,8 @@
 local Packages = script.Parent.Parent.Parent
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
-local console = require(Packages.Shared).console
+local Shared = require(Packages.Shared)
+local console = Shared.console
 local Set = LuauPolyfill.Set
 local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
@@ -102,7 +103,7 @@ local FORWARD_REF_NUMBER = ReactSymbols.FORWARD_REF_NUMBER
 local FORWARD_REF_SYMBOL_STRING = ReactSymbols.FORWARD_REF_SYMBOL_STRING
 local MEMO_NUMBER = ReactSymbols.MEMO_NUMBER
 local MEMO_SYMBOL_STRING = ReactSymbols.MEMO_SYMBOL_STRING
-
+local is = Shared.objectIs
 -- ROBLOX FIXME: pass in a real host config, or make this able to use basic enums without initializing
 local ReactReconciler = require(Packages.ReactReconciler)({})
 
@@ -1003,6 +1004,42 @@ exports.attach = function(
 		end
 		return nil
 	end
+	local function areHookInputsEqual(nextDeps: Array<any>, prevDeps: Array<any> | nil)
+		if prevDeps == nil then
+			return false
+		end
+
+		local i = 1
+		while i < #(prevDeps :: Array<any>) and i < #nextDeps do
+			if is(nextDeps[i], (prevDeps :: Array<any>)[i]) then
+				continue
+			end
+			return false
+		end
+		return true
+	end
+
+	local function isEffect(memoizedState)
+		return memoizedState ~= nil
+			and typeof(memoizedState) == "table"
+			and memoizedState.tag ~= nil
+			and memoizedState.create ~= nil
+			and memoizedState.destroy ~= nil
+			and memoizedState.deps ~= nil
+			and (memoizedState.deps == nil or Array.isArray(memoizedState.deps))
+			and memoizedState.next
+	end
+
+	local function didHookChange(prev: any, next: any): boolean
+		local prevMemoizedState = prev.memoizedState
+		local nextMemoizedState = next.memoizedState
+
+		if isEffect(prevMemoizedState) and isEffect(nextMemoizedState) then
+			return prevMemoizedState ~= nextMemoizedState
+				and not areHookInputsEqual(nextMemoizedState.deps, prevMemoizedState.deps)
+		end
+		return nextMemoizedState ~= prevMemoizedState
+	end
 	didHooksChange = function(prev: any, next_: any): boolean
 		if prev == nil or next_ == nil then
 			return false
@@ -1016,7 +1053,7 @@ exports.attach = function(
 			and next_["queue"]
 		then
 			while next_ ~= nil do
-				if next_.memoizedState ~= prev.memoizedState then
+				if didHookChange(prev, next_) then
 					return true
 				else
 					next_ = next_.next

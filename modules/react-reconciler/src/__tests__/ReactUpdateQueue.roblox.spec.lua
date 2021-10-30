@@ -113,7 +113,7 @@ return function()
 
 	describe("commitUpdateQueue", function()
 		beforeEach(function()
-			lane = FiberLane.NoLane
+			lane = FiberLane.SomeRetryLane
 			update = ReactUpdateQueue.createUpdate(updateTime, lane)
 			setStateCallbackWasCalled = false
 			update.payload = updatePayload
@@ -126,17 +126,20 @@ return function()
 		end)
 
 		it("with non-empty queue", function()
+			-- our update is Retry, since NoLane means the callback was already committed
 			ReactUpdateQueue.enqueueUpdate(workInProgress, update)
 			jestExpect(workInProgress.memoizedState).toBe(nil)
 
+			-- we use RetryLanes here because the update lane needs to be a subset of that
 			ReactUpdateQueue.processUpdateQueue(
 			  workInProgress,
 			  nextProps,
 			  component,
-			  FiberLane.NoLanes
+			  FiberLane.RetryLanes
 			)
+			jestExpect(fundamentalFiber.updateQueue.effects).never.toBe(nil)
 
-		  ReactUpdateQueue.commitUpdateQueue(
+			ReactUpdateQueue.commitUpdateQueue(
 			  workInProgress,
 			  fundamentalFiber.updateQueue,
 			  component

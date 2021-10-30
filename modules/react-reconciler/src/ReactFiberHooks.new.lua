@@ -1252,7 +1252,7 @@ function updateEffectImpl(fiberFlags, hookFlags, create, deps)
     if nextDeps ~= nil then
       local prevDeps = prevEffect.deps
       if areHookInputsEqual(nextDeps, prevDeps) then
-        pushEffect(hookFlags, create, destroy, nextDeps)
+        hook.memoizedState = pushEffect(hookFlags, create, destroy, nextDeps)
         return
       end
     end

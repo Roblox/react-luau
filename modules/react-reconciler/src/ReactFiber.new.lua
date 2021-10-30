@@ -324,6 +324,10 @@ local function createWorkInProgress(current: Fiber, pendingProps: any): Fiber
 		workInProgress.type = current.type
 
 		-- We already have an alternate.
+		-- Reset the effect tag.
+		workInProgress.flags = NoFlags
+
+		-- The current effects are no longer valid
 		workInProgress.subtreeFlags = NoFlags
 		workInProgress.deletions = nil
 
@@ -400,7 +404,9 @@ local function resetWorkInProgress(workInProgress: Fiber, renderLanes: Lanes)
 
 	-- Reset the effect tag but keep any Placement tags, since that's something
 	-- that child fiber is setting, not the reconciliation.
-	workInProgress.flags = bit32.band(workInProgress.flags, Placement)
+	workInProgress.flags = bit32.band(workInProgress.flags, bit32.bor(StaticMask, Placement))
+
+	-- The effects are no longer valid
 
 	local current = workInProgress.alternate
 	if current == nil then

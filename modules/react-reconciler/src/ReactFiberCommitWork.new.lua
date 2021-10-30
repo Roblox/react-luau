@@ -17,11 +17,10 @@ local function unimplemented(message)
   error("FIXME (roblox): " .. message .. " is unimplemented", 2)
 end
 
--- ROBLOX DEVIATION: keep track of the pcall run depth and whether or not we have
--- warned the user about hitting a pcall depth of over MAX_RUN_DEPTH.
+-- ROBLOX DEVIATION: keep track of the pcall run depth and stop wrapping pcalls after we hit MAX_RUN_DEPTH.
+-- ROBLOX note: if this number is raised to 195, the test in RoactRecursiveLayoutPcallDepth will fail
 local runDepth = 0
-local warnedRunDepth = false
-local MAX_RUN_DEPTH = 20
+local MAX_RUN_DEPTH = 180
 
 local function isCallable(value)
   if typeof(value) == "function" then
@@ -714,15 +713,6 @@ local function recursivelyCommitLayoutEffects(
               captureCommitPhaseError(child, finishedWork, error_)
             end
           else
-            -- ROBLOX DEVIATION: Warn the first time we go over the pcall limit.
-            if _G.__DEV__ then
-              if not warnedRunDepth and runDepth == MAX_RUN_DEPTH then
-                warnedRunDepth = true
-                console.warn("Hit maximum pcall depth of " .. MAX_RUN_DEPTH .. ", entering UNSAFE call mode. Suspense and Error "..
-                             "Boundaries will no longer work correctly. This will be resolved in React 18.")
-              end
-            end
-
             recursivelyCommitLayoutEffects(child, finishedRoot, captureCommitPhaseError, schedulePassiveEffectCallback)
           end
           if prevCurrentFiberInDEV ~= nil then
@@ -733,33 +723,19 @@ local function recursivelyCommitLayoutEffects(
         else
           -- ROBLOX deviation: YOLO flag for disabling pcall
           local ok, error_
-          if not _G.__YOLO__ then
+          if not _G.__YOLO__ and runDepth < MAX_RUN_DEPTH then
             --[[
               ROBLOX DEVIATION: After MAX_RUN_DEPTH pcalls, do not wrap recursive calls in pcall. Otherwise, we hit the
               stack limit and get a stack overflow error.
             ]]
-            if runDepth < MAX_RUN_DEPTH then
-              runDepth += 1
+            runDepth += 1
 
-              ok, error_ = pcall(
-              -- ROBLOX deviation: pass in this function to avoid dependency cycle
-                recursivelyCommitLayoutEffects, child, finishedRoot, captureCommitPhaseError, schedulePassiveEffectCallback
-              )
+            ok, error_ = pcall(
+            -- ROBLOX deviation: pass in this function to avoid dependency cycle
+              recursivelyCommitLayoutEffects, child, finishedRoot, captureCommitPhaseError, schedulePassiveEffectCallback
+            )
 
-              runDepth -= 1
-            else
-              if _G.__DEV__ then
-                -- ROBLOX DEVIATION: Warn the first time we go over the pcall limit.
-                if not warnedRunDepth and runDepth == MAX_RUN_DEPTH then
-                  warnedRunDepth = true
-                  console.warn("Hit maximum pcall depth of " .. MAX_RUN_DEPTH .. ", entering UNSAFE call mode. Suspense and Error "..
-                               "Boundaries will no longer work correctly. This will be resolved in React 18.")
-                end
-              end
-
-              ok = true
-              recursivelyCommitLayoutEffects(child, finishedRoot, captureCommitPhaseError, schedulePassiveEffectCallback)
-            end
+            runDepth -= 1
           else
             ok = true
             recursivelyCommitLayoutEffects(child, finishedRoot, captureCommitPhaseError, schedulePassiveEffectCallback)

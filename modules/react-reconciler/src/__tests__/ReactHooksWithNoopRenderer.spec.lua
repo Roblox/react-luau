@@ -47,7 +47,7 @@ return function()
 
 	beforeEach(function()
 		RobloxJest.resetModules()
-		RobloxJest.useFakeTimers()
+ 		RobloxJest.useFakeTimers()
 		LuauPolyfill = require(Packages.LuauPolyfill)
 		clearTimeout = LuauPolyfill.clearTimeout
 		setTimeout = LuauPolyfill.setTimeout
@@ -396,7 +396,7 @@ return function()
 			jestExpect(firstUpdater).toEqual(secondUpdater)
 		end)
 
-		it("warns on set after unmount", function()
+		it("does not warn on set after unmount", function()
 			local updateCount
 			local function Counter(props, ref)
 				_, updateCount = useState(0)
@@ -407,61 +407,9 @@ return function()
 			jestExpect(Scheduler).toFlushWithoutYielding()
 			ReactNoop.render(nil)
 			jestExpect(Scheduler).toFlushWithoutYielding()
-			jestExpect(function()
-				act(function()
-					updateCount(1)
-				end)
-			end).toErrorDev(
-				"Warning: Can't perform a React state update on an unmounted "
-					.. "component. This is a no-op, but it indicates a memory leak in your "
-					.. "application. To fix, cancel all subscriptions and asynchronous "
-					.. "tasks in a useEffect cleanup function.\n"
-					.. "    in Counter (at **)"
-			)
-		end)
-
-		it("dedupes the warning by component name", function()
-			local _useStateCount, updateCountA
-			local function CounterA(props, ref)
-				_useStateCount, updateCountA = useState(0)
-				return nil
-			end
-			local updateCountB
-			local function CounterB(props, ref)
-				_useStateCount, updateCountB = useState(0)
-				return nil
-			end
-
-			ReactNoop.render({ React.createElement(CounterA, { key = "A" }), React.createElement(CounterB, { key = "B" }) })
-			jestExpect(Scheduler).toFlushWithoutYielding()
-			ReactNoop.render(nil)
-			jestExpect(Scheduler).toFlushWithoutYielding()
-			jestExpect(function()
-				act(function()
-					updateCountA(1)
-				end)
-			end).toErrorDev(
-				"Warning: Can't perform a React state update on an unmounted "
-					.. "component. This is a no-op, but it indicates a memory leak in your "
-					.. "application. To fix, cancel all subscriptions and asynchronous "
-					.. "tasks in a useEffect cleanup function.\n"
-					.. "    in CounterA (at **)"
-			)
-			-- already cached so this logs no error
 			act(function()
-				updateCountA(2)
+				updateCount(1)
 			end)
-			jestExpect(function()
-				act(function()
-					updateCountB(1)
-				end)
-			end).toErrorDev(
-				"Warning: Can't perform a React state update on an unmounted "
-					.. "component. This is a no-op, but it indicates a memory leak in your "
-					.. "application. To fix, cancel all subscriptions and asynchronous "
-					.. "tasks in a useEffect cleanup function.\n"
-					.. "    in CounterB (at **)"
-			)
 		end)
 
 		it("works with memo", function()
@@ -1534,7 +1482,7 @@ return function()
 			end
 		)
 
-		it("warns about state updates for unmounted components with no pending passive unmounts", function()
+		it("does not warn about state updates for unmounted components with no pending passive unmounts", function()
 			local completePendingRequest = nil
 			local function Component()
 				Scheduler.unstable_yieldValue("Component")
@@ -1567,11 +1515,11 @@ return function()
 				jestExpect(Scheduler).toFlushAndYieldThrough({ "layout destroy" })
 
 				-- Simulate an XHR completing.
-				jestExpect(completePendingRequest).toErrorDev("Warning: Can't perform a React state update on an unmounted component.")
+				completePendingRequest()
 			end)
 		end)
 
-		it("still warns if there are pending passive unmount effects but not for the current fiber", function()
+		it("does not warn if there are pending passive unmount effects but not for the current fiber", function()
 			local completePendingRequest = nil
 			local function ComponentWithXHR()
 				Scheduler.unstable_yieldValue("Component")
@@ -1631,11 +1579,11 @@ return function()
 				jestExpect(Scheduler).toFlushAndYieldThrough({ "a:layout destroy" })
 
 				-- Simulate an XHR completing in the component without a pending passive effect..
-				jestExpect(completePendingRequest).toErrorDev("Warning: Can't perform a React state update on an unmounted component.")
+				completePendingRequest()
 			end)
 		end)
 
-		it("warns if there are updates after pending passive unmount effects have been flushed", function()
+		it("does not warn if there are updates after pending passive unmount effects have been flushed", function()
 			local updaterFunction
 
 			local function Component()
@@ -1666,14 +1614,7 @@ return function()
 			jestExpect(Scheduler).toFlushAndYield({ "passive destroy" })
 
 			act(function()
-				jestExpect(function()
-					updaterFunction(true)
-				end).toErrorDev(
-					"Warning: Can't perform a React state update on an unmounted component. "
-						.. "This is a no-op, but it indicates a memory leak in your application. "
-						.. "To fix, cancel all subscriptions and asynchronous tasks in a useEffect cleanup function.\n"
-						.. "    in Component (at **)"
-				)
+				updaterFunction(true)
 			end)
 		end)
 
@@ -4257,56 +4198,148 @@ return function()
 		jestExpect(ReactNoop).toMatchRenderedOutput("ABC")
 	end)
 
-	-- ROBLOX TODO: enable this test
-	-- it("regression test: don't unmount effects on siblings of deleted nodes", async function()
-	--   local root = ReactNoop.createRoot()
+	it("regression test: don't unmount effects on siblings of deleted nodes", function()
+		local root = ReactNoop.createRoot()
 
-	--   function Child({label})
-	--     useLayoutEffect(function()
-	--       Scheduler.unstable_yieldValue('Mount layout ' .. label)
-	--       return function()
-	--         Scheduler.unstable_yieldValue('Unmount layout ' .. label)
-	--       end
-	--     }, [label])
-	--     useEffect(function()
-	--       Scheduler.unstable_yieldValue('Mount passive ' .. label)
-	--       return function()
-	--         Scheduler.unstable_yieldValue('Unmount passive ' .. label)
-	--       end
-	--     }, [label])
-	--     return label
-	--   end
+		local function Child(props)
+			local label = props.label
+			useLayoutEffect(function()
+				Scheduler.unstable_yieldValue('Mount layout ' .. label)
+				return function()
+					Scheduler.unstable_yieldValue('Unmount layout ' .. label)
+				end
+			end, {label})
+			useEffect(function()
+				Scheduler.unstable_yieldValue('Mount passive ' .. label)
+				return function()
+					Scheduler.unstable_yieldValue('Unmount passive ' .. label)
+				end
+			end, {label})
+			return label
+		end
 
-	--   await act(async function()
-	--     root.render(
-	--       <>
-	--         <Child key="A" label="A" />
-	--         <Child key="B" label="B" />
-	--       </>,
-	--     )
-	--   })
-	--   jestExpect(Scheduler).toHaveYielded([
-	--     'Mount layout A',
-	--     'Mount layout B',
-	--     'Mount passive A',
-	--     'Mount passive B',
-	--   ])
+		act(function()
+			root.render(
+				React.createElement(React.Fragment, nil,
+					React.createElement(Child, {key = "A", label = "A"}),
+					React.createElement(Child, {key = "B", label = "B"})
+				)
+			)
+		end)
+		jestExpect(Scheduler).toHaveYielded({
+			'Mount layout A',
+			'Mount layout B',
+			'Mount passive A',
+			'Mount passive B',
+		})
 
-	--   -- Delete A. This should only unmount the effect on A. In the regression,
-	--   -- B's effect would also unmount.
-	--   await act(async function()
-	--     root.render(
-	--       <>
-	--         <Child key="B" label="B" />
-	--       </>,
-	--     )
-	--   })
-	--   jestExpect(Scheduler).toHaveYielded(['Unmount layout A', 'Unmount passive A'])
+		-- Delete A. This should only unmount the effect on A. In the regression,
+		-- B's effect would also unmount.
+		act(function()
+			root.render(
+				React.createElement(React.Fragment, nil,
+					React.createElement(Child, {key = "B", label = "B"})
+				)
+			)
+		end)
+		jestExpect(Scheduler).toHaveYielded({'Unmount layout A', 'Unmount passive A'})
 
-	--   -- Now delete and unmount B.
-	--   await act(async function()
-	--     root.render(null)
-	--   })
-	--   jestExpect(Scheduler).toHaveYielded(['Unmount layout B', 'Unmount passive B'])
-	-- end)
+		-- Now delete and unmount B.
+		act(function()
+			root.render(nil)
+		end)
+		jestExpect(Scheduler).toHaveYielded({'Unmount layout B', 'Unmount passive B'})
+	end)
+
+	it("regression: deleting a tree and unmounting its effects after a reorder", function()
+		local root = ReactNoop.createRoot()
+
+		local function Child(props)
+			local label = props.label
+			useEffect(function()
+				Scheduler.unstable_yieldValue('Mount ' .. label)
+				return function()
+					Scheduler.unstable_yieldValue('Unmount ' .. label)
+				end
+			end, {label})
+			return label
+		end
+
+		act(function()
+			root.render(
+				React.createElement(React.Fragment, nil,
+					React.createElement(Child, {key = "A", label = "A"}),
+					React.createElement(Child, {key = "B", label = "B"})
+				)
+			)
+		end)
+		jestExpect(Scheduler).toHaveYielded({
+			'Mount A',
+			'Mount B',
+		})
+
+		act(function()
+			root.render(
+				React.createElement(React.Fragment, nil,
+					React.createElement(Child, {key = "B", label = "B"}),
+					React.createElement(Child, {key = "A", label = "A"})
+				)
+			)
+		end)
+		jestExpect(Scheduler).toHaveYielded({})
+
+		act(function()
+			root.render(nil)
+		end)
+		jestExpect(Scheduler).toHaveYielded({
+			'Unmount B',
+			-- In the regression, the reorder would cause Child A to "forget" that it
+			-- contains passive effects. Then when we deleted the tree, A's unmount
+			-- effect would not fire.
+			'Unmount A'})
+	end)
+
+	it("effect dependencies are persisted after a render phase update", function()
+		local handleClick
+		local function Test()
+			local count, setCount = useState(0)
+			useEffect(function()
+				Scheduler.unstable_yieldValue('Effect: ' .. count)
+			end, {count})
+
+			if count > 0 then
+				setCount(0)
+			end
+
+			handleClick = function()
+				return setCount(2)
+			end
+
+			return React.createElement(Text, {text=string.format("Render: %d", count)})
+		end
+
+		act(function()
+			ReactNoop.render(React.createElement(Test))
+		end)
+
+		jestExpect(Scheduler).toHaveYielded({'Render: 0', 'Effect: 0'})
+
+		act(function()
+			handleClick()
+		end)
+
+		jestExpect(Scheduler).toHaveYielded({'Render: 0'})
+
+		act(function()
+			handleClick()
+		end)
+
+		jestExpect(Scheduler).toHaveYielded({'Render: 0'})
+
+		act(function()
+			handleClick()
+		end)
+
+		jestExpect(Scheduler).toHaveYielded({'Render: 0'})
+	end)
 end

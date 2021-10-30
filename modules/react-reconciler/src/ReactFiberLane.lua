@@ -111,7 +111,8 @@ local TransitionHydrationLane: Lane = --[[              ]] 0b0000000000000000001
 local TransitionLanes: Lanes = --[[                     ]] 0b0000000001111111110000000000000
 
 local RetryLanes: Lanes = --[[                          ]] 0b0000011110000000000000000000000
-
+-- ROBLOX deviation: we expose this symbol from the module for ReactUpdateQueue.roblox tests, we don't re-export outside the package
+exports.RetryLanes = RetryLanes
 local SomeRetryLane: Lanes = --[[                       ]] 0b0000010000000000000000000000000
 exports.SomeRetryLane = SomeRetryLane
 

@@ -439,7 +439,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 			local oldIndex = current.index
 			if oldIndex < lastPlacedIndex then
 				-- This is a move.
-				newFiber.flags = Placement
+				newFiber.flags = bit32.bor(newFiber.flags, Placement)
 				return lastPlacedIndex
 			else
 				-- This item can stay in place.
@@ -447,7 +447,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 			end
 		else
 			-- This is an insertion.
-			newFiber.flags = Placement
+			newFiber.flags = bit32.bor(newFiber.flags, Placement)
 			return lastPlacedIndex
 		end
 	end
@@ -456,7 +456,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 		-- This is simpler for the single child case. We only need to do a
 		-- placement for inserting new children.
 		if shouldTrackSideEffects and newFiber.alternate == nil then
-			newFiber.flags = Placement
+			newFiber.flags = bit32.bor(newFiber.flags, Placement)
 		end
 		return newFiber
 	end

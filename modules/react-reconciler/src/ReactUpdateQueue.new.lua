@@ -644,7 +644,12 @@ local function processUpdateQueue(
 					instance
 				)
 				local callback = update.callback
-				if callback ~= nil then
+				if
+					callback ~= nil
+					-- If the update was already committed, we should not queue its
+					-- callback again.
+					and update.lane ~= NoLane
+				then
 					workInProgress.flags = bit32.bor(workInProgress.flags, Callback)
 					local effects = queue.effects
 					if effects == nil then
