@@ -1,9 +1,10 @@
 local PlayerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
 
 local DeveloperTools = require(script.ProjectWorkspace.DeveloperTools)
+local ReactDevtoolsExtensions = require(script.ProjectWorkspace.ReactDevtoolsExtensions)
 
 local inspector = DeveloperTools.forLibrary("ReactExamples")
-inspector:initRoact(game:GetService("ReplicatedStorage").Packages._Workspace)
+inspector:initRoact(ReactDevtoolsExtensions)
 
 local exampleData = {
 	{

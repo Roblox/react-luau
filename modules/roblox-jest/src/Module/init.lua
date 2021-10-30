@@ -49,6 +49,8 @@ local function requireOverride(scriptInstance: ModuleScript): any
 		scriptInstance == script
 		or scriptInstance == script.Parent
 		or scriptInstance.Name == "jest-roblox"
+		-- for the 2021 version of the Studio Inspector plugin
+		or scriptInstance.Name == "DeveloperTools"
 	then
 		return require(scriptInstance)
 	end

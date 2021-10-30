@@ -52,10 +52,10 @@ return function()
 			-- Patch a fake console so we can verify with tests below.
 			-- Patching the real console is too complicated,
 			-- because Jest itself has hooks into it as does our test env setup.
-			mockError = jest:fn()
-			mockInfo = jest:fn()
-			mockLog = jest:fn()
-			mockWarn = jest:fn()
+			mockError = jest.fn()
+			mockInfo = jest.fn()
+			mockLog = jest.fn()
+			mockWarn = jest.fn()
 			fakeConsole = {
 				error = mockError,
 				info = mockInfo,

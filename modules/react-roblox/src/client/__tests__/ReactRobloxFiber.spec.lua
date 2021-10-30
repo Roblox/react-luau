@@ -1183,7 +1183,7 @@ return function()
 
   -- -- @gate enableEagerRootListeners
   -- it('listens to events that do not exist in the Portal subtree', () => {
-  --   local onClick = jest:fn()
+  --   local onClick = jest.fn()
 
   --   local ref = React.createRef()
   --   ReactDOM.render(

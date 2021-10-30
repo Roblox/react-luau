@@ -13,8 +13,6 @@ local Array = LuauPolyfill.Array
 local Agent = require(script.agent)
 type Agent = Agent.Agent
 
-local attach = require(script.renderer).attach
-
 local types = require(script.types)
 export type DevToolsHook = types.DevToolsHook
 export type ReactRenderer = types.ReactRenderer
@@ -22,7 +20,7 @@ export type RendererInterface = types.RendererInterface
 
 type Object = { [string]: any }
 
-local initBackend = function(hook: DevToolsHook, agent: Agent, global: Object): () -> ()
+local function initBackend(hook: DevToolsHook, agent: Agent, global: Object): () -> ()
 	if hook == nil then
 		-- DevTools didn't get injected into this page (maybe b'c of the contentType).
 		return function() end
@@ -59,6 +57,9 @@ local initBackend = function(hook: DevToolsHook, agent: Agent, global: Object): 
 	}
 
 	local attachRenderer = function(id: number, renderer: ReactRenderer)
+		-- ROBLOX deviation: require attach lazily to avoid the require of renderer causing Roact to initialize prematurely.
+		local attach = require(script.renderer).attach
+
 		local rendererInterface = hook.rendererInterfaces[id]
 
 		-- Inject any not-yet-injected renderers (if we didn't reload-and-profile)
@@ -135,5 +136,4 @@ return {
 	NativeStyleEditor = {
 		types = require(script.NativeStyleEditor.types),
 	},
-	renderer = require(script.renderer),
 }

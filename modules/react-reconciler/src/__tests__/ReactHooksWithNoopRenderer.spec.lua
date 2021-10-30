@@ -1866,16 +1866,16 @@ return function()
 		-- ROBLOX TODO: schedulerTracing
 		-- @gate enableSchedulerTracing
 		--   it('does not flush non-discrete passive effects when flushing sync (with tracing)', function()
-		--     local onInteractionScheduledWorkCompleted = jest:fn()
-		--     local onWorkCanceled = jest:fn()
+		--     local onInteractionScheduledWorkCompleted = jest.fn()
+		--     local onWorkCanceled = jest.fn()
 
 		--     SchedulerTracing.unstable_subscribe({
 		--         onInteractionScheduledWorkCompleted = onInteractionScheduledWorkCompleted,
-		--         onInteractionTraced = jest:fn(),
+		--         onInteractionTraced = jest.fn(),
 		--         onWorkCanceled = onWorkCanceled,
-		--         onWorkScheduled = jest:fn(),
-		--         onWorkStarted = jest:fn(),
-		--         onWorkStopped = jest:fn(),
+		--         onWorkScheduled = jest.fn(),
+		--         onWorkStarted = jest.fn(),
+		--         onWorkStopped = jest.fn(),
 		--     })
 
 		--     local _updateCount

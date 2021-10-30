@@ -1703,12 +1703,12 @@ return function()
                     end
                 }
                 local subscriber = {
-                    onInteractionScheduledWorkCompleted = jestMock:fn(),
-                    onInteractionTraced = jestMock:fn(),
-                    onWorkCanceled = jestMock:fn(),
-                    onWorkScheduled = jestMock:fn(),
-                    onWorkStarted = jestMock:fn(),
-                    onWorkStopped = jestMock:fn(),
+                    onInteractionScheduledWorkCompleted = jestMock.fn(),
+                    onInteractionTraced = jestMock.fn(),
+                    onWorkCanceled = jestMock.fn(),
+                    onWorkScheduled = jestMock.fn(),
+                    onWorkStarted = jestMock.fn(),
+                    onWorkStopped = jestMock.fn(),
                 }
 
                 SchedulerTracing.unstable_subscribe(subscriber)
