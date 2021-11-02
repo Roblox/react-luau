@@ -73,4 +73,11 @@ return function()
 		jestExpect(leftButtonRef.current.NextSelectionRight).toBe(rightButtonRef.current)
 		jestExpect(rightButtonRef.current.NextSelectionRight).toBe(leftButtonRef.current)
 	end)
+
+	it("should not return the same root twice", function()
+		local parent2 = Instance.new("Folder")
+		local reactRobloxRoot2 = ReactRoblox.createRoot(parent2)
+
+		jestExpect(reactRobloxRoot).never.toBe(reactRobloxRoot2)
+	end)
 end

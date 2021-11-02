@@ -58,7 +58,7 @@ local ReactRobloxRoot = {}
 ReactRobloxRoot.__index = ReactRobloxRoot
 
 function ReactRobloxRoot.new(container: Container, options: RootOptions?): RootType
-  local root: RootType = (setmetatable(ReactRobloxRoot, {}) :: any) :: RootType
+  local root: RootType = (setmetatable({}, ReactRobloxRoot) :: any) :: RootType
   root._internalRoot = createRootImpl(container, ConcurrentRoot, options)
 
   return root
@@ -70,7 +70,7 @@ local function createBlockingRoot(
   options: RootOptions?
 ): RootType
   -- deviation: We can just share the logic here via metatables
-  local root: RootType = (setmetatable(ReactRobloxRoot, {}) :: any) :: RootType
+  local root: RootType = (setmetatable({}, ReactRobloxRoot) :: any) :: RootType
   root._internalRoot = createRootImpl(container, tag, options)
 
   return root
