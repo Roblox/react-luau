@@ -260,7 +260,7 @@ return function ()
             jestExpect(function()
                 ReactNoop.act(function()
                     Foo.validateProps = "this is a string"
-        
+
                     ReactNoop.render(
                         React.createElement(Foo, {myProp = "hello"})
                     )

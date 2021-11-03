@@ -38,16 +38,15 @@ return function()
 		itSkipIfNonDEV(
 			"can connect to a Roact tree and inspect its children and child branch nodes",
 			function()
-
 				local ReactRoblox = require(Packages.ReactRoblox)
 
 				local function act(callback: Function): ()
 					local actTestRenderer = require(Packages.Dev.ReactTestRenderer).act
-					
+
 					actTestRenderer(function()
 						callback()
 					end)
-				
+
 					while RobloxJest.getTimerCount() > 0 do
 						actTestRenderer(function()
 							RobloxJest.runAllTimers()
@@ -97,7 +96,9 @@ return function()
 
 				worker:showBranch({ "1.2" })
 
-				jestExpect(spy.mock.calls[2][2].eventName).toBe("RoactInspector.ShowBranch")
+				jestExpect(spy.mock.calls[2][2].eventName).toBe(
+					"RoactInspector.ShowBranch"
+				)
 				jestExpect(spy.mock.calls[2][2].branch).toEqual({
 					{
 						Icon = "Branch",

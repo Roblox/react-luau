@@ -12,14 +12,13 @@ local remove = table.remove
 
 type Array<T> = { [number]: T }
 type BridgeEvent = {
-	source: string;
-	event: any;
-	payload: any;
+	source: string,
+	event: any,
+	payload: any,
 }
 type BridgeListener = (BridgeEvent) -> ()
 
 local function setup(hook)
-
 	local bridgeListeners: Array<BridgeListener> = {}
 	local bridge = Bridge.new({
 		listen = function(fn: BridgeListener)

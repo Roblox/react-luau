@@ -17,6 +17,7 @@ return function()
 	local NoFlags = ReactFiberFlags.NoFlags
 	local Placement = ReactFiberFlags.Placement
 	local Hydrating = ReactFiberFlags.Hydrating
+	local ReactFiberLane = require(Reconciler.ReactFiberLane)
 
 	local ReactFiberTreeReflection
 
@@ -100,6 +101,9 @@ return function()
 					return_ = nil,
 					tag = FunctionComponent,
 					flags = NoFlags,
+					subtreeFlags = NoFlags,
+					lanes = ReactFiberLane.NoLanes,
+					childLanes = ReactFiberLane.NoLanes
 				}, mock)
 			end
 			local fiber
