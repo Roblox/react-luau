@@ -57,6 +57,7 @@ local ReactRobloxComponent = require(script.Parent.ReactRobloxComponent)
 local setInitialProperties = ReactRobloxComponent.setInitialProperties
 local diffProperties = ReactRobloxComponent.diffProperties
 local updateProperties = ReactRobloxComponent.updateProperties
+local cleanupHostComponent = ReactRobloxComponent.cleanupHostComponent
 -- local diffHydratedProperties = ReactRobloxComponent.diffHydratedProperties
 -- local diffHydratedText = ReactRobloxComponent.diffHydratedText
 -- local trapClickOnNonInteractiveElement = ReactRobloxComponent.trapClickOnNonInteractiveElement
@@ -614,6 +615,9 @@ exports.removeChild = function(
   _parentInstance: Instance,
   child: Instance
 )
+  -- ROBLOX deviation: The roblox renderer tracks bindings and event managers
+  -- for instances, so make sure we clean those up when we remove the instance
+  cleanupHostComponent(child)
   -- ROBLOX deviation: Roblox's DOM is based on child->parent references
   child.Parent = nil
   -- parentInstance.removeChild(child)
@@ -623,8 +627,9 @@ exports.removeChildFromContainer = function(
   _container: Container,
   child: Instance
 )
-  -- ROBLOX deviation: Roblox's DOM is based on child->parent references
-  child.Parent = nil
+  -- ROBLOX deviation: Containers don't have special behavior and comment nodes
+  -- have no datamodel equivalent, so just forward to the removeChild logic
+  exports.removeChild(_container, child)
   -- if container.nodeType == COMMENT_NODE)
   --   (container.parentNode: any).removeChild(child)
   -- } else {

@@ -234,7 +234,39 @@ local function updateProperties(
   end
 end
 
+-- ROBLOX deviation: Clear out references to components when they unmount so we
+-- avoid leaking memory when they're removed
+local function cleanupHostComponent(domElement: HostInstance)
+  if instanceToEventManager[domElement] ~= nil then
+    instanceToEventManager[domElement] = nil
+  end
+  if instanceToBindings[domElement] ~= nil then
+    instanceToBindings[domElement] = nil
+  end
+
+  -- ROBLOX https://jira.rbx.com/browse/LUAFDN-718: Tables are somehow ending up
+  -- in this function that expects Instances. In that case, we won't be able to
+  -- iterate through its descendants.
+  if typeof(domElement :: any) ~= "Instance" then
+    return
+  end
+
+  for _, descElement in ipairs(domElement:GetDescendants()) do
+    if instanceToEventManager[descElement] ~= nil then
+      instanceToEventManager[descElement] = nil
+    end
+    if instanceToBindings[descElement] ~= nil then
+      instanceToBindings[descElement] = nil
+    end
+  end
+end
+
 return {
   setInitialProperties = setInitialProperties,
   updateProperties = updateProperties,
+  cleanupHostComponent = cleanupHostComponent,
+
+  -- ROBLOX deviation: expose maps to test for Instance cleanups
+  _instanceToEventManager = instanceToEventManager,
+  _instanceToBindings = instanceToBindings,
 }

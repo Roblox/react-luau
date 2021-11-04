@@ -238,7 +238,7 @@ local function diffProperties(
   return updatePayload
 end
 exports.diffProperties = diffProperties
--- Apply the diff.
 exports.updateProperties = RobloxComponentProps.updateProperties
+exports.cleanupHostComponent = RobloxComponentProps.cleanupHostComponent
 
 return exports
