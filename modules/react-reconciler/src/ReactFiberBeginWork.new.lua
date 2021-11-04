@@ -360,7 +360,7 @@ local function updateForwardRef(
   -- hasn't yet mounted. This happens after the first render suspends.
   -- We'll need to figure out if this is fine or can cause issues.
 
-  if _G.__DEV__ then
+  if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
 
     if workInProgress.type ~= workInProgress.elementType then
       -- Lazy component props can't be validated in createElement
@@ -480,7 +480,7 @@ local function updateMemoComponent(
         renderLanes
       )
     end
-    if  _G.__DEV__ then
+    if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
       -- ROBLOX deviation: adds support for legacy Roact's validateProps()
       local innerPropTypes
       local validateProps
@@ -518,7 +518,7 @@ local function updateMemoComponent(
   -- ROBLOX TODO Deviation: remove redefinition + typecast when this lands: CLI-38793
   -- ROBLOX the if clause above returns early if current is nil
   local current = (current :: Fiber)
-  if  _G.__DEV__ then
+  if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
     local type = Component.type
     -- ROBLOX deviation: adds support for legacy Roact's validateProps()
     local innerPropTypes
@@ -576,7 +576,7 @@ function updateSimpleMemoComponent(
   -- hasn't yet mounted. This happens when the inner render suspends.
   -- We'll need to figure out if this is fine or can cause issues.
 
-  if  _G.__DEV__ then
+  if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
     if workInProgress.type ~= workInProgress.elementType then
       -- Lazy component props can't be validated in createElement
       -- because they're only guaranteed to be resolved here.
@@ -823,7 +823,7 @@ function updateFunctionComponent(
   nextProps: any,
   renderLanes
 )
-  if _G.__DEV__ then
+  if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
     -- ROBLOX deviation: function components can't have props in Lua
     if typeof(Component) ~= 'function' and (workInProgress.type ~= workInProgress.elementType) then
       -- Lazy component props can't be validated in createElement
@@ -993,7 +993,7 @@ local function updateClassComponent(
   nextProps: any,
   renderLanes: Lanes
 )
-  if _G.__DEV__ then
+  if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
     if workInProgress.type ~= workInProgress.elementType then
       -- Lazy component props can't be validated in createElement
       -- because they're only guaranteed to be resolved here.
@@ -1402,7 +1402,7 @@ local function mountLazyComponent(
     )
     return child
   elseif resolvedTag == MemoComponent then
-    if  _G.__DEV__ then
+    if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
       if workInProgress.type ~= workInProgress.elementType then
         -- ROBLOX deviation: adds support for legacy Roact's validateProps()
         local outerPropTypes = Component.propTypes
@@ -3058,7 +3058,7 @@ local function updateContextProvider(
 
   local newValue = newProps.value
 
-  if  _G.__DEV__ then
+  if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
     if Array.indexOf(Object.keys(newProps), "value") < 1 then
       if not hasWarnedAboutUsingNoValuePropOnContextProvider then
         hasWarnedAboutUsingNoValuePropOnContextProvider = true
@@ -3617,7 +3617,7 @@ local function beginWork(
     local unresolvedProps = workInProgress.pendingProps
     -- Resolve outer props first, then resolve inner props.
     local resolvedProps = resolveDefaultProps(type, unresolvedProps)
-    if _G.__DEV__ then
+    if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
       if workInProgress.type ~= workInProgress.elementType then
         -- ROBLOX deviation: adds support for legacy Roact's validateProps()
         local outerPropTypes

@@ -254,7 +254,7 @@ end
 --  * @param {ReactElement} element
 --  */
 local function validatePropTypes(element)
-	if _G.__DEV__ then
+	if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
 		local type = element.type
 		if type == nil or typeof(type) == "string" then
 			return

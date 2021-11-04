@@ -54,7 +54,7 @@ local function checkPropTypes(
 	componentName: string?,
 	element: ReactElement
 ): ()
-	if _G.__DEV__ then
+	if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
 		-- deviation: hasOwnProperty shouldn't be relevant to lua objects
 		-- $FlowFixMe This is okay but Flow doesn't know it.
 		-- local has = Function.call.bind(Object.prototype.hasOwnProperty)

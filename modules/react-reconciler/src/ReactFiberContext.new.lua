@@ -132,7 +132,7 @@ local function getMaskedContext(
 			context[key] = unmaskedContext[key]
 		end
 
-		if _G.__DEV__ then
+		if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
 			local name = getComponentName(type) or "Unknown"
 			-- ROBLOX deviation: nil as second argument for validateProps compatibility
 			checkPropTypes(contextTypes, nil, context, "context", name)
@@ -249,7 +249,7 @@ local function processChildContext(
 				contextKey
 			)
 		end
-		if _G.__DEV__ then
+		if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
 			-- ROBLOX deviation: nil as second argument for validateProps compatibility
 			checkPropTypes(childContextTypes, nil, childContext, "child context", name)
 		end
