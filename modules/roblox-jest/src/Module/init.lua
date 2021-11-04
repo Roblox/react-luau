@@ -22,7 +22,7 @@ if _G.__NO_LOADMODULE__ then
 			-- Since we can't mock underneath require, we'll overwrite the
 			-- require module altogether with the result of the mock
 			local mockResult = fn()
-			local realModule = require(module)
+			local realModule = require(module) :: any
 			for k, v in pairs(mockResult) do
 				realModule[k] = v
 			end
@@ -52,13 +52,13 @@ local function requireOverride(scriptInstance: ModuleScript): any
 		-- for the 2021 version of the Studio Inspector plugin
 		or scriptInstance.Name == "DeveloperTools"
 	then
-		return require(scriptInstance)
+		return require(scriptInstance) :: any
 	end
 	-- FIXME: an extra special hack that prevents us from frequently reloading
 	-- `jest-roblox`, and therefore dodges the expensive modules found in:
 	-- jest-roblox -> luau-polyfill@0.1.5 -> RegExp
 	if scriptInstance.Name == "RegExp" then
-		return require(scriptInstance)
+		return require(scriptInstance) :: any
 	end
 
 	-- If already loaded and cached, return cached module. This should behave
