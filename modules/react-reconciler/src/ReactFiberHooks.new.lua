@@ -240,7 +240,7 @@ local function mountHookTypesDev()
     if hookTypesDev == nil then
       hookTypesDev = { hookName }
     else
-      table.insert(hookTypesDev, hookName)
+      table.insert(hookTypesDev :: any, hookName)
     end
   end
 end
@@ -251,7 +251,7 @@ function updateHookTypesDev()
 
     if hookTypesDev ~= nil then
       hookTypesUpdateIndexDev += 1
-      if hookTypesDev[hookTypesUpdateIndexDev] ~= hookName then
+      if (hookTypesDev :: any)[hookTypesUpdateIndexDev] ~= hookName then
         warnOnHookMismatchInDev(hookName)
       end
     end
@@ -286,7 +286,7 @@ function warnOnHookMismatchInDev(currentHookName: HookType)
         local secondColumnStart = 30
 
         for i = 1, hookTypesUpdateIndexDev do
-          local oldHookName = hookTypesDev[i]
+          local oldHookName = (hookTypesDev :: any)[i]
           local newHookName
           if i == hookTypesUpdateIndexDev then
             newHookName = currentHookName

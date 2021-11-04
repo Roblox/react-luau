@@ -336,7 +336,7 @@ exports.updateContainer = function(
 					"triggering nested component updates from render is not allowed. " ..
 					"If necessary, trigger nested updates in componentDidUpdate.\n\n" ..
 					"Check the render method of %s.",
-				getComponentName(ReactCurrentFiber.current.type) or "Unknown"
+				getComponentName((ReactCurrentFiber.current :: any).type) or "Unknown"
 			)
 		end
 	end

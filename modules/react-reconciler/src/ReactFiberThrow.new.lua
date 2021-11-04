@@ -220,7 +220,7 @@ local function attachPingListener(root: FiberRoot, wakeable: Wakeable, lanes: La
     threadIDs = {} :: Set<any>
     (pingCache :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>)[wakeable] = threadIDs
   else
-    threadIDs = pingCache[wakeable] :: Set<any>
+    threadIDs = (pingCache :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>)[wakeable] :: Set<any>
     if threadIDs == nil then
       threadIDs = {} :: Set<any>
       (pingCache :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>)[wakeable] = threadIDs

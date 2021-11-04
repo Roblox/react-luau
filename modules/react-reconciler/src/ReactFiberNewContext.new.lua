@@ -417,7 +417,7 @@ exports.readContext = function(
       }
     else
       -- Append a new context item.
-      lastContextDependency.next = contextItem
+      (lastContextDependency :: any).next = contextItem
       lastContextDependency = contextItem
     end
   end

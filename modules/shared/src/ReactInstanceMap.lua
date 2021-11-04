@@ -84,12 +84,12 @@ exports.set = function(key, value)
 				.. (getComponentName(key) or "UNNAMED Component") .. ")"
 			end
 			error(Error.new(message))
-		elseif parent.alternate ~= nil and not isValidFiber(parent.alternate) then
+		elseif (parent :: any).alternate ~= nil and not isValidFiber((parent :: any).alternate) then
 			message = "invalid alternate fiber ("
 			.. (getComponentName(key) or "UNNAMED alternate") .. ") in "
 			.. (getComponentName(key) or "UNNAMED Component")
 			.. " being set in ReactInstanceMap! "
-			.. inspect(parent.alternate)
+			.. inspect((parent :: any).alternate)
 			.. "\n"
 
 			if value ~= parent then
@@ -98,7 +98,7 @@ exports.set = function(key, value)
 			end
 			error(Error.new(message))
 		end
-		parent = parent.return_
+		parent = (parent :: any).return_
 	end
 
 	key._reactInternals = value
