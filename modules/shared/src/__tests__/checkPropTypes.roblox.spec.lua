@@ -260,5 +260,35 @@ return function()
 				{ withoutStack = 1 }
 			)
 		end)
+
+		describe("__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__", function()
+			beforeAll(function(context)
+				context.oldValidate = _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__
+				_G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ = true
+			end)
+
+			afterAll(function(context)
+				_G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ = context.oldValidate
+			end)
+
+			it("validateProps defined, returns false", function()
+				local Foo = React.Component:extend("Foo")
+
+				Foo.validateProps = function(props)
+					return false, "no no no no no"
+				end
+
+				function Foo:render()
+					return React.createElement("div")
+				end
+				local function testValidation()
+					ReactNoop.render(React.createElement(Foo, { myProp = "hello" }))
+					jestExpect(Scheduler).toFlushWithoutYielding()
+				end
+
+				-- For legacy compatibility, this test throws as well as warning
+				jestExpect(testValidation).toThrow("no no no no no")
+			end)
+		end)
 	end)
 end

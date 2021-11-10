@@ -17,10 +17,11 @@ local ReactLazy = require(React.ReactLazy)
 local ReactBinding = require(React["ReactBinding.roblox"])
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 
-local createElement = _G.__DEV__ and
+local shouldValidate = _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__
+local createElement = shouldValidate and
 	ReactElementValidator.createElementWithValidation or
 	ReactElement.createElement
-local cloneElement = _G.__DEV__ and
+local cloneElement = shouldValidate and
 	ReactElementValidator.cloneElementWithValidation or
 	ReactElement.cloneElement
 
