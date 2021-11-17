@@ -5,11 +5,11 @@ Upstream naming and logic has some deviations and incompatibilities with existin
 #### Table of Contents
 * [Naming](#naming)
   * [Component Lifecycle](#component-lifecycle) ✔️
-  * [Reserved Prop Keys: "ref"](#reserved-prop-keys-ref) 🔨
-  * [Reserved Prop Keys: "key"](#reserved-prop-keys-key) 🔨
+  * [Reserved Prop Keys: "ref"](#reserved-prop-keys-ref) ✔️
+  * [Reserved Prop Keys: "key"](#reserved-prop-keys-key) ✔️
   * [Reserved Prop Keys: "children"](#reserved-prop-keys-children) ✔️
 * [Behavior](#behavior)
-  * [Old Context](#old-context-roact-only) 🔨
+  * [Old Context](#old-context-roact-only) ✔️
   * [Context.Consumer Interface](#contextconsumer-interface) ✔️
   * [createFragment](#createfragment) ✔️
   * [Ref Forwarding](#ref-forwarding)
@@ -57,7 +57,7 @@ An implementation of tactic #2 above was merged in [#88](https://github.com/Robl
 </details>
 
 ### Reserved Prop Keys: "ref"
-**Status:** 🔨 In Progress (updating consumers to comply)
+**Status:** ✔️ Resolved (consumers updated to comply)
 
 Upstream React reserves the prop key "ref". In Roact the "ref" key is replaced by a Symbol exported as part of the API and applied as a prop with the key `[Roact.Ref]`. This means that there's no need to reserve a key, because the key is already unique and has a special meaning.
 
@@ -103,7 +103,7 @@ This would be blocked by refactors to remove any existing uses of the `ref` key,
 This alignment effort should be considered in tandem with that of [ref forwarding logic](#ref-forwarding).
 
 ### Reserved Prop Keys: "key"
-**Status:** 🔨 In Progress (updating consumers to comply)
+**Status:** ✔️ Resolved (consumers updated to comply)
 
 Upstream React reserves the prop key "key". In Roact, "key" has no special meaning.
 
@@ -161,7 +161,7 @@ The most straightforward approach would be to export `Roact.Children` with a val
 </details>
 
 ### Old Context (Roact only)
-**Status:** 🔨 In Progress (updating consumers to comply)
+**Status:** ✔️ Resolved (consumers updated to comply)
 
 In Roact, the "old" context behavior was a `_context` field defined on every class component instance. To provide context, a component would mutate its `_context` field in `init`:
 ```lua
@@ -275,7 +275,7 @@ The `createFragment` function described above was added to React.lua in [#92](ht
 </details>
 
 ### Ref Forwarding
-**Status:** 🔨 In Progress (updating consumers to comply)
+**Status:** ✔️ Resolved (consumers updated to comply)
 
 Ref forwarding is possible in React via the [`forwardRef` API](https://reactjs.org/docs/forwarding-refs.html).
 
@@ -539,7 +539,7 @@ Resolution and more info at https://github.com/Roblox/roact-alignment/pull/124
 </details>
 
 ### Functional setState
-**Status:** ❔ Alignment Strategy TBD
+**Status:** ✔️ Resolved (aligned to legacy Roact)
 
 In both React and Roact, `setState` can accept a function as its argument in place of a table (with async rendering, this is encouraged as the default choice). In React, however, the argument passed to `setState` is invoked via `payload.call(instance, prevState, nextProps)`. In other words, React calls the function in such a way that the `instance` is in scope as `this` in the body of the updater function.
 
