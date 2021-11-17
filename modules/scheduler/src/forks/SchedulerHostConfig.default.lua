@@ -1,4 +1,5 @@
 -- upstream: https://github.com/facebook/react/blob/5474a83e258b497584bed9df95de1d554bc53f89/packages/scheduler/src/forks/SchedulerHostConfig.default.js
+--!strict
 --[[*
 * Copyright (c) Facebook, Inc. and its affiliates.
 *
@@ -8,84 +9,16 @@
 
 local Packages = script.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
-
-local console = require(Packages.Shared).console
+type Error = LuauPolyfill.Error
+local Shared = require(Packages.Shared)
+local console = Shared.console
+local errorToString = Shared.errorToString
 
 -- ROBLOX deviation: getCurrentTime will always map to `tick` in Luau
 local getCurrentTime = function()
 	-- Return a result in milliseconds
 	return os.clock() * 1000
 end
-
--- ROBLOX deviation: The implementation below is the "naive" implementation,
--- which is used in upstream when certain browser features are missing. It's
--- insufficient for our use case, since it does not respect the frame time
--- boundary
-
--- local setTimeout = LuauPolyfill.setTimeout
--- local clearTimeout = LuauPolyfill.clearTimeout
-
--- local exports = {}
--- exports.getCurrentTime = getCurrentTime
-
--- local _callback = nil
--- local _timeoutID = nil
-
--- local function _flushCallback()
--- 	if _callback ~= nil then
--- 		-- ROBLOX deviation: YOLO flag for disabling pcall
--- 		local ok, result
--- 		if not _G.__YOLO__ then
--- 			ok, result = pcall(function()
--- 				local currentTime = getCurrentTime()
--- 				local hasRemainingTime = true
--- 				_callback(hasRemainingTime, currentTime)
--- 				_callback = nil
--- 			end)
--- 		else
--- 			ok = true
--- 			local currentTime = getCurrentTime()
--- 			local hasRemainingTime = true
--- 			_callback(hasRemainingTime, currentTime)
--- 			_callback = nil
--- 		end
-
--- 		if not ok then
--- 			setTimeout(_flushCallback, 0)
--- 			error(result)
--- 		end
--- 	end
--- end
-
--- local function requestHostCallback(cb)
--- 	if _callback ~= nil then
--- 		-- Protect against re-entrancy.
--- 		setTimeout(requestHostCallback, 0, cb)
--- 	else
--- 		_callback = cb
--- 		setTimeout(_flushCallback, 0)
--- 	end
--- end
-
--- exports.requestHostCallback = requestHostCallback
--- exports.cancelHostCallback = function()
--- 	_callback = nil
--- end
--- exports.requestHostTimeout = function(cb, ms)
--- 	_timeoutID = setTimeout(cb, ms)
--- end
--- exports.cancelHostTimeout = function()
--- 	clearTimeout(_timeoutID)
--- end
--- exports.shouldYieldToHost = function()
--- 	return false
--- end
--- exports.requestPaint = function()
--- end
--- exports.forceFrameRate = function()
--- end
-
--- return exports
 
 -- ROBLOX deviation: This module in React exports a different implementation if
 -- it detects certain APIs from the DOM interface. We instead attempt to
@@ -97,7 +30,7 @@ local setTimeout = LuauPolyfill.setTimeout
 local clearTimeout = LuauPolyfill.clearTimeout
 
 local isMessageLoopRunning = false
-local scheduledHostCallback = nil
+local scheduledHostCallback: ((boolean, number) -> boolean) | nil = nil
 local taskTimeoutID = -1
 
 -- Scheduler periodically yields in case there is other work on the main
@@ -144,7 +77,7 @@ local function performWorkUntilDeadline()
 
 		local ok, result
 		local function doWork()
-			local hasMoreWork = scheduledHostCallback(
+			local hasMoreWork = (scheduledHostCallback :: any)(
 				hasTimeRemaining,
 				currentTime
 			)
@@ -166,7 +99,7 @@ local function performWorkUntilDeadline()
 			end
 		end
 		if not _G.__YOLO__ then
-			ok, result = pcall(doWork)
+			ok, result = xpcall(doWork, errorToString)
 		else
 			result = doWork()
 			ok = true
@@ -177,6 +110,7 @@ local function performWorkUntilDeadline()
 			-- error can be observed.
 			task.delay(0, performWorkUntilDeadline)
 
+	      	-- ROBLOX FIXME: the top-level Luau VM handler doesn't deal with non-string errors, so massage it until VM support lands
 			error(result)
 		end
 	else

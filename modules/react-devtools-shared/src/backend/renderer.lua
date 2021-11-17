@@ -409,8 +409,7 @@ exports.getInternalReactConstants = function(
 			then
 				return nil
 			elseif
-				typeSymbol == PROVIDER_NUMBER
-				or typeSymbol == PROVIDER_SYMBOL_STRING
+				typeSymbol == PROVIDER_NUMBER or typeSymbol == PROVIDER_SYMBOL_STRING
 			then
 				-- 16.3.0 exposed the context object as "context"
 				-- PR #12501 changed it to "_context" for 16.3.1+
@@ -434,8 +433,7 @@ exports.getInternalReactConstants = function(
 			then
 				return nil
 			elseif
-				typeSymbol == PROFILER_NUMBER
-				or typeSymbol == PROFILER_SYMBOL_STRING
+				typeSymbol == PROFILER_NUMBER or typeSymbol == PROFILER_SYMBOL_STRING
 			then
 				return ("Profiler(%s)"):format(fiber.memoizedProps.id)
 			elseif typeSymbol == SCOPE_NUMBER or typeSymbol == SCOPE_SYMBOL_STRING then
@@ -843,8 +841,7 @@ exports.attach = function(
 			then
 				return ElementTypeContext
 			elseif
-				typeSymbol == PROVIDER_NUMBER
-				or typeSymbol == PROVIDER_SYMBOL_STRING
+				typeSymbol == PROVIDER_NUMBER or typeSymbol == PROVIDER_SYMBOL_STRING
 			then
 				return ElementTypeContext
 			elseif
@@ -857,8 +854,7 @@ exports.attach = function(
 			then
 				return ElementTypeOtherOrUnknown
 			elseif
-				typeSymbol == PROFILER_NUMBER
-				or typeSymbol == PROFILER_SYMBOL_STRING
+				typeSymbol == PROFILER_NUMBER or typeSymbol == PROFILER_SYMBOL_STRING
 			then
 				return ElementTypeProfiler
 			else
@@ -2034,7 +2030,8 @@ exports.attach = function(
 							Array.from(root.memoizedInteractions :: Array<any>),
 							function(interaction)
 								return Object.assign({}, interaction, {
-									timestamp = interaction.timestamp - profilingStartTime,
+									timestamp = interaction.timestamp
+										- profilingStartTime,
 								})
 							end
 						),
@@ -2680,8 +2677,10 @@ exports.attach = function(
 			canEditHooks = typeof(overrideHookState) == "function",
 			canEditFunctionProps = typeof(overrideProps) == "function",
 			-- Does the current renderer support advanced editing interface?
-			canEditHooksAndDeletePaths = typeof(overrideHookStateDeletePath) == "function",
-			canEditHooksAndRenamePaths = typeof(overrideHookStateRenamePath) == "function",
+			canEditHooksAndDeletePaths = typeof(overrideHookStateDeletePath)
+				== "function",
+			canEditHooksAndRenamePaths = typeof(overrideHookStateRenamePath)
+				== "function",
 			canEditFunctionPropsDeletePaths = typeof(overridePropsDeletePath)
 				== "function",
 			canEditFunctionPropsRenamePaths = typeof(overridePropsRenamePath)
@@ -3204,8 +3203,7 @@ exports.attach = function(
 				for id, treeBaseDuration in pairs(initialTreeBaseDurationsMap :: Map<number, number>) do
 					if
 						initialIDToRootMap ~= nil
-						and (initialIDToRootMap :: Map<number, number>)[id]
-							== rootID
+						and (initialIDToRootMap :: Map<number, number>)[id] == rootID
 					then
 						-- We don't need to convert milliseconds to microseconds in this case,
 						-- because the profiling summary is JSON serialized.

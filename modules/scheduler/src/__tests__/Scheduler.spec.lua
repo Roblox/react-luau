@@ -10,6 +10,8 @@
 
 return function()
 	local Packages = script.Parent.Parent.Parent
+	local LuauPolyfill = require(Packages.LuauPolyfill)
+	local Error = LuauPolyfill.Error
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 
@@ -465,7 +467,7 @@ return function()
 		end)
 		scheduleCallback(ImmediatePriority, function()
 			Scheduler.unstable_yieldValue("C")
-			error("Oops C")
+			error(Error.new("Oops C"))
 		end)
 
 		jestExpect(function()
@@ -785,5 +787,18 @@ return function()
 			scheduleCallback(ImmediatePriority, 42)
 			jestExpect(Scheduler).toFlushWithoutYielding()
 		end)
+
+		it("delayed tasks stringify their error", function()
+			scheduleCallback(NormalPriority, function()
+				Scheduler.unstable_yieldValue("A")
+				error(Error.new("Oops A"))
+			end, {
+				delay = 100,
+			})
+
+			Scheduler.unstable_advanceTime(100)
+			jestExpect(Scheduler).toFlushAndThrow("Oops A")
+		end)
+
 	end)
 end

@@ -124,12 +124,18 @@ return function()
 		it("throws a promise if the requested value is not in the cache", function()
 			local function App()
 				return (
-						React.createElement(Suspense, {
-							fallback = React.createElement(Text, { text = "Loading..." }),
-						}, React.createElement(
-							AsyncText,
-							{ ms = 100, text = "Hi" }
-						))
+						React.createElement(
+							Suspense,
+							{
+								fallback = React.createElement(Text, {
+									text = "Loading...",
+								}),
+							},
+							React.createElement(AsyncText, {
+								ms = 100,
+								text = "Hi",
+							})
+						)
 					)
 			end
 
@@ -147,12 +153,18 @@ return function()
 		it("throws an error on the subsequent read if the promise is rejected", function()
 			local function App()
 				return (
-						React.createElement(Suspense, {
-							fallback = React.createElement(Text, { text = "Loading..." }),
-						}, React.createElement(
-							AsyncText,
-							{ ms = 100, text = "Hi" }
-						))
+						React.createElement(
+							Suspense,
+							{
+								fallback = React.createElement(Text, {
+									text = "Loading...",
+								}),
+							},
+							React.createElement(AsyncText, {
+								ms = 100,
+								text = "Hi",
+							})
+						)
 					)
 			end
 

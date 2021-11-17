@@ -42,8 +42,7 @@ exports.printElement = function(element: Element, includeWeight: boolean?)
 		hocDisplayNames = Object.assign({}, element.hocDisplayNames)
 	end
 
-	local hocs = hocDisplayNames
-			and (" [%s]"):format(table.concat(hocDisplayNames, "]["))
+	local hocs = hocDisplayNames and (" [%s]"):format(table.concat(hocDisplayNames, "]["))
 		or ""
 	local suffix = ""
 

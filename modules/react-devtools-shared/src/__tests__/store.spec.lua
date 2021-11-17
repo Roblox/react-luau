@@ -391,9 +391,7 @@ return function()
 								fallback = React.createElement(Loading, {
 									key = "Suspense 3 Fallback",
 								}),
-							}, React.createElement(
-								Never
-							)),
+							}, React.createElement(Never)),
 							(function()
 								if suspendParent then
 									return React.createElement(Never)
@@ -1335,9 +1333,7 @@ return function()
 				local function SuspenseTree()
 					return React.createElement(React.Suspense, {
 						fallback = React.createElement(Fallback, nil, "Loading outer"),
-					}, React.createElement(
-						Parent
-					))
+					}, React.createElement(Parent))
 				end
 
 				local root = ReactRoblox.createRoot(Instance.new("Frame"))
@@ -1617,9 +1613,7 @@ return function()
 					React.createElement(MemoForwardRefComponent),
 					React.createElement(React.Suspense, {
 						fallback = "Loading...",
-					}, React.createElement(
-						LazyComponent
-					)),
+					}, React.createElement(LazyComponent)),
 					React.createElement(FakeHigherOrderComponent),
 					React.createElement(MemoizedFakeHigherOrderComponent),
 					React.createElement(ForwardRefFakeHigherOrderComponent)

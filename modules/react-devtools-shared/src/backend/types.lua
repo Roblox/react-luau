@@ -383,10 +383,10 @@ export type DevToolsHook = {
 	onCommitFiberRoot: (
 		RendererID,
 		Object,
-				-- Added in v16.9 to support Profiler priority labels
-number?,
-				-- Added in v16.9 to support Fast Refresh
-boolean?
+		-- Added in v16.9 to support Profiler priority labels
+		number?,
+		-- Added in v16.9 to support Fast Refresh
+		boolean?
 	) -> (),
 	-- ROBLOX deviation: track specific additions to interface needed instead of catch-all
 	supportsFiber: boolean,

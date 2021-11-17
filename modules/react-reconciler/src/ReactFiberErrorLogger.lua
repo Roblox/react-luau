@@ -10,10 +10,13 @@
 
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
+type Error = LuauPolyfill.Error
+local inspect = LuauPolyfill.util.inspect
 local setTimeout = LuauPolyfill.setTimeout
 
--- ROBLOX: use patched console from shared
-local console = require(Packages.Shared).console
+local Shared = require(Packages.Shared)
+local console = Shared.console
+local errorToString = Shared.errorToString
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
@@ -101,20 +104,21 @@ exports.logCapturedError = function(
       -- In production, we print the error directly.
       -- This will include the message, the JS stack, and anything the browser wants to show.
       -- We pass the error object instead of custom message so that the browser displays the error natively.
-      console['error'](error_) -- Don't transform to our wrapper
+      console['error'](inspect(error_)) -- Don't transform to our wrapper
     end
   end)
 
   if not ok then
-    warn("failed to error with error")
+    warn("failed to error with error: " .. inspect(e))
     -- ROBLOX TODO: we may need to think about this more deeply and do something different
     -- This method must not throw, or React internal state will get messed up.
     -- If console.error is overridden, or logCapturedError() shows a dialog that throws,
     -- we want to report this error outside of the normal stack as a last resort.
     -- https://github.com/facebook/react/issues/13188
-    setTimeout(function()
-      error(e)
-    end)
+      setTimeout(function()
+        -- ROBLOX FIXME: the top-level Luau VM handler doesn't deal with non-string errors, so massage it until VM support lands
+        error(errorToString(e))
+      end)
   end
 end
 

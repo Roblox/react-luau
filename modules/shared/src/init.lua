@@ -51,6 +51,7 @@ return {
 	ConsolePatchingDev = require(script["ConsolePatchingDev.roblox"]),
 	consoleWithStackDev = require(script.consoleWithStackDev),
 	enqueueTask = require(script["enqueueTask.roblox"]),
+	errorToString = require(script["errorToString.roblox"]),
 	ExecutionEnvironment = require(script["ExecutionEnvironment.roblox"]),
 	formatProdErrorMessage = require(script.formatProdErrorMessage),
 	getComponentName = require(script.getComponentName),

@@ -2403,6 +2403,7 @@ mod.commitRootImpl = function(root, renderPriorityLevel)
     hasUncaughtError = false
     local error_ = firstUncaughtError
     firstUncaughtError = nil
+    -- ROBLOX FIXME: we lose the original stack trace when we re-throw this way
     error(error_)
   end
 
