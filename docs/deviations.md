@@ -1,18 +1,81 @@
 # Deviations
-**This is a work in progress! Most of these notes are old!**
 
-The Roact alignment effort aims to map as closely to React's API as possible, but there are a few places where language deviations require us to omit functionality or deviate our approach.
+While Roact has been architected to align with React JS's APIs and idioms, a small number of deviations have been introduced for one or several of the following reasons:
+
+* Differences between JavaScript and Luau
+* Differences between Roblox and the HTML DOM
+* Supporting features from legacy Roact that are not in React JS
+* Easier adoption of Roact 17+ by users of legacy Roact
+
+The following list attempts to comprehensively describe all of the differences between Roact 17+ and its equivalent upstream version in React JS. It is intended to be a companion to the [Roact 17 adoption guide](migrating-from-roact-1x.md), which focuses more on the differences between legacy Roact and Roact 17+.
+
+## JSX
+
+The Luau ecosystem does not yet have the tooling to support JSX. Instead, use `React.createElement` as your primary tool for building UIs with Roact 17. Element construction in Roact is exaclty like [using React with JSX](https://reactjs.org/docs/react-without-jsx.html).
+
+!!! info
+	Future support for a JSX-equivalent feature for Luau has been proposed, and will be considered as Roact 17+ is adopted.
+
+## React.useState
+
+`React.useState` returns two values rather than an array containing two values.
+
+Luau does not have syntactic sugar for destructuring like javascript:
+```js
+const [value, setValue] = React.useState(0);
+```
+
+However, it _does_ support multiple return values, so we can support a very similar usage:
+```lua
+local value, setValue = React.useState(0)
+```
+
+## Stable Keys
+*Under constructions 🔨*
 
 ## Class Components
-Lua does not have ES6's `class` semantics. For class components, Roact will expose `Component:extend(name: string) -> Component` to bridge this gap. Equivalently, `PureComponent:extend` is used to define PureComponents.
+Luau does not currently have ES6's `class` semantics. For class components, Roact exposes an `extend` method to provide equivalent behavior.
+
+### React.Component:extend
+```
+React.Component:extend(name: string): ReactComponent
+```
+The `extend` method on components replaces the `extend` behavior used in ES6's class components. It returns a React component definition, which can then be used to define lifecycle methods.
+
+For example, a class component in Roact can be created like this:
+```lua
+local MyComponent = React.Component:extend("MyComponent")
+
+function MyComponent:render()
+	return React.createElement("TextLabel", {Text = self.props.text})
+end
+
+function MyComponent:componentDidMount()
+	print("rendered with text " .. self.props.text)
+end
+```
+
+Equivalently, `React.PureComponent:extend` is used to define PureComponents.
 
 ### Constructors
-Because of the lack of class semantics, there are also no inheritable constructors; instead, Roact provides a lifecycle method called `init` that takes the place of the constructor, running immediately after an instance is created for that class.
+Since Luau currently lacks a `class` feature, there are also no inheritable constructors; instead, Roact provides a lifecycle method called `init` that takes the place of the constructor, running immediately after an instance of that class is created.
 
-For all intents and purposes, this should function exactly like a constructor for a class component in React, except that there is no need to call `super`.
+For all intents and purposes, this should behave exactly like a constructor for a class component in React JS, except that there is no `super` logic needed.
+
+### Calling `setState` in Constructors
+In React JS, `setState` is not allowed inside component constructors. Instead, React documentation suggests that `this.state` should be assigned to directly, but _never anywhere else_.
+
+Legacy Roact opts to allow `setState` inside of the `init` method (equivalent to a constructor), because it allows documentation to consistently warn against assigning directly to `self.state`. However, for backwards comaptibility, it still supports direct assignments to `self.state` in `init`.
+
+As with legacy Roact, Roact 17 allows both direct assignment and use of `setState`. This allows guidance from legacy Roact documentation and common practice to remain accurate.
+
+In Roact 17+, it is still recommended to use `setState` inside of compoent `init` methods. This means that you will _always_ avoid assigning directly to `self.state`.
 
 ## Function Components
-JavaScript Functions are also objects, which means that they can have member fields defined on them. Lua/Luau does not allow this.
+In JavaScript, functions are also objects, which means that they can have member fields defined on them. Luau does not allow this, so some features are not available on function components.
+
+!!! info
+	With the introduction of Hooks, function components are the preferred style of component definition. Giving up features like `defaultProps` and prop validation is not ideal, so future API additions may provide a way to create smarter function components.
 
 ### defaultProps
 For the time being, function components do not support the `defaultProps` feature. In the future, we may want to re-implement it in terms of hooks to make sure that function components with hooks are as appealing and feature-rich as possible.
@@ -21,13 +84,10 @@ For the time being, function components do not support the `defaultProps` featur
 For the time being, function components do not support the `propTypes` feature. While propTypes is less often used and can in many cases be superseded by static type checking, we may want to, in the future, re-implement it in terms of hooks to make sure that function components with hooks are as appealing and feature-rich as possible.
 
 ### validateProps
-For the time being, we will continue to support legacy Roact's `validateProps`. Old Roact's documentation on this method can be found [here](https://roblox.github.io/roact/api-reference/#validateprops).
-
-### contextTypes
-For the time being, function components do not support the `contextTypes` feature. While contextTypes is less often used and can in many cases be superseded by static type checking, we may want to, in the future, re-implement it in terms of hooks to make sure that function components with hooks are as appealing and feature-rich as possible.
+For the time being, we will continue to support legacy Roact's `validateProps`. Prior Roact documentation on this method can be found [here](https://roblox.github.io/roact/api-reference/#validateprops).
 
 ## Bindings and Refs
-Roact supports function refs, refs created using `React.createRef`, and refs using the `React.useRef` hook. However, under the hood, Refs are built on top of a concept called Bindings.
+Roact supports callback refs, refs created using `React.createRef`, and refs using the `React.useRef` hook. However, under the hood, Refs are built on top of a concept called Bindings.
 
 ### Bindings
 Roact introduces a bindings feature that provides a unidirectional data binding that can be updated outside of the render cycle (much like refs could).
@@ -65,12 +125,14 @@ function PopupButtons:render()
 end
 ```
 This example poses a problem. Since children will be rendered in an arbitrary order, one of the following will happen:
+
 1. Confirm Button renders first and its ref is assigned
 2. Confirm Button's NextSelectionRight property is set to the Cancel Button's ref, **which is currently nil**
 3. Cancel Button renders and its ref is assigned
 4. Cancel Button's NextSelectionLeft property is properly set to the Confirm Button's ref
 
 Or:
+
 1. Cancel Button renders first and its ref is assigned
 2. Cancel Button's NextSelectionLeft property is set to the Confirm Button's ref, **which is currently nil**
 3. Confirm Button renders and its ref is assigned
@@ -95,7 +157,8 @@ Thus, it would require much more trickery to make even a simple gamepad neighbor
 	})
 -- ...
 ```
-With refs using binding logic, and with the above implementation, something like the following happens
+With refs using binding logic, and with the above implementation, something like the following happens:
+
 1. Confirm Button renders first and its ref is assigned
 2. Confirm Button's NextSelectionRight property is set to the Cancel Button's ref, **which is currently nil**
 3. Cancel Button renders and its ref is assigned

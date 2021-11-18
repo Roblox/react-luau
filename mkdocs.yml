@@ -6,15 +6,28 @@ repo_url: https://github.com/Roblox/roact
 theme:
   name: material
   palette:
-    primary: 'indigo'
-    accent: 'indigo'
-    scheme: preference
+    - media: "(prefers-color-scheme: light)" #
+      primary: indigo
+      scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)" # 
+      primary: indigo
+      scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
 
 nav:
   - Home: index.md
-  - Adoption: migrating-from-roact.md
+  - Migrating From 1.x: migrating-from-roact-1x.md
   - Deviations: deviations.md
-  - API Reference: api-reference.md
+  - API Reference:
+    - React: api-reference/react.md
+    - ReactRoblox: api-reference/react-roblox.md
+    - RoactCompat: api-reference/roact-compat.md
+    - Additional Libraries: api-reference/additional-libraries.md
   - Benchmarks: bench.md
 
 extra_css:
