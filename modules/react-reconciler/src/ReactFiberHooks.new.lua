@@ -18,6 +18,7 @@ end
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
+local Error = LuauPolyfill.Error
 local Cryo = require(Packages.Cryo)
 
 -- ROBLOX: use patched console from shared
@@ -95,7 +96,10 @@ local warnIfNotCurrentlyActingEffectsInDEV = ReactFiberWorkLoop.warnIfNotCurrent
 
 local invariant = require(Packages.Shared).invariant
 local getComponentName = require(Packages.Shared).getComponentName
-local is = require(Packages.Shared).objectIs
+-- local is = require(Packages.Shared).objectIs
+local function is(x, y)
+	return x == y and (x ~= 0 or 1 / x == 1 / y) or x ~= x and y ~= y -- eslint-disable-line no-self-compare
+end
 local markWorkInProgressReceivedUpdate = require(script.Parent['ReactFiberBeginWork.new']).markWorkInProgressReceivedUpdate :: any
 -- local {
 --   UserBlockingPriority,
@@ -222,6 +226,7 @@ local hookTypesUpdateIndexDev: number = 0
 -- In DEV, this tracks whether currently rendering component needs to ignore
 -- the dependencies for Hooks that need them (e.g. useEffect or useMemo).
 -- When true, such Hooks will always be "remounted". Only used during hot reload.
+-- ROBLOX performance: eliminate unuseful cmp in hot path, we don't currently support hot reloading
 local ignorePreviousDependencies: boolean = false
 
 -- Deviation: move to top so below function can reference
@@ -325,15 +330,14 @@ function warnOnHookMismatchInDev(currentHookName: HookType)
 end
 
 local function throwInvalidHookError(): ()
-  invariant(
-    false,
+  error(Error.new(
     "Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for" ..
       " one of the following reasons:\n" ..
       "1. You might have mismatching versions of React and the renderer (such as React DOM)\n" ..
       "2. You might be breaking the Rules of Hooks\n" ..
       "3. You might have more than one copy of React in the same app\n" ..
       "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem."
-  )
+  ))
 end
 
 -- FIXME (roblox): type refinement
@@ -351,6 +355,7 @@ local function areHookInputsEqual(
 
   if prevDeps == nil then
     if _G.__DEV__ then
+      -- ROBLOX TODO: no unit tests in upstream for this, we should add some
       console.error(
         "%s received a final argument during this render, but not during " ..
           "the previous render. Even though the final argument is optional, " ..
@@ -365,6 +370,7 @@ local function areHookInputsEqual(
     -- Don't bother comparing lengths in prod because these arrays should be
     -- passed inline.
     if #nextDeps ~= #prevDeps then
+      -- ROBLOX TODO: no unit tests in upstream for this, we should add some
       console.error(
         "The final argument passed to %s changed size between renders. The " ..
           "order and size of this array must remain constant.\n\n" ..
@@ -376,7 +382,8 @@ local function areHookInputsEqual(
       )
     end
   end
-  for i = 1, math.min(#prevDeps, #nextDeps) do
+  local minDependencyCount = math.min(#prevDeps, #nextDeps)
+  for i = 1, minDependencyCount do
     if is(nextDeps[i], prevDeps[i]) then
       continue
     end
@@ -390,6 +397,7 @@ exports.bailoutHooks = function(
   workInProgress: Fiber,
   lanes: Lanes
 )
+  -- ROBLOX performance TODO: return non-nil updateQueue object to the ReactUpdateQUeue pool
   workInProgress.updateQueue = current.updateQueue
   if _G.__DEV__ and enableDoubleInvokingEffects then
     workInProgress.flags = bit32.band(
@@ -517,10 +525,11 @@ local function updateWorkInProgressHook(): Hook
   else
     -- Clone from the current hook.
 
-    invariant(
-      nextCurrentHook ~= nil,
-      "Rendered more hooks than during the previous render."
-    )
+    -- ROBLOX performance: use React 18 check to avoid function call overhead
+    if nextCurrentHook == nil then
+      error(Error.new("Rendered more hooks than during the previous render."))
+    end
+
     currentHook = nextCurrentHook
 
     local newHook: Hook = {
@@ -546,11 +555,12 @@ local function updateWorkInProgressHook(): Hook
   return workInProgressHook
 end
 
-local function createFunctionComponentUpdateQueue(): FunctionComponentUpdateQueue
-  return {
-    lastEffect = nil,
-  }
-end
+-- ROBLOX performance: inlined in hot path
+-- local function createFunctionComponentUpdateQueue(): FunctionComponentUpdateQueue
+--   return {
+--     lastEffect = nil,
+--   }
+-- end
 
 -- function basicStateReducer<S>(state: S, action: BasicStateAction<S>): S {
 function basicStateReducer(state, action)
@@ -644,16 +654,17 @@ function updateReducer(
       baseQueue.next = pendingFirst
       pendingQueue.next = baseFirst
     end
-    if _G.__DEV__ then
-      if current.baseQueue ~= baseQueue then
-        -- Internal invariant that should never happen, but feasibly could in
-        -- the future if we implement resuming, or some form of that.
-        console.error(
-          'Internal error: Expected work-in-progress queue to be a clone. ' ..
-            'This is a bug in React.'
-        )
-      end
-    end
+    -- ROBLOX performance: elimiante cmp in hot path
+    -- if _G.__DEV__ then
+    --   if current.baseQueue ~= baseQueue then
+    --     -- Internal invariant that should never happen, but feasibly could in
+    --     -- the future if we implement resuming, or some form of that.
+    --     console.error(
+    --       'Internal error: Expected work-in-progress queue to be a clone. ' ..
+    --         'This is a bug in React.'
+    --     )
+    --   end
+    -- end
     baseQueue = pendingQueue
     current.baseQueue = baseQueue
     queue.pending = nil
@@ -670,7 +681,9 @@ function updateReducer(
     local update = first
     repeat
       local updateLane = update.lane
-      if not isSubsetOfLanes(renderLanes, updateLane) then
+      -- ROBLOX performance: inline isSubsetOfLanes for hot path
+      -- if not isSubsetOfLanes(renderLanes, updateLane) then
+      if bit32.band(renderLanes, updateLane) ~= updateLane then
         -- Priority is insufficient. Skip this update. If this is the first
         -- skipped update, the previous update/state is the new base
         -- update/state.
@@ -764,10 +777,11 @@ function rerenderReducer(
 ): (any, Dispatch<any>)
   local hook = updateWorkInProgressHook()
   local queue = hook.queue
-  invariant(
-    queue ~= nil,
-    'Should have a queue. This is likely a bug in React. Please file an issue.'
-  )
+  -- ROBLOX performance: elimiante cmp in hot path
+  -- invariant(
+  --   queue ~= nil,
+  --   'Should have a queue. This is likely a bug in React. Please file an issue.'
+  -- )
 
   queue.lastRenderedReducer = reducer
 
@@ -1184,11 +1198,13 @@ local function pushEffect(tag, create, destroy, deps)
     -- Circular
     next = nil,
   }
-  -- FIXME (roblox): type coercion
-  -- local componentUpdateQueue: FunctionComponentUpdateQueue? = (currentlyRenderingFiber.updateQueue: any)
-  local componentUpdateQueue = currentlyRenderingFiber.updateQueue
+  local componentUpdateQueue: FunctionComponentUpdateQueue = currentlyRenderingFiber.updateQueue :: any
   if componentUpdateQueue == nil then
-    componentUpdateQueue = createFunctionComponentUpdateQueue()
+    -- ROBLOX performance: inline simple function in hot path
+    -- componentUpdateQueue = createFunctionComponentUpdateQueue()
+    componentUpdateQueue = {
+      lastEffect = nil,
+    }
     currentlyRenderingFiber.updateQueue = componentUpdateQueue
     effect.next = effect
     componentUpdateQueue.lastEffect = effect
@@ -1860,37 +1876,32 @@ function dispatchAction(
           ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV
         end
         -- ROBLOX try
-        local ok, result = pcall(function()
-          local currentState = queue.lastRenderedState
-          local eagerState = lastRenderedReducer(currentState, action)
-          -- Stash the eagerly computed state, and the reducer used to compute
-          -- it, on the update object. If the reducer hasn't changed by the
-          -- time we enter the render phase, then the eager state can be used
-          -- without calling the reducer again.
+        local currentState = queue.lastRenderedState
+        -- ROBLOX performance: only wrap the thing that can throw in a pcall to elimiante anon function creation overhead
+        local ok, eagerState = pcall(lastRenderedReducer, currentState, action)
+        -- Stash the eagerly computed state, and the reducer used to compute
+        -- it, on the update object. If the reducer hasn't changed by the
+        -- time we enter the render phase, then the eager state can be used
+        -- without calling the reducer again.
+        if ok then
           update.eagerReducer = lastRenderedReducer
           update.eagerState = eagerState
-          if is(eagerState, currentState) then
-            -- Fast path. We can bail out without scheduling React to re-render.
-            -- It's still possible that we'll need to rebase this update later,
-            -- if the component re-renders for a different reason and by that
-            -- time the reducer has changed.
+        end
 
-            -- deviation: workaround for pcall() format
-            return "Bail"
-          -- deviation: explicit return to silence analyze
-          end
-          return
-        end)
         -- ROBLOX finally
         if _G.__DEV__ then
           ReactCurrentDispatcher.current = prevDispatcher
         end
-        if ok and result == "Bail" then
+
+        if is(eagerState, currentState) then
+          -- Fast path. We can bail out without scheduling React to re-render.
+          -- It's still possible that we'll need to rebase this update later,
+          -- if the component re-renders for a different reason and by that
+          -- time the reducer has changed.
           return
-        elseif ok then
-          -- Left pcall without error, don't return
-        else
-          -- ROBLOX catch
+        end
+        -- ROBLOX catch
+        if not ok then
           -- Suppress the error. It will throw again in the render phase.
         end
       end
@@ -3285,12 +3296,14 @@ local function renderWithHooks(
     end
     hookTypesUpdateIndexDev = 0
     -- Used for hot reloading:
-    ignorePreviousDependencies =
-      current ~= nil and current.type ~= workInProgress.type
+    -- ROBLOX performance: eliminate unuseful cmp in hot path, we don't currently support hot reloading
+    -- ignorePreviousDependencies =
+    --   current ~= nil and current.type ~= workInProgress.type
   end
 
   workInProgress.memoizedState = nil
-  workInProgress.updateQueue = nil
+    -- ROBLOX performance TODO: return non-nil updateQueue object to the ReactUpdateQUeue pool
+    workInProgress.updateQueue = nil
   workInProgress.lanes = NoLanes
 
   -- The following should have already been reset
@@ -3335,23 +3348,27 @@ local function renderWithHooks(
     local numberOfReRenders: number = 0
     repeat
       didScheduleRenderPhaseUpdateDuringThisPass = false
-      invariant(
-        numberOfReRenders < RE_RENDER_LIMIT,
-        "Too many re-renders. React limits the number of renders to prevent " ..
+      -- ROBLOX performance: use React 18 approach to avoid invariant in hot path
+      if numberOfReRenders >= RE_RENDER_LIMIT then
+        error(Error.new(
+          "Too many re-renders. React limits the number of renders to prevent " ..
           "an infinite loop."
-      )
+        ))
+      end
 
       numberOfReRenders += 1
-      if _G.__DEV__ then
+    -- ROBLOX performance: eliminate unuseful cmp in hot path, we don't currently support hot reloading
+    -- if _G.__DEV__ then
         -- Even when hot reloading, allow dependencies to stabilize
         -- after first render to prevent infinite render phase updates.
-        ignorePreviousDependencies = false
-      end
+        -- ignorePreviousDependencies = false
+      -- end
 
       -- Start over from the beginning of the list
       currentHook = nil
       workInProgressHook = nil
 
+      -- ROBLOX performance TODO: return non-nil updateQueue object to the ReactUpdateQUeue pool
       workInProgress.updateQueue = nil
 
       if _G.__DEV__ then
@@ -3394,11 +3411,14 @@ local function renderWithHooks(
 
   didScheduleRenderPhaseUpdate = false
 
-  invariant(
-    not didRenderTooFewHooks,
-    "Rendered fewer hooks than expected. This may be caused by an accidental " ..
+
+  -- ROBLOX performance: use React 18 approach that avoid invariant in hot paths
+  if didRenderTooFewHooks then
+    error(Error.new(
+      "Rendered fewer hooks than expected. This may be caused by an accidental " ..
       "early return statement."
-  )
+    ))
+  end
 
   return children
 end

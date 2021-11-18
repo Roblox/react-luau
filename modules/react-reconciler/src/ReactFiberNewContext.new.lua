@@ -23,6 +23,10 @@ type ContextDependency<T> = ReactInternalTypes.ContextDependency<T>
 
 local ReactFiberStack = require(script.Parent["ReactFiberStack.new"])
 type StackCursor<T> = ReactFiberStack.StackCursor<T>
+local ReactFiberLane = require(script.Parent.ReactFiberLane)
+type Lanes = ReactFiberLane.Lanes
+local ReactUpdateQueue = require(script.Parent["ReactUpdateQueue.new"])
+type SharedQueue<T> = ReactUpdateQueue.SharedQueue<T>
 
 local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
 local isPrimaryRenderer = ReactFiberHostConfig.isPrimaryRenderer
@@ -33,28 +37,21 @@ local MAX_SIGNED_31_BIT_INT = require(script.Parent.MaxInts).MAX_SIGNED_31_BIT_I
 local ReactWorkTags = require(script.Parent.ReactWorkTags)
 local ContextProvider = ReactWorkTags.ContextProvider
 local ClassComponent = ReactWorkTags.ClassComponent
-local DehydratedFragment = ReactWorkTags.DehydratedFragment
--- local includesSomeLane = require(script.Parent.ReactFiberLane).includesSomeLane
-local ReactFiberLane = require(script.Parent.ReactFiberLane)
--- local NoLanes = ReactFiberLane.NoLanes
+-- local DehydratedFragment = ReactWorkTags.DehydratedFragment
+local NoLanes = ReactFiberLane.NoLanes
 local NoTimestamp = ReactFiberLane.NoTimestamp
 local isSubsetOfLanes = ReactFiberLane.isSubsetOfLanes
 local includesSomeLane = ReactFiberLane.includesSomeLane
 local mergeLanes = ReactFiberLane.mergeLanes
 local pickArbitraryLane = ReactFiberLane.pickArbitraryLane
--- local ReactFiberLane = require(script.Parent.ReactFiberLane)
-type Lanes = ReactFiberLane.Lanes
-local NoLanes = ReactFiberLane.NoLanes
 
 local invariant = require(Packages.Shared).invariant
 local is = require(Packages.Shared).objectIs
-local ReactUpdateQueue = require(script.Parent["ReactUpdateQueue.new"])
 local createUpdate = ReactUpdateQueue.createUpdate
-local enqueueUpdate = ReactUpdateQueue.enqueueUpdate
 local ForceUpdate = ReactUpdateQueue.ForceUpdate
 -- deviation: passed in as an arg to eliminate cycle
 -- local markWorkInProgressReceivedUpdate = require(script.Parent["ReactFiberBeginWork.new"]).markWorkInProgressReceivedUpdate
-local enableSuspenseServerRenderer = require(Packages.Shared).ReactFeatureFlags.enableSuspenseServerRenderer
+-- local enableSuspenseServerRenderer = require(Packages.Shared).ReactFeatureFlags.enableSuspenseServerRenderer
 
 local exports = {}
 
@@ -167,15 +164,16 @@ exports.calculateChangedBits = function(
       changedBits = context._calculateChangedBits(oldValue, newValue)
     end
 
-    if _G.__DEV__ then
-      if bit32.band(changedBits, MAX_SIGNED_31_BIT_INT) ~= changedBits then
-        console.error(
-          "calculateChangedBits: Expected the return value to be a " ..
-            "31-bit integer. Instead received: %s",
-          changedBits
-        )
-      end
-    end
+    -- ROBLOX performance: eliminate nice-to-have compare in hot path that's removed in React 18
+    -- if _G.__DEV__ then
+    --   if bit32.band(changedBits, MAX_SIGNED_31_BIT_INT) ~= changedBits then
+    --     console.error(
+    --       "calculateChangedBits: Expected the return value to be a " ..
+    --         "31-bit integer. Instead received: %s",
+    --       changedBits
+    --     )
+    --   end
+    -- end
     -- deviation: JS does a bitwise OR with 0 presumably to floor the value and
     -- coerce to an int; we just use math.floor
     return math.floor(changedBits)
@@ -232,8 +230,9 @@ exports.propagateContextChange = function(
       while dependency ~= nil do
         -- Check if the context matches.
         if
-          dependency.context == context and
-          bit32.band(dependency.observedBits, changedBits) ~= 0
+          dependency.context == context
+          -- ROBLOX performance: unstable observedBits is removed in React 18
+          and bit32.band(dependency.observedBits, changedBits) ~= 0
         then
           -- Match! Schedule an update on this fiber.
 
@@ -248,17 +247,37 @@ exports.propagateContextChange = function(
             -- update to the current fiber, too, which means it will persist even if
             -- this render is thrown away. Since it's a race condition, not sure it's
             -- worth fixing.
-            enqueueUpdate(fiber, update)
+
+            -- Inlined `enqueueUpdate` to remove interleaved update check
+            local updateQueue = fiber.updateQueue
+            if updateQueue == nil then
+              -- Only occurs if the fiber has been unmounted.
+            else
+              local sharedQueue: SharedQueue<any> = (updateQueue :: any).shared
+              local pending = sharedQueue.pending
+              if pending == nil then
+                -- This is the first update. Create a circular list.
+                update.next = update
+              else
+                update.next = pending.next
+                pending.next = update
+              end
+              sharedQueue.pending = update
+            end
           end
-          fiber.lanes = mergeLanes(fiber.lanes, renderLanes)
+
+          -- ROBLOX performance: inline mergeLanes(fiber.lanes, renderLanes)
+          fiber.lanes = bit32.bor(fiber.lanes, renderLanes)
           local alternate = fiber.alternate
           if alternate ~= nil then
-            alternate.lanes = mergeLanes(alternate.lanes, renderLanes)
+          -- ROBLOX performance: inline mergeLanes(alternate.lanes, renderLanes)
+            alternate.lanes = bit32.bor(alternate.lanes, renderLanes)
           end
           exports.scheduleWorkOnParentPath(fiber.return_, renderLanes)
 
           -- Mark the updated lanes on the list, too.
-          list.lanes = mergeLanes(list.lanes, renderLanes)
+          -- ROBLOX performance: inline mergeLanes(list.lanes, renderLanes)
+          list.lanes = bit32.bor(list.lanes, renderLanes)
 
           -- Since we already found a match, we can stop traversing the
           -- dependency list.
@@ -273,29 +292,29 @@ exports.propagateContextChange = function(
       else
         nextFiber = fiber.child
       end
-    elseif
-      enableSuspenseServerRenderer and
-      fiber.tag == DehydratedFragment
-    then
-      -- If a dehydrated suspense boundary is in this subtree, we don't know
-      -- if it will have any context consumers in it. The best we can do is
-      -- mark it as having updates.
-      local parentSuspense = fiber.return_
-      invariant(
-        parentSuspense ~= nil,
-        "We just came from a parent so we must have had a parent. This is a bug in React."
-      )
-      parentSuspense.lanes = mergeLanes(parentSuspense.lanes, renderLanes)
-      local alternate = parentSuspense.alternate
-      if alternate ~= nil then
-        alternate.lanes = mergeLanes(alternate.lanes, renderLanes)
-      end
-      -- This is intentionally passing this fiber as the parent
-      -- because we want to schedule this fiber as having work
-      -- on its children. We'll use the childLanes on
-      -- this fiber to indicate that a context has changed.
-      exports.scheduleWorkOnParentPath(parentSuspense, renderLanes)
-      nextFiber = fiber.sibling
+    -- ROBLOX performance: eliminate always-false compare in tab switching hot path
+    -- elseif
+    --   enableSuspenseServerRenderer and
+    --   fiber.tag == DehydratedFragment
+    -- then
+    --   -- If a dehydrated suspense boundary is in this subtree, we don't know
+    --   -- if it will have any context consumers in it. The best we can do is
+    --   -- mark it as having updates.
+    --   local parentSuspense = fiber.return_
+    --   if parentSuspense == nil then
+    --     error("We just came from a parent so we must have had a parent. This is a bug in React.")
+    --   end
+    --   parentSuspense.lanes = mergeLanes(parentSuspense.lanes, renderLanes)
+    --   local alternate = parentSuspense.alternate
+    --   if alternate ~= nil then
+    --     alternate.lanes = mergeLanes(alternate.lanes, renderLanes)
+    --   end
+    --   -- This is intentionally passing this fiber as the parent
+    --   -- because we want to schedule this fiber as having work
+    --   -- on its children. We'll use the childLanes on
+    --   -- this fiber to indicate that a context has changed.
+    --   exports.scheduleWorkOnParentPath(parentSuspense, renderLanes)
+    --   nextFiber = fiber.sibling
     else
       -- Traverse down.
       nextFiber = fiber.child

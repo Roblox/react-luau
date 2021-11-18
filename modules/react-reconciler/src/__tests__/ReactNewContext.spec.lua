@@ -10,7 +10,9 @@
 ]]
 
 local Packages = script.Parent.Parent.Parent
-local Array = require(Packages.LuauPolyfill).Array
+local LuauPolyfill = require(Packages.LuauPolyfill)
+local Array = LuauPolyfill.Array
+local Error = LuauPolyfill.Error
 
 local React
 local useContext
@@ -485,7 +487,7 @@ return function()
 				end
 
 				local function BadRender()
-					error("Bad render")
+					error(Error.new("Bad render"))
 				end
 
 				local ErrorBoundary = React.Component:extend("ErrorBoundary")
@@ -538,219 +540,7 @@ return function()
 				})
 			end)
 
-			-- ROBLOX FIXME: The following two tests pass in non-DEV, in DEV + debugRenderPhaseSideEffectsForStrictMode fails with
-			-- 'Expected warning was not recorded: useContext() second argument is reserved for future use in React. Passing it is not supported. You passed: 2.'
-			-- It seems to escape the boundary of the toErrorDev (which otherwise expects exactly that), as it continues with:
-			-- [...]"The above error occurred in the <ForwardRef(<function>)> component:"[...]
-			local skipIfDev = _G.__DEV__ and itSKIP or it
-			skipIfDev("can skip consumers with bitmask", function()
-				local Context = React.createContext({
-					foo = 0,
-					bar = 0,
-				}, function(a, b)
-					local result = 0
-
-					if a.foo ~= b.foo then
-						result = bit32.bor(result, 0b01)
-					end
-
-					if a.bar ~= b.bar then
-						result = bit32.bor(result, 0b10)
-					end
-
-					return result
-				end)
-				local Consumer = getConsumer(Context)
-
-				local function Provider(props)
-					return React.createElement(Context.Provider, {
-						value = {
-							foo = props.foo,
-							bar = props.bar,
-						},
-					}, props.children)
-				end
-
-				local function Foo()
-					return React.createElement(Consumer, {
-						unstable_observedBits = 0b01,
-					}, function(value)
-						Scheduler.unstable_yieldValue("Foo")
-						return React.createElement("span", {
-							prop = "Foo: " .. value.foo,
-						})
-					end)
-				end
-
-				local function Bar()
-					return React.createElement(Consumer, {
-						unstable_observedBits = 0b10,
-					}, function(value)
-						Scheduler.unstable_yieldValue("Bar")
-						return React.createElement("span", {
-							prop = "Bar: " .. value.bar,
-						})
-					end)
-				end
-
-				local Indirection = React.Component:extend("Indirection")
-				function Indirection:shouldComponentUpdate()
-					return false
-				end
-
-				function Indirection:render()
-					return self.props.children
-				end
-
-				local function App(props)
-					return React.createElement(
-						Provider,
-						{
-							foo = props.foo,
-							bar = props.bar,
-						},
-						React.createElement(
-							Indirection,
-							nil,
-							React.createElement(Indirection, nil, React.createElement(Foo, nil)),
-							React.createElement(Indirection, nil, React.createElement(Bar, nil))
-						)
-					)
-				end
-
-				ReactNoop.render(React.createElement(App, {
-					foo = 1,
-					bar = 1,
-				}))
-				jestExpect(Scheduler).toFlushAndYield({ "Foo", "Bar" })
-				jestExpect(ReactNoop.getChildren()).toEqual({ span("Foo: 1"), span("Bar: 1") }) -- Update only foo
-
-				ReactNoop.render(React.createElement(App, {
-					foo = 2,
-					bar = 1,
-				}))
-				jestExpect(Scheduler).toFlushAndYield({ "Foo" })
-				jestExpect(ReactNoop.getChildren()).toEqual({ span("Foo: 2"), span("Bar: 1") }) -- Update only bar
-
-				ReactNoop.render(React.createElement(App, {
-					foo = 2,
-					bar = 2,
-				}))
-				jestExpect(Scheduler).toFlushAndYield({ "Bar" })
-				jestExpect(ReactNoop.getChildren()).toEqual({ span("Foo: 2"), span("Bar: 2") }) -- Update both
-
-				ReactNoop.render(React.createElement(App, {
-					foo = 3,
-					bar = 3,
-				}))
-				jestExpect(Scheduler).toFlushAndYield({ "Foo", "Bar" })
-				jestExpect(ReactNoop.getChildren()).toEqual({ span("Foo: 3"), span("Bar: 3") })
-			end)
-			skipIfDev("can skip parents with bitmask bailout while updating their children", function()
-				local Context = React.createContext({
-					foo = 0,
-					bar = 0,
-				}, function(a, b)
-					local result = 0
-
-					if a.foo ~= b.foo then
-						result = bit32.bor(result, 0b01)
-					end
-
-					if a.bar ~= b.bar then
-						result = bit32.bor(result, 0b10)
-					end
-
-					return result
-				end)
-				local Consumer = getConsumer(Context)
-
-				local function Provider(props)
-					return React.createElement(Context.Provider, {
-						value = {
-							foo = props.foo,
-							bar = props.bar,
-						},
-					}, props.children)
-				end
-
-				local function Foo(props)
-					return React.createElement(Consumer, {
-						unstable_observedBits = 0b01,
-					}, function(value)
-						Scheduler.unstable_yieldValue("Foo")
-						return React.createElement(React.Fragment, nil, React.createElement("span", {
-							prop = "Foo: " .. value.foo,
-						}), props.children and props.children())
-					end)
-				end
-
-				local function Bar(props)
-					return React.createElement(Consumer, {
-						unstable_observedBits = 0b10,
-					}, function(value)
-						Scheduler.unstable_yieldValue("Bar")
-						return React.createElement(React.Fragment, nil, React.createElement("span", {
-							prop = "Bar: " .. value.bar,
-						}), props.children and props.children())
-					end)
-				end
-
-				local Indirection = React.Component:extend("Indirection")
-				function Indirection:shouldComponentUpdate()
-					return false
-				end
-
-				function Indirection:render()
-					return self.props.children
-				end
-
-				local function App(props)
-					return React.createElement(Provider, {
-						foo = props.foo,
-						bar = props.bar,
-					}, React.createElement(
-						Indirection,
-						nil,
-						React.createElement(Foo, nil, function()
-							return React.createElement(Indirection, nil, React.createElement(Bar, nil, function()
-								return React.createElement(Indirection, nil, React.createElement(Foo, nil))
-							end))
-						end)
-					))
-				end
-
-				ReactNoop.render(React.createElement(App, {
-					foo = 1,
-					bar = 1,
-				}))
-				jestExpect(Scheduler).toFlushAndYield({ "Foo", "Bar", "Foo" })
-				jestExpect(ReactNoop.getChildren()).toEqual({ span("Foo: 1"), span("Bar: 1"), span("Foo: 1") })
-
-				-- Update only foo
-				ReactNoop.render(React.createElement(App, {
-					foo = 2,
-					bar = 1,
-				}))
-				jestExpect(Scheduler).toFlushAndYield({ "Foo", "Foo" })
-				jestExpect(ReactNoop.getChildren()).toEqual({ span("Foo: 2"), span("Bar: 1"), span("Foo: 2") })
-
-				-- Update only bar
-				ReactNoop.render(React.createElement(App, {
-					foo = 2,
-					bar = 2,
-				}))
-				jestExpect(Scheduler).toFlushAndYield({ "Bar" })
-				jestExpect(ReactNoop.getChildren()).toEqual({ span("Foo: 2"), span("Bar: 2"), span("Foo: 2") })
-
-				-- Update both
-				ReactNoop.render(React.createElement(App, {
-					foo = 3,
-					bar = 3,
-				}))
-				jestExpect(Scheduler).toFlushAndYield({ "Foo", "Bar", "Foo" })
-				jestExpect(ReactNoop.getChildren()).toEqual({ span("Foo: 3"), span("Bar: 3"), span("Foo: 3") })
-			end)
+			-- ROBLOX note: deleted two tests relating to unstable_observedBits, which is removed in React 18
 
 			it("does not re-render if there's an update in a child", function()
 				local Context = React.createContext(0)
@@ -878,7 +668,7 @@ return function()
 				jestExpect(ReactNoop.getChildren()).toEqual({ span(2), span(2) })
 			end)
 
-			-- @gate experimental
+			-- @gate experimental || www
 			it("context consumer doesn't bail out inside hidden subtree", function()
 				local Context = React.createContext("dark")
 				local Consumer = getConsumer(Context)
@@ -1125,34 +915,14 @@ return function()
 	end)
 	sharedContextTests("useContext inside function component", function(Context)
 		return function(props)
-			local observedBits = props.unstable_observedBits
-			local contextValue
-			jestExpect(function()
-				contextValue = useContext(Context, observedBits)
-			end).toErrorDev(
-				observedBits ~= nil
-						and "useContext() second argument is reserved for future use in React. " .. "Passing it is not supported. You passed: " .. tostring(
-							observedBits
-						) .. "."
-					or {}
-			)
+			local contextValue = useContext(Context)
 			local render = props.children
 			return render(contextValue)
 		end
 	end)
 	sharedContextTests("useContext inside forwardRef component", function(Context)
 		return React.forwardRef(function(props, ref)
-			local observedBits = props.unstable_observedBits
-			local contextValue
-			jestExpect(function()
-				contextValue = useContext(Context, observedBits)
-			end).toErrorDev(
-				observedBits ~= nil
-						and "useContext() second argument is reserved for future use in React. " .. "Passing it is not supported. You passed: " .. tostring(
-							observedBits
-						) .. "."
-					or {}
-			)
+			local contextValue = useContext(Context)
 			local render = props.children
 			return render(contextValue)
 		end)
@@ -1160,17 +930,7 @@ return function()
 
 	sharedContextTests("useContext inside memoized function component", function(Context)
 		return React.memo(function(props)
-			local observedBits = props.unstable_observedBits
-			local contextValue
-			jestExpect(function()
-				contextValue = useContext(Context, observedBits)
-			end).toErrorDev(
-				observedBits ~= nil
-						and "useContext() second argument is reserved for future use in React. " .. "Passing it is not supported. You passed: " .. tostring(
-							observedBits
-						) .. "."
-					or {}
-			)
+			local contextValue = useContext(Context)
 			local render = props.children
 			return render(contextValue)
 		end)
@@ -1179,8 +939,7 @@ return function()
 		local Consumer = React.Component:extend("Consumer")
 
 		function Consumer:render()
-			local observedBits = self.props.unstable_observedBits
-			local contextValue = readContext(Context, observedBits)
+			local contextValue = readContext(Context)
 			local render = self.props.children
 			return render(contextValue)
 		end
@@ -1190,8 +949,7 @@ return function()
 		local Consumer = React.PureComponent:extend("Consumer")
 
 		function Consumer:render()
-			local observedBits = self.props.unstable_observedBits
-			local contextValue = readContext(Context, observedBits)
+			local contextValue = readContext(Context)
 			local render = self.props.children
 			return render(contextValue)
 		end
@@ -1199,31 +957,6 @@ return function()
 	end)
 
 	describe("Context.Provider", function()
-		it("warns if calculateChangedBits returns larger than a 31-bit integer", function()
-			local Context = React.createContext(
-				0,
-				function(a, b)
-					return math.pow(2, 32) - 1
-				end -- Return 32 bit int
-			)
-
-			local function App(props)
-				return React.createElement(Context.Provider, { value = props.value })
-			end
-
-			ReactNoop.render(React.createElement(App, { value = 1 }))
-			jestExpect(Scheduler).toFlushWithoutYielding()
-
-			-- Update
-			ReactNoop.render(React.createElement(App, { value = 2 }))
-			jestExpect(function()
-				jestExpect(Scheduler).toFlushWithoutYielding()
-			end).toErrorDev(
-				"calculateChangedBits: Expected the return value to be a 31-bit "
-					.. "integer. Instead received: 4294967295"
-			)
-		end)
-
 		it("warns if no value prop provided", function()
 			local Context = React.createContext()
 
@@ -1400,47 +1133,6 @@ return function()
 			-- end
 		end)
 
-		-- ROBLOX deviation: tests legacy Roact compatibility feature
-		it("warns once if using legacy Roact render prop", function()
-			local Context = React.createContext()
-
-			local function renderContext()
-				ReactNoop.render(
-					React.createElement(
-							Context.Provider,
-							{ value = 1 },
-							React.createElement(Context.Consumer, {render = function(value)
-									return React.createElement("span", { prop = "Result: " .. tostring(value) })
-							end}))
-				)
-			end
-
-			renderContext()
-			jestExpect(function()
-				jestExpect(Scheduler).toFlushWithoutYielding()
-			end).toWarnDev("Warning: Your Context.Consumer component is using legacy Roact syntax, which won't be supported in future versions of Roact. \n" ..
-				"Please provide no props and supply the 'render' function as a child (the 3rd argument of createElement). For example: \n" ..
-				"       createElement(ContextConsumer, {render = function(...) end})\n" ..
-				"becomes:\n" ..
-				"       createElement(ContextConsumer, nil, function(...) end)\n" ..
-				"For more info, reference the React documentation here: \n" ..
-				"https://reactjs.org/docs/context.html#contextconsumer", {withoutStack = true})
-				ReactNoop.render(
-					React.createElement(
-							Context.Provider,
-							{ value = 1 },
-							React.createElement(Context.Consumer, {render = function(value)
-									return React.createElement("span", { prop = "Result: " .. tostring(value) })
-							end}))
-				)
-
-			-- Does not warn a second time
-			renderContext()
-			jestExpect(function()
-				jestExpect(Scheduler).toFlushWithoutYielding()
-			end).toWarnDev({})
-		end)
-
 		it("can read other contexts inside consumer render prop", function()
 			local FooContext = React.createContext(0)
 			local BarContext = React.createContext(0)
@@ -1499,6 +1191,201 @@ return function()
 			local Consumer = Context.Consumer
 
 			local App = React.Component:extend("App")
+			function App:init()
+				self.state = {
+					text = "hello",
+				}
+			end
+
+			function App:renderConsumer(context)
+				Scheduler.unstable_yieldValue("App#renderConsumer")
+				return React.createElement("span", { prop = self.state.text })
+			end
+
+			function App:render()
+				Scheduler.unstable_yieldValue("App")
+				return React.createElement(
+					Context.Provider,
+					{ value = self.props.value },
+					React.createElement(Consumer, nil, function(context)
+						return self:renderConsumer(context)
+					end)
+				)
+			end
+
+			-- Initial mount
+			local inst
+			ReactNoop.render(React.createElement(App, {
+				value = 1,
+				ref = function(ref)
+					inst = ref
+				end,
+			}))
+			jestExpect(Scheduler).toFlushAndYield({ "App", "App#renderConsumer" })
+			jestExpect(ReactNoop.getChildren()).toEqual({ span("hello") })
+
+			-- Update
+			inst:setState({ text = "goodbye" })
+			jestExpect(Scheduler).toFlushAndYield({ "App", "App#renderConsumer" })
+			jestExpect(ReactNoop.getChildren()).toEqual({ span("goodbye") })
+		end)
+
+		-- ROBLOX deviation: tests legacy Roact compatibility feature
+		it("warns once if using legacy Roact render prop", function()
+			local Context = React.createContext()
+
+			local function renderContext()
+				ReactNoop.render(
+					React.createElement(
+							Context.Provider,
+							{ value = 1 },
+							React.createElement(Context.Consumer, {render = function(value)
+									return React.createElement("span", { prop = "Result: " .. tostring(value) })
+							end}))
+				)
+			end
+
+			renderContext()
+			jestExpect(function()
+				jestExpect(Scheduler).toFlushWithoutYielding()
+			end).toWarnDev("Warning: Your Context.Consumer component is using legacy Roact syntax, which won't be supported in future versions of Roact. \n" ..
+				"Please provide no props and supply the 'render' function as a child (the 3rd argument of createElement). For example: \n" ..
+				"       createElement(ContextConsumer, {render = function(...) end})\n" ..
+				"becomes:\n" ..
+				"       createElement(ContextConsumer, nil, function(...) end)\n" ..
+				"For more info, reference the React documentation here: \n" ..
+				"https://reactjs.org/docs/context.html#contextconsumer", {withoutStack = true})
+				ReactNoop.render(
+					React.createElement(
+							Context.Provider,
+							{ value = 1 },
+							React.createElement(Context.Consumer, {render = function(value)
+									return React.createElement("span", { prop = "Result: " .. tostring(value) })
+							end}))
+				)
+
+			-- Does not warn a second time
+			renderContext()
+			jestExpect(function()
+				jestExpect(Scheduler).toFlushWithoutYielding()
+			end).toWarnDev({})
+		end)
+
+	end)
+
+	describe("readContext", function()
+		-- Unstable changedBits API was removed. Port this test to context selectors
+		-- once that exists.
+		-- @gate FIXME
+		itSKIP("can read the same context multiple times in the same function", function()
+			local Context = React.createContext({foo = 0, bar = 0, baz = 0}, function(a, b)
+				local result = 0
+				if a.foo ~= b.foo then
+					result = bit32.bor(result, 0b001)
+				end
+				if a.bar ~= b.bar then
+					result = bit32.bor(result, 0b010)
+				end
+				if a.baz ~= b.baz then
+					result = bit32.bor(result, 0b100)
+				end
+				return result
+			end)
+
+			local function Provider(props)
+				return React.createElement(Context.Provider,
+					{ value = {foo = props.foo, bar = props.bar, baz = props.baz} },
+					props.children
+				)
+			end
+
+			local function FooAndBar()
+				local values = readContext(Context, 0b001)
+				local foo = values.foo
+				values = readContext(Context, 0b010)
+				local bar = values.bar
+				return React.createElement(Text,
+					{ text = "Foo: " .. tostring(foo) .. ", Bar: " .. tostring(bar) }
+				)
+			end
+
+			local function Baz()
+				local values = readContext(Context, 0b001)
+				local baz = values.baz
+				return React.createElement(Text,
+					{ text = "Baz: " .. tostring(baz) }
+				)
+			end
+
+			local Indirection = React.Component:extend("Indirection")
+			function Indirection:shouldComponentUpdate()
+				return false
+			end
+			function Indirection:render()
+				return self.props.children
+			end
+
+			local function App(props)
+				return React.createElement(
+					Provider,
+					{ foo = props.foo, bar = props.bar, baz = props.baz, },
+					React.createElement(Indirection, nil,
+						React.createElement(Indirection, nil,
+							React.createElement(FooAndBar)
+						),
+						React.createElement(Indirection, nil,
+							React.createElement(Baz)
+						)
+					)
+				)
+			end
+
+			ReactNoop.render(React.createElement(App, { foo = 1, bar = 1, baz = 1 }))
+			jestExpect(Scheduler).toFlushAndYield({ "Foo: 1, Bar: 1", "Baz: 1" })
+			jestExpect(ReactNoop.getChildren()).toEqual({
+				span("Foo: 1, Bar: 1"),
+				span("Baz: 1")
+			})
+
+			-- Update only foo
+			ReactNoop.render(React.createElement(App, { foo = 2, bar = 1, baz = 1 }))
+			jestExpect(Scheduler).toFlushAndYield({ "Foo: 2, Bar: 1" })
+			jestExpect(ReactNoop.getChildren()).toEqual({
+				span("Foo: 2, Bar: 1"),
+				span("Baz: 1")
+			})
+
+			-- Update only bar
+			ReactNoop.render(React.createElement(App, { foo = 2, bar = 2, baz = 1 }))
+			jestExpect(Scheduler).toFlushAndYield({ "Foo: 2, Bar: 2" })
+			jestExpect(ReactNoop.getChildren()).toEqual({
+				span("Foo: 2, Bar: 2"),
+				span("Baz: 1")
+			})
+
+			-- Update only baz
+			ReactNoop.render(React.createElement(App, { foo = 2, bar = 2, baz = 2 }))
+			jestExpect(Scheduler).toFlushAndYield({ "Baz: 2" })
+			jestExpect(ReactNoop.getChildren()).toEqual({
+				span("Foo: 2, Bar: 2"),
+				span("Baz: 2")
+			})
+		end)
+
+		-- Context consumer bails out on propagating "deep" updates when `value` hasn't changed.
+		-- However, it doesn't bail out from rendering if the component above it re-rendered anyway.
+		-- If we bailed out on referential equality, it would be confusing that you
+		-- can call this.setState(), but an autobound render callback "blocked" the update.
+		-- https://github.com/facebook/react/pull/12470#issuecomment-376917711
+		it("does not bail out if there were no bailouts above it", function()
+			local Context = React.createContext(0)
+			local Consumer = React.Component:extend("Consumer")
+			function Consumer:render()
+				local contextValue = readContext(Context)
+				return self.props.children(contextValue)
+			end
+
+			local App = React.Component:extend("App")
 
 			function App:init()
 				self.state = {
@@ -1538,5 +1425,180 @@ return function()
 			jestExpect(Scheduler).toFlushAndYield({ "App", "App#renderConsumer" })
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("goodbye") })
 		end)
+
+
+		it("warns when reading context inside render phase class setState updater", function()
+			local ThemeContext = React.createContext("light")
+
+			local Cls = React.Component:extend("Cls")
+			function Cls:init()
+				self.state = {}
+			end
+
+			function Cls:render()
+				self:setState(function()
+					readContext(ThemeContext)
+				end)
+				return nil
+			end
+
+			ReactNoop.render(React.createElement(Cls))
+			jestExpect(function()
+				jestExpect(Scheduler).toFlushWithoutYielding()
+			end).toErrorDev({
+				"Context can only be read while React is rendering",
+				-- A second warning comes from to setStates being added to the queue.
+				"Context can only be read while React is rendering",
+				"Cannot update during an existing state transition",
+			})
+		end)
 	end)
+
+	describe("useContext", function()
+		it("throws when used in a class component", function()
+			local Context = React.createContext(0)
+			local Foo = React.Component:extend("Foo")
+			function Foo:render()
+				return useContext(Context)
+			end
+
+			ReactNoop.render(React.createElement(Foo))
+			jestExpect(Scheduler).toFlushAndThrow(
+				"Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen" ..
+					" for one of the following reasons:\n" ..
+					"1. You might have mismatching versions of React and the renderer (such as React DOM)\n" ..
+					"2. You might be breaking the Rules of Hooks\n" ..
+					"3. You might have more than one copy of React in the same app\n" ..
+					"See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem."
+			)
+		end)
+
+		it("warns when passed a consumer", function()
+			local Context = React.createContext(0)
+			local function Foo()
+				return useContext(Context.Consumer)
+			end
+
+			ReactNoop.render(React.createElement(Foo))
+			jestExpect(function()
+				jestExpect(Scheduler).toFlushWithoutYielding()
+			end).toErrorDev(
+				"Calling useContext(Context.Consumer) is not supported, may cause bugs, " ..
+				"and will be removed in a future major release. " ..
+				"Did you mean to call useContext(Context) instead?"
+			)
+		end)
+
+		it("warns when passed a provider", function()
+			local Context = React.createContext(0)
+			local function Foo()
+				useContext(Context.Provider)
+				return nil
+			end
+
+			ReactNoop.render(React.createElement(Foo))
+			jestExpect(function()
+				jestExpect(Scheduler).toFlushWithoutYielding()
+			end).toErrorDev(
+				"Calling useContext(Context.Provider) is not supported. " ..
+				"Did you mean to call useContext(Context) instead?"
+			)
+		end)
+
+		-- Context consumer bails out on propagating "deep" updates when `value` hasn't changed.
+		-- However, it doesn't bail out from rendering if the component above it re-rendered anyway.
+		-- If we bailed out on referential equality, it would be confusing that you
+		-- can call this.setState(), but an autobound render callback "blocked" the update.
+		-- https://github.com/facebook/react/pull/12470#issuecomment-376917711
+		it("does not bail out if there were no bailouts above it", function()
+			local Context = React.createContext(0)
+
+			local function Consumer(props)
+				local children = props.children
+				local contextValue = useContext(Context)
+				return children(contextValue)
+			end
+
+			local App = React.Component:extend("App")
+
+			function App:init()
+				self.state = {
+					text = "hello",
+				}
+			end
+
+			function App:renderConsumer(context)
+				Scheduler.unstable_yieldValue("App#renderConsumer")
+				return React.createElement("span", { prop = self.state.text })
+			end
+
+			function App:render()
+				Scheduler.unstable_yieldValue("App")
+				return React.createElement(
+					Context.Provider,
+					{ value = self.props.value },
+					React.createElement(Consumer, nil, function(context)
+						return self:renderConsumer(context)
+					end)
+				)
+			end
+
+			-- Initial mount
+			local inst
+			ReactNoop.render(React.createElement(App, {
+				value = 1,
+				ref = function(ref)
+					inst = ref
+				end,
+			}))
+			jestExpect(Scheduler).toFlushAndYield({ "App", "App#renderConsumer" })
+			jestExpect(ReactNoop.getChildren()).toEqual({ span("hello") })
+
+			-- Update
+			inst:setState({ text = "goodbye" })
+			jestExpect(Scheduler).toFlushAndYield({ "App", "App#renderConsumer" })
+			jestExpect(ReactNoop.getChildren()).toEqual({ span("goodbye") })
+		end)
+
+		-- ROBLOX TODO: figure out how to render an invalid element to make this test pass
+		-- it('unwinds after errors in complete phase', () => {
+	end)
+
+
+	-- ROBLOX TODO: add this test fixture
+	-- describe('fuzz test', () => {
+
+
+	it("should warn with an error message when using context as a consumer in DEV", function()
+		local BarContext = React.createContext({value = "bar-initial"})
+		local BarConsumer = BarContext
+
+		local function Component()
+			return React.createElement(React.Fragment, nil,
+				React.createElement(BarContext.Provider,
+					{ value = "bar-updated" },
+					React.createElement(BarConsumer,
+						nil,
+						function(value)
+							return React.createElement("div",
+								{ actual = value, expected = "bar-updated" }
+							)
+						end
+					)
+				)
+			)
+		end
+
+		jestExpect(function()
+			ReactNoop.render(React.createElement(Component))
+			jestExpect(Scheduler).toFlushWithoutYielding()
+		end).toErrorDev(
+			"Warning: " .. -- ROBLOX FIXME: remove the Warning: prefix in consoleWithStackDev
+			"Rendering <Context> directly is not supported and will be removed in " ..
+			"a future major release. Did you mean to render <Context.Consumer> instead?"
+		)
+	end)
+
+	-- ROBLOX deviation: we don't implement this property at all
+	-- it('should warn with an error message when using nested context consumers in DEV', () => {
 end

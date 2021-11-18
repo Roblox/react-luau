@@ -7,10 +7,10 @@ return function()
 	local jest = JestGlobals.jest
 
 	it("should fire subscribers and disconnect them", function()
-		local signal = createSignal()
+		local subscribe, fire = createSignal()
 
 		local spy = jest.fn()
-		local disconnect = signal:subscribe(
+		local disconnect = subscribe(
 			function(...) spy(...) end
 		)
 
@@ -19,28 +19,28 @@ return function()
 		local a = 1
 		local b = {}
 		local c = "hello"
-		signal:fire(a, b, c)
+		fire(a, b, c)
 
 		jestExpect(spy).toBeCalledTimes(1)
 		jestExpect(spy).toBeCalledWith(a, b, c)
 
 		disconnect()
 
-		signal:fire()
+		fire()
 
 		jestExpect(spy).toBeCalledTimes(1)
 	end)
 
 	it("should handle multiple subscribers", function()
-		local signal = createSignal()
+		local subscribe, fire = createSignal()
 
 		local spyA = jest.fn()
 		local spyB = jest.fn()
 
-		local disconnectA = signal:subscribe(
+		local disconnectA = subscribe(
 			function(...) spyA(...) end
 		)
-		local disconnectB = signal:subscribe(
+		local disconnectB = subscribe(
 			function(...) spyB(...) end
 		)
 
@@ -49,7 +49,7 @@ return function()
 
 		local a = {}
 		local b = 67
-		signal:fire(a, b)
+		fire(a, b)
 
 		jestExpect(spyA).toBeCalledTimes(1)
 		jestExpect(spyA).toBeCalledWith(a, b)
@@ -59,7 +59,7 @@ return function()
 
 		disconnectA()
 
-		signal:fire(b, a)
+		fire(b, a)
 
 		jestExpect(spyA).toBeCalledTimes(1)
 
@@ -70,7 +70,7 @@ return function()
 	end)
 
 	it("should stop firing a connection if disconnected mid-fire", function()
-		local signal = createSignal()
+		local subscribe, fire = createSignal()
 
 		-- In this test, we'll connect two listeners that each try to disconnect
 		-- the other. Because the order of listeners firing isn't defined, we
@@ -87,14 +87,14 @@ return function()
 			disconnectA()
 		end)
 
-		disconnectA = signal:subscribe(
+		disconnectA = subscribe(
 			function(...) spyA(...) end
 		)
-		disconnectB = signal:subscribe(
+		disconnectB = subscribe(
 			function(...) spyB(...) end
 		)
 
-		signal:fire()
+		fire()
 
 		jestExpect(#spyA.mock.calls + #spyB.mock.calls).toBe(1)
 

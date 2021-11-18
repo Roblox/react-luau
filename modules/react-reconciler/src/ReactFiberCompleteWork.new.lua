@@ -752,13 +752,21 @@ local function bubbleProperties(completedWork: Fiber)
     else
       local child = completedWork.child
       while child ~= nil do
-        newChildLanes = mergeLanes(
-          newChildLanes,
-          mergeLanes(child.lanes, child.childLanes)
-        )
+        -- ROBLOX performance: inline mergeLanes
+        -- newChildLanes = mergeLanes(
+        --   newChildLanes,
+        --   mergeLanes(child.lanes, child.childLanes)
+        -- )
+        newChildLanes = bit32.bor(newChildLanes, bit32.bor(child.lanes, child.childLanes))
 
         subtreeFlags = bit32.bor(subtreeFlags, child.subtreeFlags)
         subtreeFlags = bit32.bor(subtreeFlags, child.flags)
+
+        -- ROBLOX note: this was missed in the "new" version of the file in React 17, but is fixed in React 18
+        -- Update the return pointer so the tree is consistent. This is a code
+        -- smell because it assumes the commit phase is never concurrent with
+        -- the render phase. Will address during refactor to alternate model.
+        child.return_ = completedWork
 
         child = child.sibling
       end
@@ -794,10 +802,12 @@ local function bubbleProperties(completedWork: Fiber)
     else
       local child = completedWork.child
       while child ~= nil do
-        newChildLanes = mergeLanes(
-          newChildLanes,
-          mergeLanes(child.lanes, child.childLanes)
-        )
+        -- ROBLOX performance: inline mergeLanes
+        -- newChildLanes = mergeLanes(
+        --   newChildLanes,
+        --   mergeLanes(child.lanes, child.childLanes)
+        -- )
+        newChildLanes = bit32.bor(newChildLanes, bit32.bor(child.lanes, child.childLanes))
 
         -- "Static" flags share the lifetime of the fiber/hook they belong to,
         -- so we should bubble those up even during a bailout. All the other
@@ -805,6 +815,12 @@ local function bubbleProperties(completedWork: Fiber)
         -- ignore them.
         subtreeFlags = bit32.bor(subtreeFlags, bit32.band(child.subtreeFlags, StaticMask))
         subtreeFlags = bit32.bor(subtreeFlags, bit32.band(child.flags, StaticMask))
+
+        -- ROBLOX note: this was missed in the "new" version of the file in React 17, but is fixed in React 18
+        -- Update the return pointer so the tree is consistent. This is a code
+        -- smell because it assumes the commit phase is never concurrent with
+        -- the render phase. Will address during refactor to alternate model.
+        child.return_ = completedWork
 
         child = child.sibling
       end

@@ -8,7 +8,7 @@
  * @flow
 ]]
 
-local Packages = script.Parent.Parent
+-- local Packages = script.Parent.Parent
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
@@ -18,7 +18,7 @@ local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
 type Container = ReactFiberHostConfig.Container
 type HostContext = ReactFiberHostConfig.HostContext
 
-local invariant = require(Packages.Shared).invariant
+-- local invariant = require(Packages.Shared).invariant
 
 local getChildHostContext = ReactFiberHostConfig.getChildHostContext
 local getRootHostContext = ReactFiberHostConfig.getRootHostContext
@@ -46,17 +46,20 @@ local rootInstanceStackCursor: StackCursor<
 -- FIXME (roblox): function generics
 -- function requiredContext<Value>(c: Value | NoContextT): Value {
 function requiredContext(c: any | NoContextT): any
-  invariant(
-    c ~= NO_CONTEXT,
-    "Expected host context to exist. This error is likely caused by a bug " ..
-      "in React. Please file an issue."
-  )
+  -- ROBLOX performance: eliminate expensive optional cmp in hot path
+  -- invariant(
+  --   c ~= NO_CONTEXT,
+  --   "Expected host context to exist. This error is likely caused by a bug " ..
+  --     "in React. Please file an issue."
+  -- )
   return c
 end
 
 function getRootHostContainer(): Container
-  local rootInstance = requiredContext(rootInstanceStackCursor.current)
-  return rootInstance
+  -- ROBLOX performance: inline requiredContext impl for hot path
+  -- local rootInstance = requiredContext(rootInstanceStackCursor.current)
+  -- return rootInstance
+  return rootInstanceStackCursor.current
 end
 
 function pushHostContainer(fiber: Fiber, nextRootInstance: Container)
@@ -86,8 +89,10 @@ function popHostContainer(fiber: Fiber)
 end
 
 function getHostContext(): HostContext
-  local context = requiredContext(contextStackCursor.current)
-  return context
+  -- ROBLOX performance: inline requiredContext impl for hot path
+  -- local context = requiredContext(contextStackCursor.current)
+  -- return context
+  return contextStackCursor.current
 end
 
 function pushHostContext(fiber: Fiber)

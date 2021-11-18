@@ -11,9 +11,6 @@ local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from shared
 local Shared = require(Packages.Shared)
 local console = Shared.console
-local LuauPolyfill = require(Packages.LuauPolyfill)
-local Array = LuauPolyfill.Array
-local inspect = LuauPolyfill.util.inspect
 
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 local REACT_PROVIDER_TYPE = ReactSymbols.REACT_PROVIDER_TYPE
@@ -31,33 +28,7 @@ exports.createContext = function(
   defaultValue,
   calculateChangedBits: ((any, any) -> number)?
 ): ReactContext<any>
-  if calculateChangedBits == nil then
-    calculateChangedBits = nil
-  else
-    -- ROBLOX deviation: align warnings across files. this should be upstreamed.
-    if _G.__DEV__ then
-      if calculateChangedBits ~= nil and typeof(calculateChangedBits) ~= 'function' then
-        local typeString
-        local info = ""
-        if Array.isArray(calculateChangedBits) then
-          typeString = "array"
-        else
-          typeString = typeof(calculateChangedBits)
-          -- ROBLOX deviation: print the table/string in readable form to give a clue, if no other info was gathered
-          info = "\n" .. inspect(calculateChangedBits)
-        end
-
-        console.error(
-          'createContext: Expected the optional second argument to be a '
-            .. 'function. Instead received: %s.%s',
-          typeString,
-          info
-        )
-      end
-    end
-  end
-
-  local context = {
+  local context: ReactContext<any> = {
     ["$$typeof"] = REACT_CONTEXT_TYPE,
     _calculateChangedBits = calculateChangedBits,
     -- As a workaround to support multiple concurrent renderers, we categorize
@@ -73,9 +44,12 @@ exports.createContext = function(
     -- These are circular
     Provider = nil,
     Consumer = nil,
-    -- Luau: tables declared this way are considered sealed, so define we
+    -- ROBLOX deviation: tables declared this way are considered sealed, so define we
     -- displayName as nil for it to be populated later
     displayName = nil,
+    -- ROBLOX deviation: have to inline these optional fields to make Luau happy
+    _currentRenderer = nil,
+    _currentRenderer2 = nil,
   }
   context.Provider = {
     ["$$typeof"] = REACT_PROVIDER_TYPE,
@@ -127,7 +101,7 @@ exports.createContext = function(
       end,
     })
 
-    context.Consumer = Consumer
+    context.Consumer = (Consumer :: any) :: ReactContext<any>
   else
     context.Consumer = context
   end

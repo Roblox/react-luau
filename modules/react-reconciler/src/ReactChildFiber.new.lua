@@ -7,19 +7,11 @@
  *
  * @flow
 ]]
--- FIXME (roblox): remove this when our unimplemented
-local function unimplemented(message)
-	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-	print("UNIMPLEMENTED ERROR: " .. tostring(message))
-	error("FIXME (roblox): " .. message .. " is unimplemented", 2)
-end
 
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
+local Error = LuauPolyfill.Error
 type Array<T> = { [number]: T }
 type Set<T> = { [T]: boolean }
 type Object = { [any]: any }
@@ -79,9 +71,9 @@ local createFiberFromPortal = ReactFiber.createFiberFromPortal
 -- ROBLOX deviation: we do not support string refs
 -- local emptyRefsObject =
 -- 	require(script.Parent["ReactFiberClassComponent.new"]).emptyRefsObject
-local ReactFiberHotReloading = require(script.Parent["ReactFiberHotReloading.new"])
-local isCompatibleFamilyForHotReloading =
-	ReactFiberHotReloading.isCompatibleFamilyForHotReloading
+-- local ReactFiberHotReloading = require(script.Parent["ReactFiberHotReloading.new"])
+-- local isCompatibleFamilyForHotReloading =
+-- 	ReactFiberHotReloading.isCompatibleFamilyForHotReloading
 -- ROBLOX deviation: we do not support string refs, which removes our use of StrictMode
 -- local StrictMode = require(script.Parent.ReactTypeOfMode).StrictMode
 
@@ -124,7 +116,7 @@ if _G.__DEV__ then
 			return
 		end
 		invariant(
-			typeof(child._store) == "table",
+			child._store ~= nil and typeof(child._store) == "table",
 			"React Component in warnForMissingKey should have a _store. "
 				.. "This error is likely caused by a bug in React. Please file an issue."
 		)
@@ -155,28 +147,25 @@ function coerceRef(returnFiber: Fiber, current: Fiber | nil, element: ReactEleme
 	then
 
 		-- ROBLOX deviation: we do not support string refs, and will not coerce
-		invariant(
-			(element._owner and element._self and element._owner.stateNode ~= element._self),
-			(function()
-				-- ROBLOX performance: don't get component name unless we have to use it
-				local componentName
-				if _G.__DEV__ then
-					componentName = getComponentName(returnFiber.type) or "Component"
-				else
-					componentName = "<enable __DEV__ mode for component names>"
-				end
-				return string.format(
-					'Component "%s" contains the string ref "%s". Support for string refs '
-					-- ROBLOX deviation: we removed string ref support ahead of upstream schedule
-						.. "has been removed. We recommend using "
-						.. "useRef() or createRef() instead. "
-						.. "Learn more about using refs safely here: "
-						.. "https://reactjs.org/link/strict-mode-string-ref",
-					componentName,
-					tostring(mixedRef)
-				)
-			end)()
-		)
+		if not element._owner or not element._self or element._owner.stateNode == element._self then
+			-- ROBLOX performance: don't get component name unless we have to use it
+			local componentName
+			if _G.__DEV__ then
+				componentName = getComponentName(returnFiber.type) or "Component"
+			else
+				componentName = "<enable __DEV__ mode for component names>"
+			end
+			error(Error.new(string.format(
+				'Component "%s" contains the string ref "%s". Support for string refs '
+				-- ROBLOX deviation: we removed string ref support ahead of upstream schedule
+					.. "has been removed. We recommend using "
+					.. "useRef() or createRef() instead. "
+					.. "Learn more about using refs safely here: "
+					.. "https://reactjs.org/link/strict-mode-string-ref",
+				componentName,
+				tostring(mixedRef)
+			)))
+		end
 
 		if not element._owner then
 			error("Expected ref to be a function or an object returned by React.createRef(), or nil.")
@@ -296,11 +285,12 @@ function coerceRef(returnFiber: Fiber, current: Fiber | nil, element: ReactEleme
 	return mixedRef
 end
 
-local function throwOnInvalidObjectType(returnFiber: Fiber, newChild: { [any]: any })
-	if returnFiber.type ~= "textarea" then
+-- ROBLOX performance: all uses commented out
+-- local function throwOnInvalidObjectType(returnFiber: Fiber, newChild: { [any]: any })
+-- 	if returnFiber.type ~= "textarea" then
 		-- ROBLOX FIXME: Need to adjust this to check for "table: <address>" instead
 		-- and print appropriately
-		unimplemented("throwOnInvalidObjectType textarea")
+		-- unimplemented("throwOnInvalidObjectType textarea")
 
 		-- ROBLOX TODO: This is likely a bigger deviation; in Roact today, we allow
 		-- tables and use the keys as equivalents to the `key` prop
@@ -313,8 +303,8 @@ local function throwOnInvalidObjectType(returnFiber: Fiber, newChild: { [any]: a
 		--     ? "object with keys {" + Object.keys(newChild).join(", ") + "}"
 		--     : newChild,
 		-- )
-	end
-end
+-- 	end
+-- end
 
 local function warnOnFunctionType(returnFiber: Fiber)
 	if _G.__DEV__ then
@@ -490,8 +480,9 @@ local function ChildReconciler(shouldTrackSideEffects)
 		if current ~= nil then
 			if
 				(current :: Fiber).elementType == element.type
+				-- ROBLOX performance: avoid always-false cmp, hot reloading isn't enabled in Roblox yet
 				-- Keep this check inline so it only runs on the false path:
-				or (_G.__DEV__ and isCompatibleFamilyForHotReloading(current, element))
+				-- or (_G.__DEV__ and isCompatibleFamilyForHotReloading(current, element))
 			then
 				-- Move based on index
 				local existing = useFiber(current :: Fiber, element.props)
@@ -653,20 +644,19 @@ local function ChildReconciler(shouldTrackSideEffects)
 				end
 			end
 
-			-- ROBLOX deviation peformance: this is the equiv of checking for a table, so just do that
+			-- ROBLOX deviation peformance: this is the equiv of checking for a table, and we already know typeof(newChild) is a table in this branch
 			-- if isArray(newChild) or getIteratorFn(newChild) then
-			if typeof(newChild) == "table" then
-				local created = createFiberFromFragment(
-					newChild,
-					returnFiber.mode,
-					lanes,
-					nil
-				)
-				created.return_ = returnFiber
-				return created
-			end
+			local created = createFiberFromFragment(
+				newChild,
+				returnFiber.mode,
+				lanes,
+				nil
+			)
+			created.return_ = returnFiber
+			return created
 
-			throwOnInvalidObjectType(returnFiber, newChild)
+			-- ROBLOX performance deviation: unreachable with the above table check
+			-- throwOnInvalidObjectType(returnFiber, newChild)
 		end
 
 		if typeOfNewChild == "string" or typeOfNewChild == "number" then
@@ -713,16 +703,6 @@ local function ChildReconciler(shouldTrackSideEffects)
 		-- ROBLOX performance: avoid repeated calls to typeof since Luau doesn't cache
 		local typeOfNewChild = typeof(newChild)
 
-		if typeOfNewChild == "string" or typeOfNewChild == "number" then
-			-- Text nodes don't have keys. If the previous node is implicitly keyed
-			-- we can continue to replace it without aborting even if it is not a text
-			-- node.
-			if key ~= nil then
-				return nil
-			end
-			return updateTextNode(returnFiber, oldFiber, tostring(newChild), lanes)
-		end
-
 		if typeOfNewChild == "table" then
 			-- ROBLOX deviation: Roact stable keys - forward children table key to
 			-- child if applicable
@@ -760,18 +740,30 @@ local function ChildReconciler(shouldTrackSideEffects)
 				end
 			end
 
-			-- ROBLOX deviation peformance: this is the equiv of checking for a table, so just do that
+			-- ROBLOX deviation peformance: this is the equiv of checking for a table, and we already know typeof(newChild) is a table in this branch
 			-- if isArray(newChild) or getIteratorFn(newChild) then
-			if typeof(newChild) == "table" then
-				if key ~= nil then
-					return nil
-				end
-
-				return updateFragment(returnFiber, oldFiber, newChild, lanes, nil)
+			if key ~= nil then
+				return nil
 			end
 
-			throwOnInvalidObjectType(returnFiber, newChild)
+			return updateFragment(returnFiber, oldFiber, newChild, lanes, nil)
+
+			-- ROBLOX performance deviation: unreachable with the above table check
+			-- throwOnInvalidObjectType(returnFiber, newChild)
 		end
+
+		-- ROBLOX performance: do this compare last to save 2 string cmp in typical Roblox hot path
+		if typeOfNewChild == "string" or typeOfNewChild == "number" then
+			-- Text nodes don't have keys. If the previous node is implicitly keyed
+			-- we can continue to replace it without aborting even if it is not a text
+			-- node.
+			if key ~= nil then
+				return nil
+			end
+			return updateTextNode(returnFiber, oldFiber, tostring(newChild), lanes)
+		end
+
+
 
 		if _G.__DEV__ then
 			if typeOfNewChild == "function" then
@@ -798,13 +790,6 @@ local function ChildReconciler(shouldTrackSideEffects)
 
 		-- ROBLOX performance: avoid repeated calls to typeof since Luau doesn't cache
 		local typeOfNewChild = typeof(newChild)
-
-		if typeOfNewChild == "string" or typeOfNewChild == "number" then
-			-- Text nodes don't have keys, so we neither have to check the old nor
-			-- new node for the key. If both are text nodes, they match.
-			local matchedFiber = existingChildren[newIdx] or nil
-			return updateTextNode(returnFiber, matchedFiber, tostring(newChild), lanes)
-		end
 
 		if typeOfNewChild == "table" then
 			-- ROBLOX deviation: Roact stable keys - forward children table key to
@@ -854,14 +839,21 @@ local function ChildReconciler(shouldTrackSideEffects)
 				end
 			end
 
-			-- ROBLOX deviation peformance: this is the equiv of checking for a table, so just do that
+			-- ROBLOX deviation peformance: this is the equiv of checking for a table, and we already know typeof(newChild) is a table in this branch
 			-- if isArray(newChild) or getIteratorFn(newChild) then
-			if type(newChild) == "table" then
-				local matchedFiber = existingChildren[newIdx]
-				return updateFragment(returnFiber, matchedFiber, newChild, lanes, nil)
-			end
+			local matchedFiber = existingChildren[newIdx]
+			return updateFragment(returnFiber, matchedFiber, newChild, lanes, nil)
 
-			throwOnInvalidObjectType(returnFiber, newChild)
+			-- ROBLOX performance deviation: unreachable with the above table check
+			-- throwOnInvalidObjectType(returnFiber, newChild)
+		end
+
+		-- ROBLOX performance: do this compare last, as Roblox won't really support text nodes directly
+		if typeOfNewChild == "string" or typeOfNewChild == "number" then
+			-- Text nodes don't have keys, so we neither have to check the old nor
+			-- new node for the key. If both are text nodes, they match.
+			local matchedFiber = existingChildren[newIdx] or nil
+			return updateTextNode(returnFiber, matchedFiber, tostring(newChild), lanes)
 		end
 
 		if _G.__DEV__ then
@@ -961,8 +953,10 @@ local function ChildReconciler(shouldTrackSideEffects)
 		local lastPlacedIndex = 1
 		local newIdx = 1
 		local nextOldFiber = nil
+		-- ROBLOX performance: don't re-evaluate length of newChildren on each iteration through the loop
+		local newChildrenCount = #newChildren
 		-- ROBLOX deviation: use while loop in place of modified for loop
-		while oldFiber ~= nil and newIdx <= #newChildren do
+		while oldFiber ~= nil and newIdx <= newChildrenCount do
 			if oldFiber.index > newIdx then
 				nextOldFiber = oldFiber
 				oldFiber = nil
@@ -979,6 +973,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 			-- ROBLOX performance: avoid repeated indexing of newChildren to newIdx
 			local newChildNewIdx = newChildren[newIdx]
 			if
+				newChildNewIdx ~= nil and
 				typeof(newChildNewIdx) == "table" and
 				newChildNewIdx["$$typeof"] ~= nil
 			then
@@ -1020,7 +1015,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 			newIdx += 1
 		end
 
-		if newIdx > #newChildren then
+		if newIdx > newChildrenCount then
 			-- We've reached the end of the new children. We can delete the rest.
 			deleteRemainingChildren(returnFiber, oldFiber)
 			return resultingFirstChild
@@ -1030,7 +1025,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 			-- If we don't have any more existing children we can choose a fast path
 			-- since the rest will all be insertions.
 			-- deviation: use while loop in place of modified for loop
-			while newIdx <= #newChildren do
+			while newIdx <= newChildrenCount do
 				--[[
 					ROBLOX DEVIATION: We pass newIdx to createChild to ensure that children are
 					assigned a key, assuming the child is not an array itself. We only need to
@@ -1041,6 +1036,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 				-- ROBLOX performance: avoid repeated indexing of newChildren to newIdx
 				local newChildNewIdx = newChildren[newIdx]
 				if
+					newChildNewIdx ~= nil and
 					typeof(newChildNewIdx) == "table" and
 					newChildNewIdx["$$typeof"] ~= nil
 				then
@@ -1069,9 +1065,10 @@ local function ChildReconciler(shouldTrackSideEffects)
 
 		-- Add all children to a key map for quick lookups.
 		local existingChildren = mapRemainingChildren(returnFiber, oldFiber)
+
 		-- Keep scanning and use the map to restore deleted items as moves.
 		-- ROBLOX deviation: use while loop in place of modified for loop
-		while newIdx <= #newChildren do
+		while newIdx <= newChildrenCount do
 			local newFiber = updateFromMap(
 				existingChildren,
 				returnFiber,
@@ -1385,8 +1382,9 @@ local function ChildReconciler(shouldTrackSideEffects)
 						end
 						return existing
 					end
-				elseif child.tag == Block then
-					unimplemented("reconcileSingleElement: Block")
+				-- ROBLOX performance: avoid always-false cmp in hot path
+				-- elseif child.tag == Block then
+				-- 	unimplemented("reconcileSingleElement: Block")
 					-- if (enableBlocksAPI) {
 					--   let type = element.type;
 					--   if (type.$$typeof === REACT_LAZY_TYPE) {
@@ -1416,11 +1414,12 @@ local function ChildReconciler(shouldTrackSideEffects)
 				else
 					if
 						child.elementType == element.type
+						-- ROBLOX performance: avoid always-false cmp, hot reloading isn't enabled in Roblox yet
 						-- Keep this check inline so it only runs on the false path:
-						or (
-							_G.__DEV__
-							and isCompatibleFamilyForHotReloading(child, element)
-						)
+						-- or (
+						-- 	_G.__DEV__
+						-- 	and isCompatibleFamilyForHotReloading(child, element)
+						-- )
 					then
 						deleteRemainingChildren(returnFiber, child.sibling)
 						local existing = useFiber(child, element.props)
@@ -1510,21 +1509,25 @@ local function ChildReconciler(shouldTrackSideEffects)
 		-- not as a fragment. Nested arrays on the other hand will be treated as
 		-- fragment nodes. Recursion happens at the normal flow.
 
+		-- ROBLOX performance: avoid repeated calls to typeof since Luau doesn't cache
+		local typeOfNewChild = typeof(newChild)
+
 		-- Handle top level unkeyed fragments as if they were arrays.
 		-- This leads to an ambiguity between <>{[...]}</> and <>...</>.
 		-- We treat the ambiguous cases above the same.
-		local isUnkeyedTopLevelFragment = typeof(newChild) == "table"
+		local isUnkeyedTopLevelFragment = newChild ~= nil
+			and typeOfNewChild == "table"
 			and newChild.type == REACT_FRAGMENT_TYPE
 			and newChild.key == nil
 		if isUnkeyedTopLevelFragment then
 			newChild = newChild.props.children
+			typeOfNewChild = typeof(newChild)
 		end
-
-		-- ROBLOX performance: avoid repeated calls to typeof since Luau doesn't cache
-		local typeOfNewChild = typeof(newChild)
+		local newChildIsArray = isArray(newChild)
 
 		-- Handle object types
-		local isObject = newChild ~= nil and typeOfNewChild == "table"
+		-- ROBLOX deviation: upstream checkos for `object`, but we need to manually exclude array
+		local isObject = newChild ~= nil and typeOfNewChild == "table" and not newChildIsArray
 
 		if isObject then
 			-- ROBLOX performance: avoid repeated indexing of $$typeof
@@ -1555,9 +1558,10 @@ local function ChildReconciler(shouldTrackSideEffects)
 					)
 				end
 			end
-		end
-
-		if typeOfNewChild == "string" or typeOfNewChild == "number" then
+		-- ROBLOX performance: make these next blocks `elseif`, as they're mutually exclusive to `isObject` above
+		elseif newChildIsArray then
+			return reconcileChildrenArray(returnFiber, currentFirstChild, newChild, lanes)
+		elseif typeOfNewChild == "string" or typeOfNewChild == "number" then
 			return placeSingleChild(
 				reconcileSingleTextNode(
 					returnFiber,
@@ -1566,10 +1570,6 @@ local function ChildReconciler(shouldTrackSideEffects)
 					lanes
 				)
 			)
-		end
-
-		if isArray(newChild) then
-			return reconcileChildrenArray(returnFiber, currentFirstChild, newChild, lanes)
 		end
 
 		-- ROBLOX performance? only call getIteratorFn once, pass in the value
@@ -1583,6 +1583,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 				newChildIteratorFn
 			)
 		end
+
 
 		-- ROBLOX performance? eliminate a cmp in hot path for something unimplemented anyway
 		-- if isObject then

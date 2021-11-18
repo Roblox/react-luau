@@ -12,3 +12,4 @@ if _G.minSamples ~= nil then
 end
 
 sierpinskiTriangleBenchmark(Roact, ReactRoblox)(config)
+wait(1)

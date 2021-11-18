@@ -268,16 +268,23 @@ return function()
 	--   })
 	-- end
 
+	-- ROBLOX note: test aligned to React 18 so we get a hot path optimization in upstream
 	it("throws when called outside the render phase", function()
 		jestExpect(function()
-			useState(0)
-		end).toThrow(
+			jestExpect(function()
+				useState(0)
+			end).toThrow(
+				-- ROBLOX deviation: Lua-specific error on nil deref
+				"attempt to index nil with 'useState'"
+			)
+		end).toErrorDev(
 			"Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for"
 				.. " one of the following reasons:\n"
 				.. "1. You might have mismatching versions of React and the renderer (such as React DOM)\n"
 				.. "2. You might be breaking the Rules of Hooks\n"
 				.. "3. You might have more than one copy of React in the same app\n"
-				.. "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem."
+				.. "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.",
+				{ withoutStack = true }
 		)
 	end)
 

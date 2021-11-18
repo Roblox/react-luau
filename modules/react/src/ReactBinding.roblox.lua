@@ -40,18 +40,16 @@ function BindingInternalApi.getValue(binding)
 end
 
 function BindingInternalApi.create(initialValue)
+	local subscribe, fire = createSignal()
 	local impl = {
 		value = initialValue,
-		changeSignal = createSignal(),
+		subscribe = subscribe,
+		fire = fire,
 	}
-
-	function impl.subscribe(callback)
-		return impl.changeSignal:subscribe(callback)
-	end
 
 	function impl.update(newValue)
 		impl.value = newValue
-		impl.changeSignal:fire(newValue)
+		impl.fire(newValue)
 	end
 
 	function impl.getValue()

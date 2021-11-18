@@ -44,6 +44,7 @@ local ReactSharedInternals = {
 	ReactCurrentOwner = ReactCurrentOwner,
 	IsSomeRendererActing = IsSomeRendererActing,
 	-- ROBLOX deviation: Luau type checking requires us to have a consistent export shape regardless of __DEV__
+    -- ROBLOX TODO: use if-expressions when all clients are on 503+
 	ReactDebugCurrentFrame = (function()
 		if _G.__DEV__ then
 			return ReactDebugCurrentFrame

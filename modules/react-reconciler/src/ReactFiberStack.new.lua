@@ -1,5 +1,4 @@
 -- upstream: https://github.com/facebook/react/blob/17f582e0453b808860be59ed3437c6a426ae52de/packages/react-reconciler/src/ReactFiberStack.new.js
--- upstream https://github.com/facebook/react/blob/17f582e0453b808860be59ed3437c6a426ae52de/packages/react-reconciler/src/ReactFiberStack.new.js
 --!strict
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -110,15 +109,9 @@ end
 local function resetStackAfterFatalErrorInDev()
 	if _G.__DEV__ then
 		index = 0
-		-- deviation: FIXME: Original js simply sets `length`, we clear this
-		-- manually; would it be reasonable to just set them to new empty
-		-- tables? Does identity matter here?
-		for i = 1, #valueStack do
-			valueStack[i] = nil
-		end
-		for i = 1, #fiberStack do
-			fiberStack[i] = nil
-		end
+		-- ROBLOX deviation: Original js simply sets `length`
+		table.clear(valueStack)
+		table.clear(fiberStack)
 	end
 end
 

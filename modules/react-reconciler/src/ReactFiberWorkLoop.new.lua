@@ -8,14 +8,6 @@
  * @flow
 ]]
 
--- FIXME (roblox): remove this when our unimplemented
-local function unimplemented(message: string)
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("UNIMPLEMENTED ERROR: " .. tostring(message))
-  error("FIXME (roblox): " .. message .. " is unimplemented", 2)
-end
-
 local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
@@ -225,7 +217,7 @@ local commitPassiveUnmountOnFiber = ReactFiberCommitWork.commitPassiveUnmount
 local commitPassiveUnmountInsideDeletedTreeOnFiber = ReactFiberCommitWork.commitPassiveUnmountInsideDeletedTree
 local commitPassiveMountOnFiber = ReactFiberCommitWork.commitPassiveMount
 local commitDetachRef = ReactFiberCommitWork.commitDetachRef
-local commitAttachRef = ReactFiberCommitWork.commitAttachRef
+-- local commitAttachRef = ReactFiberCommitWork.commitAttachRef
 -- local commitResetTextContent = ReactFiberCommitWork.commitResetTextContent
 -- local isSuspenseBoundaryBeingHidden = ReactFiberCommitWork.isSuspenseBoundaryBeingHidden
 local invokeLayoutEffectMountInDEV = ReactFiberCommitWork.invokeLayoutEffectMountInDEV
@@ -615,6 +607,7 @@ function requestRetryLane(fiber: Fiber)
   if bit32.band(mode, ReactTypeOfMode.BlockingMode) == ReactTypeOfMode.NoMode then
     return SyncLane
   elseif bit32.band(mode, ReactTypeOfMode.ConcurrentMode) == ReactTypeOfMode.NoMode then
+    -- ROBLOX TODO: use if-expressions when all clients are on 503+
     return (function()
       if getCurrentPriorityLevel() == ImmediateSchedulerPriority then
        return SyncLane
@@ -2542,12 +2535,18 @@ mod.commitMutationEffects = function(
   while fiber ~= nil do
     local deletions = fiber.deletions
     if deletions ~= nil then
-      mod.commitMutationEffectsDeletions(
-        deletions,
-        fiber,
-        root,
-        renderPriorityLevel
-      )
+      -- ROBLOX performance: React 18 inlines commitMutationEffectsDeletions, pulling that in based on tab switching hot path
+      for _, childToDelete in ipairs(deletions) do
+        local ok, error_ = pcall(commitDeletion,
+          root,
+          childToDelete,
+          fiber,
+          renderPriorityLevel
+        )
+        if not ok then
+          exports.captureCommitPhaseError(childToDelete, fiber, error_)
+        end
+      end
     end
 
     if fiber.child ~= nil then
@@ -2595,22 +2594,24 @@ mod.commitMutationEffectsImpl = function(
   renderPriorityLevel
 )
   local flags = fiber.flags
-  if bit32.band(flags, ReactFiberFlags.ContentReset) ~= 0 then
-    unimplemented("commitResetTextContent")
+  -- ROBLOX performance: avoid always-false compare for Roblox renderer in hot path
+  -- if bit32.band(flags, ReactFiberFlags.ContentReset) ~= 0 then
+  --   unimplemented("commitResetTextContent")
     -- commitResetTextContent(fiber)
-  end
+  -- end
 
   if bit32.band(flags, ReactFiberFlags.Ref) ~= 0 then
     local current = fiber.alternate
     if current ~= nil then
       commitDetachRef(current)
     end
-    if ReactFeatureFlags.enableScopeAPI then
-      -- TODO: This is a temporary solution that allowed us to transition away from React Flare on www.
-      if fiber.tag == ReactWorkTags.ScopeComponent then
-        commitAttachRef(fiber)
-      end
-    end
+    -- ROBLOX performance: avoid always-false compare for Roblox renderer in hot path
+    -- if ReactFeatureFlags.enableScopeAPI then
+    --   -- TODO: This is a temporary solution that allowed us to transition away from React Flare on www.
+    --   if fiber.tag == ReactWorkTags.ScopeComponent then
+    --     commitAttachRef(fiber)
+    --   end
+    -- end
   end
 
   -- The following switch statement is only concerned about placement,
@@ -2639,13 +2640,14 @@ mod.commitMutationEffectsImpl = function(
     -- Update
     local current = fiber.alternate
     commitWork(current, fiber)
-  elseif primaryFlags == ReactFiberFlags.Hydrating then
-    fiber.flags = bit32.band(fiber.flags, bit32.bnot(ReactFiberFlags.Hydrating))
-  elseif primaryFlags == ReactFiberFlags.HydratingAndUpdate then
-    fiber.flags = bit32.band(fiber.flags, bit32.bnot(ReactFiberFlags.Hydrating))
-    -- Update
-    local current = fiber.alternate
-    commitWork(current, fiber)
+  -- ROBLOX performance: avoid always-false compare for Roblox renderer in hot path
+  -- elseif primaryFlags == ReactFiberFlags.Hydrating then
+  --   fiber.flags = bit32.band(fiber.flags, bit32.bnot(ReactFiberFlags.Hydrating))
+  -- elseif primaryFlags == ReactFiberFlags.HydratingAndUpdate then
+  --   fiber.flags = bit32.band(fiber.flags, bit32.bnot(ReactFiberFlags.Hydrating))
+  --   -- Update
+  --   local current = fiber.alternate
+  --   commitWork(current, fiber)
   elseif primaryFlags == ReactFiberFlags.Update then
     local current = fiber.alternate
     commitWork(current, fiber)
@@ -2654,48 +2656,20 @@ end
 
 mod.commitMutationEffectsDeletions = function(
   deletions: Array<Fiber>,
-  nearestMountedAncestor: Fiber,
+  fiber: Fiber,
   root: ReactInternalTypes.FiberRoot,
   renderPriorityLevel
 )
-  for i = 1, #deletions do
-    local childToDelete = deletions[i]
-    if _G.__DEV__ then
-      invokeGuardedCallback(
-        nil,
-        commitDeletion,
-        nil,
-        root,
-        childToDelete,
-        nearestMountedAncestor,
-        renderPriorityLevel
-      )
-      if hasCaughtError() then
-        local error_ = clearCaughtError()
-        exports.captureCommitPhaseError(childToDelete, nearestMountedAncestor, error_)
-      end
-    else
-      -- ROBLOX deviation: YOLO flag for disabling pcall
-      local ok, error_
-      if not _G.__YOLO__ then
-        ok, error_ = pcall(commitDeletion,
-            root,
-            childToDelete,
-            nearestMountedAncestor,
-            renderPriorityLevel
-          )
-      else
-        ok = true
-        commitDeletion(
-          root,
-          childToDelete,
-          nearestMountedAncestor,
-          renderPriorityLevel
-        )
-      end
-      if not ok then
-        exports.captureCommitPhaseError(childToDelete, nearestMountedAncestor, error_)
-      end
+  -- ROBLOX performance: align to React 18, which ditches the __DEV__ branch and use of invokeGuardedCallback
+  for _, childToDelete in ipairs(deletions) do
+    local ok, error_ = pcall(commitDeletion,
+      root,
+      childToDelete,
+      fiber,
+      renderPriorityLevel
+    )
+    if not ok then
+      exports.captureCommitPhaseError(childToDelete, fiber, error_)
     end
   end
 end
@@ -2715,12 +2689,13 @@ local flushPassiveEffectsImpl
 exports.flushPassiveEffects = function(): boolean
   -- Returns whether passive effects were flushed.
   if pendingPassiveEffectsRenderPriority ~= NoSchedulerPriority then
-    local priorityLevel = (function()
-      if pendingPassiveEffectsRenderPriority > NormalSchedulerPriority then
-        return NormalSchedulerPriority
-      end
-      return pendingPassiveEffectsRenderPriority
-    end)()
+    -- ROBLOX TODO: use if-expressions when all clients are on 503+
+    local priorityLevel
+    if pendingPassiveEffectsRenderPriority > NormalSchedulerPriority then
+      priorityLevel = NormalSchedulerPriority
+    else
+      priorityLevel = pendingPassiveEffectsRenderPriority
+    end
     pendingPassiveEffectsRenderPriority = NoSchedulerPriority
     if ReactFeatureFlags.decoupleUpdatePriorityFromScheduler then
       local previousLanePriority = getCurrentUpdateLanePriority()
@@ -3147,26 +3122,27 @@ end
 exports.resolveRetryWakeable = function(boundaryFiber: Fiber, wakeable: Wakeable)
   local retryLane = ReactFiberLane.NoLane -- Default
   local retryCache -- : WeakSet<Wakeable> | Set<Wakeable> | nil
-  if ReactFeatureFlags.enableSuspenseServerRenderer then
-    if boundaryFiber.tag == ReactWorkTags.SuspenseComponent then
-        retryCache = boundaryFiber.stateNode
-        local suspenseState: nil | SuspenseState = boundaryFiber.memoizedState
-        if suspenseState ~= nil then
-          -- ROBLOX TODO: Remove Luau narrowing workaround
-          retryLane = (suspenseState :: SuspenseState).retryLane
-        end
-      elseif boundaryFiber.tag == ReactWorkTags.SuspenseListComponent then
-        retryCache = boundaryFiber.stateNode
-      else
-        invariant(
-          false,
-          'Pinged unknown suspense boundary type. ' ..
-            'This is probably a bug in React.'
-        )
-    end
-  else
+  -- ROBLOX performance: avoid always-false comapare
+  -- if ReactFeatureFlags.enableSuspenseServerRenderer then
+  --   if boundaryFiber.tag == ReactWorkTags.SuspenseComponent then
+  --       retryCache = boundaryFiber.stateNode
+  --       local suspenseState: nil | SuspenseState = boundaryFiber.memoizedState
+  --       if suspenseState ~= nil then
+  --         -- ROBLOX TODO: Remove Luau narrowing workaround
+  --         retryLane = (suspenseState :: SuspenseState).retryLane
+  --       end
+  --     elseif boundaryFiber.tag == ReactWorkTags.SuspenseListComponent then
+  --       retryCache = boundaryFiber.stateNode
+  --     else
+  --       invariant(
+  --         false,
+  --         'Pinged unknown suspense boundary type. ' ..
+  --           'This is probably a bug in React.'
+  --       )
+  --   end
+  -- else
     retryCache = boundaryFiber.stateNode
-  end
+  -- end
 
   if retryCache ~= nil then
     -- The wakeable resolved, so we no longer need to memoize, because it will

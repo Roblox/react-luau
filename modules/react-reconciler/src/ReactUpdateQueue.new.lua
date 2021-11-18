@@ -144,7 +144,7 @@ type Array<T> = { [number]: T };
 -- ROBLOX deviation: transplants UpdateQueue<> and SharedState<> types to ReactInternalTypes for export to createReactNoop
 type Update<T> = ReactInternalTypes.Update<T>
 type UpdateQueue<T> = ReactInternalTypes.UpdateQueue<T>
-type SharedQueue<T> = ReactInternalTypes.SharedQueue<T>
+export type SharedQueue<T> = ReactInternalTypes.SharedQueue<T>
 
 local exports = {}
 

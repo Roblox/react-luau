@@ -46,8 +46,8 @@ type OffscreenProps = ReactFiberOffscreenComponent.OffscreenProps;
 local invariant = require(Packages.Shared).invariant
 local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 local enableProfilerTimer = ReactFeatureFlags.enableProfilerTimer
-local enableFundamentalAPI = ReactFeatureFlags.enableFundamentalAPI
-local enableScopeAPI = ReactFeatureFlags.enableScopeAPI
+-- local enableFundamentalAPI = ReactFeatureFlags.enableFundamentalAPI
+-- local enableScopeAPI = ReactFeatureFlags.enableScopeAPI
 local ReactFiberFlags = require(script.Parent.ReactFiberFlags)
 local NoFlags = ReactFiberFlags.NoFlags
 local Placement = ReactFiberFlags.Placement
@@ -105,8 +105,8 @@ local REACT_SUSPENSE_TYPE = ReactSymbols.REACT_SUSPENSE_TYPE
 local REACT_SUSPENSE_LIST_TYPE = ReactSymbols.REACT_SUSPENSE_LIST_TYPE
 local REACT_MEMO_TYPE = ReactSymbols.REACT_MEMO_TYPE
 local REACT_LAZY_TYPE = ReactSymbols.REACT_LAZY_TYPE
-local REACT_FUNDAMENTAL_TYPE = ReactSymbols.REACT_FUNDAMENTAL_TYPE
-local REACT_SCOPE_TYPE = ReactSymbols.REACT_SCOPE_TYPE
+-- local REACT_FUNDAMENTAL_TYPE = ReactSymbols.REACT_FUNDAMENTAL_TYPE
+-- local REACT_SCOPE_TYPE = ReactSymbols.REACT_SCOPE_TYPE
 local REACT_OFFSCREEN_TYPE = ReactSymbols.REACT_OFFSCREEN_TYPE
 local REACT_LEGACY_HIDDEN_TYPE = ReactSymbols.REACT_LEGACY_HIDDEN_TYPE
 
@@ -525,16 +525,16 @@ local function createFiberFromTypeAndProps(
 			return createFiberFromProfiler(pendingProps, mode, lanes, key)
 		elseif type_ == REACT_SUSPENSE_TYPE then
 			return createFiberFromSuspense(pendingProps, mode, lanes, key)
-		elseif type_ == REACT_SUSPENSE_LIST_TYPE then
-			return createFiberFromSuspenseList(pendingProps, mode, lanes, key)
+		-- elseif type_ == REACT_SUSPENSE_LIST_TYPE then
+		-- 	return createFiberFromSuspenseList(pendingProps, mode, lanes, key)
 		elseif type_ == REACT_OFFSCREEN_TYPE then
 			return createFiberFromOffscreen(pendingProps, mode, lanes, key)
 		elseif type_ == REACT_LEGACY_HIDDEN_TYPE then
 			return createFiberFromLegacyHidden(pendingProps, mode, lanes, key)
-		elseif type_ == REACT_SCOPE_TYPE then
-			if enableScopeAPI then
-				return createFiberFromScope(type_, pendingProps, mode, lanes, key)
-			end
+		-- elseif type_ == REACT_SCOPE_TYPE then
+		-- 	if enableScopeAPI then
+		-- 		return createFiberFromScope(type_, pendingProps, mode, lanes, key)
+		-- 	end
 		else
 			local shouldBreak = false;
 			if typeof(type_) == "table" then
@@ -558,16 +558,16 @@ local function createFiberFromTypeAndProps(
 					fiberTag = LazyComponent
 					resolvedType = nil
 					shouldBreak = true
-				elseif type_["$$typeof"] == REACT_FUNDAMENTAL_TYPE then
-					if enableFundamentalAPI then
-						return createFiberFromFundamental(
-							type_,
-							pendingProps,
-							mode,
-							lanes,
-							key
-						)
-					end
+				-- elseif type_["$$typeof"] == REACT_FUNDAMENTAL_TYPE then
+				-- 	if enableFundamentalAPI then
+				-- 		return createFiberFromFundamental(
+				-- 			type_,
+				-- 			pendingProps,
+				-- 			mode,
+				-- 			lanes,
+				-- 			key
+				-- 		)
+				-- 	end
 				end
 			end
 			if not shouldBreak then

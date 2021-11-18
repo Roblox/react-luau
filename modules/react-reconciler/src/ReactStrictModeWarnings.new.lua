@@ -132,7 +132,7 @@ if _G.__DEV__ then
         componentWillMountUniqueNames[getComponentName(fiber.type) or 'Component'] = true
         didWarnAboutUnsafeLifecycles[fiber.type] = true
       end
-      pendingComponentWillMountWarnings = {}
+      table.clear(pendingComponentWillMountWarnings)
     end
 
     local UNSAFE_componentWillMountUniqueNames = {}
@@ -141,7 +141,7 @@ if _G.__DEV__ then
         UNSAFE_componentWillMountUniqueNames[getComponentName(fiber.type) or 'Component'] = true
         didWarnAboutUnsafeLifecycles[fiber.type] = true
       end
-      pendingUNSAFE_ComponentWillMountWarnings = {}
+      table.clear(pendingUNSAFE_ComponentWillMountWarnings)
     end
 
     local componentWillReceivePropsUniqueNames = {}
@@ -151,7 +151,7 @@ if _G.__DEV__ then
         didWarnAboutUnsafeLifecycles[fiber.type] = true
       end
 
-      pendingComponentWillReceivePropsWarnings = {}
+      table.clear(pendingComponentWillReceivePropsWarnings)
     end
 
     local UNSAFE_componentWillReceivePropsUniqueNames = {}
@@ -161,7 +161,7 @@ if _G.__DEV__ then
         didWarnAboutUnsafeLifecycles[fiber.type] = true
       end
 
-      pendingUNSAFE_ComponentWillReceivePropsWarnings = {}
+      table.clear(pendingUNSAFE_ComponentWillReceivePropsWarnings)
     end
 
     local componentWillUpdateUniqueNames = {}
@@ -171,7 +171,7 @@ if _G.__DEV__ then
         didWarnAboutUnsafeLifecycles[fiber.type] = true
       end
 
-      pendingComponentWillUpdateWarnings = {}
+      table.clear(pendingComponentWillUpdateWarnings)
     end
 
     local UNSAFE_componentWillUpdateUniqueNames = {}
@@ -181,7 +181,7 @@ if _G.__DEV__ then
         didWarnAboutUnsafeLifecycles[fiber.type] = true
       end
 
-      pendingUNSAFE_ComponentWillUpdateWarnings = {}
+      table.clear(pendingUNSAFE_ComponentWillUpdateWarnings)
     end
 
     -- Finally, we flush all the warnings

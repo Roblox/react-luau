@@ -52,7 +52,7 @@ local function checkPropTypes(
 	props,
 	location: string,
 	componentName: string?,
-	element: ReactElement
+	element: ReactElement?
 ): ()
 	if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
 		-- deviation: hasOwnProperty shouldn't be relevant to lua objects

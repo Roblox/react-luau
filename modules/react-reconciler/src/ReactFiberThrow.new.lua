@@ -215,10 +215,12 @@ local function attachPingListener(root: FiberRoot, wakeable: Wakeable, lanes: La
   local threadIDs
   if pingCache == nil then
     -- ROBLOX deviation: use table in place of WeakMap
-    root.pingCache = {} :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>
-    pingCache = root.pingCache :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>
+    -- ROBLOX performance: slight re-ordering so we initialize the table in one shot
     threadIDs = {} :: Set<any>
-    (pingCache :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>)[wakeable] = threadIDs
+    root.pingCache = {
+      [wakeable] = threadIDs
+    } :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>
+    pingCache = root.pingCache :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>
   else
     threadIDs = (pingCache :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>)[wakeable] :: Set<any>
     if threadIDs == nil then
@@ -274,10 +276,12 @@ function throwException(
       -- to render it.
       local currentSource = sourceFiber.alternate
       if currentSource then
+        -- ROBLOX performance TODO: return non-nil updateQueue object to the ReactUpdateQUeue pool
         sourceFiber.updateQueue = currentSource.updateQueue
         sourceFiber.memoizedState = currentSource.memoizedState
         sourceFiber.lanes = currentSource.lanes
       else
+        -- ROBLOX performance TODO: return non-nil updateQueue object to the ReactUpdateQUeue pool
         sourceFiber.updateQueue = nil
         sourceFiber.memoizedState = nil
       end
@@ -301,8 +305,10 @@ function throwException(
         -- attach another listener to flip the boundary back to its normal state.
         local wakeables: Set<Wakeable> = workInProgress.updateQueue
         if wakeables == nil then
-          local updateQueue = {}
-          updateQueue[wakeable] = true
+          local updateQueue = {
+            [wakeable] = true
+          }
+          -- ROBLOX performance TODO: return non-nil updateQueue object to the ReactUpdateQUeue pool
           workInProgress.updateQueue = updateQueue
         else
           wakeables[wakeable] = true

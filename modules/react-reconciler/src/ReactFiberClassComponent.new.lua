@@ -635,6 +635,7 @@ local function checkClassInstance(workInProgress: Fiber, ctor: any, newProps: an
 end
 
 local function adoptClassInstance(workInProgress: Fiber, instance: any)
+  -- ROBLOX performance? it looks like this lazy init is a perf problem in tab switching hot path
   instance.__updater = getClassComponentUpdater()
   workInProgress.stateNode = instance
   -- The instance needs access to the fiber so that it can schedule updates

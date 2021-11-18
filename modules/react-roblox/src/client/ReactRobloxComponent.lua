@@ -34,7 +34,7 @@ local function diffProperties(
   lastRawProps: Object,
   nextRawProps: Object,
   rootContainerElement: HostInstance
-): nil | Array<any>
+): (nil | Array<any>)
   -- if _G.__DEV__ then
   --   validatePropertiesInDevelopment(tag, nextRawProps)
   -- end
@@ -224,6 +224,7 @@ local function diffProperties(
       -- For any other property we always add it to the queue and then we
       -- filter it out using the allowed property list during the commit.
       -- ROBLOX performance: prealloc table size 2 for these 2 items at least
+      -- ROBLOX performance TODO: don't create a table here, return multiple values!
       updatePayload = updatePayload or table.create(2)
       table.insert(updatePayload, propKey)
       table.insert(updatePayload, nextProp)

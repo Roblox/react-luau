@@ -94,9 +94,9 @@ local enableSchedulerTracing = ReactFeatureFlags.enableSchedulerTracing
 local enableProfilerTimer = ReactFeatureFlags.enableProfilerTimer
 local enableProfilerCommitHooks = ReactFeatureFlags.enableProfilerCommitHooks
 -- local enableSuspenseServerRenderer = ReactFeatureFlags.enableSuspenseServerRenderer
-local enableFundamentalAPI = ReactFeatureFlags.enableFundamentalAPI
+-- local enableFundamentalAPI = ReactFeatureFlags.enableFundamentalAPI
 local enableSuspenseCallback = ReactFeatureFlags.enableSuspenseCallback
-local enableScopeAPI = ReactFeatureFlags.enableScopeAPI
+-- local enableScopeAPI = ReactFeatureFlags.enableScopeAPI
 local enableDoubleInvokingEffects = ReactFeatureFlags.enableDoubleInvokingEffects
 local ReactWorkTags = require(script.Parent.ReactWorkTags)
 local FunctionComponent = ReactWorkTags.FunctionComponent
@@ -277,31 +277,11 @@ function safelyCallComponentWillUnmount(
   instance: any,
   nearestMountedAncestor
 ): ()
-  if _G.__DEV__ then
-    invokeGuardedCallback(
-      nil,
-      callComponentWillUnmountWithTimer,
-      nil,
-      current,
-      instance
-    )
-    if hasCaughtError() then
-      local unmountError = clearCaughtError()
-      captureCommitPhaseError(current, nearestMountedAncestor, unmountError)
-    end
-  else
-    -- ROBLOX deviation: YOLO flag for disabling pcall
-    local ok, unmountError
-    if not _G.__YOLO__ then
-      ok, unmountError = pcall(callComponentWillUnmountWithTimer, current, instance)
-    else
-      ok = true
-      callComponentWillUnmountWithTimer(current, instance)
-    end
+  -- ROBLOX performance: eliminate the __DEV__ and invokeGuardedCallback, like React 18 has done
+  local ok, error_ = pcall(callComponentWillUnmountWithTimer, current, instance)
 
-    if not ok then
-      captureCommitPhaseError(current, nearestMountedAncestor, unmountError)
-    end
+  if not ok then
+    captureCommitPhaseError(current, nearestMountedAncestor, error_)
   end
 end
 
@@ -309,24 +289,10 @@ local function safelyDetachRef(current: Fiber, nearestMountedAncestor: Fiber): (
   local ref = current.ref
   if ref ~= nil then
     if typeof(ref) == "function" then
-      if _G.__DEV__ then
-        invokeGuardedCallback(nil, ref, nil, nil)
-        if hasCaughtError() then
-          local refError = clearCaughtError()
-          captureCommitPhaseError(current, nearestMountedAncestor, refError)
-        end
-      else
-        -- ROBLOX deviation: YOLO flag for disabling pcall
-        local ok, refError
-        if not _G.__YOLO__ then
-          ok, refError = pcall(ref, nil)
-        else
-          ok = true
-          ref(nil)
-        end
-        if not ok then
-          captureCommitPhaseError(current, nearestMountedAncestor, refError)
-        end
+      -- ROBLOX performance: eliminate the __DEV__ and invokeGuardedCallback, like React 18 has done
+      local ok, error_ = pcall(ref, nil)
+      if not ok then
+        captureCommitPhaseError(current, nearestMountedAncestor, error_)
       end
     else
       ref.current = nil
@@ -339,17 +305,10 @@ local function safelyCallDestroy(
   nearestMountedAncestor: Fiber | nil,
   destroy: () -> ()
 ): ()
-  if _G.__DEV__ then
-    invokeGuardedCallback(nil, destroy, nil)
-    if hasCaughtError() then
-      local error_ = clearCaughtError()
-      captureCommitPhaseError(current, nearestMountedAncestor, error_)
-    end
-  else
-    local ok, error_ = pcall(destroy)
-    if not ok then
-      captureCommitPhaseError(current, nearestMountedAncestor, error_)
-    end
+  -- ROBLOX performance: eliminate the __DEV__ and invokeGuardedCallback, like React 18 has done
+  local ok, error_ = pcall(destroy)
+  if not ok then
+    captureCommitPhaseError(current, nearestMountedAncestor, error_)
   end
 end
 
@@ -814,16 +773,17 @@ local function recursivelyCommitLayoutEffects(
       end
     end
 
-    if enableScopeAPI then
-      -- TODO: This is a temporary solution that allowed us to transition away from React Flare on www.
-      if bit32.band(flags, Ref) ~= 0 and tag ~= ScopeComponent then
-        commitAttachRef(finishedWork)
-      end
-    else
+    -- ROBLOX performance: avoid cmp on always-false value
+    -- if enableScopeAPI then
+    --   -- TODO: This is a temporary solution that allowed us to transition away from React Flare on www.
+    --   if bit32.band(flags, Ref) ~= 0 and tag ~= ScopeComponent then
+    --     commitAttachRef(finishedWork)
+    --   end
+    -- else
       if bit32.band(flags, Ref) ~= 0 then
         commitAttachRef(finishedWork)
       end
-    end
+    -- end
   end
 end
 
@@ -1170,9 +1130,10 @@ function commitAttachRef(finishedWork: Fiber)
       instanceToUse = instance
     end
     -- Moved outside to ensure DCE works with this flag
-    if enableScopeAPI and finishedWork.tag == ScopeComponent then
-      instanceToUse = instance
-    end
+    -- ROBLOX performance: avoid cmp on always-false value
+    -- if enableScopeAPI and finishedWork.tag == ScopeComponent then
+    --   instanceToUse = instance
+    -- end
     if typeof(ref) == 'function' then
       ref(instanceToUse)
     else
@@ -1284,8 +1245,8 @@ function commitUnmount(
       -- emptyPortalContainer(current)
     end
     return
-  elseif current.tag == FundamentalComponent then
-    unimplemented("commitUnmount - FundamentalComponent")
+  -- elseif current.tag == FundamentalComponent then
+  --   unimplemented("commitUnmount - FundamentalComponent")
     -- if enableFundamentalAPI then
     --   local fundamentalInstance = current.stateNode
     --   if fundamentalInstance ~= nil then
@@ -1294,8 +1255,8 @@ function commitUnmount(
     --   end
     -- end
     -- return
-  elseif current.tag == DehydratedFragment then
-    unimplemented("commitUnmount - DehydratedFragment")
+  -- elseif current.tag == DehydratedFragment then
+  --   unimplemented("commitUnmount - DehydratedFragment")
     -- if enableSuspenseCallback then
     --   local hydrationCallbacks = finishedRoot.hydrationCallbacks
     --   if hydrationCallbacks ~= nil then
@@ -1306,11 +1267,11 @@ function commitUnmount(
     --   end
     -- end
     -- return
-  elseif current.tag == ScopeComponent then
-    if enableScopeAPI then
-      safelyDetachRef(current, nearestMountedAncestor)
-    end
-    return
+  -- elseif current.tag == ScopeComponent then
+  --   if enableScopeAPI then
+  --     safelyDetachRef(current, nearestMountedAncestor)
+  --   end
+  --   return
   end
 end
 
@@ -1526,11 +1487,11 @@ local function commitPlacement(finishedWork: Fiber)
   elseif parentFiber.tag == HostPortal then
     parent = parentStateNode.containerInfo
     isContainer = true
-  elseif parentFiber.tag == FundamentalComponent then
-    if enableFundamentalAPI then
-      parent = parentStateNode.instance
-      isContainer = false
-    end
+  -- elseif parentFiber.tag == FundamentalComponent then
+  --   if enableFundamentalAPI then
+  --     parent = parentStateNode.instance
+  --     isContainer = false
+  --   end
   else
     -- eslint-disable-next-line-no-fallthrough
     invariant(
@@ -1563,13 +1524,9 @@ function insertOrAppendPlacementNodeIntoContainer(
 )
   local tag = node.tag
   local isHost = tag == HostComponent or tag == HostText
-  if isHost or (enableFundamentalAPI and tag == FundamentalComponent) then
-    local stateNode
-    if isHost then
-       stateNode = node.stateNode
-    else
-      stateNode = node.stateNode.instance
-    end
+  -- ROBLOX performance: avoid always-false compare for Roblox renderer in hot path
+  if isHost then -- or (enableFundamentalAPI and tag == FundamentalComponent) then
+    local stateNode = node.stateNode
     if before then
       insertInContainerBefore(parent, stateNode, before)
     else
@@ -1596,16 +1553,12 @@ function insertOrAppendPlacementNode(
   node: Fiber,
   before: Instance?,
   parent: Instance
-)
+): ()
   local tag = node.tag
   local isHost = tag == HostComponent or tag == HostText
-  if isHost or (enableFundamentalAPI and tag == FundamentalComponent) then
-    local stateNode
-    if isHost then
-       stateNode = node.stateNode
-    else
-       stateNode = node.stateNode.instance
-    end
+  -- ROBLOX performance: avoid always-false compare for Roblox renderer in hot path
+  if isHost then -- or (enableFundamentalAPI and tag == FundamentalComponent) then
+    local stateNode = node.stateNode
     if before then
       insertBefore(parent, stateNode, before)
     else
@@ -1633,7 +1586,7 @@ function unmountHostComponents(
   current: Fiber,
   nearestMountedAncestor: Fiber,
   renderPriorityLevel: ReactPriorityLevel
-)
+): ()
   -- We only have the top Fiber that was deleted but we need to recurse down its
   -- children to find all the terminal nodes.
   -- ROBLOX TODO: type refinement
@@ -1671,11 +1624,12 @@ function unmountHostComponents(
           currentParent = parentStateNode.containerInfo
           currentParentIsContainer = true
           break
-        elseif parent.tag == FundamentalComponent then
-          if enableFundamentalAPI then
-            currentParent = parentStateNode.instance
-            currentParentIsContainer = false
-          end
+        -- ROBLOX performance: eliminate always-false compare for Roblox in hot path
+        -- elseif parent.tag == FundamentalComponent then
+        --   if enableFundamentalAPI then
+        --     currentParent = parentStateNode.instance
+        --     currentParentIsContainer = false
+        --   end
         end
         parent = parent.return_
       end
@@ -1809,7 +1763,7 @@ local function commitDeletion(
   current: Fiber,
   nearestMountedAncestor: Fiber,
   renderPriorityLevel: ReactPriorityLevel
-)
+): ()
   -- ROBLOX performance? supportsMutation always true, eliminate cmp on hot path
   -- if supportsMutation then
     -- Recursively delete all host nodes from the parent.
@@ -1837,8 +1791,8 @@ local function commitDeletion(
 end
 
   local function commitWork(current: Fiber | nil, finishedWork: Fiber)
-  if not supportsMutation then
-    unimplemented("commitWork: non-mutation branch")
+  -- if not supportsMutation then
+  --   unimplemented("commitWork: non-mutation branch")
     -- switch (finishedWork.tag)
     --   case FunctionComponent:
     --   case ForwardRef:
@@ -1905,7 +1859,7 @@ end
 
     -- commitContainer(finishedWork)
     -- return
-  end
+  -- end
 
   if
     finishedWork.tag == FunctionComponent or
@@ -2021,16 +1975,16 @@ end
     -- return
   elseif finishedWork.tag == IncompleteClassComponent then
     return
-  elseif finishedWork.tag == FundamentalComponent then
-    unimplemented("commitWork: FundamentalComponent")
+  -- elseif finishedWork.tag == FundamentalComponent then
+  --   unimplemented("commitWork: FundamentalComponent")
     -- if enableFundamentalAPI)
     --   local fundamentalInstance = finishedWork.stateNode
     --   updateFundamentalComponent(fundamentalInstance)
     --   return
     -- end
     -- break
-  elseif finishedWork.tag == ScopeComponent then
-    unimplemented("commitWork: ScopeComponent")
+  -- elseif finishedWork.tag == ScopeComponent then
+  --   unimplemented("commitWork: ScopeComponent")
     -- if enableScopeAPI)
     --   local scopeInstance = finishedWork.stateNode
     --   prepareScopeUpdate(scopeInstance, finishedWork)

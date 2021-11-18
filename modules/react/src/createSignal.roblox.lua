@@ -1,3 +1,5 @@
+--!strict
+type Function = (...any) -> ...any
 --[[
 	This is a simple signal implementation that has a dead-simple API.
 
@@ -12,12 +14,15 @@
 		disconnect()
 ]]
 
-local function createSignal()
-	local connections = {}
+type Connection = { callback: Function, disconnected: boolean }
+type Map<K, V> = { [K]: V }
+
+local function createSignal(): ((Function) -> (), (...any) -> ())
+	local connections: Map<Function, Connection> = {}
 	local suspendedConnections = {}
 	local firing = false
 
-	local function subscribe(self, callback)
+	local function subscribe(callback)
 		assert(typeof(callback) == "function", "Can only subscribe to signals with a function.")
 
 		local connection = {
@@ -44,7 +49,7 @@ local function createSignal()
 		return disconnect
 	end
 
-	local function fire(self, ...)
+	local function fire(...)
 		firing = true
 		for callback, connection in pairs(connections) do
 			if not connection.disconnected and not suspendedConnections[callback] then
@@ -54,15 +59,11 @@ local function createSignal()
 
 		firing = false
 
-		for callback, _ in pairs(suspendedConnections) do
-			suspendedConnections[callback] = nil
-		end
+		-- ROBLOX performance: use table.clear
+		table.clear(suspendedConnections)
 	end
 
-	return {
-		subscribe = subscribe,
-		fire = fire,
-	}
+	return subscribe, fire
 end
 
 return createSignal

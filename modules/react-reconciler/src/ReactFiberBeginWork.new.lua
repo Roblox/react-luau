@@ -74,8 +74,8 @@ local MemoComponent = ReactWorkTags.MemoComponent
 local SimpleMemoComponent = ReactWorkTags.SimpleMemoComponent
 local LazyComponent = ReactWorkTags.LazyComponent
 local IncompleteClassComponent = ReactWorkTags.IncompleteClassComponent
-local FundamentalComponent = ReactWorkTags.FundamentalComponent
-local ScopeComponent = ReactWorkTags.ScopeComponent
+-- local FundamentalComponent = ReactWorkTags.FundamentalComponent
+-- local ScopeComponent = ReactWorkTags.ScopeComponent
 local OffscreenComponent = ReactWorkTags.OffscreenComponent
 local LegacyHiddenComponent = ReactWorkTags.LegacyHiddenComponent
 local ReactFiberFlags = require(script.Parent.ReactFiberFlags)
@@ -98,9 +98,9 @@ local disableModulePatternComponents = ReactFeatureFlags.disableModulePatternCom
 local enableProfilerTimer = ReactFeatureFlags.enableProfilerTimer
 local enableSchedulerTracing = ReactFeatureFlags.enableSchedulerTracing
 local enableSuspenseServerRenderer = ReactFeatureFlags.enableSuspenseServerRenderer
-local enableFundamentalAPI = ReactFeatureFlags.enableFundamentalAPI
+-- local enableFundamentalAPI = ReactFeatureFlags.enableFundamentalAPI
 local warnAboutDefaultPropsOnFunctionComponents = ReactFeatureFlags.warnAboutDefaultPropsOnFunctionComponents
-local enableScopeAPI = ReactFeatureFlags.enableScopeAPI
+-- local enableScopeAPI = ReactFeatureFlags.enableScopeAPI
 local invariant = require(Packages.Shared).invariant
 local shallowEqual = require(Packages.Shared).shallowEqual
 local getComponentName = require(Packages.Shared).getComponentName
@@ -3193,25 +3193,27 @@ function updateContextConsumer(
   return workInProgress.child
 end
 
-function updateFundamentalComponent(current, workInProgress, renderLanes)
-  local fundamentalImpl = workInProgress.type.impl
-  if fundamentalImpl.reconcileChildren == false then
-    return nil
-  end
-  local nextProps = workInProgress.pendingProps
-  local nextChildren = nextProps.children
+-- ROBLOX TODO: fundamental component is removed in React 18, clean up all traces when we upgrade
+-- function updateFundamentalComponent(current, workInProgress, renderLanes)
+--   local fundamentalImpl = workInProgress.type.impl
+--   if fundamentalImpl.reconcileChildren == false then
+--     return nil
+--   end
+--   local nextProps = workInProgress.pendingProps
+--   local nextChildren = nextProps.children
 
-  reconcileChildren(current, workInProgress, nextChildren, renderLanes)
-  return workInProgress.child
-end
+--   reconcileChildren(current, workInProgress, nextChildren, renderLanes)
+--   return workInProgress.child
+-- end
 
-function updateScopeComponent(current, workInProgress, renderLanes)
-  local nextProps = workInProgress.pendingProps
-  local nextChildren = nextProps.children
+-- ROBLOX TODO: scope component is disabled in our FeatureFlags, uncomment when we enable it
+-- function updateScopeComponent(current, workInProgress, renderLanes)
+--   local nextProps = workInProgress.pendingProps
+--   local nextChildren = nextProps.children
 
-  reconcileChildren(current, workInProgress, nextChildren, renderLanes)
-  return workInProgress.child
-end
+--   reconcileChildren(current, workInProgress, nextChildren, renderLanes)
+--   return workInProgress.child
+-- end
 
 exports.markWorkInProgressReceivedUpdate = function()
   didReceiveUpdate = true
@@ -3340,16 +3342,19 @@ local function beginWork(
   if current ~= nil then
     local oldProps = current.memoizedProps
     local newProps = workInProgress.pendingProps
+    -- ROBLOX TODO: use if-expression when all clients on 503+
+    local _tmp
+    if _G.__DEV__ then
+      _tmp = workInProgress.type ~= current.type
+    else
+      _tmp = false
+    end
+
     if
       oldProps ~= newProps or
       hasLegacyContextChanged() or
       -- Force a re-render if the implementation changed due to hot reload:
-      (function()
-        if _G.__DEV__ then
-          return workInProgress.type ~= current.type
-        end
-        return false
-      end)()
+      _tmp
     then
       -- If props or context changed, mark the fiber as having performed work.
       -- This may be unset if the props are determined to be equal later (memo).
@@ -3670,17 +3675,17 @@ local function beginWork(
       resolvedProps,
       renderLanes
     )
-  elseif workInProgress.tag == SuspenseListComponent then
-    unimplemented("beginWork: SuspenseListComponent")
+  -- elseif workInProgress.tag == SuspenseListComponent then
+  --   unimplemented("beginWork: SuspenseListComponent")
     -- return updateSuspenseListComponent(current, workInProgress, renderLanes)
-  elseif workInProgress.tag == FundamentalComponent then
-    if enableFundamentalAPI then
-      return updateFundamentalComponent(current, workInProgress, renderLanes)
-    end
-  elseif workInProgress.tag == ScopeComponent then
-    if enableScopeAPI then
-      return updateScopeComponent(current, workInProgress, renderLanes)
-    end
+  -- elseif workInProgress.tag == FundamentalComponent then
+  --   if enableFundamentalAPI then
+  --     return updateFundamentalComponent(current, workInProgress, renderLanes)
+  --   end
+  -- elseif workInProgress.tag == ScopeComponent then
+  --   if enableScopeAPI then
+  --     return updateScopeComponent(current, workInProgress, renderLanes)
+  --   end
   elseif workInProgress.tag == OffscreenComponent then
     return updateOffscreenComponent(current, workInProgress, renderLanes)
   elseif workInProgress.tag == LegacyHiddenComponent then

@@ -1,4 +1,5 @@
--- upstream: https://github.com/facebook/react/blob/17f582e0453b808860be59ed3437c6a426ae52de/packages/react-reconciler/src/ReactFiberContext.new.js
+-- upstream: https://github.com/facebook/react/blob/a724a3b578dce77d427bef313102a4d0e978d9b4/packages/react-reconciler/src/ReactFiberContext.new.js
+--!strict
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -11,6 +12,7 @@
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
+local Error = LuauPolyfill.Error
 
 local Cryo = require(Packages.Cryo)
 
@@ -28,7 +30,6 @@ local ReactWorkTags = require(script.Parent.ReactWorkTags)
 local ClassComponent = ReactWorkTags.ClassComponent
 local HostRoot = ReactWorkTags.HostRoot
 local getComponentName = require(Packages.Shared).getComponentName
-local invariant = require(Packages.Shared).invariant
 local checkPropTypes = require(Packages.Shared).checkPropTypes
 
 local createCursor = ReactFiberStack.createCursor
@@ -69,9 +70,10 @@ local function getUnmaskedContext(
 	Component: any,
 	didPushOwnContextIfProvider: boolean
 ): Object
-	if disableLegacyContext then
-		return emptyContextObject
-	else
+	-- ROBLOX performance: skip always-false compare in hot path
+	-- if disableLegacyContext then
+	-- 	return emptyContextObject
+	-- else
 		if didPushOwnContextIfProvider and isContextProvider(Component) then
 			-- If the fiber is a context provider itself, when we read its context
 			-- we may have already pushed its own child context on the stack. A context
@@ -80,30 +82,32 @@ local function getUnmaskedContext(
 			return previousContext
 		end
 		return contextStackCursor.current
-	end
+	-- end
 end
 
 local function cacheContext(
 	workInProgress: Fiber,
 	unmaskedContext: Object,
 	maskedContext: Object
-)
-	if disableLegacyContext then
-		return
-	else
+): ()
+	-- ROBLOX performance: skip always-false compare in hot path
+	-- if disableLegacyContext then
+	-- 	return
+	-- else
 		local instance = workInProgress.stateNode
 		instance.__reactInternalMemoizedUnmaskedChildContext = unmaskedContext
 		instance.__reactInternalMemoizedMaskedChildContext = maskedContext
-	end
+	-- end
 end
 
 local function getMaskedContext(
 	workInProgress: Fiber,
 	unmaskedContext: Object
 ): Object
-	if disableLegacyContext then
-		return emptyContextObject
-	else
+	-- ROBLOX performance: skip always-false compare in hot path
+	-- if disableLegacyContext then
+	-- 	return emptyContextObject
+	-- else
 		local type = workInProgress.type
 		-- deviation: For function components, we can't support `contextTypes`;
 		-- instead, just return unmaskedContext
@@ -145,7 +149,7 @@ local function getMaskedContext(
 		end
 
 		return context
-	end
+	-- end
 end
 
 local function hasContextChanged(): boolean
@@ -158,54 +162,59 @@ end
 
 -- deviation: `type: Function` - lock down component type def
 function isContextProvider(type): boolean
-	if disableLegacyContext then
-		return false
-	else
+	-- ROBLOX performance: skip always-false compare in hot path
+	-- if disableLegacyContext then
+	-- 	return false
+	-- else
 		-- ROBLOX deviation: context types only valid for class components
-		-- ROBLOX performance: this table already had typeof called in mountClassInstance(), does Luau cache that?
+		-- ROBLOX performance: type is already guarded as being a ClassComponent and/or typeof == 'table' in all call sites
 		if typeof(type) == "function" then
 			return false
 		end
 		local childContextTypes = type.childContextTypes
 		return childContextTypes ~= nil
-	end
+	-- end
 end
 
-local function popContext(fiber: Fiber)
-	if disableLegacyContext then
-		return
-	else
+local function popContext(fiber: Fiber): ()
+	-- ROBLOX performance: skip always-false compare in hot path
+	-- if disableLegacyContext then
+	-- 	return
+	-- else
 		pop(didPerformWorkStackCursor, fiber)
 		pop(contextStackCursor, fiber)
-	end
+	-- end
 end
 
-local function popTopLevelContextObject(fiber: Fiber)
-	if disableLegacyContext then
-		return
-	else
+local function popTopLevelContextObject(fiber: Fiber): ()
+	-- ROBLOX performance: skip always-false compare in hot path
+	-- if disableLegacyContext then
+	-- 	return
+	-- else
 		pop(didPerformWorkStackCursor, fiber)
 		pop(contextStackCursor, fiber)
-	end
+	-- end
 end
 
 local function pushTopLevelContextObject(
 	fiber: Fiber,
 	context: Object,
 	didChange: boolean
-)
-	if disableLegacyContext then
-		return
-	else
-		invariant(
-			contextStackCursor.current == emptyContextObject,
-			"Unexpected context found on stack. " ..
+): ()
+	-- ROBLOX performance: disable always-false cmp in hot path
+	-- if disableLegacyContext then
+	-- 	return
+	-- else
+		if contextStackCursor.current ~= emptyContextObject then
+			error(Error.new(
+				"Unexpected context found on stack. " ..
 				"This error is likely caused by a bug in React. Please file an issue."
-		)
+			))
+		end
 
 		push(contextStackCursor, context, fiber)
 		push(didPerformWorkStackCursor, didChange, fiber)
-	end
+	-- end
 end
 
 local function processChildContext(
@@ -213,9 +222,10 @@ local function processChildContext(
 	type: any,
 	parentContext: Object
 ): Object
-	if disableLegacyContext then
-		return parentContext
-	else
+	-- ROBLOX performance: eliminate always-false compare in hot path
+	-- if disableLegacyContext then
+	-- 	return parentContext
+	-- else
 		local instance = fiber.stateNode
 		local childContextTypes = type.childContextTypes
 
@@ -240,28 +250,31 @@ local function processChildContext(
 		end
 
 		local childContext = instance:getChildContext()
-		local name = getComponentName(type) or "Unknown"
 		for contextKey, _ in pairs(childContext) do
-			invariant(
-				childContextTypes[contextKey] ~= nil,
-				"%s.getChildContext(): key \"%s\" is not defined in childContextTypes.",
-				name,
-				contextKey
-			)
+			if childContextTypes[contextKey] == nil then
+				local name = getComponentName(type) or "Unknown"
+				error(Error.new(string.format(
+					"%s.getChildContext(): key \"%s\" is not defined in childContextTypes.",
+					name,
+					contextKey
+				)))
+			end
 		end
 		if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
+			local name = getComponentName(type) or "Unknown"
 			-- ROBLOX deviation: nil as second argument for validateProps compatibility
 			checkPropTypes(childContextTypes, nil, childContext, "child context", name)
 		end
 
 		return Cryo.Dictionary.join(parentContext, childContext)
-	end
+	-- end
 end
 
 local function pushContextProvider(workInProgress: Fiber): boolean
-	if disableLegacyContext then
-		return false
-	else
+	-- ROBLOX performance: eliminate always-false compare in hot path
+	-- if disableLegacyContext then
+	-- 	return false
+	-- else
 		local instance = workInProgress.stateNode
 		-- We push the context as early as possible to ensure stack integrity.
 		-- If the instance does not exist yet, we will push nil at first,
@@ -281,23 +294,26 @@ local function pushContextProvider(workInProgress: Fiber): boolean
 		)
 
 		return true
-	end
+	-- end
 end
 
 local function invalidateContextProvider(
 	workInProgress: Fiber,
 	type: any,
 	didChange: boolean
-)
-	if disableLegacyContext then
-		return
-	else
+): ()
+	-- ROBLOX performance: eliminate always-false compare in hot path
+	-- if disableLegacyContext then
+	-- 	return
+	-- else
 		local instance = workInProgress.stateNode
-		invariant(
-			instance,
-			"Expected to have an instance by this point. " ..
-				"This error is likely caused by a bug in React. Please file an issue."
-		)
+
+		if not instance then
+			error(Error.new(
+				"Expected to have an instance by this point. " ..
+					"This error is likely caused by a bug in React. Please file an issue."
+			))
+		end
 
 		if didChange then
 			-- Merge parent and own context.
@@ -321,22 +337,25 @@ local function invalidateContextProvider(
 			pop(didPerformWorkStackCursor, workInProgress)
 			push(didPerformWorkStackCursor, didChange, workInProgress)
 		end
-	end
+	-- end
 end
 
 local function findCurrentUnmaskedContext(fiber: Fiber): Object
-	if disableLegacyContext then
-		return emptyContextObject
-	else
+	-- ROBLOX performance: eliminate always-false in hot path
+	-- if disableLegacyContext then
+	-- 	return emptyContextObject
+	-- else
 		-- Currently this is only used with renderSubtreeIntoContainer; not sure if it
 		-- makes sense elsewhere
-		invariant(
-			isFiberMounted(fiber) and fiber.tag == ClassComponent,
-			"Expected subtree parent to be a mounted class component. " ..
+		if fiber.tag ~= ClassComponent or not isFiberMounted(fiber) then
+			error(Error.new(
+				"Expected subtree parent to be a mounted class component. " ..
 				"This error is likely caused by a bug in React. Please file an issue."
-		)
+			))
+		end
 
-		local node = fiber
+		-- ROBLOX TODO: Luau analyze can't accommodate the 'repeat until (not) nil' pattern
+		local node: any = fiber
 		repeat
 			if node.tag == HostRoot then
 				return node.stateNode.context
@@ -350,15 +369,12 @@ local function findCurrentUnmaskedContext(fiber: Fiber): Object
 
 			node = node.return_
 		until node == nil
-		invariant(
-			false,
+
+		error(Error.new(
 			"Found unexpected detached subtree parent. " ..
 				"This error is likely caused by a bug in React. Please file an issue."
-		)
-	end
-
-	-- deviation: invariant not recognized as error, so we return something here
-	return {}
+		))
+	-- end
 end
 
 return {
