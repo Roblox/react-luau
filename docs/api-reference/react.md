@@ -68,6 +68,9 @@ Refer to [`React.createRef` documentation](https://reactjs.org/docs/react-api.ht
 ## React.forwardRef
 Refer to [`React.forwardRef` documentation](https://reactjs.org/docs/react-api.html#reactforwardref).
 
+## React.createContext
+Refer to [`React.createContext` documentation](https://reactjs.org/docs/context.html#reactcreatecontext).
+
 ## React.lazy
 Refer to [`React.Children.only` documentation](https://reactjs.org/docs/react-api.html#reactchildrenonly).
 
