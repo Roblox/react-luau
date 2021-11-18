@@ -1,7 +1,7 @@
 site_name: Roact Documentation
-site_url: https://roblox.github.io/roact/
-repo_name: Roblox/roact
-repo_url: https://github.com/Roblox/roact
+site_url: https://roblox.github.io/roact-alignment/
+repo_name: Roblox/roact-alignment
+repo_url: https://github.com/Roblox/roact-alignment
 
 theme:
   name: material
@@ -18,6 +18,10 @@ theme:
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
+
+plugins:
+  - search:
+      separator: '[\s\-\.]'
 
 nav:
   - Home: index.md
