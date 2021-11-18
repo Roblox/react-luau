@@ -6,13 +6,13 @@ repo_url: https://github.com/Roblox/roact-alignment
 theme:
   name: material
   palette:
-    - media: "(prefers-color-scheme: light)" #
+    - media: "(prefers-color-scheme: light)"
       primary: indigo
       scheme: default
       toggle:
         icon: material/toggle-switch-off-outline
         name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)" # 
+    - media: "(prefers-color-scheme: dark)"
       primary: indigo
       scheme: slate
       toggle:
