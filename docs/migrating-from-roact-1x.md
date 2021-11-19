@@ -23,13 +23,22 @@ Instead, use the [Provider and Consumer pattern via `createContext`](https://rob
 
 ### Explicit Ref Forwarding
 
-Legacy Roact uses `Roact.Ref` as a special prop key to support the refs feature. Assigning the `[Roact.Ref]` property to a callback ref or ref object allows Roact to assign its value. However, Roact only interacts with the `Roact.Ref` property if the component recieving the props is a host component.
+Legacy Roact uses `Roact.Ref` as a special prop key to support the refs feature. Assigning the `[Roact.Ref]` property to a callback ref or ref object allows Roact to assign its value. However, Roact only interacts with the `Roact.Ref` property if the component receiving the props is a host component.
 
-Some class component defintions rely on this behavior by accepting and reassigning the `[Roact.Ref]` prop themself, knowing that Roact won't capture it. This pattern is called "ref forwarding", and is supported explicitly with the `React.forwardRef` API.
+Some class component definitions rely on this behavior by accepting and reassigning the `[Roact.Ref]` prop themselves, knowing that Roact won't capture it. This pattern is called "ref forwarding", and is supported explicitly with the `React.forwardRef` API.
 
 In Roact 17+, `Roact.Ref` is aliased to the string "ref", and refs that point to class components are now supported. Components that were forwarding refs using the above method will now fail to forward their provided refs. To fix this, use the [`forwardRef` function](https://roblox.github.io/roact/advanced/bindings-and-refs/#ref-forwarding).
 
 The `forwardRef` API is available in legacy Roact 1.4.0 (or newer) and is fully supported in Roact 17.
+
+### Prefer getDerivedStateFromProps
+Legacy Roact allows class components to implement both `willUpdate` and `getDerivedStateFromProps` lifecycle methods.
+
+React JS, however, does not support both methods when implemented on the same component. When `getDerivedStateFromProps` is defined, it _replaces_ `componentWillUpdate` entirely. **Roact 17 inherits this restriction.**
+
+In order to migrate existing components, make sure to use _either_ `willUpdate` or `getDerivedStateFromProps`, but not both. Whenever possible, use `getDerivedStateFromProps` to resolve interactions between state and props. As in React JS, `componentWillUpdate` is a legacy lifecycle method and should be avoided as [it can exacerbate problems with asynchronous rendering.
+
+Refer to the React JS guidance on [migrating away from legacy lifecycle methods](https://reactjs.org/blog/2018/03/27/update-on-async-rendering.html).
 
 ## Adding a Roact 17 Dependency
 *Under constructions 🔨*
