@@ -16,10 +16,10 @@ Enabling `_G.__DEV__` enables "Dev Mode", a general-purpose option that sacrific
 * Warnings for behavior that violates Roact rules and best practices, like:
     * Reading state when it hasn't been initialized
     * Calling `setState` before a component has mounted
-    * Assigning [multiple keys](deviations.md#stablekeys) to a component
+    * Assigning [multiple keys](deviations.md#stable-keys) to a component
     * Failing to assign keys to elements in a list (a potential de-optimization)
 * Warnings for the use of deprecated components or features
-* Validation of properties passed into components via `validateProps` or `propTypes`
+* Validation of properties passed into components via [`validateProps` or `propTypes`](deviations.md#property-validation)
 
 You should enable Dev Mode in any -- or better yet, all -- of the following situations:
 
@@ -30,7 +30,7 @@ You should enable Dev Mode in any -- or better yet, all -- of the following situ
 **Dev Mode is _not_ meant to be enabled on production.** While it exposes a great deal of useful information and introduces extra assurances, it pays a hefty performance cost to do so.
 
 !!! info
-    In the future, projects will use tools like [darklua]() to automatically remove all code branches that check for Dev Mode when creating bundles for production. This reduces the overhead of branching on Dev Mode logic and saves a little bit of extra performance in places where it matters.
+    In the future, projects will use tools like [darklua](https://gitlab.com/seaofvoices/darklua) to automatically remove all code branches that check for Dev Mode when creating bundles for production. This reduces the overhead of branching on Dev Mode logic and saves a little bit of extra performance in places where it matters.
 
 ### `__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__`
 Occasionally, an older project will issue more warnings in Dev Mode than can easily be resolved. In order to introduce prop validation but silence all other Dev Mode warnings, set the `__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__` global to `true`.

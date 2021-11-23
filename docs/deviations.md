@@ -9,7 +9,7 @@ The following list attempts to comprehensively describe all of the differences b
 
 ## JSX
 
-The Luau ecosystem does not yet have the tooling to support JSX. Instead, use `React.createElement` as your primary tool for building UIs with Roact 17. Element construction in Roact is exaclty like [using React with JSX](https://reactjs.org/docs/react-without-jsx.html).
+The Luau ecosystem does not yet have the tooling to support JSX. Instead, use `React.createElement` as your primary tool for building UIs with Roact 17. Element construction in Roact is exactly like [using React with JSX](https://reactjs.org/docs/react-without-jsx.html).
 
 !!! info
 	Future support for a JSX-equivalent feature for Luau has been proposed, and will be considered as Roact 17+ is adopted.
@@ -63,11 +63,14 @@ For all intents and purposes, this should behave exactly like a constructor for 
 ### Calling `setState` in Constructors
 In React JS, `setState` is not allowed inside component constructors. Instead, React documentation suggests that `this.state` should be assigned to directly, but _never anywhere else_.
 
-Legacy Roact opts to allow `setState` inside of the `init` method (equivalent to a constructor), because it allows documentation to consistently warn against assigning directly to `self.state`. However, for backwards comaptibility, it still supports direct assignments to `self.state` in `init`.
+Legacy Roact opts to allow `setState` inside of the `init` method (equivalent to a constructor), because it allows documentation to consistently warn against assigning directly to `self.state`. However, for backwards compatibility, it still supports direct assignments to `self.state` in `init`.
 
 As with legacy Roact, Roact 17 allows both direct assignment and use of `setState`. This allows guidance from legacy Roact documentation and common practice to remain accurate.
 
-In Roact 17+, it is still recommended to use `setState` inside of compoent `init` methods. This means that you will _always_ avoid assigning directly to `self.state`.
+In Roact 17+, it is still recommended to use `setState` inside of component `init` methods. This means that you will _always_ avoid assigning directly to `self.state`.
+
+### Property Validation
+The legacy api `validateProps` is still present and has a backwards-compatible API.
 
 ## Function Components
 In JavaScript, functions are also objects, which means that they can have member fields defined on them. Luau does not allow this, so some features are not available on function components.
