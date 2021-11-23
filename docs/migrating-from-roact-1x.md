@@ -180,6 +180,8 @@ local function actSendText(instance, text, timeout)
 end
 ```
 
+Refer to documentation on [React JS' `act` function](https://reactjs.org/docs/test-utils.html#act) for more details and examples.
+
 ## Updating Conventions and APIs
 *Under construction 🔨*
 

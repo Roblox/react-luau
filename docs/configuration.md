@@ -1,4 +1,3 @@
-*Under construction 🔨*
 
 Roact can currently be configured by assigning values to a small number of special global variables. Typically, they need to be set up before `React` or `ReactRoblox` is initialized via `require`. There are a couple of ways to do this:
 
@@ -9,7 +8,7 @@ Roact can currently be configured by assigning values to a small number of speci
 
 ## Globals
 
-### `__DEV__`
+### \_\_DEV\_\_
 Enabling `_G.__DEV__` enables "Dev Mode", a general-purpose option that sacrifices performance to enable a number of features that improve the development experience:
 
 * Component `render` methods are run twice to ensure that no side-effects are being counted upon
@@ -21,7 +20,7 @@ Enabling `_G.__DEV__` enables "Dev Mode", a general-purpose option that sacrific
 * Warnings for the use of deprecated components or features
 * Validation of properties passed into components via [`validateProps` or `propTypes`](deviations.md#property-validation)
 
-You should enable Dev Mode in any -- or better yet, all -- of the following situations:
+You should enable Dev Mode in any or all of the following situations:
 
 * Running unit tests and rhodium tests
 * Running storybooks
@@ -32,18 +31,18 @@ You should enable Dev Mode in any -- or better yet, all -- of the following situ
 !!! info
     In the future, projects will use tools like [darklua](https://gitlab.com/seaofvoices/darklua) to automatically remove all code branches that check for Dev Mode when creating bundles for production. This reduces the overhead of branching on Dev Mode logic and saves a little bit of extra performance in places where it matters.
 
-### `__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__`
+### \_\_DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION\_\_
 Occasionally, an older project will issue more warnings in Dev Mode than can easily be resolved. In order to introduce prop validation but silence all other Dev Mode warnings, set the `__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__` global to `true`.
 
-### `__COMPAT_WARNINGS__`
+### \_\_COMPAT_WARNINGS\_\_
 Enables compatibility warnings for any uses of outdated APIs in your code. These compatibility mismatches should have no effect on behavior, but can be modernized to better align to standards and anticipate future releases. Compat warnings will help you surface uses of outdated APIs when you [migrate from Roact 1.x](migrating-from-roact-1x.md/#updating-conventions-and-apis).
 
-### `__ROACT_17_INLINE_ACT__`
+### \_\_ROACT_17_INLINE_ACT\_\_
 This global currently has two functions:
 * Cause Roact's internal scheduler to mock itself instead of using real async logic like `task.delay`
 * Automatically wrap the behavior of `RoactCompat.mount`, `RoactCompat.update`, and `RoactCompat.unmount` in `ReactRoblox.act`, which ensures that queued actions will be played forward by the mocked scheduler
 
-### `__ROACT_17_COMPAT_LEGACY_ROOT__`
+### \_\_ROACT_17_COMPAT_LEGACY_ROOT\_\_
 Ensures that the `RoactCompat.mount` method creates a Legacy Root instead of a Concurrent Root, which is the default behavior.
 
 <!--
