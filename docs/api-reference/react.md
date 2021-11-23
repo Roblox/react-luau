@@ -1,6 +1,6 @@
 # React
 
-The React package is the entry point for most React logic and behavior. Most members align directly to their equivalents in [React JS](https://reactjs.org/docs/react-api.html). Some API members have slightly different behavior, different guidance around their use, or slightly different function signatures to better accomodate Luau functionality and idioms.
+The React package is the entry point for most React logic and behavior. Most members align directly to their equivalents in [React JS](https://reactjs.org/docs/react-api.html). Some API members have slightly different behavior, different guidance around their use, or slightly different function signatures to better accommodate Luau functionality and idioms.
 
 There are currently a few notable absences from React JS 17.0.1:
 
@@ -19,7 +19,7 @@ There are also some features that are undocumented in React JS 17.0.1, but are i
 ## React.Component
 Refer to [`React.Component` documentation](https://reactjs.org/docs/react-api.html#reactcomponent).
 
-### Devaitions
+### Deviations
 
 * (use `:extend` in place of ES6 class semantics)
 * (implement `:init` instead of a constructor)
@@ -35,7 +35,7 @@ Refer to [`React.PureComponent` documentation](https://reactjs.org/docs/react-ap
 * (link to same deviations section)
 
 ## React.memo
-Refer to [`React.memo` documentation](https://reactjs.org/docs/react-api.html#reactmemo). Guidance specified in the React documenation applies to Roact as well. Use this only as a performance optimization, and only when relevant to the use case.
+Refer to [`React.memo` documentation](https://reactjs.org/docs/react-api.html#reactmemo). Guidance specified in the React documentation applies to Roact as well. Use this only as a performance optimization, and only when relevant to the use case.
 
 ## React.createElement
 Refer to [`React.createElement` documentation](https://reactjs.org/docs/react-api.html#createelement).
@@ -43,7 +43,7 @@ Refer to [`React.createElement` documentation](https://reactjs.org/docs/react-ap
 ### Deviations
 
 * (actual behavior is the same)
-* (however, unlike in React, createElement is not superceded by JSX)
+* (however, unlike in React, createElement is not superseded by JSX)
 
 ## React.cloneElement
 Refer to [`React.cloneElement` documentation](https://reactjs.org/docs/react-api.html#cloneelement).
@@ -132,8 +132,8 @@ Refer to [relevant React RFC](https://github.com/reactjs/rfcs/pull/147).
 <!-- Roact only -->
 ## React.createBinding
 *Roact-only*
-Creates a binding object. This a feature from legacy Roact that's been ported into Roact 17. [Refer to legacy documenation on `Roact.createBinding`](https://roblox.github.io/roact/api-reference/#roactcreatebinding).
+Creates a binding object. This a feature from legacy Roact that's been ported into Roact 17. [Refer to legacy documentation on `Roact.createBinding`](https://roblox.github.io/roact/api-reference/#roactcreatebinding).
 
 ## React.joinBindings
 *Roact-only*
-Joins multiple bindings together. This is a feature from legacy Roact that's been ported into Roact 17. [Refer to legacy documenation on `Roact.joinBindings`](https://roblox.github.io/roact/api-reference/#roactjoinbindings).
+Joins multiple bindings together. This is a feature from legacy Roact that's been ported into Roact 17. [Refer to legacy documentation on `Roact.joinBindings`](https://roblox.github.io/roact/api-reference/#roactjoinbindings).

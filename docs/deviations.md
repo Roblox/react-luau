@@ -29,7 +29,58 @@ local value, setValue = React.useState(0)
 ```
 
 ## Stable Keys
-*Under constructions 🔨*
+
+In React JS, the reserved "key" prop is used to provide stable identities to DOM elements. This improves performance when list-like data is reordered by helping React understand which elements are which, instead of simply modifying the element at each position to line up with the new ordering (more info in the [React documentation](https://reactjs.org/docs/lists-and-keys.html)).
+
+Since order has no inherent meaning in Roblox's DOM, legacy Roact generally expected children to be provided as a _map_ instead of an array, where the keys to the map are the stable keys associated with the elements. This behavior was used instead of a reserved "key" prop (more info in the [Roact documentation](https://roblox.github.io/roact/performance/reduce-reconciliation/#stable-keys)).
+
+Roact 17+ supports _both_ methods for providing keys. Both of the following examples are valid and equivalent.
+
+With table keys:
+```lua
+-- Returns a fragment of items in an ordered list
+function NumberList(props)
+	local numbers = props.numbers
+	for i, number in ipairs(numbers) do
+		local key = tostring(i)
+		listItems[key] = React.createElement("TextLabel", {
+			Text = key,
+			LayoutOrder = i,
+		})
+	end);
+	return listItems
+end
+```
+
+Using the special "key" prop:
+```lua
+-- Returns a fragment of items in an ordered list
+function NumberList(props)
+	local numbers = props.numbers
+	for i, number in ipairs(numbers) do
+		local key = tostring(i)
+		local element = React.createElement("TextLabel", {
+			key = key,
+			Text = key,
+			LayoutOrder = i,
+		})
+		table.insert(listItems, element)
+	end);
+	return listItems
+end
+```
+
+If your component provides keys using both methods at the same time, Roact will consider this a mistake and print a warning. The following code would result in a warning:
+```lua
+return React.createElement("Frame", nil, {
+	Label = React.createElement("TextLabel", {
+		key = "label1",
+		Text = "Hello",
+	})
+})
+```
+
+In the above example, Roact doesn't know whether you wanted to use "label1" or "Label" as the key, so it falls back to the explicitly provided key ("label1"). In [Dev Mode](configuration.md#dev), it will output an appropriate warning as well.
 
 ## Class Components
 Luau does not currently have ES6's `class` semantics. For class components, Roact exposes an `extend` method to provide equivalent behavior.
@@ -85,7 +136,7 @@ For the time being, function components do not support the `defaultProps` featur
 For the time being, function components do not support the `propTypes` feature. While propTypes is less often used and can in many cases be superseded by static type checking, we may want to, in the future, re-implement it in terms of hooks to make sure that function components with hooks are as appealing and feature-rich as possible.
 
 ### validateProps
-For the time being, we will continue to support legacy Roact's `validateProps`. Prior Roact documentation on this method can be found [here](https://roblox.github.io/roact/api-reference/#validateprops).
+In Roact 17, we continue to support legacy Roact's `validateProps`. Prior Roact documentation on this method can be found [here](https://roblox.github.io/roact/api-reference/#validateprops).
 
 ## Bindings and Refs
 Roact supports callback refs, refs created using `React.createRef`, and refs using the `React.useRef` hook. However, under the hood, Refs are built on top of a concept called Bindings.
@@ -108,7 +159,6 @@ end
 function PopupButtons:render()
 	--[[
 			"Some Description"
-		
 		[ Confirm ]    [ Cancel ]
 	]]
 	return Roact.createElement("Frame", nil {
@@ -139,7 +189,7 @@ Or:
 3. Confirm Button renders and its ref is assigned
 4. Confirm Button's NextSelectionRight property is properly set to the Cancel Button's ref
 
-Thus, it would require much more trickery to make even a simple gamepad neighbor assignment work correctly. However *when refs are implemented as bindings*, the above scenario can be solved pretty simply:
+Thus, it would require much more trickery to make even a simple gamepad neighbor assignment work correctly. However *with refs implemented as bindings*, the above scenario can be solved pretty simply:
 ```lua
 -- ...
 	return Roact.createElement("Frame", nil {
@@ -158,7 +208,7 @@ Thus, it would require much more trickery to make even a simple gamepad neighbor
 	})
 -- ...
 ```
-With refs using binding logic, and with the above implementation, something like the following happens:
+With the above implementation, something like the following happens:
 
 1. Confirm Button renders first and its ref is assigned
 2. Confirm Button's NextSelectionRight property is set to the Cancel Button's ref, **which is currently nil**
