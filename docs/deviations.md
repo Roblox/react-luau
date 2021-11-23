@@ -1,5 +1,3 @@
-# Deviations
-
 While Roact has been architected to align with React JS's APIs and idioms, a small number of deviations have been introduced for one or several of the following reasons:
 
 * Differences between JavaScript and Luau

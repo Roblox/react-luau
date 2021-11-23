@@ -27,6 +27,7 @@ nav:
   - Home: index.md
   - Migrating From 1.x: migrating-from-roact-1x.md
   - Deviations: deviations.md
+  - Configuration: configuration.md
   - API Reference:
     - React: api-reference/react.md
     - ReactRoblox: api-reference/react-roblox.md

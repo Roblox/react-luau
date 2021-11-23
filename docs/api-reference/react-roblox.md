@@ -35,9 +35,9 @@ Refer to [`ReactDOM.createPortal` documentation](https://reactjs.org/docs/portal
 
 <!-- Testing/globals only -->
 ## ReactRoblox.act
-Refer to [ReactDOM's `act` testing documenation](https://reactjs.org/docs/test-utils.html#act).
+Refer to [ReactDOM's `act` testing documentation](https://reactjs.org/docs/test-utils.html#act).
 
-### Devaitions
+### Deviations
 In production, `ReactRoblox.act` will not be available. Set the global value `_G.__ROACT_17_INLINE_ACT__` to `true` in order to enable this behavior in tests.
 
 !!! info
