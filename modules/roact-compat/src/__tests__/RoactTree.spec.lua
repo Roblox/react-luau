@@ -7,17 +7,20 @@ return function()
 	local RoactCompat
 
 	describe("Concurrent root (default behavior)", function()
-		local previousGlobalValue
+		local prevInlineAct, prevMockScheduler
 		beforeEach(function()
-			previousGlobalValue = _G.__ROACT_17_INLINE_ACT__
+			prevInlineAct = _G.__ROACT_17_INLINE_ACT__
+			prevMockScheduler = _G.__ROACT_17_MOCK_SCHEDULER__
 			_G.__ROACT_17_INLINE_ACT__ = true
+			_G.__ROACT_17_MOCK_SCHEDULER__ = true
 			RobloxJest.resetModules()
 			Roact = require(Packages.Dev.Roact)
 			RoactCompat = require(script.Parent.Parent)
 		end)
 
 		afterEach(function()
-			_G.__ROACT_17_INLINE_ACT__ = previousGlobalValue
+			_G.__ROACT_17_INLINE_ACT__ = prevInlineAct
+			_G.__ROACT_17_MOCK_SCHEDULER__ = prevMockScheduler
 		end)
 
 		it(

@@ -12,8 +12,11 @@ local TracingSubscriptions = require(script.TracingSubscriptions)
 -- ROBLOX deviation export Tracing type from the package exports to avoid direct file access
 export type Interaction = Tracing.Interaction
 
--- Enables `act` to use mock scheduling logic when running tests
-if _G.__ROACT_17_INLINE_ACT__ then
+-- Enables `act` to use mock scheduling logic when running tests. Since there
+-- are numerous testing scenarios in which we call `require` on the Roact
+-- library _before_ we bootstrap tests, we expose an additional global to toggle
+-- this explicilty
+if _G.__ROACT_17_MOCK_SCHEDULER__ then
     return require(script.unstable_mock)
 end
 

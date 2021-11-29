@@ -40,17 +40,26 @@ Occasionally, some older projects will issue more warnings in Dev Mode than can 
 ### \_\_COMPAT_WARNINGS\_\_
 Enables compatibility warnings for any uses of outdated APIs in your code. These compatibility mismatches should have no effect on behavior, but can be modernized to better align to standards and anticipate future releases. Compat warnings will help you surface uses of outdated APIs when you [migrate from Roact 1.x](migrating-from-roact-1x.md/#updating-conventions-and-apis).
 
-### \_\_ROACT_17_INLINE_ACT\_\_
-This global currently has two functions:
 
-* Cause Roact's internal scheduler to mock itself instead of using real async logic like `task.delay`
-* Automatically wrap the behavior of `RoactCompat.mount`, `RoactCompat.update`, and `RoactCompat.unmount` in `ReactRoblox.act`, which ensures that queued actions will be played forward by the mocked scheduler
+### \_\_ROACT_17_MOCK_SCHEDULER\_\_
+Ensure that Roact's internal scheduler is mocked instead of using real async logic like `task.delay`. This is useful in conjunction with [the `act` function](api-reference/react-roblox.md#reactrobloxact) to test concurrent behavior via the "arrange-act-assert" pattern.
+
+Use this global in test configuration to make sure that you're not inadvertently relying on asynchronous logic in tests. Since Roact 17 uses concurrent rendering by default, you will always need this global to be set to `true` (except when using the [`__ROACT_17_COMPAT_LEGACY_ROOT__`](#ROACT17COMPATLEGACYROOT) global described below).
 
 !!! caution
-	In future updates, this responsibility should be split up. We want to _always_ mock the scheduler when in a testing environment, and we want to only inline `act` in the compatibility layer when this global is enabled.
+	In future updates, Roact should _always_ mock the scheduler when in a testing environment and avoid extra configuration. For now, Roact favors explicitness while we shore up the testing experience.
+
+### \_\_ROACT_17_INLINE_ACT\_\_
+This global will automatically wrap the behavior of `RoactCompat.mount`, `RoactCompat.update`, and `RoactCompat.unmount` in `ReactRoblox.act`, which ensures that queued actions will be played forward by the mocked scheduler.
+
+Use this global to shore up existing tests that may not be 
+
+**This is intended for tests only, and will not work correctly unless `__ROACT_17_MOCK_SCHEDULER__` is also enabled.**
 
 ### \_\_ROACT_17_COMPAT_LEGACY_ROOT\_\_
 Ensures that the `RoactCompat.mount` compatibility function creates a Legacy Root instead of a Concurrent Root, which is the default behavior.
+
+Use this global to preserve old behavior in certain testing scenarios. If you need to explicitly rely on a legacy root in production, consider opting for the [`createLegacyRoot`](api-reference/react-roblox.md#reactrobloxcreatelegacyroot) API instead.
 
 <!--
 Unclear if we should bother documenting:

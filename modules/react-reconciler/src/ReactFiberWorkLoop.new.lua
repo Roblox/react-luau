@@ -3991,9 +3991,11 @@ local function flushWorkAndMicroTasks(onDone: (any?) -> ())
 end
 
 exports.act = function(callback: () -> Thenable<any>): Thenable<any?>
-  -- ROBLOX TODO: remove INLINE_ACT flag when all tests are updated to use `act`
-  -- explicitly
-  if not (_G.__DEV__ or _G.__ROACT_17_INLINE_ACT__) then
+  -- It's only viable to export `act` when we're using mocked scheduling logic.
+  -- Since there are numerous testing scenarios in which we call `require` on
+  -- the Roact library _before_ we bootstrap tests, we expose a global to toggle
+  -- this explicilty
+  if not (_G.__DEV__ or _G.__ROACT_17_MOCK_SCHEDULER__) then
     if didWarnAboutUsingActInProd == false then
       didWarnAboutUsingActInProd = true
       -- eslint-disable-next-line react-internal/no-production-logging

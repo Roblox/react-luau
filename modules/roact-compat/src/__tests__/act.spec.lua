@@ -5,10 +5,10 @@ return function()
 	local RoactCompat
 
 	describe("production mode", function()
-		local prevGlobal
+		local prevMockScheduler
 		beforeEach(function()
-			prevGlobal = _G.__ROACT_17_INLINE_ACT__
-			_G.__ROACT_17_INLINE_ACT__ = nil
+			prevMockScheduler = _G.__ROACT_17_MOCK_SCHEDULER__
+			_G.__ROACT_17_MOCK_SCHEDULER__ = nil
 			RobloxJest.resetModules()
 			RoactCompat = require(script.Parent.Parent)
 		end)
@@ -23,21 +23,21 @@ return function()
 				end)
 			end).toThrow(
 				"ReactRoblox.act is only available in testing environments, "
-					.. "not production. Enable the `__ROACT_17_INLINE_ACT__` global in "
-					.. "your test configuration in order to use `act`."
+					.. "not production. Enable the `__ROACT_17_MOCK_SCHEDULER__` "
+					.. "global in your test configuration in order to use `act`."
 			)
 		end)
 
 		afterEach(function()
-			_G.__ROACT_17_INLINE_ACT__ = prevGlobal
+			_G.__ROACT_17_MOCK_SCHEDULER__ = prevMockScheduler
 		end)
 	end)
 
 	describe("test mode", function()
-		local prevGlobal
+		local prevMockScheduler
 		beforeEach(function()
-			prevGlobal = _G.__ROACT_17_INLINE_ACT__
-			_G.__ROACT_17_INLINE_ACT__ = true
+			prevMockScheduler = _G.__ROACT_17_MOCK_SCHEDULER__
+			_G.__ROACT_17_MOCK_SCHEDULER__ = true
 			RobloxJest.resetModules()
 			RoactCompat = require(script.Parent.Parent)
 		end)
@@ -68,7 +68,7 @@ return function()
 		end)
 
 		afterEach(function()
-			_G.__ROACT_17_INLINE_ACT__ = prevGlobal
+			_G.__ROACT_17_MOCK_SCHEDULER__ = prevMockScheduler
 		end)
 	end)
 end

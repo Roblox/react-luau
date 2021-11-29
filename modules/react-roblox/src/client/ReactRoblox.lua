@@ -251,24 +251,25 @@ local exports = {
   unstable_isNewReconciler = enableNewReconciler,
 
   -- ROBLOX deviation: Export `act` function for testing purposes; in
-  -- production (and with the global off), it will give an instructive error
+  -- production (a.k.a. scheduler isn't mocked), give an instructive error
   act = function(_: () -> ())
     error(
       "ReactRoblox.act is only available in testing environments, not "
-      .. "production. Enable the `__ROACT_17_INLINE_ACT__` global in your test "
-      .. "configuration in order to use `act`."
+      .. "production. Enable the `__ROACT_17_MOCK_SCHEDULER__` global in your "
+      .. "test configuration in order to use `act`."
     )
   end
 }
 
-if _G.__ROACT_17_INLINE_ACT__ then
-  -- ROBLOX deviation: When the __ROACT_17_INLINE_ACT__ is enabled, we re-export
-  -- the `act` function from ReactReconciler. The global will additionally force
-  -- the scheduler to use the mock interface
+if _G.__ROACT_17_MOCK_SCHEDULER__ then
+  -- ROBLOX deviation: When the __ROACT_17_MOCK_SCHEDULER__ is enabled, we
+  -- re-export the `act` function from ReactReconciler. The global will
+  -- additionally force the scheduler to use the mock interface
   exports.act = ReactReconciler.act
 end
 
--- ROBLOX deviation: we don't currently implement the logic below that uses this value
+-- ROBLOX deviation: we don't currently implement the logic below that uses this
+-- value
 local _foundDevTools = injectIntoDevTools({
   findFiberByHostInstance = getClosestInstanceFromNode,
   bundleType = _G.__DEV__ and 1 or 0,
