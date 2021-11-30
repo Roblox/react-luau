@@ -19,6 +19,8 @@ local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Error = LuauPolyfill.Error
+local Object = LuauPolyfill.Object
+local inspect = LuauPolyfill.util.inspect
 local Cryo = require(Packages.Cryo)
 
 -- ROBLOX: use patched console from shared
@@ -300,7 +302,7 @@ function warnOnHookMismatchInDev(currentHookName: HookType)
           end
 
           -- ROBLOX note: upstream lets this be void and string concat coerces it to 'undefined'
-          local row = tostring(i) .. ". " .. (oldHookName or 'undefined')
+          local row = tostring(i) .. ". " .. (oldHookName or "undefined")
 
           -- Extra space so second column lines up
           -- lol @ IE not supporting String#repeat
@@ -377,8 +379,8 @@ local function areHookInputsEqual(
           "Previous: %s\n" ..
           "Incoming: %s",
         currentHookNameInDev,
-        table.concat(prevDeps, ", "),
-        table.concat(nextDeps, ", ")
+        inspect(prevDeps),
+        inspect(nextDeps)
       )
     end
   end
@@ -609,8 +611,8 @@ function mountReducer(
   -- by call time
   local cRF = currentlyRenderingFiber
   queue.dispatch = function(...)
-      return dispatchAction(cRF, queue, ...)
-    end
+    return dispatchAction(cRF, queue, ...)
+  end
   local dispatch: Dispatch<any> = queue.dispatch :: any
   -- deviation: Lua version of useState and useReducer return two items, not list like upstream
   return hook.memoizedState, dispatch
@@ -1162,7 +1164,7 @@ function mountState(
   -- by call time
   local cRF = currentlyRenderingFiber
   queue.dispatch = function(...)
-    return dispatchAction(cRF, queue, (...))
+    return dispatchAction(cRF, queue, ...)
   end
   local dispatch = queue.dispatch
   -- deviation: Lua version of useState and useReducer return two items, not list like upstream
@@ -1378,22 +1380,16 @@ function imperativeHandleEffect(
   elseif ref ~= nil then
     local refObject = ref
     -- ROBLOX deviation: can't check for key presence because nil is a legitimate value.
-    -- if _G.__DEV__ then
-    --   -- ROBLOX FIXME: upstream uses hasOwnProperty, is this an OK translation?
-    --   if rawget(refObject, 'current') == nil then
-    --     local keyset = {}
-    --     local n = 0
-    --     for k, _ in pairs(refObject) do
-    --       n = n + 1
-    --       keyset[n]=k
-    --     end
-    --     console.error(
-    --       'Expected useImperativeHandle() first argument to either be a ' ..
-    --         'ref callback or React.createRef() object. Instead received: %s.',
-    --       'an object with keys {' .. table.concat(keyset, ", ") .. '}'
-    --     )
-    --   end
-    -- end
+    if _G.__DEV__ then
+      -- ROBLOX FIXME: upstream uses hasOwnProperty, is this an OK translation?
+      if rawget(refObject, 'current') == nil then
+        console.error(
+          'Expected useImperativeHandle() first argument to either be a ' ..
+            'ref callback or React.createRef() object. Instead received: %s.',
+          'an object with keys {' .. Array.join(Object.keys(refObject), ", ") .. '}'
+        )
+      end
+    end
     local inst = create()
     refObject.current = inst
     return function()
@@ -1499,7 +1495,8 @@ function updateImperativeHandle(
   )
 end
 
-function mountDebugValue(value, formatterFn: nil | (any) -> any)
+type _T = any
+function mountDebugValue(value: _T, formatterFn: nil | (_T) -> any): ()
   -- This hook is normally a no-op.
   -- The react-debug-hooks package injects its own implementation
   -- so that e.g. DevTools can display custom hook values.
@@ -1815,10 +1812,14 @@ function dispatchAction(
   fiber: Fiber,
   queue: UpdateQueue<any,any>,
   action: any,
-  extraArg: any?
+  ...
 )
-  -- deviation: use extraArg to catch if call was given an extra vs counting total args as upstream does
   if _G.__DEV__ then
+    local childrenLength = select("#", ...)
+    local extraArg
+    if childrenLength == 1 then
+      extraArg = select(1, ...)
+    end
     if typeof(extraArg) == 'function' then
       console.error(
         "State updates from the useState() and useReducer() Hooks don't support the " ..
@@ -1946,7 +1947,7 @@ local ContextOnlyDispatcher: Dispatcher = {
   useReducer = throwInvalidHookError :: any,
   useRef = throwInvalidHookError :: any,
   useState = throwInvalidHookError :: any,
-  useDebugValue = throwInvalidHookError,
+  useDebugValue = throwInvalidHookError :: any,
   -- useDeferredValue = throwInvalidHookError,
   -- useTransition = throwInvalidHookError,
   useMutableSource = throwInvalidHookError,
@@ -2162,7 +2163,7 @@ if _G.__DEV__ then
     end,
     -- ROBLOX TODO: function generics
     -- useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
-    useDebugValue = function(value: any, formatterFn: ((value: any) -> any)?): ()
+    useDebugValue = function(value: _T, formatterFn: ((value: _T) -> any)?): ()
       currentHookNameInDev = 'useDebugValue'
       mountHookTypesDev()
       return mountDebugValue(value, formatterFn)
@@ -2333,7 +2334,7 @@ if _G.__DEV__ then
       return result, setResult
     end,
     -- useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
-    useDebugValue = function(value: any, formatterFn: ((value: any) -> any)?): ()
+    useDebugValue = function(value: _T, formatterFn: ((value: _T) -> any)?): ()
       currentHookNameInDev = 'useDebugValue'
       updateHookTypesDev()
       return mountDebugValue(value, formatterFn)
@@ -2503,7 +2504,7 @@ if _G.__DEV__ then
     end,
     -- ROBLOX TODO: function generics
     -- useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
-    useDebugValue = function(value: any, formatterFn: ((value: any) -> any)?): ()
+    useDebugValue = function(value: _T, formatterFn: ((value: _T) -> any)?): ()
       currentHookNameInDev = 'useDebugValue'
       updateHookTypesDev()
       return updateDebugValue(value, formatterFn)
@@ -2678,7 +2679,7 @@ if _G.__DEV__ then
       return result, setResult
     end,
 --     useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
-    useDebugValue = function(value: any, formatterFn: ((value: any) -> any)?): ()
+    useDebugValue = function(value: _T, formatterFn: ((value: _T) -> any)?): ()
       currentHookNameInDev = 'useDebugValue'
       updateHookTypesDev()
       return updateDebugValue(value, formatterFn)
@@ -2839,7 +2840,7 @@ if _G.__DEV__ then
     end,
     -- ROBLOX TODO: function generics
     -- useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
-    useDebugValue = function(value: any, formatterFn: ((value: any) -> any)?): ()
+    useDebugValue = function(value: _T, formatterFn: ((value: _T) -> any)?): ()
       currentHookNameInDev = 'useDebugValue'
       warnInvalidHookAccess()
       mountHookTypesDev()
@@ -3026,7 +3027,7 @@ if _G.__DEV__ then
     end,
     -- ROBLOX TODO: function generics
 --     useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
-    useDebugValue = function (value, formatterFn: ((value: any) -> any)?): ()
+    useDebugValue = function(value: _T, formatterFn: ((value: _T) -> any)?): ()
       currentHookNameInDev = 'useDebugValue'
       warnInvalidHookAccess()
       updateHookTypesDev()
@@ -3217,7 +3218,7 @@ if _G.__DEV__ then
       end,
       -- ROBLOX TODO: funtion generics
 --     useDebugValue<T>(value: T, formatterFn: ?(value: T) => mixed): void {
-    useDebugValue = function(value: any, formatterFn: ((value: any) -> any)?): ()
+    useDebugValue = function(value: _T, formatterFn: ((value: _T) -> any)?): ()
       currentHookNameInDev = 'useDebugValue'
       warnInvalidHookAccess()
       updateHookTypesDev()

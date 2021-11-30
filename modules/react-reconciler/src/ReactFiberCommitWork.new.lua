@@ -456,20 +456,21 @@ local function commitHookEffectListMount(flags: HookFlags, finishedWork: Fiber)
             if destroy == nil then
               addendum =
                 ' You returned nil. If your effect does not require clean ' ..
-                'up, return undefined (or nothing).'
+                'up, return nil (or nothing).'
             elseif typeof(destroy.andThen) == 'function' then
               addendum =
-                '\n\nIt looks like you wrote useEffect(async () => ...) or returned a Promise. ' ..
+                -- ROBLOX FIXME: write a real program that does the equivalent and update this example, LUAFDN-754
+                '\n\nIt looks like you wrote useEffect(Promise.new(function() --[[...]] end) or returned a Promise. ' ..
                 'Instead, write the async function inside your effect ' ..
                 'and call it immediately:\n\n' ..
-                'useEffect(() => {\n' ..
-                '  async function fetchData() {\n' ..
+                'useEffect(function()\n' ..
+                '  function fetchData()\n' ..
                 '    -- You can await here\n' ..
-                '    local response = await MyAPI.getData(someId);\n' ..
+                '    local response = MyAPI.getData(someId):await()\n' ..
                 '    -- ...\n' ..
-                '  }\n' ..
-                '  fetchData();\n' ..
-                "}, [someId]); -- Or [] if effect doesn't need props or state\n\n" ..
+                '  end\n' ..
+                '  fetchData()\n' ..
+                "end, {someId}) -- Or {} if effect doesn't need props or state\n\n" ..
                 'Learn more about data fetching with Hooks: https://reactjs.org/link/hooks-data-fetching'
             else
               addendum = ' You returned: ' .. destroy

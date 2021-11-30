@@ -11,6 +11,7 @@
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Number = LuauPolyfill.Number
+local Error = LuauPolyfill.Error
 
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
@@ -45,7 +46,6 @@ local includesSomeLane = ReactFiberLane.includesSomeLane
 local mergeLanes = ReactFiberLane.mergeLanes
 local pickArbitraryLane = ReactFiberLane.pickArbitraryLane
 
-local invariant = require(Packages.Shared).invariant
 local is = require(Packages.Shared).objectIs
 local createUpdate = ReactUpdateQueue.createUpdate
 local ForceUpdate = ReactUpdateQueue.ForceUpdate
@@ -419,13 +419,13 @@ exports.readContext = function(
     }
 
     if lastContextDependency == nil then
-      invariant(
-        currentlyRenderingFiber ~= nil,
-        "Context can only be read while React is rendering. " ..
+      if currentlyRenderingFiber == nil then
+        error(Error.new("Context can only be read while React is rendering. " ..
           "In classes, you can read it in the render method or getDerivedStateFromProps. " ..
           "In function components, you can read it directly in the function body, but not " ..
           "inside Hooks like useReducer() or useMemo()."
-      )
+        ))
+      end
 
       -- This is the first dependency for this component. Create a new list.
       lastContextDependency = contextItem;

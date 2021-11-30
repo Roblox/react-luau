@@ -159,7 +159,7 @@ type DevToolsConfig = {
 	-- Used by "inspect clicked DOM element" in React DevTools.
 	findFiberByHostInstance: ((Instance | TextInstance) -> Fiber)?,
 	rendererConfig: RendererInspectionConfig?,
-};
+}
 
 local didWarnAboutNestedUpdates
 local didWarnAboutFindNodeInStrictMode

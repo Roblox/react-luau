@@ -39,7 +39,7 @@ return {
 	useContext = ReactHooks.useContext,
 	useEffect = ReactHooks.useEffect,
 	useImperativeHandle = ReactHooks.useImperativeHandle,
-	-- ROBLOX TODO: useDebugValue
+	useDebugValue = ReactHooks.useDebugValue,
 	useLayoutEffect = ReactHooks.useLayoutEffect,
 	useMemo = ReactHooks.useMemo,
 	useMutableSource = ReactHooks.useMutableSource,

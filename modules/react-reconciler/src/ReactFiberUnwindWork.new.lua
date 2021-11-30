@@ -133,7 +133,11 @@ end
 
 function unwindInterruptedWork(interruptedWork: Fiber)
   if interruptedWork.tag == ReactWorkTags.ClassComponent then
-    local childContextTypes = interruptedWork.type.childContextTypes
+    -- ROBLOX deviation: Lua doesn't support properties on functions
+    local childContextTypes
+    if typeof(interruptedWork.type) == "table" then
+      childContextTypes = interruptedWork.type.childContextTypes
+    end
     if childContextTypes ~= nil then
       popLegacyContext(interruptedWork)
     end

@@ -1,5 +1,5 @@
 [workspace]
-version = "17.0.1-rc.8"
+version = "17.0.1-rc.9"
 members = ["modules/*"]
 authors = [
 	"Paul Doyle <pdoyle@roblox.com>",
@@ -14,8 +14,5 @@ authors = [
 [workspace.dependencies]
 Promise = "github.com/roblox/roblox-lua-promise@3.2.0"
 Cryo = "github.com/roblox/cryo@1.0"
-LuauPolyfill = "github.com/roblox/luau-polyfill@0.2.5"
-JestGlobals = "github.com/roblox/jest-roblox@2.2.1"
-
-[config.patch."https://github.com/roblox/jest-roblox"]
-Expect = "github.com/roblox/jest-roblox@=2.1.4"
+JestGlobals = "github.com/roblox/jest-roblox@2.3.0"
+LuauPolyfill = "github.com/roblox/luau-polyfill@0.2.6"

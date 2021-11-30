@@ -389,9 +389,9 @@ function checkShouldComponentUpdate(
     return shouldUpdate
   end
 
-  -- deviation: for us, the isPureReactComponent flag will be visible as a
+  -- ROBLOX deviation: for us, the isPureReactComponent flag will be visible as a
   -- direct member of the 'ctor', which in reality is the component definition
-  if ctor.isPureReactComponent then
+  if typeof(ctor) == "table" and ctor.isPureReactComponent then
     return (
       not shallowEqual(oldProps, newProps) or not shallowEqual(oldState, newState)
     )
@@ -491,7 +491,7 @@ local function checkClassInstance(workInProgress: Fiber, ctor: any, newProps: an
 
       -- ROBLOX deviation: don't access fields on a function
       if
-        typeof(ctor) ~= "function" and
+        typeof(ctor) == "table" and
         ctor.contextType and
         ctor.contextTypes and
         not didWarnAboutContextTypeAndContextTypes[ctor]
@@ -516,7 +516,7 @@ local function checkClassInstance(workInProgress: Fiber, ctor: any, newProps: an
     end
     -- ROBLOX deviation: don't access fields on a function
     if
-      typeof(ctor) ~= "function" and
+      typeof(ctor) == "table" and
       ctor.isPureReactComponent and
       instance.shouldComponentUpdate ~= nil
     then
@@ -621,7 +621,7 @@ local function checkClassInstance(workInProgress: Fiber, ctor: any, newProps: an
       end
     -- ROBLOX deviation: don't access fields on a function
     if
-      typeof(ctor) ~= "function" and
+      typeof(ctor) == "table" and
       typeof(instance.getChildContext) == "function" and
       typeof(ctor.childContextTypes) ~= "table"
     then
@@ -671,7 +671,8 @@ local function constructClassInstance(
         local addendum = ""
         if contextType == nil then
           addendum =
-            " However, it is set to undefined. " ..
+            -- ROBLOX deviation: s/undefined/nil
+            " However, it is set to nil. " ..
             "This can be caused by a typo or by mixing up named and default imports. " ..
             "This can also happen due to a circular dependency, so " ..
             "try moving the createContext() call to a separate file."
@@ -992,7 +993,7 @@ local function mountClassInstance(
 
   -- ROBLOX deviation: don't access field on a function
   local getDerivedStateFromProps
-  if typeof(ctor) ~= "function" then
+  if typeof(ctor) == "table" then
     getDerivedStateFromProps = ctor.getDerivedStateFromProps
   end
   if typeof(getDerivedStateFromProps) == "function" then
@@ -1009,7 +1010,7 @@ local function mountClassInstance(
   -- Unsafe lifecycles should not be invoked for components using the new APIs.
   -- ROBLOX deviation: don't access fields on a function
   if
-    typeof(ctor) ~= "function" and
+    typeof(ctor) == "table" and
     typeof(ctor.getDerivedStateFromProps) ~= "function" and
     typeof(instance.getSnapshotBeforeUpdate) ~= "function" and
     (typeof(instance.UNSAFE_componentWillMount) == "function" or
@@ -1199,7 +1200,13 @@ local function updateClassInstance(
   local unresolvedNewProps = workInProgress.pendingProps
 
   local oldContext = instance.context
-  local contextType = ctor.contextType
+  local contextType
+  local getDerivedStateFromProps
+  -- ROBLOX deviation: don't access fields on a function
+  if typeof(ctor) == "table" then
+    contextType = ctor.contextType
+    getDerivedStateFromProps = ctor.getDerivedStateFromProps
+  end
   local nextContext = emptyContextObject
   if typeof(contextType) == "table" then
     nextContext = readContext(contextType)
@@ -1208,7 +1215,6 @@ local function updateClassInstance(
     nextContext = getMaskedContext(workInProgress, nextUnmaskedContext)
   end
 
-  local getDerivedStateFromProps = ctor.getDerivedStateFromProps
   local hasNewLifecycles =
     typeof(getDerivedStateFromProps) == "function" or
     typeof(instance.getSnapshotBeforeUpdate) == "function"

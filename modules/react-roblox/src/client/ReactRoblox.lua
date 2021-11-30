@@ -286,7 +286,7 @@ if _G.__DEV__ then
   --     navigator.userAgent.indexOf('Firefox') > -1
   --   )
   --     local protocol = window.location.protocol
-  --     -- Don't warn in exotic cases like chrome-extension:--.
+  --     -- Don't warn in exotic cases like chrome-extension://.
   --     if /^(https?|file):$/.test(protocol))
   --       -- eslint-disable-next-line react-internal/no-production-logging
   --       console.info(
@@ -294,7 +294,7 @@ if _G.__DEV__ then
   --           'for a better development experience: ' +
   --           'https://reactjs.org/link/react-devtools' +
   --           (protocol == 'file:'
-  --             ? '\nYou might need to use a local HTTP server (instead of file:--): ' +
+  --             ? '\nYou might need to use a local HTTP server (instead of file://): ' +
   --               'https://reactjs.org/link/react-devtools-faq'
   --             : ''),
   --         'font-weight:bold',

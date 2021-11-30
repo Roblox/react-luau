@@ -2099,11 +2099,8 @@ return function()
 				err2 = result
 			end
 
-			-- ROBLOX deviation: workaround for Error definition; looks like we
-			-- have errors nested inside errors, where err1.message is also of
-			-- type Error?
-			jestExpect(err1.message.message).toMatch("but got: nil")
-			jestExpect(err2.message.message).toMatch("but got: nil")
+			jestExpect(err1.message).toMatch("but got: nil")
+			jestExpect(err2.message).toMatch("but got: nil")
 		end)
 		it("renders empty output if error boundary does not handle the error", function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM

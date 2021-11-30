@@ -220,7 +220,7 @@ end
 -- 	value: T,
 -- 	formatterFn: ?(value: T) => mixed,
 --   ): void {
-	exports.useDebugValue = function(
+exports.useDebugValue = function(
 	value: _T,
 	formatterFn: ((value: _T) -> any)?
 ): ()

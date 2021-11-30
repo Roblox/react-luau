@@ -46,7 +46,7 @@ local REACT_FORWARD_REF_TYPE = ReactSymbols.REACT_FORWARD_REF_TYPE
 
 export type Family = {
 	current: any,
-};
+}
 
 -- export type RefreshUpdate = {|
 -- 	staleFamilies: Set<Family>,

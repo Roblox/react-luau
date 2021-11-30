@@ -9,6 +9,9 @@
 --  */
 
 local Packages = script.Parent.Parent.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
+local Error = LuauPolyfill.Error
+
 local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 local React
 local ReactNoop
@@ -1917,8 +1920,8 @@ return function()
 			jestExpect(instance.state.n).toEqual(3)
 		end)
 
-		-- ROBLOX FIXME: getting the wrong toErrorDev: contextTypes was defined as an instance property on Recurse
-		xit("merges and masks context", function()
+		-- ROBLOX TODO: this test only fails in Studio, debug it once jest TestService is outputting normally again
+		itSKIP("merges and masks context", function()
 			local Intl = React.Component:extend("Intl")
 
 			function Intl:getChildContext()
@@ -1980,6 +1983,7 @@ return function()
 				route = "",
 			}
 
+			-- ROBLOX TODO: use pure class component so we can attach contextTypes
 			local function ShowBoth(props, context)
 				Scheduler.unstable_yieldValue("ShowBoth " .. JSONStringify(context))
 				-- deviation: cannot set PropTypes for function component in Lua
@@ -1988,6 +1992,11 @@ return function()
 
 				return ("%s in %s"):format(context.route, context.locale)
 			end
+			-- ShowBoth.contextTypes = {
+			-- 	locale = PropTypes.string,
+			-- 	route = PropTypes.string,
+			-- }
+
 
 			local ShowNeither = React.Component:extend("ShowNeither")
 
@@ -2040,10 +2049,12 @@ return function()
 					'ShowBoth {"locale":"fr"}',
 				})
 			end).toErrorDev(
-				"Legacy context API has been detected within a strict-mode tree.\n\n"
+				"Warning: Legacy context API has been detected within a strict-mode tree.\n\n"
 					.. "The old API will be supported in all 16.x releases, but applications "
 					.. "using it should migrate to the new version.\n\n"
-					.. "Please update the following components: Intl, ShowBoth, ShowLocale"
+					-- ROBLOX TODO: ShowBoth is missing because we didn't put contextTypes on it, otherwise this is accurate
+					-- .. "Please update the following components: Intl, ShowBoth, ShowLocale"
+					.. "Please update the following components: Intl, ShowLocale"
 			)
 			ReactNoop.render(React.createElement(
 				Intl,
@@ -2105,8 +2116,7 @@ return function()
 			)
 		end)
 
-		-- ROBLOX FIXME: getting the wrong toErrorDev: contextTypes was defined as an instance property on Recurse
-		xit("does not leak own context into context provider", function()
+		it("does not leak own context into context provider", function()
 			local Recurse = React.Component:extend("Recurse")
 
 			function Recurse:getChildContext()
@@ -2544,8 +2554,8 @@ return function()
 			instance:setState({})
 			jestExpect(Scheduler).toFlushWithoutYielding()
 		end)
-		-- ROBLOX FIXME: the unwind information appears to be missing the message at the top
-		xit("maintains the correct context when unwinding due to an error in render", function()
+
+		it("maintains the correct context when unwinding due to an error in render", function()
 			-- ROBLOX deviation: hoist declaration so correct value is captured
 			local ContextProvider = React.Component:extend("ContextProvider")
 			local Root = React.Component:extend("Root")
@@ -2574,7 +2584,7 @@ return function()
 			end
 			function ContextProvider:render()
 				if self.state.throwError then
-					error('')
+					error(Error.new())
 				end
 
 				return (function()
@@ -2607,10 +2617,11 @@ return function()
 				return jestExpect(Scheduler).toFlushWithoutYielding()
 			end).toErrorDev("Error boundaries should implement getDerivedStateFromError()")
 		end)
-		-- ROBLOX TODO: not getting to Legacy context API error
-		xit("should not recreate masked context unless inputs have changed", function()
+
+		it("should not recreate masked context unless inputs have changed", function()
 			local scuCounter = 0
 			local MyComponent = React.Component:extend("MyComponent")
+			MyComponent.contextTypes = {}
 
 			function MyComponent:componentDidMount(prevProps, prevState)
 				Scheduler.unstable_yieldValue("componentDidMount")
@@ -2653,7 +2664,10 @@ return function()
 				})
 			end).toErrorDev({
 				"Using UNSAFE_componentWillReceiveProps in strict mode is not recommended",
-				"Legacy context API has been detected within a strict-mode tree.\n\n" .. "The old API will be supported in all 16.x releases, but applications " .. "using it should migrate to the new version.\n\n" .. "Please update the following components: MyComponent",
+				"Legacy context API has been detected within a strict-mode tree.\n\n"
+				.. "The old API will be supported in all 16.x releases, but applications "
+				.. "using it should migrate to the new version.\n\n"
+				.. "Please update the following components: MyComponent",
 			}, {
 				withoutStack = 1,
 			})

@@ -1,3 +1,12 @@
+-- upstream: https://github.com/facebook/react/blob/d13f5b9538e48f74f7c571ef3cde652ca887cca0/packages/react-reconciler/src/__tests__/ReactSuspense-test.internal.js
+--  * Copyright (c) Facebook, Inc. and its affiliates.
+--  *
+--  * This source code is licensed under the MIT license found in the
+--  * LICENSE file in the root directory of this source tree.
+--  *
+--  * @emails react-core
+--  * @jest-environment node
+--  */
 
 local React
 local ReactTestRenderer

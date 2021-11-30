@@ -16,6 +16,12 @@ type = "string"
 [[describe.args]]
 type = "function"
 
+[[fdescribe.args]]
+type = "string"
+
+[[fdescribe.args]]
+type = "function"
+
 [[describeFOCUS.args]]
 type = "string"
 

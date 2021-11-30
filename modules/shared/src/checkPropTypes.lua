@@ -135,9 +135,10 @@ local function checkPropTypes(
 					setCurrentlyValidatingElement(element)
 					console.error(
 						string.format(
+							-- ROBLOX deviation: s/null/nil
 							"%s: type specification of %s"
 								.. " `%s` is invalid; the type checker "
-								.. "function must return `null` or an `Error` but returned a %s. "
+								.. "function must return `nil` or an `Error` but returned a %s. "
 								.. "You may have forgotten to pass an argument to the type checker "
 								.. "creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and "
 								.. "shape all require an argument).",

@@ -39,11 +39,12 @@ type Thenable<T> = ReactTypes.Thenable<T>
 type Wakeable = ReactTypes.Wakeable
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
-type Fiber = ReactInternalTypes.Fiber;
-type ReactPriorityLevel = ReactInternalTypes.ReactPriorityLevel;
+type Fiber = ReactInternalTypes.Fiber
+type FiberRoot = ReactInternalTypes.FiberRoot
+type ReactPriorityLevel = ReactInternalTypes.ReactPriorityLevel
 local ReactFiberLane = require(script.Parent.ReactFiberLane)
-type Lanes = ReactFiberLane.Lanes;
-type Lane = ReactFiberLane.Lane;
+type Lanes = ReactFiberLane.Lanes
+type Lane = ReactFiberLane.Lane
 -- The scheduler is imported here *only* to detect whether it's been mocked
 local Scheduler = require(Packages.Scheduler)
 -- ROBLOX deviation: we import from top-level Scheduler exports to avoid direct file access
@@ -54,8 +55,6 @@ local ReactFiberSuspenseComponent = require(script.Parent["ReactFiberSuspenseCom
 type SuspenseState = ReactFiberSuspenseComponent.SuspenseState
 local ReactFiberStack = require(script.Parent["ReactFiberStack.new"])
 type StackCursor<T> = ReactFiberStack.StackCursor<T>
--- ROBLOX TODO: avoid a circular dependency
--- local type {FunctionComponentUpdateQueue} = require(script.Parent["ReactFiberHooks.new"])
 
 local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 -- deviation: Use some properties directly instead of localizing to avoid 200 limit
@@ -88,10 +87,7 @@ local UserBlockingSchedulerPriority = SchedulerWithReactIntegration.UserBlocking
 local NormalSchedulerPriority = SchedulerWithReactIntegration.NormalPriority
 local flushSyncCallbackQueue = SchedulerWithReactIntegration.flushSyncCallbackQueue
 local scheduleSyncCallback = SchedulerWithReactIntegration.scheduleSyncCallback
-local ReactHookEffectTags = require(script.Parent.ReactHookEffectTags)
 -- deviation: Use properties directly instead of localizing to avoid 200 limit
--- local NoHookEffect = ReactHookEffectTags.NoFlags
--- local HookPassive = ReactHookEffectTags.Passive
 -- local {
 --   DebugTracing.logCommitStarted,
 --   DebugTracing.logCommitStopped,
@@ -157,7 +153,6 @@ local ReactFiberFlags = require(script.Parent.ReactFiberFlags)
 -- ROBLOX deviation: Use properties directly instead of localizing to avoid 200 limit
 -- local NoFlags = ReactFiberFlags.NoFlags
 -- local Placement = ReactFiberFlags.Placement
--- local PassiveStatic = ReactFiberFlags.PassiveStatic
 -- local Incomplete = ReactFiberFlags.Incomplete
 -- local HostEffectMask = ReactFiberFlags.HostEffectMask
 -- local Hydrating = ReactFiberFlags.Hydrating
@@ -462,10 +457,6 @@ local currentEventTime: number = NoTimestamp
 local currentEventWipLanes: Lanes = ReactFiberLane.NoLanes
 local currentEventPendingLanes: Lanes = ReactFiberLane.NoLanes
 
--- Dev only flag that tracks if passive effects are currently being flushed.
--- We warn about state updates for unmounted components differently in this case.
-local isFlushingPassiveEffects = false
-
 local focusedInstanceHandle: nil | Fiber = nil
 local shouldFireAfterActiveInstanceBlur: boolean = false
 
@@ -627,14 +618,12 @@ exports.scheduleUpdateOnFiber = function(
   fiber: Fiber,
   lane: Lane,
   eventTime: number
-)
+): FiberRoot | nil
   mod.checkForNestedUpdates()
-  mod.warnAboutRenderPhaseUpdatesInDEV(fiber)
 
   local root = mod.markUpdateLaneFromFiberToRoot(fiber, lane)
   if root == nil then
-    mod.warnAboutUpdateOnUnmountedFiberInDEV(fiber)
-    return
+    return nil
   end
 
   -- Mark that the root has a pending update.
@@ -646,6 +635,8 @@ exports.scheduleUpdateOnFiber = function(
     -- `ReactFeatureFlags.deferRenderPhaseUpdateToNextBatch` flag is off and this is a render
     -- phase update. In that case, we don't treat render phase updates as if
     -- they were interleaved, for backwards compat reasons.
+    mod.warnAboutRenderPhaseUpdatesInDEV(fiber)
+
     if
       ReactFeatureFlags.deferRenderPhaseUpdateToNextBatch or
       bit32.band(executionContext, RenderContext) == NoContext
@@ -726,6 +717,7 @@ exports.scheduleUpdateOnFiber = function(
   -- the same root, then it's not a huge deal, we just might batch more stuff
   -- together more than necessary.
   mostRecentlyUpdatedRoot = root
+  return root
 end
 
 -- This is split into a separate function so we can mark a fiber with pending
@@ -2886,10 +2878,6 @@ flushPassiveEffectsImpl = function()
     SchedulingProfiler.markPassiveEffectsStarted(lanes)
   end
 
-  if _G.__DEV__ then
-    isFlushingPassiveEffects = true
-  end
-
   local prevExecutionContext = executionContext
   executionContext = bit32.bor(executionContext, CommitContext)
   local prevInteractions = mod.pushInteractions(root)
@@ -2915,10 +2903,6 @@ flushPassiveEffectsImpl = function()
 
   if _G.__DEV__ and enableDoubleInvokingEffects then
     commitDoubleInvokeEffectsInDEV(root.current, true)
-  end
-
-  if _G.__DEV__ then
-    isFlushingPassiveEffects = false
   end
 
   if ReactFeatureFlags.enableSchedulerTracing then
@@ -3329,103 +3313,6 @@ mod.warnAboutUpdateOnNotYetMountedFiberInDEV = function(fiber)
   end
 end
 
--- deviation: FIXME restore type Set<string>?, has trouble with narrowing
-local didWarnStateUpdateForUnmountedComponent: any = nil
-mod.warnAboutUpdateOnUnmountedFiberInDEV = function(fiber: Fiber): ()
-  if _G.__DEV__ then
-    local tag = fiber.tag
-    if
-      tag ~= ReactWorkTags.HostRoot and
-      tag ~= ReactWorkTags.ClassComponent and
-      tag ~= ReactWorkTags.FunctionComponent and
-      tag ~= ReactWorkTags.ForwardRef and
-      tag ~= ReactWorkTags.MemoComponent and
-      tag ~= ReactWorkTags.SimpleMemoComponent and
-      tag ~= ReactWorkTags.Block
-    then
-      -- Only warn for user-defined components, not internal ones like Suspense.
-      return
-    end
-
-    if bit32.band(fiber.flags, ReactFiberFlags.PassiveStatic) ~= ReactFiberFlags.NoFlags then
-      -- FIXME (roblox): restore types here
-      -- local updateQueue: FunctionComponentUpdateQueue | nil = (fiber.updateQueue: any)
-      local updateQueue = fiber.updateQueue
-      if updateQueue ~= nil then
-        local lastEffect = updateQueue.lastEffect
-        if lastEffect ~= nil then
-          local firstEffect = lastEffect.next
-
-          local effect = firstEffect
-          repeat
-            if effect.destroy ~= nil then
-              if bit32.band(effect.tag, ReactHookEffectTags.Passive) ~= ReactHookEffectTags.NoFlags then
-                return
-              end
-            end
-            effect = effect.next
-          until effect == firstEffect
-        end
-      end
-    end
-
-    -- We show the whole stack but dedupe on the top component's name because
-    -- the problematic code almost always lies inside that component.
-    local componentName = getComponentName(fiber.type) or "ReactComponent"
-    if didWarnStateUpdateForUnmountedComponent ~= nil then
-      if didWarnStateUpdateForUnmountedComponent[componentName] then
-        return
-      end
-      didWarnStateUpdateForUnmountedComponent[componentName] = true
-    else
-      -- ROBLOX FIXME? not sure this translation is correct
-      didWarnStateUpdateForUnmountedComponent = { [componentName] = true }
-    end
-
-    if isFlushingPassiveEffects then
-      -- Do not warn if we are currently flushing passive effects!
-      --
-      -- React can't directly detect a memory leak, but there are some clues that warn about one.
-      -- One of these clues is when an unmounted React component tries to update its state.
-      -- For example, if a component forgets to remove an event listener when unmounting,
-      -- that listener may be called later and try to update state,
-      -- at which point React would warn about the potential leak.
-      --
-      -- Warning signals are the most useful when they're strong.
-      -- (So we should avoid false positive warnings.)
-      -- Updating state from within an effect cleanup function is sometimes a necessary pattern, e.g.:
-      -- 1. Updating an ancestor that a component had registered itself with on mount.
-      -- 2. Resetting state when a component is hidden after going offscreen.
-    else
-      local previousFiber = ReactCurrentFiber.current
-      local ok, result = pcall(function()
-        setCurrentDebugFiberInDEV(fiber)
-        console.error(
-          "Can't perform a React state update on an unmounted component. This " ..
-            "is a no-op, but it indicates a memory leak in your application. To " ..
-            "fix, cancel all subscriptions and asynchronous tasks in %s.",
-          (function()
-            if tag == ReactWorkTags.ClassComponent then
-              return "the componentWillUnmount method"
-            end
-            return "a useEffect cleanup function"
-          end)()
-        )
-      end)
-
-      -- finally
-      if previousFiber then
-        setCurrentDebugFiberInDEV(fiber)
-      else
-        resetCurrentDebugFiberInDEV()
-      end
-
-      if not ok then
-        error(result)
-      end
-    end
-  end
-end
 
 -- deviation: Declared on the mod table instead of as a local
 if _G.__DEV__ and ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback then
@@ -3525,7 +3412,7 @@ mod.warnAboutRenderPhaseUpdatesInDEV = function(fiber: Fiber): ()
         end)()
         -- Dedupe by the rendering component because it's the one that needs to be fixed.
         local dedupeKey = renderingComponentName
-        -- deviation:
+        -- ROBLOX deviation:
         -- if !didWarnAboutUpdateInRenderForAnotherComponent.has(dedupeKey))
         if didWarnAboutUpdateInRenderForAnotherComponent[dedupeKey] == nil then
           didWarnAboutUpdateInRenderForAnotherComponent[dedupeKey] = true
@@ -3613,12 +3500,12 @@ exports.warnIfNotCurrentlyActingEffectsInDEV = function(fiber: Fiber): ()
         'An update to %s ran an effect, but was not wrapped in act(...).\n\n' ..
           'When testing, code that causes React state updates should be ' ..
           'wrapped into act(...):\n\n' ..
-          'act(function\n' ..
+          'act(function()\n' ..
           '  --[[ fire events that update state ]]\n' ..
-          'end);\n' ..
+          'end)\n' ..
           '--[[ assert on the output ]]\n\n' ..
           "This ensures that you're testing the behavior the user would see " ..
-          'in the browser.' ..
+          'in the real client.' ..
           ' Learn more at https://reactjs.org/link/wrap-tests-with-act',
         getComponentName(fiber.type)
       )
@@ -3644,10 +3531,10 @@ exports.warnIfNotCurrentlyActingUpdatesInDEV = function (fiber: Fiber): ()
             'wrapped into act(...):\n\n' ..
             'act(function()\n' ..
             '  --[[ fire events that update state ]]\n' ..
-            'end);\n' ..
+            'end)\n' ..
             '--[[ assert on the output ]]\n\n' ..
             "This ensures that you're testing the behavior the user would see " ..
-            'in the browser.' ..
+            'in the client application.' ..
             ' Learn more at https://reactjs.org/link/wrap-tests-with-act',
           getComponentName(fiber.type)
         )
@@ -3691,10 +3578,10 @@ exports.warnIfUnmockedScheduler = function(fiber: Fiber)
         -- have any reason to do that right now
         console.error(
           "In Concurrent or Sync modes, the 'scheduler' module needs to be mocked " ..
-            "to guarantee consistent behaviour across tests and browsers. " ..
+            "to guarantee consistent behaviour across tests and client application. " ..
             "For example, with RobloxJest: \n" ..
             -- Break up requires to avoid accidentally parsing them as dependencies.
-            "RobloxJest.mock('scheduler', function() return require('Scheduler.unstable_mock') end)\n\n" ..
+            "RobloxJest.mock('scheduler', function() return require(Packages.Scheduler).unstable_mock end)\n\n" ..
             "For more info, visit https://reactjs.org/link/mock-scheduler"
         )
       elseif ReactFeatureFlags.warnAboutUnmockedScheduler == true then
@@ -3706,10 +3593,10 @@ exports.warnIfUnmockedScheduler = function(fiber: Fiber)
         -- have any reason to do that right now
         console.error(
           "Starting from React v18, the 'scheduler' module will need to be mocked " ..
-            "to guarantee consistent behaviour across tests and browsers. " ..
+            "to guarantee consistent behaviour across tests and client applications. " ..
             "For example, with RobloxJest: \n" ..
             -- Break up requires to avoid accidentally parsing them as dependencies.
-            "RobloxJest.mock('scheduler', function() return require('Scheduler.unstable_mock') end)\n\n" ..
+            "RobloxJest.mock('scheduler', function() return require(Packages.Scheduler).unstable_mock end)\n\n" ..
             "For more info, visit https://reactjs.org/link/mock-scheduler"
         )
       end

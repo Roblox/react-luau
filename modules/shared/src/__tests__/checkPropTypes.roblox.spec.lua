@@ -233,7 +233,7 @@ return function()
 			end).toErrorDev({
 				"Foo: type specification of prop"
 					.. " `myProp` is invalid; the type checker "
-					.. "function must return `null` or an `Error` but returned a string. "
+					.. "function must return `nil` or an `Error` but returned a string. "
 					.. "You may have forgotten to pass an argument to the type checker "
 					.. "creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and "
 					.. "shape all require an argument).",
