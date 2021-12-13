@@ -168,7 +168,7 @@ exports.getRendererID = function(): number
 	-- 	error("Could not find renderer.")
 	-- end
 
-	return tonumber(id)
+	return tonumber(id) :: number
 end
 exports.requireTestRenderer = function()
 	local hook

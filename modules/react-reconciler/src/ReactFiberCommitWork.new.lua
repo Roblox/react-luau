@@ -20,7 +20,7 @@ end
 -- ROBLOX DEVIATION: keep track of the pcall run depth and stop wrapping pcalls after we hit MAX_RUN_DEPTH.
 -- ROBLOX note: if this number is raised to 195, the test in RoactRecursiveLayoutPcallDepth will fail
 local runDepth = 0
-local MAX_RUN_DEPTH = 180
+local MAX_RUN_DEPTH = 20
 
 local function isCallable(value)
   if typeof(value) == "function" then
