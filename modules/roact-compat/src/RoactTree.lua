@@ -7,7 +7,13 @@ type RootType = ReactRoblox.RootType
 
 local warnOnce = require(script.Parent.warnOnce)
 
-local function mount(element: any, parent: any, key: string?)
+type RoactHandle = {
+	root: RootType,
+	key: string | number,
+	parent: any, -- ROBLOX TODO: Instance?
+}
+
+local function mount(element: any, parent: any, key: string?): RoactHandle
 	if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
 		warnOnce("mount", "Please use the createRoot API in ReactRoblox")
 	end
@@ -67,15 +73,9 @@ local function mount(element: any, parent: any, key: string?)
 		-- To preserve the same key and portal to the same parent on update, we
 		-- need to stash them in the opaque "tree" reference returned by `mount`
 		parent = parent,
-		key = key,
+		key = key :: string,
 	}
 end
-
-type RoactHandle = {
-	root: RootType,
-	key: string | number,
-	parent: any, -- ROBLOX TODO: Instance?
-}
 
 local function update(roactHandle: RoactHandle, element)
 	if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
