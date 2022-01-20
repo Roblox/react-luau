@@ -1,5 +1,5 @@
 {
-  "lastUpdate": 1638303804018,
+  "lastUpdate": 1642635785665,
   "repoUrl": "https://github.com/Roblox/roact-alignment",
   "entries": {
     "Concurrent Benchmark": [
@@ -5757,6 +5757,186 @@
             "type": "roblox"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "ee62df85c6072dd919a664ffcde25cfac4367380",
+          "message": "#nojira - Provide properly-formatted args to cachegrind",
+          "timestamp": "2021-12-13T22:01:30Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/266/commits/ee62df85c6072dd919a664ffcde25cfac4367380"
+        },
+        "date": 1642635785363,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 18.5201,
+            "range": "±10.18%",
+            "unit": "ops/sec",
+            "extra": "100 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 54.5494,
+            "range": "±10.57%",
+            "unit": "ms/op",
+            "extra": "100 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCGCold#TotalInstructionsExecuted",
+            "value": 988167725,
+            "range": "±0%",
+            "unit": "executions",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCGCold#L1_InstrReadCacheMisses",
+            "value": 0.0029272672,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCGCold#LL_InstrReadCacheMisses",
+            "value": 0.0000733023,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCGCold#TotalMemoryReads",
+            "value": 249761921,
+            "range": "±0%",
+            "unit": "reads",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCGCold#L1_DataReadCacheMisses",
+            "value": 0.029796836,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCGCold#LL_DataReadCacheMisses",
+            "value": 0.0001588152,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCGCold#TotalMemoryWrites",
+            "value": 126068573,
+            "range": "±0%",
+            "unit": "writes",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCGCold#L1_DataWriteCacheMisses",
+            "value": 0.0132041552,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCGCold#LL_DataWriteCacheMisses",
+            "value": 0.0073139878,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCG#TotalInstructionsExecuted",
+            "value": 1178113825,
+            "range": "±0%",
+            "unit": "executions",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCG#L1_InstrReadCacheMisses",
+            "value": 0.0032149364,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCG#LL_InstrReadCacheMisses",
+            "value": 0.0000619524,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCG#TotalMemoryReads",
+            "value": 307901443,
+            "range": "±0%",
+            "unit": "reads",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCG#L1_DataReadCacheMisses",
+            "value": 0.032896192,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCG#LL_DataReadCacheMisses",
+            "value": 0.0001539649,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCG#TotalMemoryWrites",
+            "value": 147985249,
+            "range": "±0%",
+            "unit": "writes",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCG#L1_DataWriteCacheMisses",
+            "value": 0.0128441991,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountDeepTreeCG#LL_DataWriteCacheMisses",
+            "value": 0.0073420629,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          }
+        ]
       }
     ],
     "Mount Wide Tree": [
@@ -9619,6 +9799,186 @@
             "range": "±0%",
             "unit": "misses/op",
             "extra": "1 samples\nroblox-cli version: 0.505.0.5050420",
+            "type": "roblox"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "ee62df85c6072dd919a664ffcde25cfac4367380",
+          "message": "#nojira - Provide properly-formatted args to cachegrind",
+          "timestamp": "2021-12-13T22:01:30Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/266/commits/ee62df85c6072dd919a664ffcde25cfac4367380"
+        },
+        "date": 1642635785511,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 17.0409,
+            "range": "±9.89%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 59.147,
+            "range": "±8.26%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCGCold#TotalInstructionsExecuted",
+            "value": 1086859866,
+            "range": "±0%",
+            "unit": "executions",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCGCold#L1_InstrReadCacheMisses",
+            "value": 0.0029935745,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCGCold#LL_InstrReadCacheMisses",
+            "value": 0.0000668835,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCGCold#TotalMemoryReads",
+            "value": 279470528,
+            "range": "±0%",
+            "unit": "reads",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCGCold#L1_DataReadCacheMisses",
+            "value": 0.0312136777,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCGCold#LL_DataReadCacheMisses",
+            "value": 0.0001482231,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCGCold#TotalMemoryWrites",
+            "value": 137062181,
+            "range": "±0%",
+            "unit": "writes",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCGCold#L1_DataWriteCacheMisses",
+            "value": 0.0131309818,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCGCold#LL_DataWriteCacheMisses",
+            "value": 0.0071235989,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCG#TotalInstructionsExecuted",
+            "value": 1331575671,
+            "range": "±0%",
+            "unit": "executions",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCG#L1_InstrReadCacheMisses",
+            "value": 0.0033909571,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCG#LL_InstrReadCacheMisses",
+            "value": 0.0000552271,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCG#TotalMemoryReads",
+            "value": 354119537,
+            "range": "±0%",
+            "unit": "reads",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCG#L1_DataReadCacheMisses",
+            "value": 0.0342143732,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCG#LL_DataReadCacheMisses",
+            "value": 0.0001467329,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCG#TotalMemoryWrites",
+            "value": 165533975,
+            "range": "±0%",
+            "unit": "writes",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCG#L1_DataWriteCacheMisses",
+            "value": 0.0127593927,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "MountWideTreeCG#LL_DataWriteCacheMisses",
+            "value": 0.0071213115,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
             "type": "roblox"
           }
         ]
@@ -13487,6 +13847,186 @@
             "type": "roblox"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "ee62df85c6072dd919a664ffcde25cfac4367380",
+          "message": "#nojira - Provide properly-formatted args to cachegrind",
+          "timestamp": "2021-12-13T22:01:30Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/266/commits/ee62df85c6072dd919a664ffcde25cfac4367380"
+        },
+        "date": 1642635785657,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 115.5649,
+            "range": "±12.01%",
+            "unit": "ops/sec",
+            "extra": "50 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 8.7723,
+            "range": "±11.41%",
+            "unit": "ms/op",
+            "extra": "50 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCGCold#TotalInstructionsExecuted",
+            "value": 776684157,
+            "range": "±0%",
+            "unit": "executions",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCGCold#L1_InstrReadCacheMisses",
+            "value": 0.0027921234,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCGCold#LL_InstrReadCacheMisses",
+            "value": 0.0000928035,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCGCold#TotalMemoryReads",
+            "value": 185646649,
+            "range": "±0%",
+            "unit": "reads",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCGCold#L1_DataReadCacheMisses",
+            "value": 0.0258862793,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCGCold#LL_DataReadCacheMisses",
+            "value": 0.0002222771,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCGCold#TotalMemoryWrites",
+            "value": 102779867,
+            "range": "±0%",
+            "unit": "writes",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCGCold#L1_DataWriteCacheMisses",
+            "value": 0.0140026937,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCGCold#LL_DataWriteCacheMisses",
+            "value": 0.0086008576,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCG#TotalInstructionsExecuted",
+            "value": 819067407,
+            "range": "±0%",
+            "unit": "executions",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCG#L1_InstrReadCacheMisses",
+            "value": 0.0027901794,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCG#LL_InstrReadCacheMisses",
+            "value": 0.0000881295,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCG#TotalMemoryReads",
+            "value": 198374064,
+            "range": "±0%",
+            "unit": "reads",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCG#L1_DataReadCacheMisses",
+            "value": 0.0264724727,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCG#LL_DataReadCacheMisses",
+            "value": 0.0002096897,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCG#TotalMemoryWrites",
+            "value": 107884776,
+            "range": "±0%",
+            "unit": "writes",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCG#L1_DataWriteCacheMisses",
+            "value": 0.013726376,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "SierpinskiTriangleCG#LL_DataWriteCacheMisses",
+            "value": 0.0082497275,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          }
+        ]
       }
     ],
     "Concurrent FPS Benchmark": [
@@ -15829,6 +16369,186 @@
             "type": "roblox"
           }
         ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "ee62df85c6072dd919a664ffcde25cfac4367380",
+          "message": "#nojira - Provide properly-formatted args to cachegrind",
+          "timestamp": "2021-12-13T22:01:30Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/266/commits/ee62df85c6072dd919a664ffcde25cfac4367380"
+        },
+        "date": 1642635785020,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FrameRate#FPS",
+            "value": 59.8566,
+            "range": "±16.19%",
+            "unit": "ops/sec",
+            "extra": "600 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRate#Δt",
+            "value": 19.9111,
+            "range": "±217.36%",
+            "unit": "ms/op",
+            "extra": "600 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRateCold#TotalInstructionsExecuted",
+            "value": 941628238,
+            "range": "±0%",
+            "unit": "executions",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRateCold#L1_InstrReadCacheMisses",
+            "value": 0.004300778,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRateCold#LL_InstrReadCacheMisses",
+            "value": 0.0000775221,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRateCold#TotalMemoryReads",
+            "value": 235512639,
+            "range": "±0%",
+            "unit": "reads",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRateCold#L1_DataReadCacheMisses",
+            "value": 0.0333123905,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRateCold#LL_DataReadCacheMisses",
+            "value": 0.0001961126,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRateCold#TotalMemoryWrites",
+            "value": 121781075,
+            "range": "±0%",
+            "unit": "writes",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRateCold#L1_DataWriteCacheMisses",
+            "value": 0.0143914315,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRateCold#LL_DataWriteCacheMisses",
+            "value": 0.008622366,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRate#TotalInstructionsExecuted",
+            "value": 3946457362,
+            "range": "±0%",
+            "unit": "executions",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRate#L1_InstrReadCacheMisses",
+            "value": 0.0066009752,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRate#LL_InstrReadCacheMisses",
+            "value": 0.0000186699,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRate#TotalMemoryReads",
+            "value": 1190859350,
+            "range": "±0%",
+            "unit": "reads",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRate#L1_DataReadCacheMisses",
+            "value": 0.023141785,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRate#LL_DataReadCacheMisses",
+            "value": 0.0000427171,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRate#TotalMemoryWrites",
+            "value": 431363069,
+            "range": "±0%",
+            "unit": "writes",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRate#L1_DataWriteCacheMisses",
+            "value": 0.0074884297,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FrameRate#LL_DataWriteCacheMisses",
+            "value": 0.0028635622,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          }
+        ]
       }
     ],
     "Concurrent First Render Benchmark": [
@@ -18064,6 +18784,178 @@
             "range": "±0%",
             "unit": "misses/op",
             "extra": "1 samples\nroblox-cli version: 0.505.0.5050420",
+            "type": "roblox"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "committer": {
+            "name": "Roblox",
+            "username": "Roblox"
+          },
+          "id": "ee62df85c6072dd919a664ffcde25cfac4367380",
+          "message": "#nojira - Provide properly-formatted args to cachegrind",
+          "timestamp": "2021-12-13T22:01:30Z",
+          "url": "https://github.com/Roblox/roact-alignment/pull/266/commits/ee62df85c6072dd919a664ffcde25cfac4367380"
+        },
+        "date": 1642635785163,
+        "tool": "roblox",
+        "benches": [
+          {
+            "name": "FirstRender#Δt",
+            "value": 68.6806,
+            "range": "±14.94%",
+            "unit": "ms/op",
+            "extra": "200 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRenderCold#TotalInstructionsExecuted",
+            "value": 933921654,
+            "range": "±0%",
+            "unit": "executions",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRenderCold#L1_InstrReadCacheMisses",
+            "value": 0.0040463362,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRenderCold#LL_InstrReadCacheMisses",
+            "value": 0.0000779894,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRenderCold#TotalMemoryReads",
+            "value": 232889043,
+            "range": "±0%",
+            "unit": "reads",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRenderCold#L1_DataReadCacheMisses",
+            "value": 0.0330843173,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRenderCold#LL_DataReadCacheMisses",
+            "value": 0.0001820953,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRenderCold#TotalMemoryWrites",
+            "value": 120502797,
+            "range": "±0%",
+            "unit": "writes",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRenderCold#L1_DataWriteCacheMisses",
+            "value": 0.0143927697,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRenderCold#LL_DataWriteCacheMisses",
+            "value": 0.0081765156,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRender#TotalInstructionsExecuted",
+            "value": 1205049163,
+            "range": "±0%",
+            "unit": "executions",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRender#L1_InstrReadCacheMisses",
+            "value": 0.0048708278,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRender#LL_InstrReadCacheMisses",
+            "value": 0.0000614606,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRender#TotalMemoryReads",
+            "value": 314110851,
+            "range": "±0%",
+            "unit": "reads",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRender#L1_DataReadCacheMisses",
+            "value": 0.03850193,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRender#LL_DataReadCacheMisses",
+            "value": 0.0001673931,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRender#TotalMemoryWrites",
+            "value": 152003053,
+            "range": "±0%",
+            "unit": "writes",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRender#L1_DataWriteCacheMisses",
+            "value": 0.0145684837,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
+            "type": "roblox"
+          },
+          {
+            "name": "FirstRender#LL_DataWriteCacheMisses",
+            "value": 0.0082834718,
+            "range": "±0%",
+            "unit": "misses/op",
+            "extra": "1 samples\nroblox-cli version: 0.510.0.5100270",
             "type": "roblox"
           }
         ]

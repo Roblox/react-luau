@@ -29,6 +29,7 @@ START_TIME=$(now_ms)
 valgrind \
     --quiet \
     --tool=cachegrind \
+    --LL=52428800,25,64 \
     "$1" run \
         --load.model model.rbxmx \
         --run "$2" \
