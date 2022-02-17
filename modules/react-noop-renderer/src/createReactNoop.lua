@@ -1,3 +1,4 @@
+--!nonstrict
 -- upstream: https://github.com/facebook/react/blob/e7b255341b059b4e2a109847395d0d0ba2633999/packages/react-noop-renderer/src/createReactNoop.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -7,8 +8,6 @@
  *
  * @flow
 ]]
--- ROBLOX TODO remove this when CLI-38793 lands
---!nolint LocalShadow
 
 --[[*
  * This is a renderer of React that doesn't have a render target output.
@@ -132,7 +131,6 @@ local function createReactNoop(reconciler, useMutation: boolean)
 		parentInstance: Instance,
 		child: Instance | TextInstance
 	): ()
-		local parentInstance: any = parentInstance
 		if typeof(parentInstance.rootID) == "string" then
 			-- Some calls to this aren't typesafe.
 			-- This helps surface mistakes in tests.
@@ -175,7 +173,6 @@ local function createReactNoop(reconciler, useMutation: boolean)
 		child: Instance | TextInstance,
 		beforeChild: Instance | TextInstance
 	)
-		local parentInstance: any = parentInstance
 		if typeof(parentInstance.rootID) ~= "string" then
 			-- Some calls to this aren't typesafe.
 			-- This helps surface mistakes in tests.
@@ -215,7 +212,6 @@ local function createReactNoop(reconciler, useMutation: boolean)
 	end
 
 	local function removeChild(parentInstance: Instance, child: Instance | TextInstance)
-		local parentInstance: any = parentInstance
 		if typeof(parentInstance.rootID) == "string" then
 			-- Some calls to this aren't typesafe.
 			-- This helps surface mistakes in tests.
@@ -273,8 +269,11 @@ local function createReactNoop(reconciler, useMutation: boolean)
 		return typeof(props.children) == "string" or typeof(props.children) == "number"
 	end
 
-	computeText = function(rawText, hostContext): string
-		return hostContext == UPPERCASE_CONTEXT and string.upper(rawText) or rawText
+	computeText = function(rawText, hostContext)
+		-- ROBLOX FIXME Luau: TypeError: Type 'string' could not be converted into 'nil'
+		return if hostContext == UPPERCASE_CONTEXT
+			then string.upper(rawText)
+			else rawText
 	end
 
 	local sharedHostConfig = {
@@ -650,10 +649,10 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				return nil
 			end
 			if #child == 1 then
-				return childToJSX(child[1], nil)
+				return childToJSX(child[1])
 			end
 			local children = Array.map(child, function(c)
-				return childToJSX(c, nil)
+				return childToJSX(c)
 			end)
 			if
 				Array.every(children, function(c)
@@ -718,7 +717,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 	end
 
 	local function getChildrenAsJSX(root)
-		local children = childToJSX(getChildren(root), nil)
+		local children = childToJSX(getChildren(root))
 		if children == nil then
 			return nil
 		end
@@ -745,7 +744,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 		error(Error("JSX Unsupported"))
 	end
 	-- function getPendingChildrenAsJSX(root) {
-	-- 	local children = childToJSX(getChildren(root), nil)
+	-- 	local children = childToJSX(getChildren(root))
 	-- 	if (children == nil) {
 	-- 		return nil
 	-- 	}
@@ -791,7 +790,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 					children = {},
 				}
 				rootContainers[rootID] = container
-				root = NoopRenderer.createContainer(container, tag, false, nil)
+				root = NoopRenderer.createContainer(container, tag, false)
 				roots[rootID] = root
 			end
 			return root.current.stateNode.containerInfo
@@ -814,7 +813,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			return {
 				_Scheduler = Scheduler,
 				render = function(children)
-					NoopRenderer.updateContainer(children, fiberRoot, nil, nil)
+					NoopRenderer.updateContainer(children, fiberRoot, nil)
 				end,
 				getChildren = function()
 					return getChildren(container)
@@ -841,7 +840,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			return {
 				_Scheduler = Scheduler,
 				render = function(children)
-					NoopRenderer.updateContainer(children, fiberRoot, nil, nil)
+					NoopRenderer.updateContainer(children, fiberRoot, nil)
 				end,
 				getChildren = function()
 					return getChildren(container)
@@ -868,7 +867,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			return {
 				_Scheduler = Scheduler,
 				render = function(children)
-					NoopRenderer.updateContainer(children, fiberRoot, nil, nil)
+					NoopRenderer.updateContainer(children, fiberRoot, nil)
 				end,
 				getChildren = function()
 					return getChildren(container)

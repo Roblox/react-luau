@@ -2390,7 +2390,7 @@ if _G.__DEV__ then
       useCallback = function(callback, deps: Array<any> | nil): any
         currentHookNameInDev = 'useCallback'
         updateHookTypesDev()
-        return mountCallback(callback, deps)
+        return updateCallback(callback, deps)
       end,
       -- ROBLOX FIXME: Luau function generics and return type
       -- useContext<T>(

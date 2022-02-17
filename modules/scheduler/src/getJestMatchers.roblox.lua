@@ -1,12 +1,12 @@
+--!strict
 --[[
 	Defines expectation extensions, including Scheduler-specific ones. This code
 	is mostly based on:
 	https://github.com/facebook/react/blob/47ff31a77add22bef54aaed9d4fb62d5aa693afd/scripts/jest/matchers/schedulerTestMatchers.js
 ]]
-
--- ROBLOX TODO remove this when CLI-38793 lands
---!nolint LocalShadowPedantic
-local function captureAssertion(fn)
+type Array<T> = { [number]: T }
+-- ROBLOX FIXME Luau: have to have explicit annotation as workaround for CLI-50002
+local function captureAssertion(fn): { pass: boolean, message: (() -> string)? }
 	-- Trick to use a TestEZ expectation matcher inside another Jest
 	-- matcher. `fn` contains an assertion; if it throws, we capture the
 	-- error and return it, so the stack trace presented to the user points
@@ -14,10 +14,11 @@ local function captureAssertion(fn)
 	local ok, result = pcall(fn)
 
 	if not ok then
-		-- deviation: The message here will be a string with some extra info
+		-- ROBLOX deviation START: The message here will be a string with some extra info
 		-- that's not helpful, so we trim it down a bit
 		local stringResult = tostring(result)
 		local subMessageIndex = string.find(stringResult, " ")
+		assert(subMessageIndex ~= nil, "assertion failure text wasn't in expected format")
 		local message = string.sub(stringResult, subMessageIndex + 1)
 
 		return {
@@ -26,6 +27,7 @@ local function captureAssertion(fn)
 				return message
 			end,
 		}
+		-- ROBLOX deviation END
 	end
 
 	return { pass = true }
@@ -43,7 +45,8 @@ return function(jestExpect)
 		end
 	end
 
-	local function expectToFlushAndYield(_matcherContext, scheduler, expectedYields)
+	-- ROBLOX FIXME Luau: Array<any> annotation here is so we don't have to put the annotation in many places due to mixed arrays
+	local function expectToFlushAndYield(_matcherContext, scheduler, expectedYields: Array<any>)
 		assertYieldsWereCleared(scheduler)
 		scheduler.unstable_flushAllWithoutAsserting()
 		local actualYields = scheduler.unstable_clearYields()
@@ -53,10 +56,11 @@ return function(jestExpect)
 		end)
 	end
 
+	-- ROBLOX FIXME Luau: Array<any> annotation here is so we don't have to put the annotation in many places due to mixed arrays
 	local function expectToFlushAndYieldThrough(
 		_matcherContext,
 		scheduler,
-		expectedYields
+		expectedYields: Array<any>
 	)
 		assertYieldsWereCleared(scheduler)
 		scheduler.unstable_flushNumberOfYields(#expectedYields)
@@ -67,7 +71,8 @@ return function(jestExpect)
 		end)
 	end
 
-	local function toFlushUntilNextPaint(_matcherContext, Scheduler, expectedYields)
+	-- ROBLOX FIXME Luau: Array<any> annotation here is so we don't have to put the annotation in many places due to mixed arrays
+	local function toFlushUntilNextPaint(_matcherContext, Scheduler, expectedYields: Array<any>)
 		assertYieldsWereCleared(Scheduler)
 		Scheduler.unstable_flushUntilNextPaint()
 		local actualYields = Scheduler.unstable_clearYields()
@@ -80,7 +85,8 @@ return function(jestExpect)
 		return expectToFlushAndYield(_matcherContext, scheduler, {})
 	end
 
-	local function expectToFlushExpired(_matcherContext, scheduler, expectedYields)
+	-- ROBLOX FIXME Luau: Array<any> annotation here is so we don't have to put the annotation in many places due to mixed arrays
+	local function expectToFlushExpired(_matcherContext, scheduler, expectedYields: Array<any>)
 		assertYieldsWereCleared(scheduler)
 		scheduler.unstable_flushExpired()
 		local actualYields = scheduler.unstable_clearYields()
@@ -90,7 +96,8 @@ return function(jestExpect)
 		end)
 	end
 
-	local function expectToHaveYielded(_matcherContext, scheduler, expectedYields)
+	-- ROBLOX FIXME Luau: Array<any> annotation here is so we don't have to put the annotation in many places due to mixed arrays
+	local function expectToHaveYielded(_matcherContext, scheduler, expectedYields: Array<any>)
 		local actualYields = scheduler.unstable_clearYields()
 
 		return captureAssertion(function()
@@ -101,9 +108,8 @@ return function(jestExpect)
 	local function expectToFlushAndThrow(_matcherContext, scheduler, rest)
 		assertYieldsWereCleared(scheduler)
 		return captureAssertion(function()
-			jestExpect(function()
-				scheduler.unstable_flushAllWithoutAsserting()
-			end).toThrow(rest)
+			-- ROBLOX TODO Luau: if we wrap this function, we get an odd analyze error: Type '() -> ()' could not be converted into '{|  |}'
+			jestExpect(scheduler.unstable_flushAllWithoutAsserting).toThrow(rest)
 		end)
 	end
 

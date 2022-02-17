@@ -3345,8 +3345,7 @@ return function()
 	end)
 
 	describe("useCallback", function()
-		-- ROBLOX FIXME: Rendered fewer hooks than expected
-		xit("memoizes callback by comparing inputs", function()
+		it("memoizes callback by comparing inputs", function()
 			-- ROBLOX deviation: hoist local
 			local button = React.createRef(nil)
 			local IncrementButton = React.PureComponent:extend("IncrementButton")
@@ -3376,10 +3375,10 @@ return function()
 					IncrementButton,
 					{ key = "1", increment = increment, ref = button }
 				)
-				return {
+				return React.createElement(React.Fragment, {}, {
 					incrementButtonInstance,
 					React.createElement(Text, { key = "2", text = "Count: " .. count }),
-				}
+				})
 			end
 
 			ReactNoop.render(React.createElement(Counter, { incrementBy = 1 }))
