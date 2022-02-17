@@ -158,12 +158,12 @@ When Concurrent Mode is enabled, Roact will attempt to schedule work evenly acro
 However, this means that tests relying on synchronous rendering behavior will no longer function correctly. To fix this, use the [`ReactRoblox.act`](api-reference/react-roblox.md#reactrobloxact) function to play scheduler logic forward (also re-exported as [`RoactCompat.act`](api-reference/roact-compat.md#roactcompatact)).
 
 !!! info
-	Note that in order to enable `act` functionality, you'll need to tell Roact to use the mocked version of its internal scheduler. To do this, set the `__ROACT_17_MOCK_SCHEDULER__` global to true in your testing configuration.
+	Note that in order to enable `act` functionality, you'll need to tell Roact to use the mocked version of its internal scheduler. To do this, set the [`__ROACT_17_MOCK_SCHEDULER__`](configuration.md#__roact_17_mock_scheduler__) global to true in your testing configuration.
 
 When writing tests for Concurrent Mode, there are a few things you should keep in mind:
 
 * `ReactRoblox.act` will run the provided function, and then play forward the scheduler afterwards. To make sure your Roact logic runs, the following types of logic should be wrapped in `act`:
-	* Rendering an initial tree with the `render` method of a React root or the `RoactCompat.mount` compatibility function (if the [`__ROACT_17_INLINE_ACT__`](configuration/#__roact_17_inline_act__) global is set to true, this will happen **automatically** for `mount`, `update`, and `unmount`)
+	* Rendering an initial tree with the `render` method of a React root or the `RoactCompat.mount` compatibility function (if the [`__ROACT_17_INLINE_ACT__`](configuration.md#__roact_17_inline_act__) global is set to true, this will happen **automatically** for `mount`, `update`, and `unmount`)
 	* Rendering updates with the `render` method of a React root
 	* Unmounting a tree by passing `nil` to the `render` method of a React root
 	* Calling `task.wait` to allow engine callbacks to fire
