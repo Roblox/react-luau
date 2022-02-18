@@ -3457,6 +3457,38 @@ return function()
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("GOODBYE") })
 		end)
 
+		it("returns multiple input values", function()
+			local function Doubler(props)
+				local x = props.x
+				local y = props.y
+				local xMinusY, xPlusY = useMemo(function()
+					local a = x - y
+					local b = x + y
+					Scheduler.unstable_yieldValue("x - y = " .. tostring(a) .. ", x + y = " .. tostring(b))
+					return a, b
+				end, {
+					x, y
+				})
+				return React.createElement(Text, { text = tostring(xMinusY) .. tostring(xPlusY) })
+			end
+
+			ReactNoop.render(React.createElement(Doubler, { x = 1, y = 2 }))
+			jestExpect(Scheduler).toFlushAndYield({ "x - y = -1, x + y = 3", "-13" })
+			jestExpect(ReactNoop.getChildren()).toEqual({ span("-13") })
+
+			ReactNoop.render(React.createElement(Doubler, { x = 4, y = 2 }))
+			jestExpect(Scheduler).toFlushAndYield({ "x - y = 2, x + y = 6", "26" })
+			jestExpect(ReactNoop.getChildren()).toEqual({ span("26") })
+
+			ReactNoop.render(React.createElement(Doubler, { x = 4, y = 2 }))
+			jestExpect(Scheduler).toFlushAndYield({ "26" })
+			jestExpect(ReactNoop.getChildren()).toEqual({ span("26") })
+
+			ReactNoop.render(React.createElement(Doubler, { x = 8, y = 2 }))
+			jestExpect(Scheduler).toFlushAndYield({ "x - y = 6, x + y = 10", "610" })
+			jestExpect(ReactNoop.getChildren()).toEqual({ span("610") })
+		end)
+
 		it("always re-computes if no inputs are provided", function()
 			local function LazyCompute(props)
 				local computed = useMemo(props.compute)

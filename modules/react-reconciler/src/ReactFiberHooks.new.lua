@@ -1541,9 +1541,10 @@ function mountMemo(
 
   -- deviation: equivilant to upstream ternary logic
   local nextDeps = deps
-  local nextValue = nextCreate()
+  -- ROBLOX DEVIATION: Wrap memoized values in a table and unpack to allow for multiple return values
+  local nextValue = {nextCreate()}
   hook.memoizedState = {nextValue, nextDeps}
-  return nextValue
+  return unpack(nextValue)
 end
 
 -- ROBLOX TODO: function generics
@@ -1564,13 +1565,14 @@ function updateMemo(
     if nextDeps ~= nil then
       local prevDeps: Array<any> = prevState[2]
       if areHookInputsEqual(nextDeps, prevDeps) then
-        return prevState[1]
+        return unpack(prevState[1])
       end
     end
   end
-  local nextValue = nextCreate()
+  -- ROBLOX DEVIATION: Wrap memoized values in a table and unpack to allow for multiple return values
+  local nextValue = {nextCreate()}
   hook.memoizedState = {nextValue, nextDeps}
-  return nextValue
+  return unpack(nextValue)
 end
 
 -- function mountDeferredValue<T>(value: T): T {
@@ -2104,12 +2106,16 @@ if _G.__DEV__ then
       checkDepsAreArrayDev(deps)
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnMountInDEV
-      local ok, result = pcall(mountMemo, create, deps)
+      --[[
+        ROBLOX DEVIATION: `results` captures all pcall return value: either
+        { false, errorObject } or { true, ...returnValues }
+      ]]
+      local results = { pcall(mountMemo, create, deps) }
       ReactCurrentDispatcher.current = prevDispatcher
-      if not ok then
-        error(result)
+      if not results[1] then
+        error(results[2])
       end
-      return result
+      return unpack(results, 2)
     end,
     -- ROBLOX TODO: function generics
     -- useReducer<S, I, A>(
@@ -2275,12 +2281,16 @@ if _G.__DEV__ then
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnMountInDEV
-      local ok, result = pcall(mountMemo, create, deps)
+      --[[
+        ROBLOX DEVIATION: `results` captures all pcall return value: either
+        { false, errorObject } or { true, ...returnValues }
+      ]]
+      local results = { pcall(mountMemo, create, deps) }
       ReactCurrentDispatcher.current = prevDispatcher
-      if not ok then
-        error(result)
+      if not results[1] then
+        error(results[2])
       end
-      return result
+      return unpack(results, 2)
     end,
   -- ROBLOX TODO: function generics
   -- useReducer<S, I, A>(
@@ -2445,12 +2455,16 @@ if _G.__DEV__ then
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV
-      local ok, result = pcall(updateMemo, create, deps)
+      --[[
+        ROBLOX DEVIATION: `results` captures all pcall return value: either
+        { false, errorObject } or { true, ...returnValues }
+      ]]
+      local results = { pcall(updateMemo, create, deps) }
       ReactCurrentDispatcher.current = prevDispatcher
-      if not ok then
-        error(result)
+      if not results[1] then
+        error(results[2])
       end
-      return result
+      return unpack(results, 2)
     end,
     -- ROBLOX TODO: function generics
     -- useReducer<S, I, A>(
@@ -2621,12 +2635,16 @@ if _G.__DEV__ then
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnRerenderInDEV
-      local ok, result = pcall(updateMemo, create, deps)
+      --[[
+        ROBLOX DEVIATION: `results` captures all pcall return value: either
+        { false, errorObject } or { true, ...returnValues }
+      ]]
+      local results = { pcall(updateMemo, create, deps) }
       ReactCurrentDispatcher.current = prevDispatcher
-      if not ok then
-        error(result)
+      if not results[1] then
+        error(results[2])
       end
-      return result
+      return unpack(results, 2)
     end,
     -- ROBLOX TODO: function generics
     -- useReducer<S, I, A>(
@@ -2784,12 +2802,16 @@ if _G.__DEV__ then
       mountHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnMountInDEV
-      local ok, result = pcall(mountMemo, create, deps)
+      --[[
+        ROBLOX DEVIATION: `results` captures all pcall return value: either
+        { false, errorObject } or { true, ...returnValues }
+      ]]
+      local results = { pcall(mountMemo, create, deps) }
       ReactCurrentDispatcher.current = prevDispatcher
-      if not ok then
-        error(result)
+      if not results[1] then
+        error(results[2])
       end
-      return result
+      return unpack(results, 2)
     end,
     useReducer = function(
       reducer: (any, any) -> any,
@@ -2964,12 +2986,16 @@ if _G.__DEV__ then
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV
-      local ok, result = pcall(updateMemo, create, deps)
+      --[[
+        ROBLOX DEVIATION: `results` captures all pcall return value: either
+        { false, errorObject } or { true, ...returnValues }
+      ]]
+      local results = { pcall(updateMemo, create, deps) }
       ReactCurrentDispatcher.current = prevDispatcher
-      if not ok then
-        error(result)
+      if not results[1] then
+        error(results[2])
       end
-      return result
+      return unpack(results, 2)
     end,
     -- ROBLOX TODO: function generics
     -- useReducer<S, I, A>(
@@ -3156,12 +3182,16 @@ if _G.__DEV__ then
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
       ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV
-      local ok, result = pcall(updateMemo, create, deps)
+      --[[
+        ROBLOX DEVIATION: `results` captures all pcall return value: either
+        { false, errorObject } or { true, ...returnValues }
+      ]]
+      local results = { pcall(updateMemo, create, deps) }
       ReactCurrentDispatcher.current = prevDispatcher
-      if not ok then
-        error(result)
+      if not results[1] then
+        error(results[2])
       end
-      return result
+      return unpack(results, 2)
     end,
   -- ROBLOX TODO: function generics
   -- useReducer<S, I, A>(

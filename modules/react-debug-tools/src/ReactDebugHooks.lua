@@ -378,13 +378,8 @@ end
 
 local function useMemo(nextCreate: () -> _T, inputs: Array<any> | nil): _T
 	local hook = nextHook()
-	local value = (function()
-		if hook ~= nil then
-			return hook.memoizedState[0]
-		end
-
-		return nextCreate()
-	end)()
+	-- ROBLOX DEVIATION: Wrap memoized values in a table and unpack to allow for multiple return values
+	local value = if hook ~= nil then hook.memoizedState[1] else { nextCreate() }
 
 	table.insert(hookLog, {
 		primitive = "Memo",
@@ -392,7 +387,7 @@ local function useMemo(nextCreate: () -> _T, inputs: Array<any> | nil): _T
 		value = value,
 	})
 
-	return value
+	return unpack(value)
 end
 
 -- ROBLOX TODO: function generics

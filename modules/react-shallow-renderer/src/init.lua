@@ -316,14 +316,15 @@ function ReactShallowRenderer:_createDispatcher()
 			local prevDeps = prevState[2]
 			if nextDeps ~= nil then
 				if areHookInputsEqual(nextDeps, prevDeps) then
-					return prevState[1]
+					return unpack(prevState[1])
 				end
 			end
 		end
 
-		local nextValue = nextCreate()
+		-- ROBLOX DEVIATION: Wrap memoized values in a table and unpack to allow for multiple return values
+		local nextValue = { nextCreate() }
 		self._workInProgressHook.memoizedState = { nextValue, nextDeps }
-		return nextValue
+		return unpack(nextValue)
 	end
 
 	local function useRef(initialValue)

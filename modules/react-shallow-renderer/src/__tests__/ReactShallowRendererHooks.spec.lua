@@ -285,6 +285,36 @@ return function()
 			jestExpect(firstResult).toEqual(secondResult)
 		end)
 
+		it("should work with useMemo with multiple return values", function()
+			local capturedNumber1, capturedNumber2
+			local function SomeComponent()
+				local number1, number2 = React.useMemo(function()
+					return math.random(), math.random()
+				end, {})
+
+				capturedNumber1, capturedNumber2 = number1, number2
+
+				return React.createElement(
+					"Frame",
+					nil,
+					React.createElement(
+						"TextLabel",
+						{ Text = tostring(number1) .. " " .. tostring(number2)}
+					)
+				)
+			end
+
+			local shallowRenderer = createRenderer()
+			local firstResult = shallowRenderer:render(
+				React.createElement(SomeComponent)
+			)
+			local secondResult = shallowRenderer:render(React.createElement(SomeComponent))
+
+			jestExpect(firstResult).toEqual(secondResult)
+			jestExpect(capturedNumber1).toBeDefined()
+			jestExpect(capturedNumber2).toBeDefined()
+		end)
+
 		it("should work with useContext", function()
 			local SomeContext = React.createContext("default")
 
