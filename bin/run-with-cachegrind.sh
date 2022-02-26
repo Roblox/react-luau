@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# Tips for getting consistent perf benchmark results on inconsistent hardware
+# found here https://pythonspeed.com/articles/consistent-benchmarking-in-ci/
+
 set -euo pipefail
 IFS=$'\n\t'
 
@@ -26,17 +30,27 @@ CLI_VERSION=$($1 version | tr -d '\n')
 ITERATION_COUNT=$4
 START_TIME=$(now_ms)
 
+# Get arch for disabling ALSR
+ARCH=$(uname -m | sed 's/ *$//g')
+
+# Run valgrind with virtual address randomization disabled, cachegrind enabled,
+# and cache sizes specified
+setarch \
+$ARCH \
+-R \
 valgrind \
-    --quiet \
-    --tool=cachegrind \
-    --LL=52428800,25,64 \
-    "$1" run \
-        --load.model model.rbxmx \
-        --run "$2" \
-        --headlessRenderer 1 \
-        --lua.globals minSamples=$ITERATION_COUNT \
-        --lua.globals cachegrind=true \
-    >/dev/null
+--quiet \
+--tool=cachegrind \
+--I1=32768,8,64 \
+--D1=32768,8,64 \
+--LL=52428800,25,64 \
+"$1" run \
+    --load.model model.rbxmx \
+    --run "$2" \
+    --headlessRenderer 1 \
+    --lua.globals minSamples=$ITERATION_COUNT \
+    --lua.globals cachegrind=true \
+>/dev/null
 
 TIME_ELAPSED=$(bc <<< "$(now_ms) - ${START_TIME}")
 
