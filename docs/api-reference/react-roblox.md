@@ -37,7 +37,7 @@ Refer to [`ReactDOM.createPortal` documentation](https://reactjs.org/docs/portal
 ## ReactRoblox.act
 Used for testing code with scheduling logic mocked. This ensures that tests behave consistently and don't batch work unpredictably across frames. `act` executes a function and then plays forward the mock scheduler after it's done, and should be used to wrap any interactions that trigger updates to a roact UI.
 
-More info on using `act` can be found [in the migration guide](migrating-from-roact-1x.md#reactrobloxact).
+More info on using `act` can be found [in the migration guide](../migrating-from-roact-1x.md#reactrobloxact).
 
 Refer to [ReactDOM's `act` testing documentation](https://reactjs.org/docs/test-utils.html#act) for more high-level guidance.
 
