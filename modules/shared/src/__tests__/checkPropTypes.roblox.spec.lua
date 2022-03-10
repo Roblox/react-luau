@@ -169,13 +169,10 @@ return function()
 					ReactNoop.render(React.createElement(Foo, { myProp = "hello" }))
 					jestExpect(Scheduler).toFlushWithoutYielding()
 				end)
-			end).toWarnDev(
-				{
-					"You've defined both propTypes and validateProps on Foo",
-					"no no no no no",
-				},
-				{ withoutStack = 1 }
-			)
+			end).toWarnDev({
+				"You've defined both propTypes and validateProps on Foo",
+				"no no no no no",
+			}, { withoutStack = 1 })
 		end)
 		it("validateProps fails, propTypes succeeds", function()
 			local Foo = React.Component:extend("Foo")
@@ -253,12 +250,9 @@ return function()
 
 					ReactNoop.render(React.createElement(Foo, { myProp = "hello" }))
 				end)
-			end).toErrorDev(
-				{
-					'validateProps must be a function, but it is a string.\nCheck the definition of the component "Foo".',
-				},
-				{ withoutStack = 1 }
-			)
+			end).toErrorDev({
+				'validateProps must be a function, but it is a string.\nCheck the definition of the component "Foo".',
+			}, { withoutStack = 1 })
 		end)
 
 		describe("__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__", function()

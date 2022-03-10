@@ -1,3 +1,4 @@
+--!strict
 -- ROBLOX upstream: https://github.com/facebook/react/blob/d13f5b9538e48f74f7c571ef3cde652ca887cca0/packages/react-dom/src/__tests__/ReactUpdates-test.js
 --  * Copyright (c) Facebook, Inc. and its affiliates.
 --  *
@@ -136,10 +137,8 @@ return function()
 					)
 				)
 			end
-			local container = React.createElement("div")
 			local root = ReactTestRenderer.create(
-				React.createElement(Component, { x = 0 }),
-				container
+				React.createElement(Component, { x = 0 })
 			)
 			jestExpect(instance.props.x).toBe(0)
 			jestExpect(instance.state.y).toBe(0)
@@ -157,7 +156,7 @@ return function()
 
 		it("should batch parent/child state updates together", function()
 			local instance
-			local Child
+			local Child = React.Component:extend("Child")
 			local parentUpdateCount = 0
 			local Parent = React.Component:extend("Parent")
 			function Parent:init()
@@ -180,7 +179,6 @@ return function()
 				)
 			end
 			local childUpdateCount = 0
-			Child = React.Component:extend("Child")
 			function Child:init()
 				self.state = { y = 0 }
 			end
@@ -216,7 +214,7 @@ return function()
 			jestExpect(childUpdateCount).toBe(1)
 		end)
 		it("should batch child/parent state updates together", function()
-			local Child
+			local Child = React.Component:extend("Child")
 			local instance
 			local parentUpdateCount = 0
 			local Parent = React.Component:extend("Parent")
@@ -240,7 +238,6 @@ return function()
 				)
 			end
 			local childUpdateCount = 0
-			Child = React.Component:extend("Child")
 			function Child:init()
 				self.state = { y = 0 }
 			end
@@ -296,7 +293,7 @@ return function()
 			function Component:render()
 				return React.createElement("div", nil, self.state.x)
 			end
-			ReactTestRenderer.create(React.createElement(Component, nil))
+			ReactTestRenderer.create(React.createElement(Component))
 			jestExpect(instance.state.x).toBe(0)
 			local innerCallbackRun = false
 			ReactTestRenderer.unstable_batchedUpdates(function()
@@ -374,7 +371,7 @@ return function()
 
 		it("should update children even if parent blocks updates", function()
 			local instance
-			local Child
+			local Child = React.Component:extend("Child")
 			local parentRenderCount = 0
 			local childRenderCount = 0
 			local Parent = React.Component:extend("Parent")
@@ -393,7 +390,6 @@ return function()
 				end)()
 				return React.createElement(Child, { ref = childRef })
 			end
-			Child = React.Component:extend("Child")
 			function Child:render()
 				(function()
 					local result = childRenderCount
@@ -404,7 +400,7 @@ return function()
 			end
 			jestExpect(parentRenderCount).toBe(0)
 			jestExpect(childRenderCount).toBe(0)
-			local ParentElement = React.createElement(Parent, nil)
+			local ParentElement = React.createElement(Parent)
 			ReactTestRenderer.create(ParentElement)
 			jestExpect(parentRenderCount).toBe(1)
 			jestExpect(childRenderCount).toBe(1)
@@ -420,15 +416,14 @@ return function()
 			jestExpect(childRenderCount).toBe(2)
 		end)
 		it("should not reconcile children passed via props", function()
-			local Bottom
-			local Middle
+			local Bottom = React.Component:extend("Bottom")
+			local Middle = React.Component:extend("Middle")
 			local numMiddleRenders = 0
 			local numBottomRenders = 0
 			local Top = React.Component:extend("Top")
 			function Top:render()
-				return React.createElement(Middle, nil, React.createElement(Bottom, nil))
+				return React.createElement(Middle, nil, React.createElement(Bottom))
 			end
-			Middle = React.Component:extend("Middle")
 			function Middle:componentDidMount()
 				self:forceUpdate()
 			end
@@ -440,7 +435,6 @@ return function()
 				end)()
 				return React.Children.only(self.props.children)
 			end
-			Bottom = React.Component:extend("Bottom")
 			function Bottom:render()
 				(function()
 					local result = numBottomRenders
@@ -506,7 +500,7 @@ return function()
 			-- 		)
 			-- 	end
 			-- 	Object:assign(App.prototype, UpdateLoggingMixin)
-			-- 	local root = React.createElement(App, nil)
+			-- 	local root = React.createElement(App)
 			-- 	root = ReactTestUtils:renderIntoDocument(root)
 			-- 	local function expectUpdates(desiredWillUpdates, desiredDidUpdates)
 			-- 		local i
@@ -593,7 +587,7 @@ return function()
 			-- function B:render()
 			-- 	return React.createElement("div", nil, "B", self.state.x)
 			-- end
-			-- local a = ReactTestUtils:renderIntoDocument(React.createElement(A, nil))
+			-- local a = ReactTestUtils:renderIntoDocument(React.createElement(A))
 			-- ReactTestRenderer.unstable_batchedUpdates(function()
 			-- 	a:setState({ x = 1 })
 			-- 	b:setState({ x = 1 })
@@ -602,7 +596,7 @@ return function()
 		end)
 		it("should flush updates in the correct order", function()
 			local instance
-			local Inner
+			local Inner = React.Component:extend("Inner")
 			local updates = {}
 			local Outer = React.Component:extend("Outer")
 			function Outer:init()
@@ -626,7 +620,6 @@ return function()
 					table.insert(updates, "Inner-callback-" .. tostring(x))
 				end)
 			end
-			Inner = React.Component:extend("Inner")
 			function Inner:init()
 				self.state = { x = 0 }
 			end
@@ -638,7 +631,7 @@ return function()
 						.. "-"
 						.. tostring(self.state.x)
 				)
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
 			function Inner:componentDidUpdate()
 				table.insert(
@@ -649,7 +642,7 @@ return function()
 						.. tostring(self.state.x)
 				)
 			end
-			ReactTestRenderer.create(React.createElement(Outer, nil))
+			ReactTestRenderer.create(React.createElement(Outer))
 			table.insert(updates, "Outer-setState-1")
 			instance:setState({ x = 1 }, function()
 				table.insert(updates, "Outer-callback-1")
@@ -693,7 +686,7 @@ return function()
 			local MockComponent = React.Component:extend("MockComponent")
 			function MockComponent:render()
 				table.insert(updates, self.props.depth)
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
 			function MockComponent:componentDidMount()
 				table.insert(instances, self)
@@ -715,7 +708,7 @@ return function()
 			jestExpect(updates).toEqual({ 0, 1, 2 })
 			ReactTestRenderer.unstable_batchedUpdates(function()
 				-- Simulate update on each component from top to bottom.
-				Array.map(instances, function(instance)
+				Array.forEach(instances, function(instance)
 					instance:forceUpdate()
 				end)
 			end)
@@ -726,8 +719,8 @@ return function()
 			-- See https://github.com/facebook/react/issues/1147
 			local x
 			local y
-			local Y
-			local Z
+			local Y = React.Component:extend("Y")
+			local Z = React.Component:extend("Z")
 			local X = React.Component:extend("X")
 			function X:init()
 				x = self
@@ -750,20 +743,18 @@ return function()
 				self:setState({ s = 1 })
 			end
 
-			Y = React.Component:extend("Y")
 			function Y:render()
 				y = self
-				return React.createElement("div", nil, React.createElement(Z, nil))
+				return React.createElement("div", nil, React.createElement(Z))
 			end
-			Z = React.Component:extend("")
 			function Z:render()
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
 			function Z:UNSAFE_componentWillUpdate()
 				x:go()
 			end
-			local root = ReactTestRenderer.create(React.createElement(X, nil))
-			ReactTestRenderer.create(React.createElement(Y, nil))
+			local root = ReactTestRenderer.create(React.createElement(X))
+			ReactTestRenderer.create(React.createElement(Y))
 			-- ROBLOX TODO: need a toMatchRenderedOutput to work with the test *and* noop renderers
 			jestExpect(root.toJSON().children[1].children[1]).toBe("0")
 			y:forceUpdate()
@@ -788,7 +779,7 @@ return function()
 				a:setState({ x = 1 })
 			end
 			function B:render()
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
 			local root
 			ReactTestRenderer.unstable_batchedUpdates(function()
@@ -796,8 +787,8 @@ return function()
 					React.createElement(
 						"div",
 						nil,
-						React.createElement(A, nil),
-						React.createElement(B, nil)
+						React.createElement(A),
+						React.createElement(B)
 					)
 				)
 			end)
@@ -848,7 +839,7 @@ return function()
 					renderCount += 1
 					return result
 				end)()
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
 			local A = React.Component:extend("")
 			function A:init()
@@ -858,13 +849,13 @@ return function()
 			function A:render()
 				return (function()
 					if Boolean.toJSBoolean(self.state.showB) then
-						return React.createElement(B, nil)
+						return React.createElement(B)
 					else
-						return React.createElement("div", nil)
+						return React.createElement("div")
 					end
 				end)()
 			end
-			ReactTestRenderer.create(React.createElement(A, nil))
+			ReactTestRenderer.create(React.createElement(A))
 			ReactTestRenderer.unstable_batchedUpdates(function()
 				-- B will have scheduled an update but the batching should ensure that its
 				-- update never fires.
@@ -986,7 +977,7 @@ return function()
 
 		it("does not update one component twice in a batch (#2410)", function()
 			local parent
-			local Child
+			local Child = React.Component:extend("Child")
 			local childRef = React.createRef()
 			local Parent = React.Component:extend("Parent")
 			function Parent:getChild()
@@ -999,7 +990,6 @@ return function()
 			local renderCount = 0
 			local postRenderCount = 0
 			local once = false
-			Child = React.Component:extend("Child")
 			function Child:init()
 				self.state = { updated = false }
 			end
@@ -1032,9 +1022,9 @@ return function()
 					renderCount += 1
 					return result
 				end)()
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
-			ReactTestRenderer.create(React.createElement(Parent, nil))
+			ReactTestRenderer.create(React.createElement(Parent))
 			local child = parent:getChild()
 			ReactTestRenderer.unstable_batchedUpdates(function()
 				parent:forceUpdate()
@@ -1066,10 +1056,10 @@ return function()
 		--         return React.createElement(
 		--             "div",
 		--             nil,
-		--             React.createElement(ForceUpdatesOnChange, nil),
+		--             React.createElement(ForceUpdatesOnChange),
 		--             (function()
 		--                 if Boolean.toJSBoolean(self.state.showChild) then
-		--                     return React.createElement(EmitsChangeOnUnmount, nil)
+		--                     return React.createElement(EmitsChangeOnUnmount)
 		--                 else
 		--                     return self.state.showChild
 		--                 end
@@ -1101,7 +1091,7 @@ return function()
 		--     function ForceUpdatesOnChange:render()
 		--         return React.createElement("div", { key = Math:random(), onClick = function(self) end })
 		--     end
-		--     ReactTestRenderer.create(React.createElement(App, nil), document:createElement("div"))
+		--     ReactTestRenderer.create(React.createElement(App), document:createElement("div"))
 		-- end)
 		it("unstable_batchedUpdates should return value from a callback", function()
 			local result = ReactTestRenderer.unstable_batchedUpdates(function()
@@ -1113,7 +1103,7 @@ return function()
 			local root = ReactTestRenderer.create(React.createElement("span", nil, "a"))
 			ReactTestRenderer.unstable_batchedUpdates(function()
 				-- ROBLOX FIXME: how to do this with the test renderer?
-				ReactTestRenderer.unmount()
+				-- ReactTestRenderer.unmount()
 				root:update(React.createElement("span", nil, "b"))
 			end)
 			-- ROBLOX TODO: need a toMatchRenderedOutput to work with the test *and* noop renderers
@@ -1192,8 +1182,8 @@ return function()
 		--             return nil
 		--         end
 		--         local container = document:createElement("div")
-		--         ReactTestRenderer.create(React.createElement(Foo, nil), container)
-		--         ReactTestRenderer.create(React.createElement(Foo, nil), container)
+		--         ReactTestRenderer.create(React.createElement(Foo), container)
+		--         ReactTestRenderer.create(React.createElement(Foo), container)
 		--         jestExpect(ops).toEqual({
 		--             "a: false, b: false",
 		--             "a: false, b: false",
@@ -1239,8 +1229,8 @@ return function()
 		--             React.createElement(
 		--                 "div",
 		--                 nil,
-		--                 React.createElement(Foo, nil),
-		--                 React.createElement(Bar, nil)
+		--                 React.createElement(Foo),
+		--                 React.createElement(Bar)
 		--             ),
 		--             container
 		--         )
@@ -1248,8 +1238,8 @@ return function()
 		--             React.createElement(
 		--                 "div",
 		--                 nil,
-		--                 React.createElement(Foo, nil),
-		--                 React.createElement(Bar, nil)
+		--                 React.createElement(Foo),
+		--                 React.createElement(Bar)
 		--             ),
 		--             container
 		--         )
@@ -1286,7 +1276,7 @@ return function()
 				return nil
 			end
 			jestExpect(function()
-				ReactTestRenderer.create(React.createElement(Foo, nil))
+				ReactTestRenderer.create(React.createElement(Foo))
 			end).toErrorDev("Cannot update during an existing state transition")
 			jestExpect(ops).toEqual({ "base: 0, memoized: 0", "base: 1, memoized: 1" })
 		end)
@@ -1297,9 +1287,9 @@ return function()
 			function Foo:render()
 				instance = self
 				table.insert(ops, "render")
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
-			ReactTestRenderer.create(React.createElement(Foo, nil))
+			ReactTestRenderer.create(React.createElement(Foo))
 			ops = {}
 			instance:setState(function()
 				return nil
@@ -1326,19 +1316,19 @@ return function()
 					React.createElement(
 						"div",
 						{ hidden = true },
-						React.createElement(Bar, nil)
+						React.createElement(Bar)
 					),
-					React.createElement(Baz, nil)
+					React.createElement(Baz)
 				)
 			end
 
 			-- Mount
-			ReactTestRenderer.create(React.createElement(Foo, nil))
+			ReactTestRenderer.create(React.createElement(Foo))
 			jestExpect(ops).toEqual({ "Foo", "Bar", "Baz" })
 			ops = {}
 
 			-- Update
-			ReactTestRenderer.create(React.createElement(Foo, nil))
+			ReactTestRenderer.create(React.createElement(Foo))
 			jestExpect(ops).toEqual({ "Foo", "Bar", "Baz" })
 		end)
 		-- @gate experimental
@@ -1366,15 +1356,15 @@ return function()
 		--             React.createElement(
 		--                 LegacyHiddenDiv,
 		--                 { mode = "hidden" },
-		--                 React.createElement(Bar, nil)
+		--                 React.createElement(Bar)
 		--             ),
-		--             React.createElement(Baz, nil)
+		--             React.createElement(Baz)
 		--         )
 		--     end
 		--     local root = ReactTestRenderer.createRoot(container)
 		--     local hiddenDiv
 		--     act(function()
-		--         root:render(React.createElement(Foo, nil))
+		--         root:render(React.createElement(Foo))
 		--         jestExpect(Scheduler).toFlushAndYieldThrough({ "Foo", "Baz", "Foo#effect" })
 		--         hiddenDiv = container.firstChild.firstChild
 		--         jestExpect(hiddenDiv.hidden).toBe(true)
@@ -1413,7 +1403,7 @@ return function()
 		--             return nil
 		--         end
 		--         local container = document:createElement("div")
-		--         ReactTestRenderer.create(React.createElement(Foo, nil), container)
+		--         ReactTestRenderer.create(React.createElement(Foo), container)
 
 		-- end)
 		-- it("resets the update counter for unrelated updates", function()
@@ -1466,7 +1456,7 @@ return function()
 		--     end
 		--     local container = document:createElement("div")
 		--     jestExpect(function()
-		--         ReactTestRenderer.create(React.createElement(NonTerminating, nil), container)
+		--         ReactTestRenderer.create(React.createElement(NonTerminating), container)
 		--     end).toThrow("Maximum")
 		-- end)
 		it("does not fall into an infinite update loop with useLayoutEffect", function()
@@ -1480,7 +1470,7 @@ return function()
 				return step
 			end
 			jestExpect(function()
-				ReactTestRenderer.create(React.createElement(NonTerminating, nil))
+				ReactTestRenderer.create(React.createElement(NonTerminating))
 			end).toThrow("Maximum")
 		end)
 		it("can recover after falling into an infinite update loop", function()
@@ -1508,16 +1498,16 @@ return function()
 				return self.state.step
 			end
 			jestExpect(function()
-				ReactTestRenderer.create(React.createElement(NonTerminating, nil))
+				ReactTestRenderer.create(React.createElement(NonTerminating))
 			end).toThrow("Maximum")
 			local container = ReactTestRenderer.create(
-				React.createElement(Terminating, nil)
+				React.createElement(Terminating)
 			)
 			jestExpect(container.toJSON()).toBe("1")
 			jestExpect(function()
-				ReactTestRenderer.create(React.createElement(NonTerminating, nil))
+				ReactTestRenderer.create(React.createElement(NonTerminating))
 			end).toThrow("Maximum")
-			container = ReactTestRenderer.create(React.createElement(Terminating, nil))
+			container = ReactTestRenderer.create(React.createElement(Terminating))
 			jestExpect(container.toJSON()).toBe("1")
 		end)
 		-- ROBLOX TODO: figure out how to do this with test renderer
@@ -1525,24 +1515,23 @@ return function()
 			"does not fall into mutually recursive infinite update loop with same container",
 			function()
 				-- Note: this test would fail if there were two or more different roots.
-				local B
+				local B = React.Component:extend("B")
 				local container = ReactTestRenderer.create(React.createElement("div"))
 				local A = React.Component:extend("A")
 				function A:componentDidMount()
-					container:update(React.createElement(B, nil))
+					container:update(React.createElement(B))
 				end
 				function A:render()
 					return nil
 				end
-				B = React.Component:extend("B")
 				function B:componentDidMount()
-					container:update(React.createElement(A, nil))
+					container:update(React.createElement(A))
 				end
 				function B:render()
 					return nil
 				end
 				jestExpect(function()
-					container:update(React.createElement(A, nil))
+					container:update(React.createElement(A))
 				end).toThrow("Maximum")
 			end
 		)
@@ -1557,14 +1546,14 @@ return function()
 				self.props.parent:remount()
 			end
 			function ErrorBoundary:render()
-				return React.createElement(BadRender, nil)
+				return React.createElement(BadRender)
 			end
 			local NonTerminating = React.Component:extend("NonTerminating")
 			function NonTerminating:init()
 				self.state = { step = 0 }
 			end
 			function NonTerminating:remount()
-				self:setState(function(state)
+				self:setState(function(state: { step: number })
 					return { step = state.step + 1 }
 				end)
 			end
@@ -1575,7 +1564,7 @@ return function()
 				)
 			end
 			jestExpect(function()
-				ReactTestRenderer.create(React.createElement(NonTerminating, nil))
+				ReactTestRenderer.create(React.createElement(NonTerminating))
 			end).toThrow("Maximum")
 		end)
 		-- it(
@@ -1603,7 +1592,7 @@ return function()
 		--             return children
 		--         end
 		--         local container = document:createElement("div")
-		--         ReactTestRenderer.create(React.createElement(App, nil), container)
+		--         ReactTestRenderer.create(React.createElement(App), container)
 		--         ReactTestRenderer.unstable_batchedUpdates(function()
 		--             subscribers:forEach(function(s)
 		--                 s:setState({ value = "update" })
@@ -1624,7 +1613,7 @@ return function()
 		--             return step
 		--         end
 		--         local function App()
-		--             return React.createElement(NonTerminating, nil)
+		--             return React.createElement(NonTerminating)
 		--         end
 		--         local error_ = nil
 		--         local stack = nil
@@ -1638,7 +1627,7 @@ return function()
 		--                 local container = document:createElement("div")
 		--                 jestExpect(function()
 		--                     act(function()
-		--                         ReactTestRenderer.create(React.createElement(App, nil), container)
+		--                         ReactTestRenderer.create(React.createElement(App), container)
 		--                         error("not implemented") --[[ ROBLOX TODO: Unhandled node for type: WhileStatement ]]
 		--                         --[[ while (error === null) {
 		--           Scheduler.unstable_flushNumberOfYields(1);
@@ -1683,7 +1672,7 @@ return function()
 			local container
 			ReactTestRenderer.act(function()
 				container = ReactTestRenderer.create(
-					React.createElement(Terminating, nil)
+					React.createElement(Terminating)
 				)
 			end)
 			jestExpect(container.toJSON()).toBe("50")
@@ -1710,7 +1699,7 @@ return function()
 				local container
 				ReactTestRenderer.act(function()
 					container = ReactTestRenderer.create(
-						React.createElement(Terminating, nil)
+						React.createElement(Terminating)
 					)
 				end)
 				jestExpect(Scheduler).toHaveYielded({ "Done" })

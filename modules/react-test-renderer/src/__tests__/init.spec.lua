@@ -8,7 +8,6 @@ return function()
 	beforeAll(function()
 		jestExpect.extend(getTestRendererJestMatchers(jestExpect))
 		jestExpect.extend(getSchedulerJestMatchers(jestExpect))
-
 		jestExpect.extend({
 			toErrorDev = RobloxJest.Matchers.toErrorDev,
 			toWarnDev = RobloxJest.Matchers.toWarnDev,

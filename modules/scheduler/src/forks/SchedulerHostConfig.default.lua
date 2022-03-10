@@ -10,6 +10,7 @@
 local Packages = script.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 type Error = LuauPolyfill.Error
+local Object = LuauPolyfill.Object
 local Shared = require(Packages.Shared)
 local console = Shared.console
 local errorToString = Shared.errorToString
@@ -31,7 +32,7 @@ local clearTimeout = LuauPolyfill.clearTimeout
 
 local isMessageLoopRunning = false
 local scheduledHostCallback: ((boolean, number) -> boolean) | nil = nil
-local taskTimeoutID = -1
+local taskTimeoutID = Object.None
 
 -- Scheduler periodically yields in case there is other work on the main
 -- thread, like user events. By default, it yields multiple times per frame.
@@ -139,7 +140,7 @@ end
 
 local function cancelHostTimeout()
 	clearTimeout(taskTimeoutID)
-	taskTimeoutID = -1
+	taskTimeoutID = Object.None
 end
 
 return {

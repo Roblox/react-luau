@@ -140,7 +140,7 @@ return function()
 						React.createElement(
 							Indirection,
 							nil,
-							React.createElement(Indirection, nil, React.createElement(Consumer, nil))
+							React.createElement(Indirection, nil, React.createElement(Consumer))
 						)
 					)
 				end
@@ -201,7 +201,7 @@ return function()
 						React.createElement(
 							Indirection,
 							nil,
-							React.createElement(Indirection, nil, React.createElement(Consumer, nil))
+							React.createElement(Indirection, nil, React.createElement(Consumer))
 						)
 					)
 				end
@@ -441,7 +441,7 @@ return function()
 						React.createElement(
 							Indirection,
 							nil,
-							React.createElement(Indirection, nil, React.createElement(Consumer, nil))
+							React.createElement(Indirection, nil, React.createElement(Consumer))
 						)
 					)
 				end
@@ -623,8 +623,8 @@ return function()
 					return React.createElement(
 						React.Fragment,
 						nil,
-						React.createElement(ChildWithInlineRenderCallback, nil),
-						React.createElement(ChildWithCachedRenderCallback, nil)
+						React.createElement(ChildWithInlineRenderCallback),
+						React.createElement(ChildWithCachedRenderCallback)
 					)
 				end
 
@@ -880,7 +880,7 @@ return function()
 						React.createElement(
 							Indirection,
 							nil,
-							React.createElement(Indirection, nil, React.createElement(Consumer, nil))
+							React.createElement(Indirection, nil, React.createElement(Consumer))
 						)
 					)
 				end
@@ -1075,7 +1075,7 @@ return function()
 			end
 			function App:render()
 				Scheduler.unstable_yieldValue("App")
-				return React.createElement(Context.Provider, { value = self.state.value }, { self.props.children })
+				return React.createElement(Context.Provider, { value = self.state.value }, self.props.children)
 			end
 
 			local legacyProviderRef = React.createRef()

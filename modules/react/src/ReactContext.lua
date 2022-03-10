@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/7516bdfce3f0f8c675494b5c5d0e7ae441bef1d9/packages/react/src/ReactContext.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -16,18 +17,14 @@ local ReactSymbols = require(Packages.Shared).ReactSymbols
 local REACT_PROVIDER_TYPE = ReactSymbols.REACT_PROVIDER_TYPE
 local REACT_CONTEXT_TYPE = ReactSymbols.REACT_CONTEXT_TYPE
 type ReactContext<T> = Shared.ReactContext<T>
+type ReactProviderType<T> = Shared.ReactProviderType<T>
 
 local exports = {}
 
--- ROBLOX TODO: function generics
--- export function createContext<T>(
---   defaultValue: T,
---   calculateChangedBits: ?(a: T, b: T) => number,
--- ): ReactContext<T> {
-exports.createContext = function(
-  defaultValue,
-  calculateChangedBits: ((any, any) -> number)?
-): ReactContext<any>
+exports.createContext = function<T>(
+  defaultValue: T,
+  calculateChangedBits: ((a: T, b: T) -> number)?
+): ReactContext<T>
   local context: ReactContext<any> = {
     ["$$typeof"] = REACT_CONTEXT_TYPE,
     _calculateChangedBits = calculateChangedBits,
@@ -42,8 +39,8 @@ exports.createContext = function(
     -- supports within in a single renderer. Such as parallel server rendering.
     _threadCount = 0,
     -- These are circular
-    Provider = nil,
-    Consumer = nil,
+    Provider = (nil :: any) :: ReactProviderType<T>,
+    Consumer = (nil :: any) :: ReactContext<T>,
     -- ROBLOX deviation: tables declared this way are considered sealed, so define we
     -- displayName as nil for it to be populated later
     displayName = nil,

@@ -39,17 +39,18 @@ setarch \
 $ARCH \
 -R \
 valgrind \
---quiet \
---tool=cachegrind \
---I1=32768,8,64 \
---D1=32768,8,64 \
---LL=52428800,25,64 \
-"$1" run \
-    --load.model model.rbxmx \
-    --run "$2" \
-    --headlessRenderer 1 \
-    --lua.globals minSamples=$ITERATION_COUNT \
-    --lua.globals cachegrind=true \
+    --quiet \
+    --tool=cachegrind \
+    --I1=32768,8,64 \
+    --D1=32768,8,64 \
+    --LL=52428800,25,64 \
+    "$1" run \
+        --load.model model.rbxmx \
+        --run "$2" \
+        --headlessRenderer 1 \
+        --lua.globals minSamples=$ITERATION_COUNT \
+        --lua.globals cachegrind=true \
+        --fastFlags.allOnLuau \
 >/dev/null
 
 TIME_ELAPSED=$(bc <<< "$(now_ms) - ${START_TIME}")

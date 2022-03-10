@@ -1,3 +1,4 @@
+--!strict
 -- ROBLOX deviation: this is an extraction of a single state field
 -- (and associated mutation/getters) from ReactFiberWorkLooop.new
 -- which allows us to break dependency cycles involving that module
@@ -10,12 +11,13 @@ type Lane = ReactFiberLane.Lane
 local exports = {}
 
 -- ROBLOX TODO: turn this into newindex property accessor
-exports.workInProgressRootSkippedLanes = function(value): Lanes
+exports.workInProgressRootSkippedLanes = function(value: Lanes?): Lanes
 	if value == nil then
 		return _workInProgressRootSkippedLanes
 	end
 
-	_workInProgressRootSkippedLanes = value
+	-- ROBLOX FIXME Luau: Luau should narrow based on guard above
+	_workInProgressRootSkippedLanes = value :: Lanes
 	return _workInProgressRootSkippedLanes
 end
 

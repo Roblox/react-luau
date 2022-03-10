@@ -271,9 +271,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 
 	computeText = function(rawText, hostContext)
 		-- ROBLOX FIXME Luau: TypeError: Type 'string' could not be converted into 'nil'
-		return if hostContext == UPPERCASE_CONTEXT
-			then string.upper(rawText)
-			else rawText
+		return if hostContext == UPPERCASE_CONTEXT then string.upper(rawText) else rawText
 	end
 
 	local sharedHostConfig = {

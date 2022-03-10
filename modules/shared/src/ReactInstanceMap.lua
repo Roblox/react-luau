@@ -23,9 +23,9 @@
  * supported we can rename it.
  ]]
 
- local Shared = script.Parent
- local Packages = Shared.Parent
- local LuauPolyfill = require(Packages.LuauPolyfill)
+local Shared = script.Parent
+local Packages = Shared.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
 local inspect = LuauPolyfill.util.inspect
 local getComponentName = require(script.Parent.getComponentName)
@@ -34,9 +34,9 @@ local exports = {}
 
 local function isValidFiber(fiber): boolean
 	return fiber.tag ~= nil
-	  and fiber.subtreeFlags ~= nil
-	  and fiber.lanes ~= nil
-	  and fiber.childLanes ~= nil
+		and fiber.subtreeFlags ~= nil
+		and fiber.lanes ~= nil
+		and fiber.childLanes ~= nil
 end
 
 exports.remove = function(key)
@@ -49,14 +49,25 @@ exports.get = function(key)
 	-- ROBLOX deviation: we have a crash in production this will help catch
 	-- ROBLOX TODO: wrap this in __DEV__
 	if not isValidFiber(value) then
-		error(Error.new("invalid fiber in "
-		.. (getComponentName(key) or "UNNAMED Component")
-		.. " during get from ReactInstanceMap! " .. inspect(value)))
+		error(
+			Error.new(
+				"invalid fiber in "
+					.. (getComponentName(key) or "UNNAMED Component")
+					.. " during get from ReactInstanceMap! "
+					.. inspect(value)
+			)
+		)
 	elseif value.alternate ~= nil and not isValidFiber(value.alternate) then
-		error(Error.new("invalid alternate fiber ("
-		.. (getComponentName(key) or "UNNAMED alternate") .. ") in "
-		.. (getComponentName(key) or "UNNAMED Component")
-		.. " during get from ReactInstanceMap! " .. inspect(value.alternate)))
+		error(
+			Error.new(
+				"invalid alternate fiber ("
+					.. (getComponentName(key) or "UNNAMED alternate")
+					.. ") in "
+					.. (getComponentName(key) or "UNNAMED Component")
+					.. " during get from ReactInstanceMap! "
+					.. inspect(value.alternate)
+			)
+		)
 	end
 
 	return value
@@ -74,34 +85,36 @@ exports.set = function(key, value)
 	while parent ~= nil do
 		if not isValidFiber(parent) then
 			message = "invalid fiber in "
-			.. (getComponentName(key) or "UNNAMED Component")
-			.. " being set in ReactInstanceMap! "
-			.. inspect(parent)
-			.. "\n"
+				.. (getComponentName(key) or "UNNAMED Component")
+				.. " being set in ReactInstanceMap! "
+				.. inspect(parent)
+				.. "\n"
 
 			if value ~= parent then
-				message ..= " (from original fiber "
-				.. (getComponentName(key) or "UNNAMED Component") .. ")"
+				message ..= " (from original fiber " .. (getComponentName(key) or "UNNAMED Component") .. ")"
 			end
 			error(Error.new(message))
-		elseif (parent :: any).alternate ~= nil and not isValidFiber((parent :: any).alternate) then
+		elseif
+			(parent :: any).alternate ~= nil
+			and not isValidFiber((parent :: any).alternate)
+		then
 			message = "invalid alternate fiber ("
-			.. (getComponentName(key) or "UNNAMED alternate") .. ") in "
-			.. (getComponentName(key) or "UNNAMED Component")
-			.. " being set in ReactInstanceMap! "
-			.. inspect((parent :: any).alternate)
-			.. "\n"
+				.. (getComponentName(key) or "UNNAMED alternate")
+				.. ") in "
+				.. (getComponentName(key) or "UNNAMED Component")
+				.. " being set in ReactInstanceMap! "
+				.. inspect((parent :: any).alternate)
+				.. "\n"
 
 			if value ~= parent then
-				message ..= " (from original fiber "
-				.. (getComponentName(key) or "UNNAMED Component") .. ")"
+				message ..= " (from original fiber " .. (getComponentName(key) or "UNNAMED Component") .. ")"
 			end
 			error(Error.new(message))
 		end
 		parent = (parent :: any).return_
 	end
 
-	key._reactInternals = value
+	(key :: any)._reactInternals = value
 end
 
 return exports

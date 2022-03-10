@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/c63741fb3daef6c1e8746cbe7d7b07ecb281a9fd/packages/react-reconciler/src/ReactFiberClassComponent.new.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -391,7 +392,7 @@ function checkShouldComponentUpdate(
 
   -- ROBLOX deviation: for us, the isPureReactComponent flag will be visible as a
   -- direct member of the 'ctor', which in reality is the component definition
-  if typeof(ctor) == "table" and ctor.isPureReactComponent then
+  if typeof(ctor) == "table" and (ctor :: any).isPureReactComponent then
     return (
       not shallowEqual(oldProps, newProps) or not shallowEqual(oldState, newState)
     )
@@ -886,7 +887,7 @@ local function callComponentWillMount(workInProgress, instance)
         getComponentName(workInProgress.type) or "Component"
       )
     end
-    getClassComponentUpdater().enqueueReplaceState(instance, instance.state, nil)
+    getClassComponentUpdater().enqueueReplaceState(instance, instance.state)
   end
 end
 
@@ -920,7 +921,7 @@ function callComponentWillReceiveProps(
         )
       end
     end
-    getClassComponentUpdater().enqueueReplaceState(instance, instance.state, nil)
+    getClassComponentUpdater().enqueueReplaceState(instance, instance.state)
   end
 end
 

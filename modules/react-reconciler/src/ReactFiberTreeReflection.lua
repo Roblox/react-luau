@@ -1,3 +1,4 @@
+--!nonstrict
 -- upstream: https://github.com/facebook/react/blob/16654436039dd8f16a63928e71081c7745872e8f/packages/react-reconciler/src/ReactFiberTreeReflection.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -48,7 +49,8 @@ local exports = {}
 
 local function getNearestMountedFiber(fiber: Fiber): Fiber?
 	local node = fiber
-	local nearestMounted = fiber
+	-- ROBLOX FIXME Luau: Luau should infer this annotation
+	local nearestMounted: Fiber | nil = fiber
 	if not fiber.alternate then
 		-- If there is no alternate, this might be a new tree that isn't inserted
 		-- yet. If it is, then it will have a pending insertion effect on it.
@@ -284,9 +286,8 @@ exports.findCurrentHostFiber = function(parent: Fiber): Fiber?
 	end
 
 	-- Next we'll drill down this component to find the first HostComponent/Text.
-	-- deviation: Type narrowing in Luau doesn't handle this well enough yet
-	-- local node: Fiber = currentParent
-	local node: Fiber = currentParent
+	-- ROBLOX FIXME Luau: Luau doesn't narrow based on above branch
+	local node: Fiber = currentParent :: Fiber
 	while true do
 		local child = node.child
 		if node.tag == HostComponent or node.tag == HostText then
@@ -305,10 +306,12 @@ exports.findCurrentHostFiber = function(parent: Fiber): Fiber?
 			if not return_ or return_ == currentParent then
 				return nil
 			end
-			node = return_
+			-- ROBLOX FIXME Luau: Luau doesn't narrow based on above branch
+			node = return_ :: Fiber
 		end
-		sibling.return_ = return_
-		node = sibling
+		-- ROBLOX FIXME Luau: Luau doesn't narrow based on above branch
+		(sibling :: Fiber).return_ = return_ :: Fiber
+		node = sibling :: Fiber
 	end
 	-- Flow needs the return nil here, but ESLint complains about it.
 	-- eslint-disable-next-line no-unreachable
@@ -322,7 +325,7 @@ exports.findCurrentHostFiberWithNoPortals = function(parent: Fiber): Fiber?
 	end
 
 	-- Next we'll drill down this component to find the first HostComponent/Text.
-	local node: Fiber = currentParent
+	local node: Fiber = currentParent :: Fiber
 	while true do
 		local child = node.child
 		if
@@ -345,10 +348,12 @@ exports.findCurrentHostFiberWithNoPortals = function(parent: Fiber): Fiber?
 			if not return_ or return_ == currentParent then
 				return nil
 			end
-			node = return_
+			-- ROBLOX FIXME Luau: Luau doesn't narrow based on above branch
+			node = return_ :: Fiber
 		end
-		sibling.return_ = return_
-		node = sibling
+		-- ROBLOX FIXME Luau: Luau doesn't narrow based on above branch
+		(sibling :: Fiber).return_ = return_ :: Fiber
+		node = sibling :: Fiber
 	end
 	-- Flow needs the return nil here, but ESLint complains about it.
 	-- eslint-disable-next-line no-unreachable
@@ -369,7 +374,8 @@ exports.doesFiberContain = function(parentFiber: Fiber, childFiber: Fiber): bool
 		if node == parentFiber or node == parentFiberAlternate then
 			return true
 		end
-		node = node.return_
+		-- ROBLOX FIXME Luau: Luau doesn't understand loop until not nil pattern
+		node = node.return_ :: Fiber
 	end
 	return false
 end

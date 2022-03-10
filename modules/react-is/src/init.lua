@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/60ba723bf78b9a28f60dce854e88e206fab52301/packages/react-is/src/ReactIs.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -16,7 +17,7 @@ local isValidElementType = require(Packages.Shared).isValidElementType
 
 local exports = {}
 
-exports.typeOf = function(object)
+exports.typeOf = function(object: any)
 	if typeof(object) == "table" and object ~= nil then
 		local __typeof = object["$$typeof"]
 
@@ -77,7 +78,7 @@ exports.Binding = ReactSymbols.REACT_BINDING_TYPE
 exports.isValidElementType = isValidElementType
 local hasWarnedAboutDeprecatedIsAsyncMode = false
 local hasWarnedAboutDeprecatedIsConcurrentMode = false -- AsyncMode should be deprecated
-exports.isAsyncMode = function(object)
+exports.isAsyncMode = function(object: any)
 	if _G.__DEV__ then
 		if not hasWarnedAboutDeprecatedIsAsyncMode then
 			hasWarnedAboutDeprecatedIsAsyncMode = true
@@ -93,7 +94,7 @@ exports.isAsyncMode = function(object)
 	return false
 end
 
-exports.isConcurrentMode = function(object)
+exports.isConcurrentMode = function(object: any)
 	if _G.__DEV__ then
 		if not hasWarnedAboutDeprecatedIsConcurrentMode then
 			hasWarnedAboutDeprecatedIsConcurrentMode = true
@@ -109,44 +110,44 @@ exports.isConcurrentMode = function(object)
 	return false
 end
 
-exports.isContextConsumer = function(object)
+exports.isContextConsumer = function(object: any)
 	return exports.typeOf(object) == ReactSymbols.REACT_CONTEXT_TYPE
 end
-exports.isContextProvider = function(object)
+exports.isContextProvider = function(object: any)
 	return exports.typeOf(object) == ReactSymbols.REACT_PROVIDER_TYPE
 end
-exports.isElement = function(object)
+exports.isElement = function(object: any)
 	return (
 			(typeof(object) == "table" and object ~= nil)
 			and object["$$typeof"] == ReactSymbols.REACT_ELEMENT_TYPE
 		)
 end
-exports.isForwardRef = function(object)
+exports.isForwardRef = function(object: any)
 	return exports.typeOf(object) == ReactSymbols.REACT_FORWARD_REF_TYPE
 end
-exports.isFragment = function(object)
+exports.isFragment = function(object: any)
 	return exports.typeOf(object) == ReactSymbols.REACT_FRAGMENT_TYPE
 end
-exports.isLazy = function(object)
+exports.isLazy = function(object: any)
 	return exports.typeOf(object) == ReactSymbols.REACT_LAZY_TYPE
 end
-exports.isMemo = function(object)
+exports.isMemo = function(object: any)
 	return exports.typeOf(object) == ReactSymbols.REACT_MEMO_TYPE
 end
-exports.isPortal = function(object)
+exports.isPortal = function(object: any)
 	return exports.typeOf(object) == ReactSymbols.REACT_PORTAL_TYPE
 end
-exports.isProfiler = function(object)
+exports.isProfiler = function(object: any)
 	return exports.typeOf(object) == ReactSymbols.REACT_PROFILER_TYPE
 end
-exports.isStrictMode = function(object)
+exports.isStrictMode = function(object: any)
 	return exports.typeOf(object) == ReactSymbols.REACT_STRICT_MODE_TYPE
 end
-exports.isSuspense = function(object)
+exports.isSuspense = function(object: any)
 	return exports.typeOf(object) == ReactSymbols.REACT_SUSPENSE_TYPE
 end
 -- ROBLOX deviation: Bindings are a feature migrated from Roact
-exports.isBinding = function(object)
+exports.isBinding = function(object: any)
 	return exports.typeOf(object) == ReactSymbols.REACT_BINDING_TYPE
 end
 

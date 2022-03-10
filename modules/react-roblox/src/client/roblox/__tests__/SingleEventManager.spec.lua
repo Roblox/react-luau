@@ -37,7 +37,7 @@ return function()
 			jestExpect(eventSpy).toBeCalledTimes(2)
 			jestExpect(eventSpy).toBeCalledWith(instance, "bar")
 
-			manager:connectEvent("Event", nil)
+			manager:connectEvent("Event")
 
 			instance:Fire("baz")
 			jestExpect(eventSpy).toBeCalledTimes(2)
@@ -130,7 +130,7 @@ return function()
 
 			instance:Fire(1)
 
-			manager:connectEvent("Event", nil)
+			manager:connectEvent("Event")
 
 			manager:resume()
 			jestExpect(eventSpy).never.toBeCalled()

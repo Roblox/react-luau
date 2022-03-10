@@ -28,16 +28,16 @@ return function()
                 return React.createElement('div', nil, 'Hello World')
             end
             local function Parent()
-                return React.createElement(Child, nil)
+                return React.createElement(Child)
             end
 
-            ReactNoop.render(React.createElement(Parent, nil))
+            ReactNoop.render(React.createElement(Parent))
             local x = ReactNoop.flushWithHostCounters()
             jestExpect(x).toEqual({
                 hostDiffCounter = 0,
                 hostUpdateCounter = 0,
             })
-            ReactNoop.render(React.createElement(Parent, nil))
+            ReactNoop.render(React.createElement(Parent))
             jestExpect(ReactNoop.flushWithHostCounters()).toEqual({
                 hostDiffCounter = 1,
                 hostUpdateCounter = 1,
@@ -45,7 +45,7 @@ return function()
         end)
         it('should not diff referentially equal host elements', function()
             local function Leaf(props)
-                return React.createElement('span', nil, 'hello', React.createElement('b', nil), props.name)
+                return React.createElement('span', nil, 'hello', React.createElement('b'), props.name)
             end
 
             local constEl = React.createElement('div', nil, React.createElement(Leaf, {
@@ -56,15 +56,15 @@ return function()
                 return constEl
             end
             local function Parent()
-                return React.createElement(Child, nil)
+                return React.createElement(Child)
             end
 
-            ReactNoop.render(React.createElement(Parent, nil))
+            ReactNoop.render(React.createElement(Parent))
             jestExpect(ReactNoop.flushWithHostCounters()).toEqual({
                 hostDiffCounter = 0,
                 hostUpdateCounter = 0,
             })
-            ReactNoop.render(React.createElement(Parent, nil))
+            ReactNoop.render(React.createElement(Parent))
             jestExpect(ReactNoop.flushWithHostCounters()).toEqual({
                 hostDiffCounter = 0,
                 hostUpdateCounter = 0,
@@ -74,7 +74,7 @@ return function()
             local childInst
 
             local function Leaf(props)
-                return React.createElement('span', nil, 'hello', React.createElement('b', nil), props.name)
+                return React.createElement('span', nil, 'hello', React.createElement('b'), props.name)
             end
 
             local Child = React.Component:extend("Child")
@@ -89,12 +89,12 @@ return function()
             local function Parent()
                 return React.createElement('section', nil, React.createElement('div', nil, React.createElement(Leaf, {
                     name = 'world',
-                }), React.createElement(Child, nil), React.createElement('hr', nil), React.createElement(Leaf, {
+                }), React.createElement(Child), React.createElement('hr'), React.createElement(Leaf, {
                     name = 'world',
                 })))
             end
 
-            ReactNoop.render(React.createElement(Parent, nil))
+            ReactNoop.render(React.createElement(Parent))
             jestExpect(ReactNoop.flushWithHostCounters()).toEqual({
                 hostDiffCounter = 0,
                 hostUpdateCounter = 0,
@@ -113,7 +113,7 @@ return function()
                 -- Child > Leaf > span > #text
                 hostUpdateCounter = 4,
             })
-            ReactNoop.render(React.createElement(Parent, nil))
+            ReactNoop.render(React.createElement(Parent))
             jestExpect(ReactNoop.flushWithHostCounters()).toEqual({
                 -- Parent > section
                 -- Parent > section > div

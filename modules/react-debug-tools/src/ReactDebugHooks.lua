@@ -1,3 +1,4 @@
+--!strict
 -- ROBLOX upstream: https://github.com/facebook/react/blob/17.0.1/packages/react-debug-tools/src/ReactDebugHooks.js
 --[[*
 	* Copyright (c) Facebook, Inc. and its affiliates.
@@ -23,10 +24,14 @@ local exports = {}
 
 local ReactTypes = require(Packages.Shared)
 type MutableSource<T> = ReactTypes.MutableSource<T>
-type MutableSourceGetSnapshotFn<Source, Snapshot> =
-	ReactTypes.MutableSourceGetSnapshotFn<Source, Snapshot>
-type MutableSourceSubscribeFn<Source, Snapshot> =
-	ReactTypes.MutableSourceSubscribeFn<Source, Snapshot>
+type MutableSourceGetSnapshotFn<Source, Snapshot> = ReactTypes.MutableSourceGetSnapshotFn<
+	Source,
+	Snapshot
+>
+type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscribeFn<
+	Source,
+	Snapshot
+>
 type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
 type ReactContext<T> = ReactTypes.ReactContext<T>
 -- ROBLOX deviation: import this type that is a built-in in flow
@@ -46,7 +51,7 @@ local NoMode = ReactTypeOfMode.NoMode
 -- ROBLOX TODO: work out a suitable implementation for this, pulled from error-stack-parser definitelytyped
 type StackFrame = {
 	source: string?,
-	funtionName: string?,
+	functionName: string?,
 }
 local ErrorStackParser = {
 	parse = function(error_: Error): Array<StackFrame>
@@ -56,7 +61,8 @@ local ErrorStackParser = {
 		return Array.map(
 			string.split((error_.stack :: string), "\n"),
 			function(stackTraceLine)
-				return { source = stackTraceLine }
+				-- ROBLOX FIXME Luau: shouldn't need to explicitly provide nilable field
+				return { source = stackTraceLine, functionName = nil }
 			end
 		)
 	end,
@@ -147,13 +153,7 @@ local function nextHook(): nil | Hook
 	return hook
 end
 
--- ROBLOX TODO: function generics
--- function readContext<T>(
--- 	context: ReactContext<T>,
--- 	observedBits: void | number | boolean,
---   ): T {
-type _T = any
-function readContext(context: ReactContext<_T>, observedBits: nil | number | boolean): _T
+function readContext<T>(context: ReactContext<T>, observedBits: nil | number | boolean): T
 	table.insert(hookLog, {
 		primitive = "Context",
 		stackError = Error.new(),
@@ -162,12 +162,7 @@ function readContext(context: ReactContext<_T>, observedBits: nil | number | boo
 	return context._currentValue
 end
 
--- ROBLOX TODO: function generics
--- function useContext<T>(
--- 	context: ReactContext<T>,
--- 	observedBits: void | number | boolean,
---   ): T {
-function useContext(context: ReactContext<any>, observedBits: nil | number | boolean): any
+function useContext<T>(context: ReactContext<T>, observedBits: nil | number | boolean): T
 	table.insert(hookLog, {
 		primitive = "Context",
 		stackError = Error.new(),
@@ -176,26 +171,11 @@ function useContext(context: ReactContext<any>, observedBits: nil | number | boo
 	return context._currentValue
 end
 
--- ROBLOX TODO: function generics
--- function useState<S>(
--- 	initialState: (() => S) | S,
---   ): [S, Dispatch<BasicStateAction<S>>] {
-type S = any
-function useState(initialState: (() -> S) | S): (any, Dispatch<BasicStateAction<any>>)
+function useState<S>(initialState: (() -> S) | S): (S, Dispatch<BasicStateAction<S>>)
 	local hook = nextHook()
-	local state = (function()
-		if hook ~= nil then
-			return hook.memoizedState
-		end
-
-		return (function()
-			if typeof(initialState) == "function" then
-				return (initialState :: (() -> S))()
-			end
-
-			return initialState
-		end)()
-	end)()
+	local state: S = if hook ~= nil
+		then hook.memoizedState
+		else if typeof(initialState) == "function" then initialState() else initialState
 
 	table.insert(hookLog, {
 		primitive = "State",
@@ -206,17 +186,11 @@ function useState(initialState: (() -> S) | S): (any, Dispatch<BasicStateAction<
 	return state, function(_action: BasicStateAction<any>) end
 end
 
--- ROBLOX TODO: function generics
--- function useReducer<S, I, A>(
--- 	reducer: (S, A) => S,
--- 	initialArg: I,
--- 	init?: I => S,
---   ): [S, Dispatch<A>] {
-local function useReducer(
-	reducer: (any, any) -> any,
-	initialArg: any,
-	init: ((any) -> any)?
-): (any, Dispatch<any>)
+local function useReducer<S, I, A>(
+	reducer: (S, A) -> S,
+	initialArg: I,
+	init: ((I) -> S)?
+): (S, Dispatch<A>)
 	local hook = nextHook()
 	local state
 
@@ -240,9 +214,8 @@ local function useReducer(
 	return state, function(_action: any) end
 end
 
--- ROBLOX TODO: function generics
--- export function useRef<T>(initialValue: T): {|current: T|} {
-local function useRef(initialValue): { current: any }
+-- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
+local function useRef<T>(initialValue: T): { current: T | nil }
 	local hook = nextHook()
 	local ref = (function()
 		if hook ~= nil then
@@ -261,14 +234,9 @@ local function useRef(initialValue): { current: any }
 	return ref
 end
 
--- ROBLOX TODO: function generics
--- function useLayoutEffect(
--- 	create: () => (() => void) | void,
--- 	inputs: Array<mixed> | void | null,
---   ): void {
 local function useLayoutEffect(
 	-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
-	create: (() -> ()) | ((() -> ()) -> ()),
+	create: (() -> ()) | (() -> (() -> ())),
 	inputs: Array<any> | nil
 ): ()
 	nextHook()
@@ -279,14 +247,9 @@ local function useLayoutEffect(
 	})
 end
 
--- ROBLOX TODO: function generics
--- function useEffect(
--- 	create: () => (() => void) | void,
--- 	inputs: Array<mixed> | void | null,
---   ): void {
 local function useEffect(
 	-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
-	create: (() -> ()) | ((() -> ()) -> ()),
+	create: (() -> ()) | (() -> (() -> ())),
 	inputs: Array<any> | nil
 ): ()
 	nextHook()
@@ -297,16 +260,9 @@ local function useEffect(
 	})
 end
 
--- ROBLOX TODO: function generics:
--- export function useImperativeHandle<T>(
--- 	ref: {|current: T | null|} | ((inst: T | null) => mixed) | null | void,
--- 	create: () => T,
--- 	deps: Array<mixed> | void | null,
---   ): void {
-
-local function useImperativeHandle(
-	ref: { current: _T | nil } | ((inst: _T | nil) -> any) | nil,
-	create: () -> _T,
+local function useImperativeHandle<T>(
+	ref: { current: T | nil } | ((inst: T | nil) -> any) | nil,
+	create: () -> T,
 	inputs: Array<any> | nil
 ): ()
 	nextHook()
@@ -317,7 +273,7 @@ local function useImperativeHandle(
 	local instance = nil
 
 	if ref ~= nil and typeof(ref) == "table" then
-		instance = (ref :: { current: _T | nil }).current
+		instance = ref.current
 	end
 
 	table.insert(hookLog, {
@@ -327,13 +283,7 @@ local function useImperativeHandle(
 	})
 end
 
--- ROBLOX TODO: function generics
--- export function useDebugValue<T>(
--- 	value: T,
--- 	formatterFn: ?(value: T) => mixed,
---   ): void {
-
-local function useDebugValue(value: _T, formatterFn: ((value: _T) -> any)?): ()
+local function useDebugValue<T>(value: T, formatterFn: ((value: T) -> any)?): ()
 	table.insert(hookLog, {
 		primitive = "DebugValue",
 		stackError = Error.new(),
@@ -347,12 +297,7 @@ local function useDebugValue(value: _T, formatterFn: ((value: _T) -> any)?): ()
 	})
 end
 
--- ROBLOX TODO: function generics
--- export function useCallback<T>(
--- 	callback: T,
--- 	deps: Array<mixed> | void | null,
---   ): T {
-local function useCallback(callback: _T, inputs: Array<any> | nil): _T
+local function useCallback<T>(callback: T, inputs: Array<any> | nil): T
 	local hook = nextHook()
 
 	table.insert(hookLog, {
@@ -370,13 +315,8 @@ local function useCallback(callback: _T, inputs: Array<any> | nil): _T
 	return callback
 end
 
--- ROBLOX TODO: function generics
--- export function useMemo<T>(
--- 	create: () => T,
--- 	deps: Array<mixed> | void | null,
---   ): T {
-
-local function useMemo(nextCreate: () -> _T, inputs: Array<any> | nil): _T
+-- ROBLOX FIXME Luau: work around 'Failed to unify type packs' error: CLI-51338
+local function useMemo<T...>(nextCreate: () -> T..., inputs: Array<any> | nil): ...any
 	local hook = nextHook()
 	-- ROBLOX DEVIATION: Wrap memoized values in a table and unpack to allow for multiple return values
 	local value = if hook ~= nil then hook.memoizedState[1] else { nextCreate() }
@@ -387,17 +327,19 @@ local function useMemo(nextCreate: () -> _T, inputs: Array<any> | nil): _T
 		value = value,
 	})
 
-	return unpack(value)
+	return table.unpack(value)
 end
 
--- ROBLOX TODO: function generics
--- function useMutableSource<Source, Snapshot>(
-type Source = any
-type Snapshot = any
-function useMutableSource(
+function useMutableSource<Source, Snapshot>(
 	source: MutableSource<Source>,
-	getSnapshot: MutableSourceGetSnapshotFn<Source, Snapshot>,
-	subscribe: MutableSourceSubscribeFn<Source, Snapshot>
+	getSnapshot: MutableSourceGetSnapshotFn<
+		Source,
+		Snapshot
+	>,
+	subscribe: MutableSourceSubscribeFn<
+		Source,
+		Snapshot
+	>
 ): Snapshot
 	-- useMutableSource() composes multiple hooks internally.
 	-- Advance the current hook index the same number of times
@@ -489,7 +431,8 @@ Dispatcher = {
 	useImperativeHandle = useImperativeHandle,
 	useDebugValue = useDebugValue,
 	useLayoutEffect = useLayoutEffect,
-	useMemo = useMemo,
+	-- ROBLOX FIXME Luau: work around 'Failed to unify type packs' error: CLI-51338
+	useMemo = useMemo :: any,
 	useReducer = useReducer,
 	useRef = useRef,
 	useState = useState,
@@ -570,22 +513,25 @@ local function findCommonAncestorIndex(rootStack, hookStack)
 	return -1
 end
 
-local function isReactWrapper(functionName: string, primitiveName: string)
-	if not functionName then
+local function isReactWrapper(functionName: string?, primitiveName: string)
+	-- ROBLOX note: !functionName translates to this, because "" is falsey in JS
+	if not functionName or functionName == "" then
 		return false
 	end
 
 	local expectedPrimitiveName = "use" .. primitiveName
 
-	if string.len(functionName) < string.len(expectedPrimitiveName) then
+	-- ROBLOX FIXME Luau: Luau doesn't understand the guard above
+	if string.len(functionName :: string) < string.len(expectedPrimitiveName) then
 		return false
 	end
 
-	return String.lastIndexOf(functionName, expectedPrimitiveName)
-		== string.len(functionName) - string.len(expectedPrimitiveName)
+	-- ROBLOX FIXME Luau: Luau doesn't understand the guard above
+	return String.lastIndexOf(functionName :: string, expectedPrimitiveName)
+		== string.len(functionName :: string) - string.len(expectedPrimitiveName)
 end
 
-local function findPrimitiveIndex(hookStack, hook)
+local function findPrimitiveIndex(hookStack: Array<StackFrame>, hook)
 	local stackCache = getPrimitiveStackCache()
 	local primitiveStack = stackCache[hook.primitive]
 
@@ -619,7 +565,8 @@ local function findPrimitiveIndex(hookStack, hook)
 	return -1
 end
 
-local function parseTrimmedStack(rootStack, hook)
+-- ROBLOX FIXME Luau: Luau doesn't infer Array<StackFrame> | nil like it should
+local function parseTrimmedStack(rootStack, hook): Array<StackFrame>?
 	-- Get the stack trace between the primitive hook function and
 	-- the root function call. I.e. the stack frames of custom hooks.
 
@@ -695,7 +642,8 @@ local function buildTree(rootStack, readHookLog): HooksTree
 			for j = #stack - commonSteps, 1, -1 do
 				local children = {}
 				table.insert(levelChildren, {
-					id = nil,
+					-- ROBLOX FIXME Luau: Luau should infer number | nil here by (at least) looking at the function-level usage
+					id = nil :: number | nil,
 					isStateEditable = false,
 					name = parseCustomHookName(stack[j].functionName),
 					value = nil,
@@ -718,13 +666,10 @@ local function buildTree(rootStack, readHookLog): HooksTree
 
 		-- For now, the "id" of stateful hooks is just the stateful hook index.
 		-- Custom hooks have no ids, nor do non-stateful native hooks (e.g. Context, DebugValue).
-		local id = (function()
-			if primitive == "Context" or primitive == "DebugValue" then
-				return nil
-			end
-
-			return POSTFIX_INCREMENT()
-		end)()
+		-- ROBLOX FIXME Luau: Luau doesn't infer number | nil like it should
+		local id = if primitive == "Context" or primitive == "DebugValue"
+			then nil
+			else POSTFIX_INCREMENT()
 		-- For the time being, only State and Reducer hooks support runtime overrides.
 		local isStateEditable = primitive == "Reducer" or primitive == "State"
 
@@ -738,7 +683,7 @@ local function buildTree(rootStack, readHookLog): HooksTree
 	end
 
 	-- Associate custom hook values (useDebugValue() hook entries) with the correct hooks.
-	processDebugValues(rootChildren, nil)
+	processDebugValues(rootChildren)
 
 	return rootChildren
 end
@@ -786,15 +731,9 @@ function processDebugValues(hooksTree: HooksTree, parentHooksNode: HooksNode | n
 	end
 end
 
--- ROBLOX TODO: function generics
--- exports.inspectHooks<Props>(
--- 	renderFunction: Props => React$Node,
--- 	props: Props,
--- 	currentDispatcher: ?CurrentDispatcherRef,
---   ): HooksTree {
-exports.inspectHooks = function(
-	renderFunction: (any) -> React_Node,
-	props: any,
+exports.inspectHooks = function<Props>(
+	renderFunction: (Props) -> React_Node,
+	props: Props,
 	currentDispatcher: CurrentDispatcherRef?
 ): HooksTree
 	-- DevTools will pass the current renderer's injected dispatcher.
@@ -849,17 +788,10 @@ local function restoreContexts(contextMap: Map<ReactContext<any>, any>)
 	end
 end
 
--- ROBLOX TODO: function generics
--- function inspectHooksOfForwardRef<Props, Ref>(
--- 	renderFunction: (Props, Ref) => React$Node,
--- 	props: Props,
--- 	ref: Ref,
--- 	currentDispatcher: CurrentDispatcherRef,
---   ): HooksTree {
-local function inspectHooksOfForwardRef(
-	renderFunction: (any, any) -> React_Node,
-	props: any,
-	ref: any,
+local function inspectHooksOfForwardRef<Props, Ref>(
+	renderFunction: (Props, Ref) -> React_Node,
+	props: Props,
+	ref: Ref,
 	currentDispatcher: CurrentDispatcherRef
 ): HooksTree
 	local previousDispatcher = currentDispatcher.current
@@ -884,7 +816,8 @@ end
 local function resolveDefaultProps(Component, baseProps)
 	if Component and Component.defaultProps then
 		-- Resolve default props. Taken from ReactElement
-		local props = Object.assign({}, baseProps)
+		-- ROBLOX FIXME Luau: Expected type table, got 'any & any & any & {  }' instead
+		local props = Object.assign({}, baseProps) :: typeof(baseProps)
 		local defaultProps = Component.defaultProps
 		for propName, _ in pairs(defaultProps) do
 			if props[propName] == nil then
@@ -936,7 +869,8 @@ exports.inspectHooksOfFiber =
 					type_.render,
 					props,
 					fiber.ref,
-					currentDispatcher
+					-- ROBLOX FIXME Luau: Luau doesn't understand lazy init above
+					currentDispatcher :: CurrentDispatcherRef
 				)
 			end
 			return exports.inspectHooks(type_, props, currentDispatcher)

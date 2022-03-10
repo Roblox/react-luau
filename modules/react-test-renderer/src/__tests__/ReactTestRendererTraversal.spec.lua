@@ -135,7 +135,7 @@ return function()
 		end)
 
 		it("initializes", function()
-			local render = ReactTestRenderer.create(React.createElement(Example, nil))
+			local render = ReactTestRenderer.create(React.createElement(Example))
 			local hasFooProp = function(node)
 				-- ROBLOX deviation: workaround for hasOwnProperty
 				return rawget(node.props, "foo") ~= nil
@@ -151,7 +151,7 @@ return function()
 			jestExpect(foo.children[1].parent._fiber).toBe(foo._fiber)
 		end)
 		it("searches via .find() / .findAll()", function()
-			local render = ReactTestRenderer.create(React.createElement(Example, nil))
+			local render = ReactTestRenderer.create(React.createElement(Example))
 			local hasFooProp = function(node)
 				-- ROBLOX deviation: workaround for hasOwnProperty
 				return rawget(node.props, "foo") ~= nil
@@ -249,7 +249,7 @@ return function()
 			jestExpect(itself:findAll(hasBazProp)).toHaveLength(2)
 		end)
 		it("searches via .findByType() / .findAllByType()", function()
-			local render = ReactTestRenderer.create(React.createElement(Example, nil))
+			local render = ReactTestRenderer.create(React.createElement(Example))
 			jestExpect(function()
 				return render.root:findByType(ExampleFn)
 			end).never.toThrow() -- 1 match
@@ -358,8 +358,8 @@ return function()
 					React.createElement(
 						FR,
 						nil,
-						React.createElement("div", nil),
-						React.createElement("div", nil)
+						React.createElement("div"),
+						React.createElement("div")
 					)
 				).root:findAllByType("div")
 			).toEqual(2)
@@ -368,8 +368,8 @@ return function()
 					React.createElement(
 						React.Fragment,
 						nil,
-						React.createElement("div", nil),
-						React.createElement("div", nil)
+						React.createElement("div"),
+						React.createElement("div")
 					)
 				).root:findAllByType("div")
 			).toEqual(2)
@@ -389,8 +389,8 @@ return function()
 					React.createElement(
 						React.StrictMode,
 						nil,
-						React.createElement("div", nil),
-						React.createElement("div", nil)
+						React.createElement("div"),
+						React.createElement("div")
 					)
 				).root:findAllByType("div")
 			).toEqual(2)
@@ -399,8 +399,8 @@ return function()
 					React.createElement(
 						Context.Provider,
 						{ value = Object.None },
-						React.createElement("div", nil),
-						React.createElement("div", nil)
+						React.createElement("div"),
+						React.createElement("div")
 					)
 				).root:findAllByType("div")
 			).toEqual(2)

@@ -1,3 +1,4 @@
+--!strict
 return function()
 	local Packages = script.Parent.Parent.Parent
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
@@ -8,7 +9,7 @@ return function()
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 	local ReactComponentStackFrame = nil
 
-	local function assertStringContains(testString, subString)
+	local function assertStringContains(testString: string, subString)
 		assert(
 			testString:find(subString, 1, true),
 			("could not find %q in %q"):format(subString, testString)
@@ -142,7 +143,7 @@ return function()
 					if _G.__DEV__ then
 						assertStringContains(
 							frame,
-							("%s (at %s:%s)"):format(
+							("%s (at %s:%d)"):format(
 								componentName,
 								expectedFileName,
 								lineNumber
@@ -184,7 +185,7 @@ return function()
 				local frame = describeBuiltInComponentFrame(componentName, {
 					fileName = "file name",
 					lineNumber = 7,
-				}, nil)
+				})
 
 				assertStringContains(frame, componentName)
 			end)
@@ -195,7 +196,7 @@ return function()
 				local frame = describeBuiltInComponentFrame(componentName, {
 					fileName = fileName,
 					lineNumber = 7,
-				}, nil)
+				})
 
 				jestExpect(frame:find(fileName)).never.toBeDefined()
 			end)

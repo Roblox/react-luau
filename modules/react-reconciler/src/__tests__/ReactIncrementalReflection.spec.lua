@@ -80,7 +80,7 @@ return function()
             end
 
             local function Foo()
-                return React.createElement(Component, nil)
+                return React.createElement(Component)
             end
 
             ReactNoop.render(React.createElement(Foo))
@@ -119,12 +119,12 @@ return function()
             end
             function Component:render()
                 Scheduler.unstable_yieldValue('Component')
-                return React.createElement("span", nil)
+                return React.createElement("span")
             end
 
             local function Other()
                 Scheduler.unstable_yieldValue('Other')
-                return React.createElement("span", nil)
+                return React.createElement("span")
             end
 
             local function Foo(props)

@@ -9,7 +9,8 @@
 ]]
 
 local Packages = script.Parent.Parent
-
+local flowtypes = require(Packages.Shared)
+type React_Component<Props, State> = flowtypes.React_Component<Props, State>
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
@@ -33,7 +34,7 @@ type RootTag = ReactRootTags.RootTag;
 local ReactFiberFlags = require(script.Parent.ReactFiberFlags)
 
 local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
--- type Instance = ReactFiberHostConfig.Instance;
+type Instance = ReactFiberHostConfig.Instance;
 type TextInstance = ReactFiberHostConfig.TextInstance;
 type Container = ReactFiberHostConfig.Container;
 type PublicInstance = ReactFiberHostConfig.PublicInstance;
@@ -134,7 +135,7 @@ exports.findCurrentFiberUsingSlowPath = ReactFiberTreeReflection.findCurrentFibe
 exports.createPortal = require(script.Parent.ReactPortal).createPortal
 -- local ReactTestSelectors = require(script.Parent.ReactTestSelectors)
 -- exports.createComponentSelector = ReactTestSelectors.createComponentSelector
--- -- FIXME (roblox): Should we deviate and fix this typo?
+-- ROBLOX FIXME: Should we deviate and fix this typo?
 -- exports.createHasPsuedoClassSelector = ReactTestSelectors.createHasPsuedoClassSelector
 -- exports.createRoleSelector = ReactTestSelectors.createRoleSelector
 -- exports.createTestNameSelector = ReactTestSelectors.createTestNameSelector
@@ -389,8 +390,7 @@ exports.act = act
 
 exports.getPublicRootInstance = function(
 	container: OpaqueRoot
-): any
--- ): React$Component<any, any> | PublicInstance | nil {
+): React_Component<any, any> | PublicInstance | nil
 	local containerFiber = container.current
 	if not containerFiber.child then
 		return nil
@@ -488,8 +488,7 @@ exports.attemptHydrationAtCurrentPriority = function(fiber: Fiber)
 	markRetryLaneIfNotHydrated(fiber, lane)
 end
 
--- exports.runWithPriority<T>(priority: LanePriority, fn: () => T)
-exports.runWithPriority = function(priority: LanePriority, fn: () -> any)
+exports.runWithPriority = function<T>(priority: LanePriority, fn: () -> T): T
 	local previousPriority = getCurrentUpdateLanePriority()
 	-- ROBLOX performance: hoist non-throwable out of try{} to eliminate anon function
 	setCurrentUpdateLanePriority(priority)
@@ -498,6 +497,7 @@ exports.runWithPriority = function(priority: LanePriority, fn: () -> any)
 	if not ok then
 		error(result)
 	end
+	return result
 end
 
 exports.getCurrentUpdateLanePriority = getCurrentUpdateLanePriority
@@ -575,7 +575,7 @@ if _G.__DEV__ then
 
 	-- deviation: FIXME: obj: `Object | Array<any>`, narrowing not possible with `isArray`
 	local function copyWithRenameImpl(
-		obj: Object,
+		obj: Object ,
 		oldPath: Array<string | number>,
 		newPath: Array<string | number>,
 		index: number
@@ -825,7 +825,7 @@ exports.injectIntoDevTools = function(devToolsConfig: DevToolsConfig): boolean
 		findFiberByHostInstance =
 			findFiberByHostInstance or emptyFindFiberByHostInstance,
 		-- FIXME: WIP
-		-- -- React Refresh
+		-- React Refresh
 		-- findHostInstancesForRefresh = _G.__DEV__ and findHostInstancesForRefresh or nil,
 		-- scheduleRefresh = _G.__DEV__ and scheduleRefresh or nil,
 		-- scheduleRoot = _G.__DEV__ and scheduleRoot or nil,

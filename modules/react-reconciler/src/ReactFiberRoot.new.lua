@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/96ac799eace5d989de3b4f80e6414e94a08ff77a/packages/react-reconciler/src/ReactFiberRoot.new.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -13,7 +14,8 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Set = LuauPolyfill.Set
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
-type FiberRoot = ReactInternalTypes.FiberRoot;
+type Fiber = ReactInternalTypes.Fiber
+type FiberRoot = ReactInternalTypes.FiberRoot
 type SuspenseHydrationCallbacks = ReactInternalTypes.SuspenseHydrationCallbacks;
 local ReactRootTags = require(script.Parent.ReactRootTags)
 type RootTag = ReactRootTags.RootTag;
@@ -48,7 +50,8 @@ local function FiberRootNode(containerInfo, tag, hydrate)
 		tag = tag,
 		containerInfo = containerInfo,
 		pendingChildren = nil,
-		current = nil,
+		-- ROBLOX TODO: this isn't typesafe upstream
+		current = (nil :: any) :: Fiber,
 		pingCache = nil,
 		finishedWork = nil,
 		timeoutHandle = noTimeout,

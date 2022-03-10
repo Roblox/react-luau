@@ -462,9 +462,9 @@ exports.scheduleTimeout = setTimeout
 exports.cancelTimeout = clearTimeout
 exports.noTimeout = -1
 
--- -- -------------------
--- --     Mutation
--- -- -------------------
+-- -------------------
+--     Mutation
+-- -------------------
 
 exports.supportsMutation = true
 
@@ -1183,7 +1183,7 @@ exports.preparePortalMount = function(portalInstance: Instance): ()
   -- if enableEagerRootListeners then
   --   listenToAllSupportedEvents(portalInstance)
   -- else
-  --   listenToReactEvent('onMouseEnter', portalInstance, nil)
+  --   listenToReactEvent('onMouseEnter', portalInstance)
   -- end
 end
 

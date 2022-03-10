@@ -862,7 +862,7 @@ return function()
             end
 
             act(function()
-                ReactNoop.render(React.createElement(WrapperWithState, nil), function()
+                ReactNoop.render(React.createElement(WrapperWithState), function()
                     return Scheduler.unstable_yieldValue("Sync effect")
                 end)
                 jestExpect(Scheduler).toFlushAndYield({
@@ -913,7 +913,7 @@ return function()
                 source.value = "two"
 
                 -- Now render something different.
-                ReactNoop.render(React.createElement("div", nil))
+                ReactNoop.render(React.createElement("div"))
                 jestExpect(Scheduler).toFlushAndYield({})
             end)
         end)
@@ -952,7 +952,7 @@ return function()
                 })), React.createElement(React.Profiler, {
                     id = "b",
                     onRender = onRenderB,
-                }, React.createElement(WrapperWithState, nil))), function()
+                }, React.createElement(WrapperWithState))), function()
                     return Scheduler.unstable_yieldValue("Sync effect")
                 end)
                 jestExpect(Scheduler).toFlushAndYield({
@@ -1006,7 +1006,7 @@ return function()
             end
 
             act(function()
-                ReactNoop.render(React.createElement(WrapperWithState, nil), function()
+                ReactNoop.render(React.createElement(WrapperWithState), function()
                     return Scheduler.unstable_yieldValue("Sync effect")
                 end)
                 jestExpect(Scheduler).toFlushAndYield({
@@ -1138,7 +1138,7 @@ return function()
             end
 
             act(function()
-                ReactNoop.renderToRootWithID(React.createElement(Wrapper, nil), "root", function()
+                ReactNoop.renderToRootWithID(React.createElement(Wrapper), "root", function()
                     return Scheduler.unstable_yieldValue("Sync effect")
                 end)
                 jestExpect(Scheduler).toFlushAndYield({
@@ -1843,7 +1843,7 @@ return function()
                 ReactNoop.render(React.createElement(React.Profiler, {
                     id = "root",
                     onRender = onRender,
-                }, React.createElement(ComponentA, nil)), function()
+                }, React.createElement(ComponentA)), function()
                     return Scheduler.unstable_yieldValue("Sync effect")
                 end)
             end)
@@ -1858,7 +1858,7 @@ return function()
                 ReactNoop.render(React.createElement(React.Profiler, {
                     id = "root",
                     onRender = onRender,
-                }, React.createElement(ComponentA, nil), React.createElement(ComponentB, nil)), function()
+                }, React.createElement(ComponentA), React.createElement(ComponentB)), function()
                     return Scheduler.unstable_yieldValue("Sync effect")
                 end)
                 jestExpect(Scheduler).toFlushAndYieldThrough({

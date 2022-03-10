@@ -80,7 +80,7 @@ return function()
 				})
 			end
 
-			local renderer = ReactTestRenderer.create(React.createElement(Link, nil))
+			local renderer = ReactTestRenderer.create(React.createElement(Link))
 
 			jestExpect(renderer.toJSON()).toEqual({
 				type = "a",
@@ -95,7 +95,7 @@ return function()
 				return nil
 			end
 
-			local renderer = ReactTestRenderer.create(React.createElement(Empty, nil))
+			local renderer = ReactTestRenderer.create(React.createElement(Empty))
 
 			jestExpect(renderer.toJSON()).toEqual(nil)
 		end)
@@ -106,7 +106,7 @@ return function()
 				})
 			end
 
-			local renderer = ReactTestRenderer.create(React.createElement(Link, nil))
+			local renderer = ReactTestRenderer.create(React.createElement(Link))
 			local object = renderer.toJSON()
 			-- ROBLOX FIXME: needs to stringify $$typeof because Symbol module is reset. Un-stringify once we've found a solution.
 			jestExpect(tostring(object["$$typeof"])).toEqual(
@@ -122,7 +122,7 @@ return function()
 			local Component = React.Component:extend("Component")
 
 			local Child = function()
-				return React.createElement("moo", nil)
+				return React.createElement("moo")
 			end
 
 			function Component:render()
@@ -134,7 +134,7 @@ return function()
 				))
 			end
 
-			local renderer = ReactTestRenderer.create(React.createElement(Component, nil))
+			local renderer = ReactTestRenderer.create(React.createElement(Component))
 
 			jestExpect(renderer.toJSON()).toEqual({
 				type = "div",
@@ -157,7 +157,7 @@ return function()
 			local Child = function()
 				renders = renders + 1
 
-				return React.createElement("moo", nil)
+				return React.createElement("moo")
 			end
 			local Null = function()
 				renders = renders + 1
@@ -177,15 +177,15 @@ return function()
 						className = "purple",
 					},
 					self.state.x,
-					React.createElement(Child, nil),
-					React.createElement(Null, nil)
+					React.createElement(Child),
+					React.createElement(Null)
 				)
 			end
 			function Component:componentDidMount()
 				self:setState({ x = 7 })
 			end
 
-			local renderer = ReactTestRenderer.create(React.createElement(Component, nil))
+			local renderer = ReactTestRenderer.create(React.createElement(Component))
 
 			jestExpect(renderer.toJSON()).toEqual({
 				type = "div",
@@ -220,7 +220,7 @@ return function()
 				return React.createElement("div", nil, self.state.mouse)
 			end
 
-			local renderer = ReactTestRenderer.create(React.createElement(Mouse, nil))
+			local renderer = ReactTestRenderer.create(React.createElement(Mouse))
 
 			jestExpect(renderer.toJSON()).toEqual({
 				type = "div",
@@ -351,7 +351,7 @@ return function()
 
 			function Log:render()
 				table.insert(log, "render " .. self.props.name)
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
 			function Log:componentDidMount()
 				table.insert(log, "mount " .. self.props.name)
@@ -410,9 +410,9 @@ return function()
 				})
 			end
 
-			ReactTestRenderer.create(React.createElement(Baz, nil))
+			ReactTestRenderer.create(React.createElement(Baz))
 			jestExpect(function()
-				return ReactTestRenderer.create(React.createElement(Foo, nil))
+				return ReactTestRenderer.create(React.createElement(Foo))
 			end).toErrorDev(
 				"Warning: Function components cannot be given refs. Attempts "
 					.. "to access this ref will fail. "
@@ -518,7 +518,7 @@ return function()
 				}
 			)
 			ReactTestRenderer.create(
-				React.createElement(Foo, nil),
+				React.createElement(Foo),
 				{ createNodeMock = createNodeMock }
 			)
 			ReactTestRenderer.create(React.createElement("div", {
@@ -555,7 +555,7 @@ return function()
 				})
 			end
 
-			local inst = ReactTestRenderer.create(React.createElement(Foo, nil), {
+			local inst = ReactTestRenderer.create(React.createElement(Foo), {
 				createNodeMock = function()
 					return foo.current
 				end,
@@ -573,11 +573,11 @@ return function()
 				count = count + 1
 			end
 			function Foo:render()
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
 
 			local inst = ReactTestRenderer.create(
-				React.createElement("div", nil, React.createElement(Foo, nil)),
+				React.createElement("div", nil, React.createElement(Foo)),
 				{
 					createNodeMock = function()
 						return "foo"
@@ -653,7 +653,7 @@ return function()
 						React.createElement("button", {
 							onClick = self.onClick,
 						}, "ClickMe"),
-						React.createElement(Angry, nil)
+						React.createElement(Angry)
 					)
 				else
 					return React.createElement("div", nil, "Happy Birthday!")
@@ -674,7 +674,7 @@ return function()
 				self:setState({ error = true })
 			end
 
-			local renderer = ReactTestRenderer.create(React.createElement(Boundary, nil))
+			local renderer = ReactTestRenderer.create(React.createElement(Boundary))
 
 			jestExpect(renderer.toJSON()).toEqual({
 				type = "div",
@@ -738,7 +738,7 @@ return function()
 				props = {},
 			})
 			renderer.update(
-				React.createElement(Component, nil, React.createElement("div", nil))
+				React.createElement(Component, nil, React.createElement("div"))
 			)
 			jestExpect(renderer.toJSON()).toEqual({
 				type = "div",
@@ -758,7 +758,7 @@ return function()
 					className = "Qoo",
 				}, "Hello World!")
 			end
-			local renderer = ReactTestRenderer.create(React.createElement(Qoo, nil))
+			local renderer = ReactTestRenderer.create(React.createElement(Qoo))
 			local tree = renderer.toTree()
 
 			cleanNodeOrArray(tree)
@@ -790,7 +790,7 @@ return function()
 					React.createElement(React.Fragment, nil, "foo")
 				)
 			end
-			local renderer = ReactTestRenderer.create(React.createElement(Foo, nil))
+			local renderer = ReactTestRenderer.create(React.createElement(Foo))
 			local tree = renderer.toTree()
 
 			cleanNodeOrArray(tree)
@@ -811,7 +811,7 @@ return function()
 				return nil
 			end
 
-			local renderer = ReactTestRenderer.create(React.createElement(Foo, nil))
+			local renderer = ReactTestRenderer.create(React.createElement(Foo))
 			local tree = renderer.toTree()
 
 			-- ROBLOX deviation: toBeInstanceOf not yet implemented, workaround by checking elementType
@@ -1091,11 +1091,11 @@ return function()
 				return React.createElement(
 					Bar,
 					{ special = true },
-					React.createElement(Qoo, nil)
+					React.createElement(Qoo)
 				)
 			end
 
-			local renderer = ReactTestRenderer.create(React.createElement(Bam, nil))
+			local renderer = ReactTestRenderer.create(React.createElement(Bam))
 			local tree = renderer.toTree()
 
 			-- we test for the presence of instances before nulling them out
@@ -1206,7 +1206,7 @@ return function()
 				"Hi",
 				"Bye",
 			})
-			renderer.update(React.createElement("div", nil))
+			renderer.update(React.createElement("div"))
 			jestExpect(renderer.toJSON()).toEqual({
 				type = "div",
 				children = nil,
@@ -1249,7 +1249,7 @@ return function()
 				)
 			end
 
-			local renderer = ReactTestRenderer.create(React.createElement(App, nil))
+			local renderer = ReactTestRenderer.create(React.createElement(App))
 			local child = renderer.root:findByType(Child)
 
 			jestExpect(child.children).toEqual({
@@ -1332,7 +1332,7 @@ return function()
 				})
 			end
 
-			local renderer = ReactTestRenderer.create(React.createElement(App, nil))
+			local renderer = ReactTestRenderer.create(React.createElement(App))
 			local tree = renderer.toTree()
 
 			cleanNodeOrArray(tree)
@@ -1371,9 +1371,9 @@ return function()
 		--         end)))
 		--     end
 
-		--     ReactNoop.render(React.createElement(App, nil))
+		--     ReactNoop.render(React.createElement(App))
 		--     jestExpect(Scheduler).toFlushWithoutYielding()
-		--     ReactTestRenderer.create(React.createElement(App, nil))
+		--     ReactTestRenderer.create(React.createElement(App))
 		-- end)
 		it(
 			'calling findByType() with an invalid component will fall back to "Unknown" for component name',
@@ -1381,7 +1381,7 @@ return function()
 				local App = function()
 					return nil
 				end
-				local renderer = ReactTestRenderer.create(React.createElement(App, nil))
+				local renderer = ReactTestRenderer.create(React.createElement(App))
 				local NonComponent = {}
 				jestExpect(function()
 					renderer.root:findByType(NonComponent)

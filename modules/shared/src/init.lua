@@ -3,6 +3,7 @@
 -- real interface instead of just a bag of loose source code
 
 local ReactTypes = require(script.ReactTypes)
+local flowtypes = require(script["flowtypes.roblox"])
 local ReactElementType = require(script.ReactElementType)
 local ReactFiberHostConfig = require(script.ReactFiberHostConfig)
 local ReactSharedInternals = require(script.ReactSharedInternals)
@@ -16,9 +17,6 @@ export type ReactConsumer<T> = ReactTypes.ReactConsumer<T>
 export type ReactProvider<T> = ReactTypes.ReactProvider<T>
 export type ReactContext<T> = ReactTypes.ReactContext<T>
 export type ReactPortal = ReactTypes.ReactPortal
-export type React_Node = ReactTypes.React_Node
-export type React_Element<ElementType> = ReactTypes.React_Element<ElementType>
-export type React_Portal = ReactTypes.React_Portal
 export type RefObject = ReactTypes.RefObject
 export type EventPriority = ReactTypes.EventPriority
 export type ReactFundamentalComponentInstance<C, H> =
@@ -31,19 +29,39 @@ export type ReactScopeInstance = ReactTypes.ReactScopeInstance
 export type MutableSourceVersion = ReactTypes.MutableSourceVersion
 export type MutableSourceGetSnapshotFn<Source, Snapshot> =
 	ReactTypes.MutableSourceGetSnapshotFn<Source, Snapshot>
-export type MutableSourceSubscribeFn<Source, Snapshot> =
-	ReactTypes.MutableSourceSubscribeFn<Source, Snapshot>
+export type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscribeFn<
+	Source,
+	Snapshot
+>
 export type MutableSourceGetVersionFn = ReactTypes.MutableSourceGetVersionFn
 export type MutableSource<Source> = ReactTypes.MutableSource<Source>
 export type Wakeable = ReactTypes.Wakeable
 export type Thenable<R> = ReactTypes.Thenable<R>
-
 export type Source = ReactElementType.Source
-export type ReactElement = ReactElementType.ReactElement
-
+export type ReactElement<P, T> = ReactElementType.ReactElement<P, T>
 export type OpaqueIDType = ReactFiberHostConfig.OpaqueIDType
-
 export type Dispatcher = ReactSharedInternals.Dispatcher
+
+-- re-export flowtypes from here. I wonder if this should be a separate 'package'?
+export type React_Ref<ElementType> = flowtypes.React_Ref<ElementType>
+export type React_Context<T> = flowtypes.React_Context<T>
+export type React_AbstractComponent<Config, Instance> = flowtypes.React_AbstractComponent<
+	Config,
+	Instance
+>
+export type React_ComponentType<Config> = flowtypes.React_AbstractComponent<Config, any>
+export type React_PureComponent<Props, State = nil> = flowtypes.React_Component<
+	Props,
+	State
+>
+export type React_Component<Props, State> = flowtypes.React_Component<Props, State>
+export type React_ElementProps<ElementType> = flowtypes.React_ElementProps<ElementType>
+export type React_StatelessFunctionalComponent<Props> =
+	flowtypes.React_StatelessFunctionalComponent<Props>
+export type React_Node = flowtypes.React_Node
+export type React_Element<ElementType> = flowtypes.React_Element<ElementType>
+export type React_ElementType = flowtypes.React_ElementType
+export type React_Portal = flowtypes.React_Portal
 
 return {
 	checkPropTypes = require(script.checkPropTypes),

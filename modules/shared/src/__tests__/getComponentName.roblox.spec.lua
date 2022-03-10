@@ -4,8 +4,7 @@ return function()
 	local React = require(Packages.Dev.React)
 
 	local getComponentName = require(Packages.Shared).getComponentName
-	local function MyComponent()
-	end
+	local function MyComponent() end
 	local anonymous = function() end
 
 	describe("function components", function()
@@ -23,7 +22,7 @@ return function()
 				return {
 					andThen = function(self, resolve)
 						resolve({ default = MyComponent })
-					end
+					end,
 				}
 			end)
 			jestExpect(getComponentName(lazyMyComponent)).toBe("MyComponent")
@@ -33,7 +32,7 @@ return function()
 				return {
 					andThen = function(self, resolve)
 						resolve({ default = anonymous })
-					end
+					end,
 				}
 			end)
 			jestExpect(getComponentName(lazyAnonymous)).toBe(nil)

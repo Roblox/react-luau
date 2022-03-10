@@ -6,9 +6,13 @@
  *
  * @emails react-core
  ]]
---!strict
+-- ROBLOX FIXME Luau: this doesn't play nicely with Object.assign
+--!nonstrict
 
 -- ROBLOX deviation: prompted by selene to add a type
+local Packages = script.Parent.Parent.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
+local Object = LuauPolyfill.Object
 type ComparisonTestsProps = {
 	a: number?,
 	b: number?,
@@ -16,10 +20,8 @@ type ComparisonTestsProps = {
 }
 
 return function()
-	local Packages = script.Parent.Parent.Parent
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
 
-	local Cryo = require(Packages.Cryo)
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 
 	-- local PropTypes
@@ -57,7 +59,7 @@ return function()
 			end
 
 			local RefForwardingComponent = React.forwardRef(function(props, ref)
-				return React.createElement(FunctionComponent, Cryo.Dictionary.join(props, { forwardedRef = ref }))
+				return React.createElement(FunctionComponent, Object.assign({}, props, { forwardedRef = ref }))
 			end)
 
 			local ref = React.createRef()
@@ -161,10 +163,12 @@ return function()
 			--   {withoutStack: true},
 			-- )
 			jestExpect(function()
-				React.forwardRef(nil)
+				-- ROBLOX deviation: requires casting away type safety to run and see the warning
+				(React.forwardRef :: any)(nil)
 			end).toErrorDev("forwardRef requires a render function but was given nil.", { withoutStack = true })
 			jestExpect(function()
-				React.forwardRef("foo")
+				-- ROBLOX deviation: requires casting away type safety to run and see the warning
+				(React.forwardRef :: any)("foo")
 			end).toErrorDev("forwardRef requires a render function but was given string.", { withoutStack = true })
 		end)
 
@@ -236,7 +240,8 @@ return function()
 			end
 
 			jestExpect(function()
-			  React.forwardRef(arityOfThree)
+				-- ROBLOX deviation: requires casting away type safety to run and see the warning
+				(React.forwardRef :: any)(arityOfThree)
 			end).toErrorDev(
 			  "forwardRef render functions accept exactly two parameters: props and ref. " ..
 			    "Any additional parameter will be undefined.",
@@ -251,7 +256,7 @@ return function()
 			-- end
 
 			-- local RefForwardingComponent = React.forwardRef(function(props, ref)
-			--   return React.createElement(Component, Cryo.Dictionary.join(props, {forwardedRef=ref}))
+			--   return React.createElement(Component, Object.assign({}, props, {forwardedRef=ref}))
 			-- end)
 
 			-- RefForwardingComponent.displayName = 'Foo'
@@ -313,7 +318,7 @@ return function()
 
 			local RefForwardingComponent = React.forwardRef(function(props, ref)
 				renderCount += 1
-				return React.createElement(Component, Cryo.Dictionary.join(props, { forwardedRef = ref }))
+				return React.createElement(Component, Object.assign({}, props, { forwardedRef = ref }))
 			end)
 
 			local ref = React.createRef()
@@ -334,10 +339,12 @@ return function()
 
 			local renderCount = 0
 
-			local RefForwardingComponent = React.memo(React.forwardRef(function(props, ref)
-				renderCount += 1
-				return React.createElement(Component, Cryo.Dictionary.join(props, { forwardedRef = ref }))
-			end))
+			local RefForwardingComponent = React.memo(
+					React.forwardRef(
+						function(props, ref)
+							renderCount += 1
+							return React.createElement(Component, Object.assign({}, props, { forwardedRef = ref }))
+						end))
 
 			local ref = React.createRef()
 
@@ -373,13 +380,14 @@ return function()
 			local renderCount = 0
 
 			local RefForwardingComponent = React.memo(
-			  React.forwardRef(function(props: ComparisonTestsProps, ref)
-				renderCount += 1
-				return React.createElement(Component, Cryo.Dictionary.join(props, {forwardedRef=ref}))
-			  end),
-			  function(o: ComparisonTestsProps, p: ComparisonTestsProps)
-				return o.a == p.a and o.b == p.b
-			  end
+				React.forwardRef(function(props: ComparisonTestsProps, ref)
+					renderCount += 1
+					return React.createElement(Component, Object.assign({}, props, {forwardedRef=ref}))
+				end),
+				-- ROBLOX FIXME Luau: needs normalization:
+				function(o: ComparisonTestsProps, p: ComparisonTestsProps)
+					return o.a == p.a and o.b == p.b
+				end :: any
 			)
 
 			local ref = React.createRef()

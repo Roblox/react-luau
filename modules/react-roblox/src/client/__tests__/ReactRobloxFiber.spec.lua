@@ -1177,7 +1177,7 @@ return function()
   --   expect(ops).toEqual(['leave'])
 
   --   ops = []
-  --   simulateMouseMove(container, nil)
+  --   simulateMouseMove(container)
   --   expect(ops).toEqual([])
   -- })
 
@@ -1202,7 +1202,7 @@ return function()
 
   it('should throw on bad createPortal argument', function()
     jestExpect(function()
-      ReactRoblox.createPortal(React.createElement("Frame"), nil)
+      ReactRoblox.createPortal(React.createElement("Frame"))
     end).toThrow("Target container is not a Roblox Instance.")
     jestExpect(function()
       ReactRoblox.createPortal(React.createElement("Frame"), "hi")

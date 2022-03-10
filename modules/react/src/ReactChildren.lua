@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/7516bdfce3f0f8c675494b5c5d0e7ae441bef1d9/packages/react/src/ReactChildren.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -311,9 +312,9 @@ local isValidElement = ReactElement.isValidElement
  * @return {ReactElement} The first and only `ReactElement` contained in the
  * structure.
 ]]
--- ROBLOX FIXME: function generics
--- local function onlyChild<T>(children: T): T
-local function onlyChild(children: any): any
+-- ROBLOX deviation START: we skip generics here, because we can't explicitly constrain them. no annotation works as passthrough.
+local function onlyChild(children)
+	-- ROBLOX deviation END
 	invariant(
 		isValidElement(children),
 		"React.Children.only expected to receive a single React element child."

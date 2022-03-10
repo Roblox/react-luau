@@ -1,4 +1,5 @@
--- Upstream: https://github.com/facebook/react/blob/16654436039dd8f16a63928e71081c7745872e8f/packages/react-test-renderer/src/ReactTestRenderer.js
+--!nonstrict
+-- upstream: https://github.com/facebook/react/blob/16654436039dd8f16a63928e71081c7745872e8f/packages/react-test-renderer/src/ReactTestRenderer.js
 --  * Copyright (c) Facebook, Inc. and its affiliates.
 --  *
 --  * This source code is licensed under the MIT license found in the
@@ -17,7 +18,7 @@ local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
 local setTimeout = LuauPolyfill.setTimeout
 local ReactTypes = require(Packages.Shared)
-type React_Element<T> = ReactTypes.React_Element<T>
+type ReactElement<P, T> = ReactTypes.ReactElement<P, T>
 
 local ReactInternalTypes = require(Packages.ReactReconciler)
 type Fiber = ReactInternalTypes.Fiber
@@ -78,7 +79,8 @@ type Array<T> = { [number]: T }
 type Object = { [string]: any }
 
 type TestRendererOptions = {
-	createNodeMock: (element: React_Element<any>) -> any,
+	-- ROBLOX TODO: upstream treats this as optional, somehow flowtype doesn't complain
+	createNodeMock: ((element: ReactElement<any, any>) -> any)?,
 	unstable_isConcurrent: boolean,
 }
 
@@ -538,7 +540,9 @@ function ReactTestInstance:findAllByProps(
 	end, options)
 end
 
-local function create(element: React_Element<any>, options: TestRendererOptions)
+-- ROBLOX deviation START: the first argument gets an explicit nil in many tests
+local function create(element: ReactElement<any, any> | nil, options: TestRendererOptions?)
+-- ROBLOX deviation END
 	local createNodeMock = defaultTestOptions.createNodeMock
 	local isConcurrent = false
 
@@ -617,7 +621,7 @@ local function create(element: React_Element<any>, options: TestRendererOptions)
 
 			return toTree(root.current)
 		end,
-		update = function(newElement: React_Element<any>)
+		update = function(newElement: ReactElement<any, any>)
 			if root == nil or root.current == nil then
 				return
 			end

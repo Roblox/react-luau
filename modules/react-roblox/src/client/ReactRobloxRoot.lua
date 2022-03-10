@@ -103,7 +103,7 @@ function ReactRobloxRoot:render(
   --     end
   --   end
   -- end
-  updateContainer(children, root, nil, nil)
+  updateContainer(children, root, nil)
 end
 
 function ReactRobloxRoot:unmount()
@@ -164,7 +164,7 @@ createRootImpl = function(
   --     containerNodeType ~= DOCUMENT_FRAGMENT_NODE and
   --     containerNodeType ~= DOCUMENT_NODE
   --   )
-  --     ensureListeningTo(container, 'onMouseEnter', nil)
+  --     ensureListeningTo(container, 'onMouseEnter')
   --   end
   end
 

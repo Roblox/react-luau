@@ -1,4 +1,4 @@
--- Upstream: https://github.com/facebook/react/blob/d13f5b9538e48f74f7c571ef3cde652ca887cca0/packages/react/src/__tests__/ReactStrictMode-test.js
+-- upstream: https://github.com/facebook/react/blob/d13f5b9538e48f74f7c571ef3cde652ca887cca0/packages/react/src/__tests__/ReactStrictMode-test.js
 --  * Copyright (c) Facebook, Inc. and its affiliates.
 --  *
 --  * This source code is licensed under the MIT license found in the
@@ -737,6 +737,7 @@ Please update the following components: Parent]],
             jestExpect(ReactNoop.getChildren()[1].text).toEqual('count:2')
         end)
     end)
+    -- ROBLOX deviation START: we removed support for string refs, so skip test
     describe('string refs', function()
         beforeEach(function()
             RobloxJest.resetModules()
@@ -748,90 +749,88 @@ Please update the following components: Parent]],
             Scheduler = require(Packages.Dev.Scheduler)
         end)
 
-        -- ROBLOX deviation: we removed support for string refs, so skip test
         xit('should warn within a strict tree', function()
-            local StrictMode = React.StrictMode
-            local OuterComponent = React.Component:extend("OuterComponent")
+            -- local StrictMode = React.StrictMode
+            -- local OuterComponent = React.Component:extend("OuterComponent")
 
-            local InnerComponent = React.Component:extend("InnerComponent")
+            -- local InnerComponent = React.Component:extend("InnerComponent")
 
-            function InnerComponent:render()
-                return nil
-            end
+            -- function InnerComponent:render()
+            --     return nil
+            -- end
 
-            function OuterComponent:render()
-                return React.createElement(StrictMode, nil, React.createElement(InnerComponent, {
-                    ref = 'somestring',
-                }))
-            end
+            -- function OuterComponent:render()
+            --     return React.createElement(StrictMode, nil, React.createElement(InnerComponent, {
+            --         ref = 'somestring',
+            --     }))
+            -- end
 
-            jestExpect(function()
-                -- ROBLOX deviation: using ReactNoop in place of ReactDOM
-                ReactNoop.act(function()
-                    ReactNoop.render(React.createElement(OuterComponent))
-                end)
-            end).toErrorDev(
-                'Warning: A string ref, "somestring", has been found within a strict mode tree. ' ..
-                    'String refs are a source of potential bugs and should be avoided. ' ..
-                    'We recommend using useRef() or createRef() instead. ' ..
-                    'Learn more about using refs safely here: ' ..
-                    'https://reactjs.org/link/strict-mode-string-ref\n' ..
-                    '    in OuterComponent (at **)'
-            )
+            -- jestExpect(function()
+            --     -- ROBLOX deviation: using ReactNoop in place of ReactDOM
+            --     ReactNoop.act(function()
+            --         ReactNoop.render(React.createElement(OuterComponent))
+            --     end)
+            -- end).toErrorDev(
+            --     'Warning: A string ref, "somestring", has been found within a strict mode tree. ' ..
+            --         'String refs are a source of potential bugs and should be avoided. ' ..
+            --         'We recommend using useRef() or createRef() instead. ' ..
+            --         'Learn more about using refs safely here: ' ..
+            --         'https://reactjs.org/link/strict-mode-string-ref\n' ..
+            --         '    in OuterComponent (at **)'
+            -- )
 
-            -- Dedup
-            -- ROBLOX deviation: using ReactNoop in place of ReactDOM
-            ReactNoop.act(function()
-                ReactNoop.render(React.createElement(OuterComponent))
-            end)
+            -- -- Dedup
+            -- -- ROBLOX deviation: using ReactNoop in place of ReactDOM
+            -- ReactNoop.act(function()
+            --     ReactNoop.render(React.createElement(OuterComponent))
+            -- end)
         end)
 
-        -- ROBLOX deviation: we removed support for string refs, so skip test
-        -- ROBLOX deviation: upstream uses test name twice
         xit('should warn within a strict tree 2', function()
-            local StrictMode = React.StrictMode
+            -- local StrictMode = React.StrictMode
 
-            local MiddleComponent = React.Component:extend("MiddleComponent")
+            -- local MiddleComponent = React.Component:extend("MiddleComponent")
 
-            function MiddleComponent:render()
-                return nil
-            end
+            -- function MiddleComponent:render()
+            --     return nil
+            -- end
 
-            local InnerComponent = React.Component:extend("InnerComponent")
+            -- local InnerComponent = React.Component:extend("InnerComponent")
 
-            function InnerComponent:render()
-                return React.createElement(MiddleComponent, {
-                    ref = 'somestring',
-                })
-            end
+            -- function InnerComponent:render()
+            --     return React.createElement(MiddleComponent, {
+            --         ref = 'somestring',
+            --     })
+            -- end
 
-            local OuterComponent = React.Component:extend("OuterComponent")
+            -- local OuterComponent = React.Component:extend("OuterComponent")
 
-            function OuterComponent:render()
-                return React.createElement(StrictMode, nil, React.createElement(InnerComponent))
-            end
+            -- function OuterComponent:render()
+            --     return React.createElement(StrictMode, nil, React.createElement(InnerComponent))
+            -- end
 
-            jestExpect(function()
-                -- ROBLOX deviation: using ReactNoop in place of ReactDOM
-                ReactNoop.act(function()
-                    ReactNoop.render(React.createElement(OuterComponent))
-                end)
-            end).toErrorDev(
-                'Warning: A string ref, "somestring", has been found within a strict mode tree. ' ..
-                    'String refs are a source of potential bugs and should be avoided. ' ..
-                    'We recommend using useRef() or createRef() instead. ' ..
-                    'Learn more about using refs safely here: ' ..
-                    'https://reactjs.org/link/strict-mode-string-ref\n' ..
-                    '    in InnerComponent (at **)\n' ..
-                    '    in OuterComponent (at **)'
-            )
-            -- Dedup
-            -- ROBLOX deviation: using ReactNoop in place of ReactDOM
-            ReactNoop.act(function()
-                ReactNoop.render(React.createElement(OuterComponent))
-            end)
+            -- jestExpect(function()
+            --     -- ROBLOX deviation: using ReactNoop in place of ReactDOM
+            --     ReactNoop.act(function()
+            --         ReactNoop.render(React.createElement(OuterComponent))
+            --     end)
+            -- end).toErrorDev(
+            --     'Warning: A string ref, "somestring", has been found within a strict mode tree. ' ..
+            --         'String refs are a source of potential bugs and should be avoided. ' ..
+            --         'We recommend using useRef() or createRef() instead. ' ..
+            --         'Learn more about using refs safely here: ' ..
+            --         'https://reactjs.org/link/strict-mode-string-ref\n' ..
+            --         '    in InnerComponent (at **)\n' ..
+            --         '    in OuterComponent (at **)'
+            -- )
+            -- -- Dedup
+            -- -- ROBLOX deviation: using ReactNoop in place of ReactDOM
+            -- ReactNoop.act(function()
+            --     ReactNoop.render(React.createElement(OuterComponent))
+            -- end)
         end)
     end)
+    -- ROBLOX deviation END
     describe('context legacy', function()
         beforeEach(function()
             RobloxJest.resetModules()

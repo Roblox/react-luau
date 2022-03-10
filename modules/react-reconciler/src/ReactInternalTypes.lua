@@ -13,8 +13,9 @@ local Packages = script.Parent.Parent
 type Array<T> = { [number]: T }
 type Map<K, V> = { [K]: V }
 type Object = { [string]: any }
-type Set<T> = { [T]: boolean }
-
+type SimpleSet<T> = { [T]: boolean }
+local LuauPolyfill = require(Packages.LuauPolyfill)
+type Set<T> = LuauPolyfill.Set<T>
 
 local ReactTypes = require(Packages.Shared)
 -- ROBLOX deviation: ReactElement is defined at the top level of Shared along
@@ -27,10 +28,11 @@ type MutableSource<Source> = ReactTypes.MutableSource<Source>
 type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscribeFn<Source, Snapshot>
 type MutableSourceGetSnapshotFn<Source, Snapshot> = ReactTypes.MutableSourceGetSnapshotFn<Source, Snapshot>
 
--- ROBLOX deviation: These are 'mixed' by default, and specialized by the renderer, need complicated dynamic resolution to do this properly
+-- ROBLOX deviation START: These are 'mixed' by default, and specialized by the renderer, need complicated dynamic resolution to do this properly
 -- local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
 -- type SuspenseInstance = ReactFiberHostConfig.SuspenseInstance
-type SuspenseInstance = any; -- FIXME (roblox): type
+type SuspenseInstance = any
+-- ROBLOX deviation END
 local ReactWorkTags = require(script.Parent.ReactWorkTags)
 type WorkTag = ReactWorkTags.WorkTag
 local ReactTypeOfMode = require(script.Parent.ReactTypeOfMode)
@@ -51,18 +53,18 @@ export type Update<State> = {
 	eventTime: number,
 	lane: Lane,
 
-	-- deviation: FIXME revert when luau supports the type spec below
+	-- ROBLOX FIXME Luau: revert when luau supports singleton integers
 	-- tag: 0 | 1 | 2 | 3,
 	tag: number,
 	payload: any,
-	callback: (() -> any)?,
+	callback: (() -> ...any)?,
 
 	next: Update<State>?,
-};
+}
 
 export type SharedQueue<State> = {
 	pending: Update<State>?,
-};
+}
 
 export type UpdateQueue<State> = {
 	baseState: State,
@@ -70,25 +72,23 @@ export type UpdateQueue<State> = {
 	lastBaseUpdate: Update<State>?,
 	shared: SharedQueue<State>,
 	effects: Array<Update<State>>?,
-};
+}
 
--- ROBLOX deviation: Lusu doesn't support type literals
--- export type HookType =
---  | 'useState'
---  | 'useReducer'
---  | 'useContext'
---  | 'useRef'
---  | 'useEffect'
---  | 'useLayoutEffect'
---  | 'useCallback'
---  | 'useMemo'
---  | 'useImperativeHandle'
---  | 'useDebugValue'
---  | 'useDeferredValue'
---  | 'useTransition'
---  | 'useMutableSource'
---  | 'useOpaqueIdentifier';
-export type HookType = string
+export type HookType =
+	"useState"
+	| "useReducer"
+	| "useContext"
+	| "useRef"
+	| "useEffect"
+	| "useLayoutEffect"
+	| "useCallback"
+	| "useMemo"
+	| "useImperativeHandle"
+	| "useDebugValue"
+	| "useDeferredValue"
+	| "useTransition"
+	| "useMutableSource"
+	| "useOpaqueIdentifier"
 local ReactRootTags = require(script.Parent.ReactRootTags)
 type RootTag = ReactRootTags.RootTag
 -- ROBLOX deviation: we can't import types for dynamic imports like HostConfig files
@@ -111,19 +111,23 @@ export type ContextDependency<T> = {
 	observedBits: number,
 	-- ROBLOX TODO: upstream only parameterizes this type with `mixed`, so avoid Luau recursive type constraint. upstream this change later.
 	next: ContextDependency<T> | nil,
-	[any]: any,
+	-- ROBLOX deviation START: don't allow for extension unless we have to
+	-- ...
+	-- ROBLOX deviation END
 }
 
 export type Dependencies = {
 	lanes: Lanes,
 	firstContext: ContextDependency<any> | nil,
-	[any]: any,
-};
+	-- ROBLOX deviation START: don't allow for extension unless we have to
+	-- ...
+	-- ROBLOX deviation END
+}
 
 -- ROBLOX deviation: Roact stable keys - slightly widen the type definition of a
 -- stable key so that it's likely to work with existing Roact code. Includes
 -- numbers for mixed/sparse tables
-export type RoactStableKey = string | number;
+export type RoactStableKey = string | number
 
 -- A Fiber is work on a Component that needs to be done or was done. There can
 -- be more than one per component.
@@ -166,9 +170,7 @@ export type Fiber = {
 	-- This is effectively the parent, but there can be multiple parents (two)
 	-- so this is only the parent of the thing we're currently processing.
 	-- It is conceptually the same as the return address of a stack frame.
-	-- deviation: Luau does not allow us to use `return` as a field name
-	-- return: Fiber | nil,
-	return_: Fiber?,
+	return_: Fiber | nil,
 
 	-- Singly Linked List Tree Structure.
 	child: Fiber?,
@@ -179,10 +181,7 @@ export type Fiber = {
 	-- I'll avoid adding an owner field for prod and model that as functions.
 	-- ROBLOX deviation: Lua doesn't allow fields on functions
 	-- ref: (((any) -> ()) & {_stringRef: string?, [string]: any}) | RefObject,
-	ref: nil
-		| ((any) -> ())
-		| {_stringRef: string?, [string]: any}
-		| RefObject,
+	ref: nil | ((handle: any) -> ()) | { _stringRef: string?, [string]: any } | RefObject,
 
 	-- Input is the data coming into process this fiber. Arguments. Props.
 	pendingProps: any, -- This type will be more specific once we overload the tag.
@@ -260,13 +259,15 @@ export type Fiber = {
 
 	-- Used to verify that the order of hooks does not change between renders.
 	_debugHookTypes: Array<HookType>?,
-};
+}
 
 export type SuspenseHydrationCallbacks = {
 	onHydrated: ((SuspenseInstance) -> ())?,
 	onDeleted: ((SuspenseInstance) -> ())?,
-	[any]: any,
-};
+	-- ROBLOX deviation START: don't allow for extension unless we have to
+	-- ...
+	-- ROBLOX deviation END
+}
 
 -- deviation: Instead of combining all these props after the fact, we define
 -- them all in one to allow Luau's syntax
@@ -288,7 +289,9 @@ export type FiberRoot = {
 	-- The currently active root fiber. This is the mutable root of the tree.
 	current: Fiber,
 
-	pingCache: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)> | nil,
+	-- ROBLOX deviation START: we use a lightweight unordered set for performance
+	pingCache: Map<Wakeable, (SimpleSet<any> | Map<Wakeable, SimpleSet<any>>)> | nil,
+	-- ROBLOX deviation END
 
 	-- A finished work-in-progress HostRoot that's ready to be committed.
 	finishedWork: Fiber?,
@@ -335,19 +338,14 @@ export type FiberRoot = {
 	-- The follow fields are only used by enableSuspenseCallback for hydration.
 	hydrationCallbacks: SuspenseHydrationCallbacks?,
 
+	-- ROBLOX deviation START: don't allow for extension unless we have to
 	-- ...
-	[any]: any,
-};
+	-- ROBLOX deviation END
+}
 
 type BasicStateAction<S> = ((S) -> S) | S
 type Dispatch<A> = (A) -> ()
 
--- ROBLOX FIXME: function generics
-type _T = any
-type _S = any
-type _I = any
-type _A = any
-type Snapshot = any
 -- ROBLOX deviation: Dispatcher is defined in Shared to avoid circular deps
 export type Dispatcher = Shared.Dispatcher
 

@@ -1,3 +1,4 @@
+--!strict
 return function()
     local Packages = script.Parent.Parent.Parent
     local ReactBaseClasses = require(script.Parent.Parent.ReactBaseClasses)

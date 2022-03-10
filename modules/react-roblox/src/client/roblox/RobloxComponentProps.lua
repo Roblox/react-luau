@@ -148,7 +148,7 @@ local function applyProps(hostInstance: Instance, props: Object): ()
       continue
     end
 
-    applyProp(hostInstance, propKey, value, nil)
+    applyProp(hostInstance, propKey, value)
   end
 end
 

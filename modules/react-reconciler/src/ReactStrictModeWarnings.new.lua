@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/702fad4b1b48ac8f626ed3f35e8f86f5ea728084/packages/react-reconciler/src/ReactStrictModeWarnings.new.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -38,7 +39,8 @@ if _G.__DEV__ then
   local findStrictRoot = function(fiber: Fiber): Fiber | nil
     local maybeStrictRoot = nil
 
-    local node = fiber
+    -- ROBLOX FIXME Luau: Luau needs to understand while not nil loops
+    local node: Fiber? = fiber
     while node ~= nil do
       if bit32.band(node.mode, StrictMode) ~= 0 then
         maybeStrictRoot = node
@@ -316,7 +318,8 @@ if _G.__DEV__ then
       return
   end
 
-    local warningsForRoot = pendingLegacyContextWarning[strictRoot]
+    -- ROBLOX FIXME Luau: Luau should narrow based on the nil guard
+    local warningsForRoot = pendingLegacyContextWarning[strictRoot :: Fiber]
 
     -- ROBLOX deviation: Lua can't have fields on functions
     if typeof(fiber.type) ~= 'function' and
@@ -326,7 +329,8 @@ if _G.__DEV__ then
     then
       if warningsForRoot == nil then
         warningsForRoot = {}
-        pendingLegacyContextWarning[strictRoot] = warningsForRoot
+        -- ROBLOX FIXME Luau: Luau should narrow based on the nil guard
+        pendingLegacyContextWarning[strictRoot :: Fiber] = warningsForRoot
       end
       table.insert(warningsForRoot, fiber)
     end

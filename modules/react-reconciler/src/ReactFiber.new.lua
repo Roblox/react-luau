@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/56e9feead0f91075ba0a4f725c9e4e343bca1c67/packages/react-reconciler/src/ReactFiber.new.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -20,7 +21,7 @@ local console = require(Packages.Shared).console
 local ReactTypes = require(Packages.Shared)
 -- ROBLOX deviation: ReactElement is defined at the top level of Shared along
 -- with the rest of the ReactTypes
-type ReactElement = ReactTypes.ReactElement
+type ReactElement = ReactTypes.ReactElement<any, any>
 type ReactFragment = ReactTypes.ReactFragment
 type ReactPortal = ReactTypes.ReactPortal
 type ReactFundamentalComponent<T, U> = ReactTypes.ReactFundamentalComponent<T, U>
@@ -140,7 +141,7 @@ function FiberNode(
 	pendingProps: any,
 	key: RoactStableKey?,
 	mode: TypeOfMode
-)
+): Fiber
 	local node = {}
 
 	-- Instance
@@ -291,7 +292,8 @@ end
 
 -- This is used to create an alternate fiber to do work on.
 local function createWorkInProgress(current: Fiber, pendingProps: any): Fiber
-	local workInProgress = current.alternate
+	-- ROBLOX FIXME Luau: Luau doesn't understand if nil then create pattern
+	local workInProgress = current.alternate :: Fiber
 	if workInProgress == nil then
 		-- We use a double buffering pooling technique because we know that we'll
 		-- only ever need at most two versions of a tree. We pool the "other" unused
@@ -650,7 +652,8 @@ local function createFiberFromElement(
 	local pendingProps = element.props
 	local fiber = createFiberFromTypeAndProps(
 		type,
-		key,
+		-- ROBLOX FIXME: according to upstream types, key can only be string?, but RoactStableKey deviation also says number
+		key :: string,
 		pendingProps,
 		owner,
 		mode,

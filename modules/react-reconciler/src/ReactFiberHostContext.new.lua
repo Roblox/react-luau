@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/17f582e0453b808860be59ed3437c6a426ae52de/packages/react-reconciler/src/ReactFiberHostContext.new.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -43,16 +44,14 @@ local rootInstanceStackCursor: StackCursor<
   Container | NoContextT
 > = createCursor(NO_CONTEXT)
 
--- FIXME (roblox): function generics
--- function requiredContext<Value>(c: Value | NoContextT): Value {
-function requiredContext(c: any | NoContextT): any
+function requiredContext<Value>(c: Value | NoContextT): Value
   -- ROBLOX performance: eliminate expensive optional cmp in hot path
   -- invariant(
   --   c ~= NO_CONTEXT,
   --   "Expected host context to exist. This error is likely caused by a bug " ..
   --     "in React. Please file an issue."
   -- )
-  return c
+  return c :: any
 end
 
 function getRootHostContainer(): Container

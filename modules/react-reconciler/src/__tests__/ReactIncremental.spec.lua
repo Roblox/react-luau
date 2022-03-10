@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/d13f5b9538e48f74f7c571ef3cde652ca887cca0/packages/react-reconciler/src/__tests__/ReactIncremental-test.js
 --  * Copyright (c) Facebook, Inc. and its affiliates.
 --  *
@@ -72,7 +73,7 @@ return function()
 				return React.createElement(Bar, { isBar = true })
 			end
 
-			ReactNoop.render(React.createElement(Foo, nil))
+			ReactNoop.render(React.createElement(Foo))
 			jestExpect(Scheduler).toFlushWithoutYielding()
 		end)
 		it("should render a simple component, in steps if needed", function()
@@ -96,7 +97,7 @@ return function()
 				}
 			end
 
-			ReactNoop.render(React.createElement(Foo, nil), function()
+			ReactNoop.render(React.createElement(Foo), function()
 				return Scheduler.unstable_yieldValue("callback")
 			end)
 
@@ -129,8 +130,8 @@ return function()
 				return React.createElement("footer", nil, "Bye")
 			end
 
-			local header = React.createElement(Header, nil)
-			local footer = React.createElement(Footer, nil)
+			local header = React.createElement(Header)
+			local footer = React.createElement(Footer)
 
 			local function Foo(props)
 				Scheduler.unstable_yieldValue("Foo")
@@ -242,7 +243,7 @@ return function()
 				)
 			end
 
-			ReactNoop.render(React.createElement(Foo, nil))
+			ReactNoop.render(React.createElement(Foo))
 			jestExpect(Scheduler).toFlushWithoutYielding()
 
 			-- Flush part of the work
@@ -261,7 +262,7 @@ return function()
 
 			-- This will abort the previous work and restart
 			ReactNoop.flushSync(function()
-				return ReactNoop.render(React.createElement(Foo, nil))
+				return ReactNoop.render(React.createElement(Foo))
 			end)
 			inst:setState(function()
 				Scheduler.unstable_yieldValue("setState2")
@@ -424,7 +425,7 @@ return function()
 		--     local function Tester()
 		--         Scheduler.unstable_yieldValue('Tester')
 
-		--         return React.createElement('div', nil)
+		--         return React.createElement('div')
 		--     end
 		--     local function Middle(props)
 		--         Scheduler.unstable_yieldValue('Middle')
@@ -432,7 +433,7 @@ return function()
 		--         return React.createElement('span', nil, props.children)
 		--     end
 
-		--     local middleContent = React.createElement('aaa', nil, React.createElement(Tester, nil), React.createElement('bbb', {hidden = true}, React.createElement('ccc', nil, React.createElement(Middle, nil, 'Hi'))))
+		--     local middleContent = React.createElement('aaa', nil, React.createElement(Tester), React.createElement('bbb', {hidden = true}, React.createElement('ccc', nil, React.createElement(Middle, nil, 'Hi'))))
 
 		--     local function Foo(props)
 		--         Scheduler.unstable_yieldValue('Foo')
@@ -479,7 +480,7 @@ return function()
 		--     function Tester:render()
 		--         Scheduler.unstable_yieldValue('Tester')
 
-		--         return React.createElement('div', nil)
+		--         return React.createElement('div')
 		--     end
 
 		--     local function Middle(props)
@@ -583,13 +584,13 @@ return function()
 
 		--         Scheduler.unstable_yieldValue('Foo')
 
-		--         return React.createElement(Bar, nil)
+		--         return React.createElement(Bar)
 		--     end
 
 		--     local function Bar()
 		--         Scheduler.unstable_yieldValue('Bar')
 
-		--         return React.createElement('div', nil)
+		--         return React.createElement('div')
 		--     end
 
 		--     ReactNoop.render(React.createElement(Parent, {
@@ -653,13 +654,13 @@ return function()
 
 		--         Scheduler.unstable_yieldValue('render: ' .. self.props.prop)
 
-		--         return React.createElement(Bar, nil)
+		--         return React.createElement(Bar)
 		--     end
 
 		--     local function Bar()
 		--         Scheduler.unstable_yieldValue('Foo did complete')
 
-		--         return React.createElement('div', nil)
+		--         return React.createElement('div')
 		--     end
 
 		--     ReactNoop.render(React.createElement(Parent, {
@@ -771,12 +772,12 @@ return function()
 		--     local function GreatGrandchild()
 		--         Scheduler.unstable_yieldValue('GreatGrandchild')
 
-		--         return React.createElement('div', nil)
+		--         return React.createElement('div')
 		--     end
 		--     local function Grandchild()
 		--         Scheduler.unstable_yieldValue('Grandchild')
 
-		--         return React.createElement(GreatGrandchild, nil)
+		--         return React.createElement(GreatGrandchild)
 		--     end
 
 		--     local Child = {}
@@ -793,7 +794,7 @@ return function()
 
 		--         Scheduler.unstable_yieldValue('Child')
 
-		--         return React.createElement(Grandchild, nil)
+		--         return React.createElement(Grandchild)
 		--     end
 
 		--     local Sibling = {}
@@ -804,7 +805,7 @@ return function()
 
 		--         sibling = self
 
-		--         return React.createElement('div', nil)
+		--         return React.createElement('div')
 		--     end
 
 		--     local function Parent()
@@ -813,14 +814,14 @@ return function()
 		--         return{
 		--             React.createElement('div', {
 		--                 key = 'a',
-		--             }, React.createElement(Child, nil)),
+		--             }, React.createElement(Child)),
 		--             React.createElement(Sibling, {
 		--                 key = 'b',
 		--             }),
 		--         }
 		--     end
 
-		--     ReactNoop.render(React.createElement(Parent, nil))
+		--     ReactNoop.render(React.createElement(Parent))
 		--     jestExpect(Scheduler).toFlushWithoutYielding()
 		--     child:setState({step = 1})
 		--     ReactNoop.flushDeferredPri(30)
@@ -951,7 +952,7 @@ return function()
 			function Foo:render()
 				Scheduler.unstable_yieldValue("render")
 
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
 
 			ReactNoop.render(React.createElement(Foo, { step = 1 }))
@@ -985,10 +986,10 @@ return function()
 			end
 
 			local function Foo()
-				return React.createElement("div", nil, React.createElement(Bar, nil))
+				return React.createElement("div", nil, React.createElement(Bar))
 			end
 
-			ReactNoop.render(React.createElement(Foo, nil))
+			ReactNoop.render(React.createElement(Foo))
 			jestExpect(Scheduler).toFlushWithoutYielding()
 			jestExpect(instance.state).toEqual({
 				a = "a",
@@ -1017,7 +1018,7 @@ return function()
 			end
 
 			local function Foo()
-				return React.createElement("div", nil, React.createElement(Bar, nil))
+				return React.createElement("div", nil, React.createElement(Bar))
 			end
 
 			ReactNoop.render(React.createElement(Foo))
@@ -1056,8 +1057,9 @@ return function()
 				return React.createElement("div", nil, React.createElement(Bar, { multiplier = ref.multiplier }))
 			end
 
-			-- deviation: Roact requires first arg of updater to be self
-			local function updater(state, props)
+			-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
+			local function updater(state: { num: number }, props)
+			-- ROBLOX deviation END
 				return {
 					num = state.num * props.multiplier,
 				}
@@ -1092,8 +1094,9 @@ return function()
 				return React.createElement("div", nil, React.createElement(Bar, { multiplier = multiplier }))
 			end
 
-			-- deviation: Roact requires first arg of updater to be self
-			local function updater(state, props)
+			-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
+			local function updater(state: { num: number }, props)
+			-- ROBLOX deviation END
 				return {
 					num = state.num * props.multiplier,
 				}
@@ -1121,10 +1124,10 @@ return function()
 			end
 
 			local function Foo()
-				return React.createElement("div", nil, React.createElement(Bar, nil))
+				return React.createElement("div", nil, React.createElement(Bar))
 			end
 
-			ReactNoop.render(React.createElement(Foo, nil))
+			ReactNoop.render(React.createElement(Foo))
 			jestExpect(Scheduler).toFlushWithoutYielding()
 			instance:setState({
 				b = "b",
@@ -1144,7 +1147,7 @@ return function()
 			local function Baz()
 				Scheduler.unstable_yieldValue("Baz")
 
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
 
 			local instance
@@ -1159,16 +1162,16 @@ return function()
 			function Bar:render()
 				Scheduler.unstable_yieldValue("Bar")
 
-				return React.createElement(Baz, nil)
+				return React.createElement(Baz)
 			end
 
 			local function Foo()
 				Scheduler.unstable_yieldValue("Foo")
 
-				return React.createElement("div", nil, React.createElement(Bar, nil))
+				return React.createElement("div", nil, React.createElement(Bar))
 			end
 
-			ReactNoop.render(React.createElement(Foo, nil))
+			ReactNoop.render(React.createElement(Foo))
 			jestExpect(Scheduler).toFlushAndYield({
 				"Foo",
 				"Bar",
@@ -1186,13 +1189,13 @@ return function()
 			local Foo = React.PureComponent:extend("Foo")
 
 			function Foo:render()
-				local msg = ("A: %s, B: %s"):format(a, self.props.b)
+				local msg = ("A: %s, B: %s"):format(tostring(a), self.props.b)
 
 				Scheduler.unstable_yieldValue(msg)
 				return msg
 			end
 
-			local foo = React.createRef(nil)
+			local foo = React.createRef()
 
 			ReactNoop.render(React.createElement(Foo, {
 				ref = foo,
@@ -1318,7 +1321,7 @@ return function()
 		--     local function Baz()
 		--         Scheduler.unstable_yieldValue('Baz')
 
-		--         return React.createElement('div', nil)
+		--         return React.createElement('div')
 		--     end
 		--     local function Foo(props)
 		--         Scheduler.unstable_yieldValue('Foo')
@@ -1337,9 +1340,9 @@ return function()
 		--         }
 		--     end
 
-		--     ReactNoop.render(React.createElement('div', nil, React.createElement(Foo, {step = 0}), React.createElement(Baz, nil), React.createElement(Baz, nil)))
+		--     ReactNoop.render(React.createElement('div', nil, React.createElement(Foo, {step = 0}), React.createElement(Baz), React.createElement(Baz)))
 		--     jestExpect(Scheduler).toFlushWithoutYielding()
-		--     ReactNoop.render(React.createElement('div', nil, React.createElement(Foo, {step = 1}), React.createElement(Baz, nil), React.createElement(Baz, nil)))
+		--     ReactNoop.render(React.createElement('div', nil, React.createElement(Foo, {step = 1}), React.createElement(Baz), React.createElement(Baz)))
 		--     ReactNoop.flushDeferredPri(45)
 		--     jestExpect(Scheduler).toHaveYielded({
 		--         'Foo',
@@ -1376,7 +1379,7 @@ return function()
 		--         Scheduler.unstable_yieldValue('componentDidMount:' .. self.state.x .. '-' .. self.props.x)
 		--     end
 		--     function LifeCycle:render()
-		--         return React.createElement('span', nil)
+		--         return React.createElement('span')
 		--     end
 
 		--     local function Trail()
@@ -1389,7 +1392,7 @@ return function()
 
 		--         return React.createElement('div', nil, React.createElement(LifeCycle, {
 		--             x = props.x,
-		--         }), React.createElement(Trail, nil))
+		--         }), React.createElement(Trail))
 		--     end
 
 		--     ReactNoop.render(React.createElement(App, {x = 0}))
@@ -1430,7 +1433,7 @@ return function()
 		--     function LifeCycle:render()
 		--         Scheduler.unstable_yieldValue('render:' .. self.state.x)
 
-		--         return React.createElement('span', nil)
+		--         return React.createElement('span')
 		--     end
 
 		--     local function App(props)
@@ -1483,13 +1486,13 @@ return function()
 		--     function LifeCycle:render()
 		--         Scheduler.unstable_yieldValue('render:' .. self.props.x)
 
-		--         return React.createElement('span', nil)
+		--         return React.createElement('span')
 		--     end
 
 		--     local function Sibling()
 		--         Scheduler.unstable_yieldValue('Sibling')
 
-		--         return React.createElement('span', nil)
+		--         return React.createElement('span')
 		--     end
 		--     local function App(props)
 		--         Scheduler.unstable_yieldValue('App')
@@ -1561,7 +1564,7 @@ return function()
 				return nil
 			end
 
-			ReactNoop.render(React.createElement(LifeCycle, nil))
+			ReactNoop.render(React.createElement(LifeCycle))
 			jestExpect(Scheduler).toFlushAndYield({
 				"getDerivedStateFromProps",
 				"render",
@@ -1588,7 +1591,7 @@ return function()
 				return self.props.parentRenders
 			end
 
-			local child = React.createRef(nil)
+			local child = React.createRef()
 
 			local Parent = React.Component:extend("Parent")
 
@@ -1610,7 +1613,7 @@ return function()
 				})
 			end
 
-			ReactNoop.render(React.createElement(Parent, nil))
+			ReactNoop.render(React.createElement(Parent))
 			jestExpect(Scheduler).toFlushAndYield({
 				"getDerivedStateFromProps",
 				"Parent",
@@ -1664,7 +1667,7 @@ return function()
 		--     function LifeCycle:render()
 		--         Scheduler.unstable_yieldValue('render:' .. self.state.x)
 
-		--         return React.createElement('span', nil)
+		--         return React.createElement('span')
 		--     end
 
 		--     local Wrap = {}
@@ -1695,7 +1698,7 @@ return function()
 		--     local function Sibling()
 		--         Scheduler.unstable_yieldValue('Sibling')
 
-		--         return React.createElement('span', nil)
+		--         return React.createElement('span')
 		--     end
 		--     local function App(props)
 		--         Scheduler.unstable_yieldValue('App')
@@ -1777,13 +1780,13 @@ return function()
 		--     function LifeCycle:render()
 		--         Scheduler.unstable_yieldValue('render')
 
-		--         return React.createElement('span', nil)
+		--         return React.createElement('span')
 		--     end
 
 		--     local function Sibling()
 		--         Scheduler.unstable_yieldValue('render sibling')
 
-		--         return React.createElement('span', nil)
+		--         return React.createElement('span')
 		--     end
 		--     local function App(props)
 		--         return{
@@ -1835,10 +1838,10 @@ return function()
 			function Foo:render()
 				instance = self
 
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
 
-			ReactNoop.render(React.createElement(Foo, nil))
+			ReactNoop.render(React.createElement(Foo))
 			jestExpect(Scheduler).toFlushWithoutYielding()
 			ReactNoop.flushSync(function()
 				ReactNoop.batchedUpdates(function()
@@ -1884,13 +1887,14 @@ return function()
 
 			function Foo:render()
 				instance = self
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
 
-			ReactNoop.render(React.createElement(Foo, nil))
+			ReactNoop.render(React.createElement(Foo))
 			jestExpect(Scheduler).toFlushWithoutYielding()
 
-			local function updater(prevState)
+			-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
+			local function updater(prevState: { n: number})
 				local n = prevState.n
 
 				return {
@@ -2168,14 +2172,15 @@ return function()
 								n = (context.n or 3) - 1,
 							}
 						end,
-						render = function()
+						-- ROBLOX FIXME Luau: should infer this as nil | ReactElement<Recurse>
+						render = function(): any
 							Scheduler.unstable_yieldValue("Recurse " .. JSONStringify(context))
 
 							if context.n == 0 then
 								return nil
 							end
 
-							return React.createElement(Recurse, nil)
+							return React.createElement(Recurse)
 						end,
 					}
 				end
@@ -2189,7 +2194,7 @@ return function()
 				--     n = PropTypes.number,
 				-- }
 
-				ReactNoop.render(React.createElement(Recurse, nil))
+				ReactNoop.render(React.createElement(Recurse))
 				jestExpect(function()
 					return jestExpect(Scheduler).toFlushAndYield({
 						"Recurse {}",
@@ -2242,18 +2247,18 @@ return function()
 				{
 					locale = "fr",
 				},
-				React.createElement(ShowLocale, nil),
+				React.createElement(ShowLocale),
 				React.createElement(
 					LegacyHiddenDiv,
 					{
 						mode = "hidden",
 					},
-					React.createElement(ShowLocale, nil),
+					React.createElement(ShowLocale),
 					React.createElement(Intl, {
 							locale = "ru",
-						}, React.createElement(ShowLocale, nil))
+						}, React.createElement(ShowLocale))
 				),
-				React.createElement(ShowLocale, nil)
+				React.createElement(ShowLocale)
 			))
 			jestExpect(Scheduler).toFlushAndYieldThrough({
 				"Intl {}",
@@ -2355,8 +2360,8 @@ return function()
 						React.createElement(
 							Stateful,
 							nil,
-							React.createElement(ShowLocaleClass, nil),
-							React.createElement(ShowLocaleFn, nil)
+							React.createElement(ShowLocaleClass),
+							React.createElement(ShowLocaleFn)
 						)
 					)
 				)
@@ -2468,8 +2473,8 @@ return function()
 					React.createElement(
 						IndirectionClass,
 						nil,
-						React.createElement(ShowLocaleClass, nil),
-						React.createElement(ShowLocaleFn, nil)
+						React.createElement(ShowLocaleClass),
+						React.createElement(ShowLocaleFn)
 					)
 				)
 			))
@@ -2513,7 +2518,7 @@ return function()
 				return {}
 			end
 			function Child:render()
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
 
 			local instance
@@ -2528,7 +2533,7 @@ return function()
 				return false
 			end
 			function Middle:render()
-				return React.createElement(Child, nil)
+				return React.createElement(Child)
 			end
 
 			local Root = React.Component:extend("Root")
@@ -2540,7 +2545,7 @@ return function()
 			Child.childContextTypes = {}
 
 			-- Init
-			ReactNoop.render(React.createElement(Root, nil))
+			ReactNoop.render(React.createElement(Root))
 			jestExpect(function()
 				return jestExpect(Scheduler).toFlushWithoutYielding()
 			end).toErrorDev(
@@ -2595,6 +2600,7 @@ return function()
 					end
 
 					return React.createElement(function()
+						return nil
 					end)
 				end)()
 			end
@@ -2650,7 +2656,7 @@ return function()
 				return ret -- Don't let test hang
 			end
 
-			ReactNoop.render(React.createElement(MyComponent, nil))
+			ReactNoop.render(React.createElement(MyComponent))
 			jestExpect(function()
 				return jestExpect(Scheduler).toFlushAndYield({
 					"render",
@@ -2777,7 +2783,9 @@ return function()
 					return self.props.children
 				end
 				self.updateCount = function()
-					return self:setState(function(state)
+					-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
+					return self:setState(function(state: { count: number })
+					-- ROBLOX deviation END
 						return {
 							count = state.count + 1,
 						}
@@ -2802,7 +2810,7 @@ return function()
 			ReactNoop.render(React.createElement(
 				TopContextProvider,
 				nil,
-				React.createElement(Middle, nil, React.createElement(Child, nil))
+				React.createElement(Middle, nil, React.createElement(Child))
 			))
 			jestExpect(function()
 				return jestExpect(Scheduler).toFlushAndYield({
@@ -2834,7 +2842,9 @@ return function()
 					return self.props.children
 				end
 				self.updateCount = function()
-					return self:setState(function(state)
+					-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
+					return self:setState(function(state: { count: number })
+					-- ROBLOX deviation END
 						return {
 							count = state.count + 1,
 						}
@@ -2863,7 +2873,7 @@ return function()
 			ReactNoop.render(React.createElement(
 				TopContextProvider,
 				nil,
-				React.createElement(MiddleContextProvider, nil, React.createElement(Child, nil))
+				React.createElement(MiddleContextProvider, nil, React.createElement(Child))
 			))
 			jestExpect(function()
 				return jestExpect(Scheduler).toFlushAndYield({
@@ -2895,7 +2905,9 @@ return function()
 					return self.props.children
 				end
 				self.updateCount = function()
-					return self:setState(function(state)
+					-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
+					return self:setState(function(state: { count: number })
+					-- ROBLOX deviation END
 						return {
 							count = state.count + 1,
 						}
@@ -2933,7 +2945,7 @@ return function()
 				React.createElement(
 					MiddleScu,
 					nil,
-					React.createElement(MiddleContextProvider, nil, React.createElement(Child, nil))
+					React.createElement(MiddleContextProvider, nil, React.createElement(Child))
 				)
 			))
 			jestExpect(function()
@@ -2967,7 +2979,9 @@ return function()
 						return self.props.children
 					end
 					self.updateCount = function()
-						return self:setState(function(state)
+						-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
+						return self:setState(function(state: { count: number })
+						-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
 							return {
 								count = state.count + 1,
 							}
@@ -3024,7 +3038,7 @@ return function()
 					React.createElement(
 						MiddleScu,
 						nil,
-						React.createElement(MiddleContextProvider, nil, React.createElement(Child, nil))
+						React.createElement(MiddleContextProvider, nil, React.createElement(Child))
 					)
 				))
 				jestExpect(function()
@@ -3150,7 +3164,7 @@ return function()
 		--                     return nil
 		--                 end
 
-		--                 return React.createElement(Thing, nil)
+		--                 return React.createElement(Thing)
 		--             end)
 		--         end
 
@@ -3160,7 +3174,7 @@ return function()
 		--             end,
 		--         }
 
-		--         ReactNoop.render(React.createElement(Boundary, nil))
+		--         ReactNoop.render(React.createElement(Boundary))
 		--         jestExpect(function()
 		--             jestExpect(Scheduler).toFlushWithoutYielding()
 		--         end).toErrorDev({

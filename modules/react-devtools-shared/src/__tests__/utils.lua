@@ -14,6 +14,7 @@ local jest = JestGlobals.jest
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
+local Number = LuauPolyfill.Number
 local Object = LuauPolyfill.Object
 type Function = (...any) -> any?
 local global = _G
@@ -163,12 +164,12 @@ exports.getRendererID = function(): number
 		return true
 	end)
 
-	-- ROBLOX deviation: this doesn't make any sense, ids is always defined
-	-- if ids == nil then
-	-- 	error("Could not find renderer.")
-	-- end
+	if ids == nil then
+		error("Could not find renderer.")
+	end
 
-	return tonumber(id) :: number
+	-- ROBLOX FIXME: create Number.parseInt() in luau-polyfill
+	return id and tonumber(id) or Number.NaN
 end
 exports.requireTestRenderer = function()
 	local hook

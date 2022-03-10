@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/d17086c7c813402a550d15a2f56dc43f1dbd1735/packages/react-reconciler/src/SchedulerWithReactIntegration.new.js
 --[[*
 * Copyright (c) Facebook, Inc. and its affiliates.
@@ -72,14 +73,12 @@ local flushSyncCallbackQueueImpl
 --   )
 -- end
 
--- FIXME (roblox): Use self-recursive type once supported
--- export type SchedulerCallback = (isSync: boolean) -> SchedulerCallback | nil;
-export type SchedulerCallback = (isSync: boolean) -> nil | () -> any?
+export type SchedulerCallback = (isSync: boolean) -> SchedulerCallback | nil
 
--- FIXME (roblox): Use better syntax for incomplete definitions
+-- ROBLOX deviation START: don't allow extension unless we need to
 -- type SchedulerCallbackOptions = { timeout: number?, ... };
-type SchedulerCallbackOptions = { timeout: number?, [string]: any }
-
+type SchedulerCallbackOptions = { timeout: number? }
+-- ROBLOX deviation END
 local fakeCallbackNode = {}
 
 local shouldYield = Scheduler_shouldYield
@@ -103,7 +102,7 @@ local initialTimeMs: number = Scheduler_now()
 -- -- the behavior of performance.now and keep our times small enough to fit
 -- -- within 32 bits.
 -- -- TODO: Consider lifting this into Scheduler.
--- -- FIXME (roblox): properly account for ms vs s from tick
+-- ROBLOX FIXME: properly account for ms vs s from tick
 -- local now = initialTimeMs < 10000
 --   and Scheduler_now
 --   or function()
@@ -153,14 +152,10 @@ function reactPriorityToSchedulerPriority(reactPriorityLevel)
   end
 end
 
--- FIXME (roblox): restore proper type defs when we have function generics
--- exports.runWithPriority<T>(
---   reactPriorityLevel: ReactPriorityLevel,
---   fn: () => T,
--- ): T {
-local function runWithPriority(
+-- ROBLOX FIXME Luau: should be T... but hits CLI-50289: failure to unify
+local function runWithPriority<T...>(
   reactPriorityLevel: ReactPriorityLevel,
-  fn: () -> ...any
+  fn: () -> T...
 ): ...any
   local priorityLevel = reactPriorityToSchedulerPriority(reactPriorityLevel)
   return Scheduler_runWithPriority(priorityLevel, fn)
@@ -188,8 +183,7 @@ local function scheduleSyncCallback(callback: SchedulerCallback)
   else
     -- Push onto existing queue. Don't need to schedule a callback because
     -- we already scheduled one when we created the queue.
-    -- FIXME (roblox): need better type refinement
-    local coercedSyncQueue: any = syncQueue
+    local coercedSyncQueue = syncQueue
     table.insert(coercedSyncQueue, callback)
   end
   return fakeCallbackNode
@@ -227,11 +221,13 @@ flushSyncCallbackQueueImpl = function()
 
           setCurrentUpdateLanePriority(SyncLanePriority)
           ok, result = pcall(runWithPriority, ImmediatePriority,
-            function()
+            -- ROBLOX FIXME Luau: Luau sees this as returning void, but then sees an explicit return in runWithPriority and errors
+            function(): ...any
               for index, callback in ipairs(queue) do
                 i = index
                 repeat
-                  callback = callback(isSync)
+                  -- ROBLOX FIXME Luau: Luau doesn't understand loop until nil construct
+                  callback = callback(isSync) :: any
                 until callback == nil
               end
             end
@@ -243,11 +239,13 @@ flushSyncCallbackQueueImpl = function()
         local queue = syncQueue
 
         setCurrentUpdateLanePriority(SyncLanePriority)
-        runWithPriority(ImmediatePriority, function()
-          while i <= #queue do
-            local callback = queue[i]
+          -- ROBLOX FIXME Luau: Luau sees this as returning void, but then sees an explicit return in runWithPriority and errors
+          runWithPriority(ImmediatePriority, function(): ...any
+          for index, callback in ipairs(queue) do
+            i = index
             repeat
-              callback = callback(isSync)
+              -- ROBLOX FIXME Luau: Luau doesn't understand loop until nil construct
+              callback = callback(isSync) :: any
             until callback == nil
             i += 1
           end
@@ -280,11 +278,13 @@ flushSyncCallbackQueueImpl = function()
         local queue = syncQueue
 
         ok, result = pcall(runWithPriority, ImmediatePriority,
-          function()
+          -- ROBLOX FIXME Luau: Luau sees this as returning void, but then sees an explicit return in runWithPriority and errors
+          function(): ...any
             for index, callback in ipairs(queue) do
               i = index
               repeat
-                callback = callback(isSync)
+                -- ROBLOX FIXME Luau: Luau doesn't understand loop until nil construct
+                callback = callback(isSync) :: any
               until callback == nil
             end
           end
@@ -294,11 +294,13 @@ flushSyncCallbackQueueImpl = function()
         ok = true
         local isSync = true
         local queue = syncQueue
-        runWithPriority(ImmediatePriority, function()
+          -- ROBLOX FIXME Luau: Luau sees this as returning void, but then sees an explicit return in runWithPriority and errors
+          runWithPriority(ImmediatePriority, function(): ...any
           for index, callback in ipairs(queue) do
             i = index
             repeat
-              callback = callback(isSync)
+              -- ROBLOX FIXME Luau: Luau doesn't understand loop until nil construct
+              callback = callback(isSync) :: any
             until callback == nil
           end
         end)

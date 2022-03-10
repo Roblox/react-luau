@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/1eaafc9ade46ba708b2361b324dd907d019e3939/packages/react-reconciler/src/ReactFiberNewContext.new.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -69,7 +70,7 @@ local lastContextWithAllBitsObserved: ReactContext<any> | nil = nil
 
 local isDisallowedContextReadInDEV: boolean = false
 
-exports.resetContextDependencies = function()
+exports.resetContextDependencies = function(): ()
   -- This is called right before React yields execution, to ensure `readContext`
   -- cannot be called outside the render phase.
   currentlyRenderingFiber = nil
@@ -80,20 +81,20 @@ exports.resetContextDependencies = function()
   end
 end
 
-exports.enterDisallowedContextReadInDEV = function()
+exports.enterDisallowedContextReadInDEV = function(): ()
   if _G.__DEV__ then
     isDisallowedContextReadInDEV = true
   end
 end
 
-exports.exitDisallowedContextReadInDEV = function()
+exports.exitDisallowedContextReadInDEV = function(): ()
   if _G.__DEV__ then
     isDisallowedContextReadInDEV = false
   end
 end
 
-exports.pushProvider = function(providerFiber: Fiber, nextValue)
-  local context: ReactContext<any> = providerFiber.type._context
+exports.pushProvider = function<T>(providerFiber: Fiber, nextValue: T): ()
+  local context: ReactContext<T> = providerFiber.type._context
 
   if isPrimaryRenderer then
     push(valueCursor, context._currentValue, providerFiber)
@@ -143,16 +144,10 @@ exports.popProvider = function(providerFiber: Fiber)
   end
 end
 
--- ROBLOX FIXME: Function generics, type refinement
--- exports.calculateChangedBits<T> = function(
---   context: ReactContext<T>,
---   newValue: T,
---   oldValue: T,
--- )
-exports.calculateChangedBits = function(
-  context: any,
-  newValue: any,
-  oldValue: any
+exports.calculateChangedBits = function<T>(
+  context: ReactContext<T>,
+  newValue: T,
+  oldValue: T
 )
   if is(oldValue, newValue) then
     -- No change
@@ -207,12 +202,12 @@ exports.scheduleWorkOnParentPath = function(
   end
 end
 
-exports.propagateContextChange = function(
+exports.propagateContextChange = function<T>(
   workInProgress: Fiber,
-  context: ReactContext<any>,
+  context: ReactContext<T>,
   changedBits: number,
   renderLanes: Lanes
-)
+): ()
   local fiber = workInProgress.child
   if fiber ~= nil then
     -- Set the return pointer of the child to the work-in-progress fiber.
@@ -352,7 +347,7 @@ exports.prepareToReadContext = function(
   workInProgress: Fiber,
   renderLanes: Lanes,
   markWorkInProgressReceivedUpdate: () -> ()
-)
+): ()
   currentlyRenderingFiber = workInProgress
   lastContextDependency = nil
   lastContextWithAllBitsObserved = nil
@@ -371,15 +366,10 @@ exports.prepareToReadContext = function(
   end
 end
 
--- FIXME (roblox): introduce generic function signatures
--- exports.readContext<T>(
---   context: ReactContext<T>,
---   observedBits: void | number | boolean,
--- ): T {
-exports.readContext = function(
-  context: ReactContext<any>,
+exports.readContext = function<T>(
+  context: ReactContext<T>,
   observedBits: nil | number | boolean
-): any
+): T
   if _G.__DEV__ then
     -- This warning would fire if you read context inside a Hook like useMemo.
     -- Unlike the class check below, it's not enforced in production for perf.

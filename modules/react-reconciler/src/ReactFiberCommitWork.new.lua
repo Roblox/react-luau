@@ -8,7 +8,7 @@
  * @flow
 ]]
 -- FIXME (roblox): remove this when our unimplemented
-local function unimplemented(message)
+local function unimplemented(message: string)
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
   print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
@@ -42,6 +42,7 @@ local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 local LuauPolyfill = require(Packages.LuauPolyfill)
+local Error = LuauPolyfill.Error
 local Object = LuauPolyfill.Object
 local Set = LuauPolyfill.Set
 type Array<T> = { [number]: T }
@@ -50,11 +51,14 @@ local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
 type Instance = ReactFiberHostConfig.Instance;
 type Container = ReactFiberHostConfig.Container;
 type TextInstance = ReactFiberHostConfig.TextInstance
+-- ROBLOX deviation START: we have to inline, because type imports don't work across dynamic requires like HostConfig
 -- local type {
 --   SuspenseInstance,
 --   ChildSet,
 --   UpdatePayload,
+type UpdatePayload = Array<any>
 -- } = require(script.Parent.ReactFiberHostConfig)
+-- ROBLOX deviation END
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
 type FiberRoot = ReactInternalTypes.FiberRoot;
@@ -290,7 +294,7 @@ local function safelyDetachRef(current: Fiber, nearestMountedAncestor: Fiber): (
   if ref ~= nil then
     if typeof(ref) == "function" then
       -- ROBLOX performance: eliminate the __DEV__ and invokeGuardedCallback, like React 18 has done
-      local ok, error_ = pcall(ref, nil)
+      local ok, error_ = pcall(ref)
       if not ok then
         captureCommitPhaseError(current, nearestMountedAncestor, error_)
       end
@@ -435,11 +439,8 @@ local function commitHookEffectListUnmount(
 end
 
 local function commitHookEffectListMount(flags: HookFlags, finishedWork: Fiber)
-  local updateQueue: FunctionComponentUpdateQueue | nil = finishedWork.updateQueue
-  local lastEffect
-  if updateQueue ~= nil then
-    lastEffect = (updateQueue :: FunctionComponentUpdateQueue).lastEffect
-  end
+  local updateQueue: FunctionComponentUpdateQueue | nil = (finishedWork.updateQueue :: any)
+  local lastEffect = if updateQueue ~= nil then updateQueue.lastEffect else nil
   if lastEffect ~= nil then
     local firstEffect = lastEffect.next
     local effect = firstEffect
@@ -1396,14 +1397,12 @@ local function getHostParentFiber(fiber: Fiber): Fiber
     end
     parent = parent.return_
   end
-  invariant(
-    false,
+  -- ROBLOX deviation START: use React 18 approach, which Luau understands better than invariant
+  error(Error.new(
     "Expected to find a host parent. This error is likely caused by a bug " ..
       "in React. Please file an issue."
-  )
-  -- FIXME (roblox): roblox-cli doesn't understand that `invariant` throws, so
-  -- we need an explicit return to satisfy it; the actual value doesn't matter
-  return parent
+  ))
+  -- ROBLOX deviation END
 end
 
 function isHostParent(fiber: Fiber): boolean
@@ -1590,9 +1589,7 @@ function unmountHostComponents(
 ): ()
   -- We only have the top Fiber that was deleted but we need to recurse down its
   -- children to find all the terminal nodes.
-  -- ROBLOX TODO: type refinement
-  -- local node: Fiber = current
-  local node = current
+  local node: Fiber = current
 
   -- Each iteration, currentParent is populated with node's host parent if not
   -- currentParentIsValid.
@@ -1606,12 +1603,15 @@ function unmountHostComponents(
     if not currentParentIsValid then
       local parent = node.return_
       while true do
-        -- ROBLOX performance? eliminate compare in hot path
-        -- invariant(
-        --   parent ~= nil,
-        --   "Expected to find a host parent. This error is likely caused by " ..
-        --     "a bug in React. Please file an issue."
-        -- )
+
+        -- ROBLOX deviation START: use React 18 approach so Luau understands control flow better
+        if parent == nil then
+          error(Error.new(
+            "Expected to find a host parent. This error is likely caused by " ..
+            "a bug in React. Please file an issue."
+          ))
+        end
+        -- ROBLOX deviation END
         local parentStateNode = parent.stateNode
         if parent.tag == HostComponent then
           currentParent = parentStateNode
@@ -1747,15 +1747,17 @@ function unmountHostComponents(
       if node.return_ == nil or node.return_ == current then
         return
       end
-      node = node.return_
+      -- ROBLOX FIXME Luau: Luau doesn't understand narrowing by guard above
+      node = node.return_ :: Fiber
       if node.tag == HostPortal then
         -- When we go out of the portal, we need to restore the parent.
         -- Since we don't keep a stack of them, we will search for it.
         currentParentIsValid = false
       end
     end
-    node.sibling.return_ = node.return_
-    node = node.sibling
+    -- ROBLOX TODO: flowtype makes an impossible leap here, contribute this annotation upstream
+    (node.sibling :: Fiber).return_ = node.return_
+    node = node.sibling :: Fiber
   end
 end
 
@@ -1919,9 +1921,7 @@ end
       end
       local type = finishedWork.type
       -- TODO: Type the updateQueue to be specific to host components.
-      -- FIXME (roblox): type coercion
-      -- local updatePayload: nil | UpdatePayload = (finishedWork.updateQueue: any)
-      local updatePayload = finishedWork.updateQueue
+      local updatePayload: nil | UpdatePayload = (finishedWork.updateQueue :: any)
       finishedWork.updateQueue = nil
       if updatePayload ~= nil then
         commitUpdate(
@@ -2057,8 +2057,7 @@ function commitSuspenseHydrationCallbacks(
     if current ~= nil then
       local prevState: SuspenseState | nil = current.memoizedState
       if prevState ~= nil then
-        -- ROBLOX FIXME: recast to silence analyze
-        local suspenseInstance = (prevState :: SuspenseState).dehydrated
+        local suspenseInstance = prevState.dehydrated
         if suspenseInstance ~= nil then
           commitHydratedSuspenseInstance(suspenseInstance)
           if enableSuspenseCallback then

@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/0cf22a56a18790ef34c71bef14f64695c0498619/packages/react/src/ReactBaseClasses.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -8,10 +9,13 @@
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
+type Object = LuauPolyfill.Object
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 
-local invariant = require(Packages.Shared).invariant
+local SharedModule = require(Packages.Shared)
+local invariant = SharedModule.invariant
+type React_Component<Props, State = nil> = SharedModule.React_Component<Props, State>
 local ReactNoopUpdateQueue = require(script.Parent.ReactNoopUpdateQueue)
 local emptyObject = {}
 
@@ -38,7 +42,8 @@ local componentClassPrototype = {
 -- ROBLOX FIXME: remove below table and function once we've formally stopped
 -- supporting old Roact lifecycle method names.
 
-local function trimPath(path)
+-- ROBLOX FIXME Luau: have to annotate this function manually to suppress ReactBaseClasses.lua:55:3-13: (E001) TypeError: Expected to return 2 values, but 1 is returned here
+local function trimPath(path: string): string
   -- ROBLOX TODO: The path splits files by . but file names can
   -- have . in them, so we use best guess heuristics to determine
   -- the file name breaks.
@@ -102,9 +107,8 @@ local componentClassMetatable = {
   end,
 }
 
-local Component = {}
-setmetatable(Component, componentClassMetatable)
-Component.__componentName = "Component"
+-- ROBLOX FIXME Luau: TypeError: Type '{ @metatable componentClassMetatable, Component }' could not be converted into 't1 where t1 = { @metatable {|  |}, t1 }'
+local Component = setmetatable({__componentName = "Component"}, componentClassMetatable) :: any
 
 -- ROBLOX deviation: Lua doesn't expose inheritance in a class-syntax way
 --[[
@@ -129,7 +133,7 @@ for i=1, InstancePoolSize do
 end
 
 
-function Component:extend(name)
+function Component:extend(name): React_Component<any, any>
   -- ROBLOX note: legacy Roact will accept nil here and default to empty string
   -- ROBLOX TODO: if name in "" in ReactComponentStack frame, we should try and get the variable name it was assigned to
   if name == nil then
@@ -148,7 +152,7 @@ function Component:extend(name)
     __componentName = name,
     setState = self.setState,
     forceUpdate = self.forceUpdate,
-    init = nil -- ROBLOX note: required to make Luau analyze happy, should be removed by bytecode compiler
+    init = nil, -- ROBLOX note: required to make Luau analyze happy, should be removed by bytecode compiler
   }
   -- for key, value in pairs(self) do
   --   -- Roact opts to make consumers use composition over inheritance, which
@@ -206,7 +210,7 @@ function Component:extend(name)
     -- of misbehavior
     instance = setmetatable(instance, class)
 
-    -- deviation: TODO: revisit this; make sure that we properly initialize
+    -- ROBLOX deviation: TODO: revisit this; make sure that we properly initialize
     -- things like `state` if its necessary, consider if we want some sort of
     -- alternate naming or syntax for the constructor equivalent
     -- ROBLOX performance: only do typeof if it's non-nil to begin with
@@ -226,7 +230,7 @@ function Component:extend(name)
 
   setmetatable(class, getmetatable(self))
 
-  return class
+  return (class :: any) :: React_Component<any, any>
 end
 
 --[[*
@@ -312,16 +316,19 @@ end
 --[[*
  * Convenience component with default shallow equality check for sCU.
  ]]
--- deviation: work within the `extend` framework defined above to emulate JS's
+-- ROBLOX deviation START: work within the `extend` framework defined above to emulate JS's
 -- class inheritance
-local PureComponent = Component:extend("PureComponent")
+
+-- ROBLOX FIXME Luau: this is so we get *some* type checking despite the FIXME Luau above
+local PureComponent = Component:extend("PureComponent") :: React_Component<any, any>
 
 -- When extend()ing a component, you don't get an extend method.
 -- This is to promote composition over inheritance.
 -- PureComponent is an exception to this rule.
-PureComponent.extend = Component.extend
+-- ROBLOX FIXME Luau: this is so we get *some* type checking despite the FIXME Luau above
+PureComponent.extend = Component.extend :: (string) -> React_Component<any, any>
 
--- deviation: We copy members directly from the Component prototype above; we
+-- ROBLOX note: We copy members directly from the Component prototype above; we
 -- don't need to redefine the constructor or do dummy function trickery to apply
 -- it without jumping around
 -- ROBLOX performance? inline (duplicate) explicit assignments to avoid loop overhead in hot path
@@ -340,6 +347,7 @@ setmetatable(PureComponent, {
     return self.__componentName
   end,
 })
+-- ROBLOX deviation END
 
 return {
   Component = Component,

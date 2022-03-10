@@ -32,7 +32,7 @@ return function()
 	-- guaranteed order, react might happen to assign the right values even if key
 	-- behavior isn't working.
 	-- it("should allow key property to express identity", function()
-	--   local ref = React.createRef(nil)
+	--   local ref = React.createRef()
 	--   local function Component(props)
 	--     return React.createElement("Frame", {ref=ref},
 	--       React.createElement("Frame", {key=props.swap and "banana" or "apple", prop="Hello"}),
@@ -68,7 +68,7 @@ return function()
 	-- behavior expected above, but uses enough table keys to greatly reduce the
 	-- likelihood of coincidental success.
 	it("should allow key property to express identity", function()
-		local ref = React.createRef(nil)
+		local ref = React.createRef()
 		local function Component(props)
 			local children = {}
 			for i = 1, 50 do
@@ -108,7 +108,7 @@ return function()
 	-- ROBLOX deviation: Verify equivalent behavior with table keys, an adaptation
 	-- to be compatible with currently-released Roact
 	it("should allow table key to express identity", function()
-		local ref = React.createRef(nil)
+		local ref = React.createRef()
 		local function Component(props)
 			local children = {}
 			for i = 1, 50 do
@@ -148,7 +148,7 @@ return function()
 	-- ROBLOX deviation: Verify equivalent behavior with table keys, an adaptation
 	-- to be compatible with currently-released Roact
 	it("should use table key to express identity when updating children type", function()
-		local ref = React.createRef(nil)
+		local ref = React.createRef()
 
 		local function Component(props)
 			local children = {}
@@ -182,7 +182,7 @@ return function()
 	end)
 
 	it("should defer to provided key if both are present", function()
-		local ref = React.createRef(nil)
+		local ref = React.createRef()
 		local function Component(props)
 			local children = {}
 			for i = 1, 50 do
@@ -227,8 +227,8 @@ return function()
 			return React.createElement("Frame", nil, self.props.children)
 		end
 
-		local ref1 = React.createRef(nil)
-		local ref2 = React.createRef(nil)
+		local ref1 = React.createRef()
+		local ref2 = React.createRef()
 
 		reactRobloxRoot:render(
 			React.createElement(Wrapper, { key = "wrap1" }, React.createElement("Frame", { ref = ref1 }))
@@ -351,7 +351,7 @@ return function()
 	end)
 
 	it("should retain key during updates in composite components", function()
-		local ref = React.createRef(nil)
+		local ref = React.createRef()
 		local swap
 
 		local TestComponent = React.Component:extend("TestComponent")

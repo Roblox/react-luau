@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/56e9feead0f91075ba0a4f725c9e4e343bca1c67/packages/shared/ReactComponentStackFrame.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -9,6 +10,7 @@
 ]]
 
 type Object = { [string]: any }
+type Function = (...any) -> ...any
 
 local ReactElementType = require(script.Parent.ReactElementType)
 type Source = ReactElementType.Source
@@ -78,7 +80,7 @@ if _G.__DEV__ then
 end
 
 local function describeNativeComponentFrame(
-	fn: ((any) -> any)? | Object, -- ROBLOX TODO: only accept tables with __tostring metamethod overridden
+	fn: nil | Function | Object, -- ROBLOX TODO: only accept tables with __tostring metamethod overridden
 	construct: boolean
 ): string
 	-- // If something asked for a stack inside a fake render, it should get ignored.
@@ -131,7 +133,7 @@ local function describeNativeComponentFrame(
 			end)
 			control = x;
 			-- ROBLOX FIXME: Luau flow analysis bug workaround
-			(fn :: (any) -> any)()
+			(fn :: (...any) -> ...any)()
 		end
 	end, function(message)
 		return {
@@ -299,8 +301,8 @@ local function describeClassComponentFrame(
 end
 
 function describeFunctionComponentFrame(
-	-- ROBLOX deviation: this annotation is incorrect upstream, we fix it here
-	fn: nil | ((any) -> any),
+	-- ROBLOX TODO: this annotation is incorrect upstream, we fix it here
+	fn: nil | Function,
 	source: nil | Source,
 	ownerFn: nil | (any) -> any
 ): string
@@ -328,7 +330,11 @@ end
 -- 	return not not (prototype and prototype.isReactComponent)
 -- end
 
-local function describeUnknownElementTypeFrameInDEV(type, source, ownerFn): string
+local function describeUnknownElementTypeFrameInDEV(
+	type: any,
+	source: nil | Source,
+	ownerFn: nil | Function
+): string
 	if not _G.__DEV__ then
 		return ""
 	end

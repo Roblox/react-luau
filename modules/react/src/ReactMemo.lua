@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/41694201988c5e651f0c3bc69921d5c9717be88b/packages/react/src/ReactMemo.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -14,6 +15,16 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
 local inspect = LuauPolyfill.util.inspect
+type React_StatelessFunctionalComponent<Props> = Shared.React_StatelessFunctionalComponent<
+	Props
+>
+type React_ElementType = Shared.React_ElementType
+type React_Component<Props, State> = Shared.React_Component<Props, State>
+type React_ComponentType<Props> = Shared.React_ComponentType<Props>
+type React_AbstractComponent<Config, Instance> = Shared.React_AbstractComponent<
+	Config,
+	Instance
+>
 
 local ReactSymbols = Shared.ReactSymbols
 local REACT_MEMO_TYPE = ReactSymbols.REACT_MEMO_TYPE
@@ -23,17 +34,18 @@ local getComponentName = Shared.getComponentName
 
 local exports = {}
 
--- ROBLOX TODO: use function generics
--- export function memo<Props>(
--- 	type: React$ElementType,
--- 	compare?: (oldProps: Props, newProps: Props) => boolean,
---   ) {
-exports.memo = function(type_, compare: ((any, any) -> boolean)?)
+exports.memo = function<Props>(
+	-- ROBLOX deviation START: expanded type pulled from definitelytyped, not sure why upstream doesn't accept function component types
+	-- ROBLOX TODO Luau: React_Component<Props, any> gave me  Type 'React_Component<any, any>' could not be converted into '((any, any) -> (Array<(Array<<CYCLE>> | React_Element<any> | boolean | number | string)?> | React_Element<any> | boolean | number | string)?) | string'; none of the union options are compatible
+	type_: React_StatelessFunctionalComponent<Props> | React_Component<any, any> | string,
+	-- ROBLOX deviation END
+	compare: ((oldProps: Props, newProps: Props) -> boolean)?
+)
 	if _G.__DEV__ then
 		local validType = isValidElementType(type_)
 
-		-- // We warn in this case but don't throw. We expect the element creation to
-		-- // succeed and there will likely be errors in render.
+		-- We warn in this case but don't throw. We expect the element creation to
+		-- succeed and there will likely be errors in render.
 		if not validType then
 			local info = ""
 			if
@@ -54,9 +66,11 @@ exports.memo = function(type_, compare: ((any, any) -> boolean)?)
 			elseif
 				type_ ~= nil
 				and typeof(type_) == "table"
-				and type_["$$typeof"] == REACT_ELEMENT_TYPE
+				and (type_)["$$typeof"] == REACT_ELEMENT_TYPE
 			then
-				typeString = ("<%s />"):format(getComponentName(type_.type) or "UNKNOWN")
+				typeString = ("<%s />"):format(
+					getComponentName((type_).type) or "UNKNOWN"
+				)
 				info =
 					" Did you accidentally export a JSX literal or Element instead of a component?"
 			else
@@ -83,14 +97,16 @@ exports.memo = function(type_, compare: ((any, any) -> boolean)?)
 	if _G.__DEV__ then
 		local ownName = nil
 		elementType.displayName = function(...)
+			-- ROBLOX TODO: made this a select("#", ...)
 			if #{ ... } == 0 then
 				return ownName
 			end
 
+			-- ROBLOX TODO: made this a select(1, ...)
 			local name = ({ ... })[1]
 			ownName = name
 
-			if type_.displayName == nil then
+			if typeof(type_) == "table" and type_.displayName == nil then
 				type_.displayName = name
 			end
 

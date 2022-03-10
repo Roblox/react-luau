@@ -14,6 +14,7 @@ export type RootTag = ReactRootTags.RootTag
 -- ROBLOX deviation: In order to allow host config to be spliced in, we export
 -- this top-level package as an initializer function that returns the configured
 -- reconciler module
+-- ROBLOX TODO: this effectively disconnects type checking from above to reconciler to below
 local function initialize(config): { [string]: any }
 	local ReactFiberHostConfig = require(script.ReactFiberHostConfig)
 	for name, implementation in pairs(config) do

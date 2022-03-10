@@ -24,56 +24,58 @@ type RefObject = ReactTypes.RefObject
 type ReactContext<T> = ReactTypes.ReactContext<T>
 type MutableSourceVersion = ReactTypes.MutableSourceVersion
 type MutableSource<Source> = ReactTypes.MutableSource<Source>
-type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscribeFn<Source, Snapshot>
-type MutableSourceGetSnapshotFn<Source, Snapshot> = ReactTypes.MutableSourceGetSnapshotFn<Source, Snapshot>
+type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscribeFn<
+	Source,
+	Snapshot
+>
+type MutableSourceGetSnapshotFn<Source, Snapshot> = ReactTypes.MutableSourceGetSnapshotFn<
+	Source,
+	Snapshot
+>
 
 type BasicStateAction<S> = ((S) -> S) | S
 type Dispatch<A> = (A) -> ()
 
--- ROBLOX FIXME: function generics
-type _T = any
-type _S = any
-type _I = any
-type _A = any
-type Snapshot = any
 export type Dispatcher = {
-	readContext: (
-		context: ReactContext<_T>,
+	readContext: <T>(
+		context: ReactContext<T>,
 		observedBits: nil | number | boolean
-	) -> _T,
-	useState: (initialState: (() -> _S) | _S) -> (_S, Dispatch<BasicStateAction<_S>>),
-	useReducer: (
-		reducer: (_S, _A) -> _S,
-		initialArg: _I,
-		init: ((_I) -> _S)?
-	) -> (_S, Dispatch<BasicStateAction<_S>>),
-	useContext: (
-		context: ReactContext<_T>,
+	) -> T,
+	useState: <S>(initialState: (() -> S) | S) -> (S, Dispatch<BasicStateAction<S>>),
+	useReducer: <S, I, A>(
+		reducer: (S, A) -> S,
+		initialArg: I,
+		init: ((I) -> S)?
+	) -> (S, Dispatch<A>),
+	useContext: <T>(
+		context: ReactContext<T>,
 		observedBits: nil | number | boolean
-	) -> _T,
-	useRef: (initialValue: _T) -> {current: _T},
+	) -> T,
+	-- ROBLOX deviation START: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
+	useRef: <T>(initialValue: T) -> { current: T | nil },
+	-- ROBLOX deviation END
 	useEffect: (
 		-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
-		create: (() -> ()) | ((() -> ()) -> ()),
+		create: (() -> ()) | (() -> (() -> ())),
 		deps: Array<any> | nil
 	) -> (),
 	useLayoutEffect: (
 		-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
-		create: (() -> ()) | ((() -> ()) -> ()),
+		create: (() -> ()) | (() -> (() -> ())),
 		deps: Array<any> | nil
 	) -> (),
-	useCallback: (callback: _T, deps: Array<any> | nil) -> _T,
-	useMemo: (nextCreate: () -> _T, deps: Array<any> | nil) -> _T,
-	useImperativeHandle: (
-		ref: {current: _T | nil} | ((inst: _T | nil) -> any) | nil,
-		create: () -> _T,
+	useCallback: <T>(callback: T, deps: Array<any> | nil) -> T,
+	useMemo: <T...>(nextCreate: () -> T..., deps: Array<any> | nil) -> T...,
+	useImperativeHandle: <T>(
+		ref: { current: T | nil } | ((inst: T | nil) -> any) | nil,
+		create: () -> T,
 		deps: Array<any> | nil
 	) -> (),
-	useDebugValue: (value: _T, formatterFn: ((value: _T) -> any)?) -> (),
+	useDebugValue: <T>(value: T, formatterFn: ((value: T) -> any)?) -> (),
 	-- ROBLOX TODO: make these non-optional and implement them in the dispatchers
-	useDeferredValue: ((value: _T) -> _T)?,
+	useDeferredValue: (<T>(value: T) -> T)?,
 	useTransition: (() -> ((() -> ()) -> (), boolean))?, -- ROBLOX deviation: Luau doesn't support jagged array types [(() -> ()) -> (), boolean],
-	useMutableSource: (
+	useMutableSource: <Source, Snapshot>(
 		source: MutableSource<Source>,
 		getSnapshot: MutableSourceGetSnapshotFn<Source, Snapshot>,
 		subscribe: MutableSourceSubscribeFn<Source, Snapshot>

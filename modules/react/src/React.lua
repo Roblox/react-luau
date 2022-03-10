@@ -1,3 +1,4 @@
+--!nonstrict
 -- upstream: https://github.com/facebook/react/blob/56e9feead0f91075ba0a4f725c9e4e343bca1c67/packages/react/src/React.js
 local React = script.Parent
 local Packages = React.Parent
@@ -15,15 +16,38 @@ local ReactContext = require(React.ReactContext)
 local ReactLazy = require(React.ReactLazy)
 -- ROBLOX DEVIATION: Bindings
 local ReactBinding = require(React["ReactBinding.roblox"])
-local ReactSymbols = require(Packages.Shared).ReactSymbols
+local SharedModule = require(Packages.Shared)
+local ReactSymbols = SharedModule.ReactSymbols
 
 local shouldValidate = _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__
-local createElement = shouldValidate and
-	ReactElementValidator.createElementWithValidation or
-	ReactElement.createElement
-local cloneElement = shouldValidate and
-	ReactElementValidator.cloneElementWithValidation or
-	ReactElement.cloneElement
+local ReactTypes = require(Packages.Shared)
+export type React_StatelessFunctionalComponent<P> = ReactTypes.React_StatelessFunctionalComponent<P>
+export type React_ComponentType<P> = ReactTypes.React_ComponentType<P>
+export type React_ElementProps<ElementType> = ReactTypes.React_ElementProps<ElementType>
+export type ReactElement<P, T> = ReactTypes.ReactElement<P, T>
+export type ReactContext<T> = ReactTypes.ReactContext<T>
+export type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
+export type React_Node = ReactTypes.React_Node
+export type PureComponent<Props, State = nil> = ReactTypes.React_PureComponent<Props, State>
+type createElementFn = <P, T>(
+	type_: React_StatelessFunctionalComponent<P> | React_ComponentType<P> | string | ReactContext<any> | ReactProviderType<any>,
+	props: P?,
+	...React_Node
+) -> ReactElement<P, T>
+
+type cloneElementFn = <P, T>(
+	element: ReactElement<P, T>,
+	config: P?,
+	...React_Node
+) -> ReactElement<P, T>
+-- ROBLOX FIXME Luau: these yield Cannot call non-function because the identical unions don't collapse
+-- ROBLOX FIXME Luau: the next step is to add createElementFn here and work through issues, AFTER normalization and type packs work
+local createElement = if shouldValidate
+	then ReactElementValidator.createElementWithValidation :: createElementFn
+	else ReactElement.createElement :: createElementFn
+local cloneElement: cloneElementFn = if shouldValidate
+	then ReactElementValidator.cloneElementWithValidation :: cloneElementFn
+	else ReactElement.cloneElement :: cloneElementFn
 
 return {
 	Children = ReactChildren,

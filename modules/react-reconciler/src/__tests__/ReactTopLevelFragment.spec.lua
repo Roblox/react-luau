@@ -11,6 +11,8 @@
 --!strict
 
 local Packages = script.Parent.Parent.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
+type Array<T> = LuauPolyfill.Array<T>
 local React
 local ReactNoop
 local Scheduler
@@ -53,7 +55,8 @@ return function()
         return React.createElement("TextLabel", {Text="Hello"})
     end
 
-    local function Fragment(props)
+    -- ROBLOX FIXME Luau: should infer this as Element<Stateful> | { Element<Stateful>, ...}
+    local function Fragment(props): any
       if props.condition then
         return React.createElement(Stateful, {key="a"})
       else
@@ -90,7 +93,8 @@ return function()
         return React.createElement("TextLabel", {Text="Hello"})
     end
 
-    local function Fragment(props)
+    -- ROBLOX FIXME Luau: should infer this as Element<Stateful> | { Element<Stateful>, ...}
+    local function Fragment(props): any
       if props.condition then
         return React.createElement(Stateful, {key="a"})
       else
@@ -132,14 +136,16 @@ return function()
         return {
           nil,
           React.createElement(Stateful, {key="a"})
-        }
+          -- ROBLOX FIXME Luau: Luau *must* infer mixed arrays
+        } :: Array<any>
       else
         return {
           React.createElement("Frame", {key="b"},
             React.createElement("TextLabel", {Text="Hello"})
           ),
           React.createElement(Stateful, {key="a"})
-        }
+          -- ROBLOX FIXME Luau: Luau *must* infer mixed arrays
+        } :: Array<any>
       end
     end
 

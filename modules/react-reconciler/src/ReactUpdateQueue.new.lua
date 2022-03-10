@@ -1,3 +1,4 @@
+--!nonstrict
 -- upstream: https://github.com/facebook/react/blob/16654436039dd8f16a63928e71081c7745872e8f/packages/react-reconciler/src/ReactUpdateQueue.new.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -189,10 +190,8 @@ for i = 1, poolInitSize do
 	}
 end
 
--- deviation: FIXME generics in function signatures
--- 'initializeUpdateQueue<State>(fiber: Fiber)'
-local function initializeUpdateQueue(fiber: Fiber)
-	local queue: UpdateQueue<any> = {
+local function initializeUpdateQueue<State>(fiber: Fiber): ()
+	local queue: UpdateQueue<State> = {
 		baseState = fiber.memoizedState,
 		firstBaseUpdate = nil,
 		lastBaseUpdate = nil,
@@ -205,17 +204,15 @@ local function initializeUpdateQueue(fiber: Fiber)
 end
 exports.initializeUpdateQueue = initializeUpdateQueue
 
--- deviation: FIXME generics in function signatures
--- 'cloneUpdateQueue<State>(...)'
-local function cloneUpdateQueue(
+local function cloneUpdateQueue<State>(
 	current: Fiber,
 	workInProgress: Fiber
-)
+): ()
 	-- Clone the update queue from current. Unless it's already a clone.
-	local queue: UpdateQueue<any> = workInProgress.updateQueue
-	local currentQueue: UpdateQueue<any> = current.updateQueue
+	local queue: UpdateQueue<State> = workInProgress.updateQueue :: any
+	local currentQueue: UpdateQueue<State> = current.updateQueue :: any
 	if queue == currentQueue then
-		local clone: UpdateQueue<any> = {
+		local clone: UpdateQueue<State> = {
 			baseState = currentQueue.baseState,
 			firstBaseUpdate = currentQueue.firstBaseUpdate,
 			lastBaseUpdate = currentQueue.lastBaseUpdate,
@@ -269,16 +266,14 @@ local function createUpdate(eventTime: number, lane: Lane): Update<any>
 end
 exports.createUpdate = createUpdate
 
--- deviation: FIXME proper function signature once we have better luau generics
--- enqueueUpdate<State>(fiber: Fiber, update: Update<State>)
-local function enqueueUpdate(fiber: Fiber, update: Update<any>)
+local function enqueueUpdate<State>(fiber: Fiber, update: Update<State>)
 	local updateQueue = fiber.updateQueue
 	if updateQueue == nil then
 		-- Only occurs if the fiber has been unmounted.
 		return
 	end
 
-	local sharedQueue: SharedQueue<any> = updateQueue.shared
+	local sharedQueue: SharedQueue<State> = (updateQueue :: any).shared
 	local pending = sharedQueue.pending
 	if pending == nil then
 		-- This is the first update. Create a circular list.
@@ -305,24 +300,20 @@ local function enqueueUpdate(fiber: Fiber, update: Update<any>)
 	end
 end
 exports.enqueueUpdate = enqueueUpdate
--- deviation: FIXME proper function signature once we have better luau generics
--- exports.enqueueCapturedUpdate<State>(
--- 	workInProgress: Fiber,
--- 	capturedUpdate: Update<State>,
--- )
-local function enqueueCapturedUpdate(
+
+local function enqueueCapturedUpdate<State>(
 	workInProgress: Fiber,
-	capturedUpdate: Update<any>
+	capturedUpdate: Update<State>
 )
 	-- Captured updates are updates that are thrown by a child during the render
 	-- phase. They should be discarded if the render is aborted. Therefore,
 	-- we should only put them on the work-in-progress queue, not the current one.
-	local queue: UpdateQueue<any> = workInProgress.updateQueue
+	local queue: UpdateQueue<State> = (workInProgress.updateQueue :: any)
 
 	-- Check if the work-in-progress queue is a clone.
 	local current = workInProgress.alternate
 	if current ~= nil then
-		local currentQueue: UpdateQueue<any> = current.updateQueue
+		local currentQueue: UpdateQueue<State> = (current.updateQueue :: any)
 		if queue == currentQueue then
 			-- The work-in-progress queue is the same as current. This happens when
 			-- we bail out on a parent fiber that then captures an error thrown by
@@ -337,7 +328,7 @@ local function enqueueCapturedUpdate(
 				-- Loop through the updates and clone them.
 				local update = firstBaseUpdate
 				repeat
-					local clone: Update<any> = {
+					local clone: Update<State> = {
 						eventTime = update.eventTime,
 						lane = update.lane,
 
@@ -354,7 +345,8 @@ local function enqueueCapturedUpdate(
 						newLast.next = clone
 						newLast = clone
 					end
-					update = update.next
+					-- ROBLOX FIXME Luau: Luau needs to support repeat until nil pattern
+					update = update.next :: Update<State>
 				until update == nil
 
 				-- Append the captured update the end of the cloned list.
@@ -392,20 +384,12 @@ local function enqueueCapturedUpdate(
 	queue.lastBaseUpdate = capturedUpdate
 end
 exports.enqueueCapturedUpdate = enqueueCapturedUpdate
--- FIXME (roblox): function generics
--- function getStateFromUpdate<State>(
--- 	workInProgress: Fiber,
--- 	queue: UpdateQueue<State>,
--- 	update: Update<State>,
--- 	prevState: State,
--- 	nextProps: any,
--- 	instance: any,
--- ): any {
-local function getStateFromUpdate(
+
+local function getStateFromUpdate<State>(
 	workInProgress: Fiber,
-	queue: UpdateQueue<any>,
-	update: Update<any>,
-	prevState: any,
+	queue: UpdateQueue<State>,
+	update: Update<State>,
+	prevState: State,
 	nextProps: any,
 	instance: any
 ): any
@@ -505,18 +489,14 @@ local function getStateFromUpdate(
 end
 exports.getStateFromUpdate = getStateFromUpdate
 
--- FIXME (roblox): function generics
--- processUpdateQueue<State>(...)
-local function processUpdateQueue(
+local function processUpdateQueue<State>(
 	workInProgress: Fiber,
 	props: any,
 	instance: any,
 	renderLanes: Lanes
-)
+): ()
 	-- This is always non-null on a ClassComponent or HostRoot
-	-- FIXME (roblox): function generics, type coercion
-	-- local queue: UpdateQueue<State> = (workInProgress.updateQueue: any)
-	local queue: UpdateQueue<any> = workInProgress.updateQueue
+	local queue: UpdateQueue<State> = workInProgress.updateQueue :: any
 
 	hasForceUpdate = false
 
@@ -554,9 +534,7 @@ local function processUpdateQueue(
 		local current = workInProgress.alternate
 		if current ~= nil then
 			-- This is always non-null on a ClassComponent or HostRoot
-			-- FIXME (roblox): function generics, type refinement
-			-- local currentQueue: UpdateQueue<State> = (current.updateQueue: any)
-			local currentQueue: UpdateQueue<any> = current.updateQueue
+			local currentQueue: UpdateQueue<State> = (current.updateQueue :: any)
 			local currentLastBaseUpdate = currentQueue.lastBaseUpdate
 			if currentLastBaseUpdate ~= lastBaseUpdate then
 				if currentLastBaseUpdate == nil then
@@ -589,9 +567,7 @@ local function processUpdateQueue(
 				-- Priority is insufficient. Skip this update. If this is the first
 				-- skipped update, the previous update/state is the new base
 				-- update/state.
-				-- FIXME (roblox): function generics
-				-- local clone: Update<State> = {
-				local clone: Update<any> = {
+				local clone: Update<State> = {
 					eventTime = updateEventTime,
 					lane = updateLane,
 
@@ -615,9 +591,7 @@ local function processUpdateQueue(
 				-- This update does have sufficient priority.
 
 				if newLastBaseUpdate ~= nil then
-					-- FIXME (roblox): function generics
-					-- local clone: Update<State> = {
-					local clone: Update<any> = {
+					local clone: Update<State> = {
 						eventTime = updateEventTime,
 						-- This update is going to be committed so we never want uncommit
 						-- it. Using NoLane works because 0 is a subset of all bitmasks, so
@@ -659,7 +633,8 @@ local function processUpdateQueue(
 					end
 				end
 			end
-			update = update.next
+			-- ROBLOX FIXME Luau: Luau needs to support repeat until nil pattern
+			update = update.next :: Update<State>
 			if update == nil then
 				pendingQueue = queue.shared.pending
 				if pendingQueue == nil then
@@ -670,9 +645,7 @@ local function processUpdateQueue(
 					local lastPendingUpdate = pendingQueue
 					-- Intentionally unsound. Pending updates form a circular list, but we
 					-- unravel them when transferring them to the base queue.
-					-- FIXME (roblox): type coercion
-					-- local firstPendingUpdate = ((lastPendingUpdate.next: any): Update<State>)
-					local firstPendingUpdate = lastPendingUpdate.next
+					local firstPendingUpdate = ((lastPendingUpdate.next :: any) :: Update<State>)
 					lastPendingUpdate.next = nil
 					update = firstPendingUpdate
 					queue.lastBaseUpdate = lastPendingUpdate
@@ -685,9 +658,7 @@ local function processUpdateQueue(
 			newBaseState = newState
 		end
 
-		-- FIXME (roblox): type coercion
-		-- queue.baseState = ((newBaseState: any): State)
-		queue.baseState = newBaseState
+		queue.baseState = ((newBaseState :: any) :: State)
 		queue.firstBaseUpdate = newFirstBaseUpdate
 		queue.lastBaseUpdate = newLastBaseUpdate
 
@@ -727,11 +698,9 @@ exports.checkHasForceUpdateAfterProcessing = function(): boolean
 	return hasForceUpdate
 end
 
--- deviation: FIXME generics in function signatures
--- 'commitUpdateQueue<State>(...): void'
-local function commitUpdateQueue(
+local function commitUpdateQueue<State>(
 	finishedWork: Fiber,
-	finishedQueue: UpdateQueue<any>,
+	finishedQueue: UpdateQueue<State>,
 	instance: any
 ): ()
 	-- Commit the effects

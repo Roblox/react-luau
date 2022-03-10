@@ -98,9 +98,9 @@ return function()
 
             function Foo:render()
                 state = self.state
-                return React.createElement("div", nil)
+                return React.createElement("div")
             end
-            ReactNoop.render(React.createElement(Foo, nil))
+            ReactNoop.render(React.createElement(Foo))
             jestExpect(Scheduler).toFlushWithoutYielding()
             jestExpect(state).toEqual({
                 a = "a",
@@ -126,10 +126,10 @@ return function()
             function Foo:render()
                 Scheduler.unstable_yieldValue("render")
                 instance = self
-                return React.createElement("div", nil)
+                return React.createElement("div")
             end
 
-            ReactNoop.render(React.createElement(Foo, nil))
+            ReactNoop.render(React.createElement(Foo))
             jestExpect(Scheduler).toFlushAndYield({
                 "render",
                 "componentDidMount",
@@ -372,10 +372,10 @@ return function()
 
             function Foo:render()
                 Scheduler.unstable_yieldValue("render")
-                return React.createElement("div", nil)
+                return React.createElement("div")
             end
 
-            ReactNoop.render(React.createElement(Foo, nil))
+            ReactNoop.render(React.createElement(Foo))
             jestExpect(Scheduler).toFlushAndYield({
                 "render",
                 "did mount",
@@ -405,10 +405,10 @@ return function()
                 function Foo:render()
                     Scheduler.unstable_yieldValue("render")
                     instance = self
-                    return React.createElement("div", nil)
+                    return React.createElement("div")
                 end
 
-                ReactNoop.render(React.createElement(Foo, nil))
+                ReactNoop.render(React.createElement(Foo))
                 jestExpect(function()
                     return jestExpect(Scheduler).toFlushAndYield({
                         "render",
@@ -421,7 +421,7 @@ return function()
                     instance:setState({
                         a = "a",
                     })
-                    ReactNoop.render(React.createElement(Foo, nil))
+                    ReactNoop.render(React.createElement(Foo))
                     return "test"
                 end)
                 jestExpect(instance.state).toEqual({

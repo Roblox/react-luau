@@ -1570,7 +1570,7 @@ local function mountIndeterminateComponent(
     end
 
     if bit32.band(workInProgress.mode, StrictMode) ~= 0 then
-      ReactStrictModeWarnings.recordLegacyContextWarning(workInProgress, nil)
+      ReactStrictModeWarnings.recordLegacyContextWarning(workInProgress)
     end
 
     setIsRendering(true)

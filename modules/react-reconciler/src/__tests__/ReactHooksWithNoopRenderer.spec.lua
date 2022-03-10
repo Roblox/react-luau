@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/99cae887f3a8bde760a111516d254c1225242edf/packages/react-reconciler/src/__tests__/ReactHooksWithNoopRenderer-test.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -13,11 +14,12 @@
 local Packages = script.Parent.Parent.Parent
 local React
 
-local LuauPolyfill
-local clearTimeout
-local setTimeout
-local Array
 local Promise
+local LuauPolyfill = require(Packages.LuauPolyfill)
+local clearTimeout = LuauPolyfill.clearTimeout
+local setTimeout = LuauPolyfill.setTimeout
+local Array = LuauPolyfill.Array
+type Array<T> = LuauPolyfill.Array<T>
 
 
 -- local textCache
@@ -41,18 +43,21 @@ local forwardRef
 local memo
 local act
 
+
 return function()
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
 	local RobloxJest = require(Packages.Dev.RobloxJest)
+	local LuauPolyfill = require(Packages.LuauPolyfill)
+
 
 	beforeEach(function()
 		RobloxJest.resetModules()
  		RobloxJest.useFakeTimers()
+		Promise = require(Packages.Promise)
+
 		LuauPolyfill = require(Packages.LuauPolyfill)
 		clearTimeout = LuauPolyfill.clearTimeout
 		setTimeout = LuauPolyfill.setTimeout
-		Array = LuauPolyfill.Array
-		Promise = require(Packages.Promise)
 
 		React = require(Packages.React)
 		ReactNoop = require(Packages.Dev.ReactNoopRenderer)
@@ -166,18 +171,19 @@ return function()
 	-- end
 
 	it("resumes after an interruption", function()
-		local function Counter(props, ref)
+		local function Counter(props: { label: string }, ref)
 			local count, updateCount = useState(0)
 			useImperativeHandle(ref, function()
 				return { updateCount = updateCount }
 			end)
 			return React.createElement(Text, { text = tostring(props.label) .. ": " .. count })
 		end
-		Counter = forwardRef(Counter)
+		-- ROBLOX TODO: upstream this rename so this can typecheck and be generally sane
+		local CounterRef = forwardRef(Counter)
 
 		-- Initial mount
-		local counter = React.createRef(nil)
-		ReactNoop.render(React.createElement(Counter, { label = "Count", ref = counter }))
+		local counter = React.createRef()
+		ReactNoop.render(React.createElement(CounterRef, { label = "Count", ref = counter }))
 		jestExpect(Scheduler).toFlushAndYield({ "Count: 0" })
 		jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 0") })
 
@@ -195,7 +201,7 @@ return function()
 
 		-- Interrupt with a high priority update
 		ReactNoop.flushSync(function()
-			ReactNoop.render(React.createElement(Counter, { label = "Total" }))
+			ReactNoop.render(React.createElement(CounterRef, { label = "Total" }))
 		end)
 		jestExpect(Scheduler).toHaveYielded({ "Total: 0" })
 
@@ -297,9 +303,10 @@ return function()
 				end)
 				return React.createElement(Text, { text = "Count: " .. count })
 			end
-			Counter = forwardRef(Counter)
-			local counter = React.createRef(nil)
-			ReactNoop.render(React.createElement(Counter, { ref = counter }))
+			-- ROBLOX TODO: upstream this rename, which keeps the code and types more sane
+			local CounterRef = forwardRef(Counter)
+			local counter = React.createRef()
+			ReactNoop.render(React.createElement(CounterRef, { ref = counter }))
 			jestExpect(Scheduler).toFlushAndYield({ "Count: 0" })
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 0") })
 
@@ -310,7 +317,8 @@ return function()
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 1") })
 
 			act(function()
-				return counter.current.updateCount(function(count_)
+				-- ROBLOX FIXME Luau: Luau should know updateCount takes is ((number) -> number)
+				return counter.current.updateCount(function(count_: number)
 					return count_ + 10
 				end)
 			end)
@@ -329,9 +337,10 @@ return function()
 				end)
 				return React.createElement(Text, { text = "Count: " .. count })
 			end
-			Counter = forwardRef(Counter)
-			local counter = React.createRef(nil)
-			ReactNoop.render(React.createElement(Counter, { initialState = 42, ref = counter }))
+			-- ROBLOX TODO: upstream this rename, which keeps the code and types more sane
+			local CounterRef = forwardRef(Counter)
+			local counter = React.createRef()
+			ReactNoop.render(React.createElement(CounterRef, { initialState = 42, ref = counter }))
 			jestExpect(Scheduler).toFlushAndYield({ "getInitialState", "Count: 42" })
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 42") })
 
@@ -354,9 +363,10 @@ return function()
 				end)
 				return React.createElement(Text, { text = label .. ": " .. count })
 			end
-			Counter = forwardRef(Counter)
-			local counter = React.createRef(nil)
-			ReactNoop.render(React.createElement(Counter, { ref = counter }))
+			-- ROBLOX TODO: upstream this rename, which keeps the code and types more sane
+			local CounterRef = forwardRef(Counter)
+			local counter = React.createRef()
+			ReactNoop.render(React.createElement(CounterRef, { ref = counter }))
 			jestExpect(Scheduler).toFlushAndYield({ "Count: 0" })
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 0") })
 
@@ -404,7 +414,7 @@ return function()
 		end)
 
 		it("does not warn on set after unmount", function()
-			local updateCount
+			local _, updateCount
 			local function Counter(props, ref)
 				_, updateCount = useState(0)
 				return nil
@@ -425,13 +435,14 @@ return function()
 				count, updateCount = useState(0)
 				return React.createElement(Text, { text = "Count: " .. count })
 			end
-			Counter = memo(Counter)
+			-- ROBLOX TODO: upstream this rename, which keeps the code and types more sane
+			local CounterMemo = memo(Counter)
 
-			ReactNoop.render(React.createElement(Counter))
+			ReactNoop.render(React.createElement(CounterMemo))
 			jestExpect(Scheduler).toFlushAndYield({ "Count: 0" })
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 0") })
 
-			ReactNoop.render(React.createElement(Counter))
+			ReactNoop.render(React.createElement(CounterMemo))
 			jestExpect(Scheduler).toFlushAndYield({})
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 0") })
 
@@ -565,7 +576,7 @@ return function()
 				"Render: 2",
 				"Render: 3",
 				3,
-			})
+			} :: Array<any>)
 			jestExpect(ReactNoop.getChildren()).toEqual({ span(3) })
 		end)
 
@@ -596,7 +607,7 @@ return function()
 				"Render: 9",
 				"Render: 12",
 				12,
-			})
+			} :: Array<any>)
 			jestExpect(ReactNoop.getChildren()).toEqual({ span(12) })
 		end)
 
@@ -614,7 +625,7 @@ return function()
 		end)
 
 		it("works with useReducer", function()
-			local function reducer(state, action)
+			local function reducer(state: number, action)
 				local returnVal = state
 				if action == "increment" then
 					returnVal = state + 1
@@ -637,7 +648,7 @@ return function()
 				"Render: 2",
 				"Render: 3",
 				3,
-			})
+			} :: Array<any>)
 			jestExpect(ReactNoop.getChildren()).toEqual({ span(3) })
 		end)
 
@@ -645,24 +656,24 @@ return function()
 			-- This test is a bit contrived but it demonstrates a subtle edge case.
 
 			-- Reducer A increments by 1. Reducer B increments by 10.
-			local function reducerA(state, action)
+			local function reducerA(state: number, action)
 				if action == "increment" then
 					return state + 1
 				elseif action == "reset" then
 					return 0
-				else
-					return
 				end
+				-- ROBLOX deviation: upstream has no case, but Luau wants an explicit return
+				return 0
 			end
 
-			local function reducerB(state, action)
+			local function reducerB(state: number, action)
 				if action == "increment" then
 					return state + 10
 				elseif action == "reset" then
 					return 0
-				else
-					return
 				end
+				-- ROBLOX deviation: upstream has no case, but Luau wants an explicit return
+				return 0
 			end
 
 			local function Counter(props, ref)
@@ -690,9 +701,10 @@ return function()
 				return React.createElement(Text, { text = count })
 			end
 
-			Counter = forwardRef(Counter)
-			local counter = React.createRef(nil)
-			ReactNoop.render(React.createElement(Counter, { ref = counter }))
+			-- ROBLOX TODO: upstream this rename, which keeps the code and types more sane
+			local CounterRef = forwardRef(Counter)
+			local counter = React.createRef()
+			ReactNoop.render(React.createElement(CounterRef, { ref = counter }))
 			jestExpect(Scheduler).toFlushAndYield({
 				-- The count should increase by alternating amounts of 10 and 1
 				-- until we reach 21.
@@ -701,7 +713,7 @@ return function()
 				"Render: 11",
 				"Render: 21",
 				21,
-			})
+			} :: Array<any>)
 			jestExpect(ReactNoop.getChildren()).toEqual({ span(21) })
 
 			-- Test that it works on update, too. This time the log is a bit different
@@ -709,7 +721,7 @@ return function()
 			ReactNoop.act(function()
 				counter.current.dispatch("reset")
 			end)
-			ReactNoop.render(React.createElement(Counter, { ref = counter }))
+			ReactNoop.render(React.createElement(CounterRef, { ref = counter }))
 			jestExpect(Scheduler).toHaveYielded({
 				"Render: 0",
 				"Render: 1",
@@ -717,7 +729,7 @@ return function()
 				"Render: 12",
 				"Render: 22",
 				22,
-			})
+			} :: Array<any>)
 			jestExpect(ReactNoop.getChildren()).toEqual({ span(22) })
 		end)
 		it('discards render phase updates if something suspends', function()
@@ -839,7 +851,8 @@ return function()
 		    setRow = _setRow
 
 		    local scrollDirection, setScrollDirection = useState("Up")
-		    local prevRow, setPrevRow = useState(nil)
+			-- ROBLOX TODO Luau? it would be nice if setPrevRow usage in the closure informed this `nil` so we didn't need this annotation
+		    local prevRow, setPrevRow = useState((nil :: any) :: number)
 
 		    if prevRow ~= row then
 				local direction = "Up"
@@ -847,6 +860,7 @@ return function()
 					direction = "Down"
 				end
 				setScrollDirection(direction)
+				-- ROBLOX FIXME Luau: even with explicit nubmer? annotation above, we still get None of the union options are compatible. For example: Type 'number' could not be converted into '(nil) -> nil'
 				setPrevRow(row)
 		    end
 
@@ -901,7 +915,8 @@ return function()
 			local INCREMENT = "INCREMENT"
 			local DECREMENT = "DECREMENT"
 
-			local function reducer_(state, action)
+			-- ROBLOX FIXME Luau: based on useReducer() call below, we should know that state is a number without an annotation
+			local function reducer_(state: number, action)
 				if action == "INCREMENT" then
 					return state + 1
 				elseif action == "DECREMENT" then
@@ -920,9 +935,10 @@ return function()
 					text = "Count: " .. count,
 				})
 			end
-			Counter = forwardRef(Counter)
-			local counter = React.createRef(nil)
-			ReactNoop.render(React.createElement(Counter, {
+			-- ROBLOX TODO: upstream this rename, which keeps the code and types more sane
+			local CounterRef = forwardRef(Counter)
+			local counter = React.createRef()
+			ReactNoop.render(React.createElement(CounterRef, {
 				ref = counter,
 			}))
 			jestExpect(Scheduler).toFlushAndYield({ "Count: 0" })
@@ -947,7 +963,8 @@ return function()
 			local INCREMENT = "INCREMENT"
 			local DECREMENT = "DECREMENT"
 
-			local function reducer_(state, action)
+			-- ROBLOX FIXME Luau: based on useReducer() call below, we should know that state is a number without an annotation
+			local function reducer_(state: number, action)
 				if action == "INCREMENT" then
 					return state + 1
 				elseif action == "DECREMENT" then
@@ -969,9 +986,10 @@ return function()
 					text = "Count: " .. count,
 				})
 			end
-			Counter = forwardRef(Counter)
-			local counter = React.createRef(nil)
-			ReactNoop.render(React.createElement(Counter, {
+			-- ROBLOX TODO: upstream this rename, which keeps the code and types more sane
+			local CounterRef = forwardRef(Counter)
+			local counter = React.createRef()
+			ReactNoop.render(React.createElement(CounterRef, {
 				initialCount = 10,
 				ref = counter,
 			}))
@@ -998,7 +1016,8 @@ return function()
 		it("handles dispatches with mixed priorities", function()
 			local INCREMENT = "INCREMENT"
 
-			local function reducer_(state, action)
+			-- ROBLOX FIXME Luau: based on useReducer() call below, we should know that state is a number without an annotation
+			local function reducer_(state: number, action)
 				if action == INCREMENT then
 					return state + 1
 				else
@@ -1016,11 +1035,12 @@ return function()
 				})
 			end
 
-			Counter = forwardRef(Counter)
+			-- ROBLOX TODO: upstream this rename to make code/types more sane
+			local CounterRef = forwardRef(Counter)
 
-			local counter = React.createRef(nil)
+			local counter = React.createRef()
 
-			ReactNoop.render(React.createElement(Counter, { ref = counter }))
+			ReactNoop.render(React.createElement(CounterRef, { ref = counter }))
 			jestExpect(Scheduler).toFlushAndYield({
 				"Count: 0",
 			})
@@ -1219,7 +1239,7 @@ return function()
 					ReactNoop.render(React.createElement(Counter, { count = 0 }), function()
 						Scheduler.unstable_yieldValue("Sync effect")
 					end)
-					jestExpect(Scheduler).toFlushAndYieldThrough({ 0, "Sync effect" })
+					jestExpect(Scheduler).toFlushAndYieldThrough({ 0, "Sync effect" } :: Array<any>)
 					jestExpect(ReactNoop.getChildren()).toEqual({ span(0) })
 					-- Before the effects have a chance to flush, schedule another update
 					ReactNoop.render(React.createElement(Counter, { count = 1 }), function()
@@ -1230,7 +1250,7 @@ return function()
 						"Committed state when effect was fired: 0",
 						1,
 						"Sync effect",
-					})
+					} :: Array<any>)
 					jestExpect(ReactNoop.getChildren()).toEqual({ span(1) })
 				end)
 
@@ -1391,8 +1411,8 @@ return function()
 
 				-- deviation: reordered so Parent function could reference Child
 				local function Child(props)
-					-- deviation: list deconstruction doesn't work in Lua
-					local label = props.label
+					-- ROBLOX FIXME Luau: shouldn't need this annotation, it should see the .. operator and infer the type for props argument
+					local label: string = props.label
 					local state, setState = useState(0)
 					useLayoutEffect(function()
 						Scheduler.unstable_yieldValue("Child " .. label .. " commit")
@@ -1668,6 +1688,8 @@ return function()
 					React.useEffect(function()
 						Scheduler.unstable_yieldValue("Parent passive create")
 						return function()
+							-- ROBLOX deviation: this is a real nil-ability issue, but Luau doesn't grok expect().never.toBe(nil) yet
+							assert(updaterRef.current ~= nil, "updaterRef was't initialized before render")
 							updaterRef.current(true)
 							Scheduler.unstable_yieldValue("Parent passive destroy")
 						end
@@ -1755,8 +1777,8 @@ return function()
 			local function Counter(props)
 				local count, updateCount = useState("(empty)")
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Schedule update {%s}"):format(props.count))
-					updateCount(props.count)
+					Scheduler.unstable_yieldValue(("Schedule update {%d}"):format(props.count))
+					updateCount(tostring(props.count))
 				end, {
 					props.count,
 				})
@@ -1792,8 +1814,8 @@ return function()
 			local function Counter(props)
 				local count, updateCount = useState("(empty)")
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Schedule update {%s}"):format(props.count))
-					updateCount(props.count)
+					Scheduler.unstable_yieldValue(("Schedule update {%d}"):format(props.count))
+					updateCount(tostring(props.count))
 				end, {
 					props.count,
 				})
@@ -1952,12 +1974,12 @@ return function()
 					useEffect(function()
 						-- Update multiple times. These should all be batched together in
 						-- a single render.
-						updateCount(props.count)
-						updateCount(props.count)
-						updateCount(props.count)
-						updateCount(props.count)
-						updateCount(props.count)
-						updateCount(props.count)
+						updateCount(tostring(props.count))
+						updateCount(tostring(props.count))
+						updateCount(tostring(props.count))
+						updateCount(tostring(props.count))
+						updateCount(tostring(props.count))
+						updateCount(tostring(props.count))
 					end, {
 						props.count,
 					})
@@ -1994,12 +2016,12 @@ return function()
 				local count, updateCount = useState("(empty)")
 
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Schedule update [%s]"):format(props.count))
+					Scheduler.unstable_yieldValue(("Schedule update [%d]"):format(props.count))
 					ReactNoop.flushSync(function()
-						updateCount(props.count)
+						updateCount(tostring(props.count))
 					end)
 					jestExpect(ReactNoop.getChildren()).never.toEqual({
-						span("Count: " .. props.count),
+						span(string.format("Count: %d", props.count)),
 					})
 				end, {
 					props.count,
@@ -2032,9 +2054,9 @@ return function()
 		it("unmounts previous effect", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue("Did create [" .. tostring(props.count) .. "]")
+					Scheduler.unstable_yieldValue(string.format("Did create [%d]", props.count))
 					return function()
-						Scheduler.unstable_yieldValue("Did destroy [" .. tostring(props.count) .. "]")
+						Scheduler.unstable_yieldValue(string.format("Did destroy [%d]", props.count))
 					end
 				end)
 				return React.createElement(Text, { text = "Count: " .. props.count })
@@ -2129,7 +2151,7 @@ return function()
 			end
 			local function Counter(props)
 				useEffect(effect)
-				return React.createElement(Text, { text = "Count: " .. props.count })
+				return React.createElement(Text, { text = "Count: " .. tostring(props.count) })
 			end
 			act(function()
 				ReactNoop.render(React.createElement(Counter, { count = 0 }), function()
@@ -2251,7 +2273,8 @@ return function()
 		end)
 
 		it("unmounts all previous effects before creating any new ones", function()
-			local function Counter(props)
+			-- ROBLOX FIXME Luau: inference should know the prop shape based on string concat below and narrowed by createElement later
+			local function Counter(props: { count: number })
 				useEffect(function()
 					Scheduler.unstable_yieldValue("Mount A [" .. props.count .. "]")
 					return function()
@@ -2296,15 +2319,15 @@ return function()
 				local count, label = props.count, props.label
 
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Mount %s [%s]"):format(label, count))
+					Scheduler.unstable_yieldValue(("Mount %s [%d]"):format(label, count))
 
 					return function()
-						Scheduler.unstable_yieldValue(("Unmount %s [%s]"):format(label, count))
+						Scheduler.unstable_yieldValue(("Unmount %s [%d]"):format(label, count))
 					end
 				end)
 
 				return React.createElement(Text, {
-					text = ("%s %s"):format(label, count),
+					text = ("%s %d"):format(label, count),
 				})
 			end
 
@@ -2412,10 +2435,10 @@ return function()
 		it("handles errors in create on mount", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Mount A [%s]"):format(props.count))
+					Scheduler.unstable_yieldValue(("Mount A [%d]"):format(props.count))
 
 					return function()
-						Scheduler.unstable_yieldValue(("Unmount A [%s]"):format(props.count))
+						Scheduler.unstable_yieldValue(("Unmount A [%d]"):format(props.count))
 					end
 				end)
 				useEffect(function()
@@ -2458,10 +2481,10 @@ return function()
 		it("handles errors in create on update", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Mount A [%s]"):format(props.count))
+					Scheduler.unstable_yieldValue(("Mount A [%d]"):format(props.count))
 
 					return function()
-						Scheduler.unstable_yieldValue(("Unmount A [%s]"):format(props.count))
+						Scheduler.unstable_yieldValue(("Unmount A [%d]"):format(props.count))
 					end
 				end)
 				useEffect(function()
@@ -2470,10 +2493,10 @@ return function()
 						error("Oops!")
 					end
 
-					Scheduler.unstable_yieldValue(("Mount B [%s]"):format(props.count))
+					Scheduler.unstable_yieldValue(("Mount B [%d]"):format(props.count))
 
 					return function()
-						Scheduler.unstable_yieldValue(("Unmount B [%s]"):format(props.count))
+						Scheduler.unstable_yieldValue(("Unmount B [%d]"):format(props.count))
 					end
 				end)
 
@@ -2529,7 +2552,7 @@ return function()
 		it("handles errors in destroy on update", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Mount A [%s]"):format(props.count))
+					Scheduler.unstable_yieldValue(("Mount A [%d]"):format(props.count))
 
 					return function()
 						Scheduler.unstable_yieldValue("Oops!")
@@ -2540,10 +2563,10 @@ return function()
 					end
 				end)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Mount B [%s]"):format(props.count))
+					Scheduler.unstable_yieldValue(("Mount B [%d]"):format(props.count))
 
 					return function()
-						Scheduler.unstable_yieldValue(("Unmount B [%s]"):format(props.count))
+						Scheduler.unstable_yieldValue(("Unmount B [%d]"):format(props.count))
 					end
 				end)
 
@@ -2614,9 +2637,10 @@ return function()
 				})
 			end
 
-			Counter = memo(Counter)
+			-- ROBLOX TODO: contribute this rename upstream, it makes the code/types sane
+			local CounterMemo = memo(Counter)
 
-			ReactNoop.render(React.createElement(Counter, { count = 0 }), function()
+			ReactNoop.render(React.createElement(CounterMemo, { count = 0 }), function()
 				return Scheduler.unstable_yieldValue("Sync effect")
 			end)
 			jestExpect(Scheduler).toFlushAndYieldThrough({
@@ -2627,7 +2651,7 @@ return function()
 			jestExpect(ReactNoop.getChildren()).toEqual({
 				span("Count: 0"),
 			})
-			ReactNoop.render(React.createElement(Counter, { count = 1 }), function()
+			ReactNoop.render(React.createElement(CounterMemo, { count = 1 }), function()
 				return Scheduler.unstable_yieldValue("Sync effect")
 			end)
 			jestExpect(Scheduler).toFlushAndYieldThrough({
@@ -3182,7 +3206,7 @@ return function()
 
 			local function Counter(props)
 				useLayoutEffect(function()
-					Scheduler.unstable_yieldValue("Current: " .. getCommittedText())
+					Scheduler.unstable_yieldValue("Current: " .. tostring(getCommittedText()))
 				end)
 				return React.createElement(Text, { text = props.count })
 			end
@@ -3194,7 +3218,8 @@ return function()
 				{ 0 },
 				"Current: 0",
 				"Sync effect",
-			})
+				-- ROBLOX FIXME Luau: Luau needs to support mixed array inference
+			} :: Array<any>)
 			jestExpect(ReactNoop.getChildren()).toEqual({ span(0) })
 
 			ReactNoop.render(React.createElement(Counter, { count = 1 }), function()
@@ -3204,7 +3229,8 @@ return function()
 				{ 1 },
 				"Current: 1",
 				"Sync effect",
-			})
+				-- ROBLOX FIXME Luau: Luau needs to support mixed array inference
+			} :: Array<any>)
 			jestExpect(ReactNoop.getChildren()).toEqual({ span(1) })
 		end)
 
@@ -3215,7 +3241,8 @@ return function()
 				useLayoutEffect(function()
 					-- Normally this would go in a mutation effect, but this test
 					-- intentionally omits a mutation effect.
-					committedText = props.count .. ""
+					-- ROBLOX TODO: js2lua should translate `x + ''` to tostring(x)
+					committedText = tostring(props.count)
 
 					Scheduler.unstable_yieldValue("Mount layout [current: " .. committedText .. "]")
 					return function()
@@ -3347,7 +3374,7 @@ return function()
 	describe("useCallback", function()
 		it("memoizes callback by comparing inputs", function()
 			-- ROBLOX deviation: hoist local
-			local button = React.createRef(nil)
+			local button = React.createRef()
 			local IncrementButton = React.PureComponent:extend("IncrementButton")
 			function IncrementButton:increment()
 				self.props.increment()
@@ -3430,7 +3457,8 @@ return function()
 	describe("useMemo", function()
 		it("memoizes value by comparing to previous inputs", function()
 			local function CapitalizedText(props)
-				local text = props.text
+				-- ROBLOX FIXME Luau: remove string annotation below once Luau infers .. text -> props: { text: string }
+				local text: string = props.text
 				local capitalizedText = useMemo(function()
 					Scheduler.unstable_yieldValue("Capitalize '" .. text .. "'")
 					return text:upper()
@@ -3458,7 +3486,7 @@ return function()
 		end)
 
 		it("returns multiple input values", function()
-			local function Doubler(props)
+			local function Doubler(props: { x: number, y: number })
 				local x = props.x
 				local y = props.y
 				local xMinusY, xPlusY = useMemo(function()
@@ -3552,7 +3580,8 @@ return function()
 			local jest = RobloxJest
 
 			local function useDebouncedCallback(callback, ms, inputs)
-				local timeoutID = useRef(-1)
+				-- ROBLOX FIXME: Our setTimeout returns a table that doesn't convert into a number, resolve this
+				local timeoutID = useRef(setTimeout(function() end, 0))
 				useEffect(function()
 					return function()
 						if typeof(timeoutID.current) == "table" then
@@ -3568,7 +3597,7 @@ return function()
 				end, {
 					callback,
 					ms,
-				})
+				} :: Array<any>)
 				return useCallback(debouncedCallback, inputs)
 			end
 
@@ -3639,7 +3668,8 @@ return function()
 		it("does not update when deps are the same", function()
 			local INCREMENT = "INCREMENT"
 
-			local function reducer_(state, action)
+			-- ROBLOX FIXME Luau: based on useReducer() call below, we should know that state is a number without an annotation
+			local function reducer_(state: number, action)
 				if action == INCREMENT then
 					return state + 1
 				else
@@ -3655,9 +3685,10 @@ return function()
 				return React.createElement(Text, { text = "Count: " .. count })
 			end
 
-			Counter = forwardRef(Counter)
-			local counter = React.createRef(nil)
-			ReactNoop.render(React.createElement(Counter, {
+			-- ROBLOX TODO: upstream this rename to make code/types more sane
+			local CounterRef = forwardRef(Counter)
+			local counter = React.createRef()
+			ReactNoop.render(React.createElement(CounterRef, {
 				ref = counter,
 			}))
 			jestExpect(Scheduler).toFlushAndYield({ "Count: 0" })
@@ -3677,7 +3708,8 @@ return function()
 		it("automatically updates when deps are not specified", function()
 			local INCREMENT = "INCREMENT"
 
-			local function reducer_(state, action)
+			-- ROBLOX FIXME Luau: based on useReducer() call below, we should know that state is a number without an annotation
+			local function reducer_(state: number, action)
 				if action == INCREMENT then
 					return state + 1
 				else
@@ -3693,9 +3725,10 @@ return function()
 				return React.createElement(Text, { text = "Count: " .. count })
 			end
 
-			Counter = forwardRef(Counter)
-			local counter = React.createRef(nil)
-			ReactNoop.render(React.createElement(Counter, {
+			-- ROBLOX TODO: upstream this rename to make code/types more sane
+			local CounterRef = forwardRef(Counter)
+			local counter = React.createRef()
+			ReactNoop.render(React.createElement(CounterRef, {
 				ref = counter,
 			}))
 			jestExpect(Scheduler).toFlushAndYield({ "Count: 0" })
@@ -3713,7 +3746,8 @@ return function()
 		it("updates when deps are different", function()
 			local INCREMENT = "INCREMENT"
 
-			local function reducer_(state, action)
+			-- ROBLOX FIXME Luau: based on useReducer() call below, we should know that state is a number without an annotation
+			local function reducer_(state: number, action)
 				if action == INCREMENT then
 					return state + 1
 				else
@@ -3733,9 +3767,10 @@ return function()
 				return React.createElement(Text, { text = "Count: " .. count })
 			end
 
-			Counter = forwardRef(Counter)
-			local counter = React.createRef(nil)
-			ReactNoop.render(React.createElement(Counter, {
+			-- ROBLOX TODO: upstream this rename to make code/types more sane
+			local CounterRef = forwardRef(Counter)
+			local counter = React.createRef()
+			ReactNoop.render(React.createElement(CounterRef, {
 				ref = counter,
 			}))
 			jestExpect(Scheduler).toFlushAndYield({ "Count: 0" })
@@ -3752,7 +3787,7 @@ return function()
 			jestExpect(totalRefUpdates).toEqual(2)
 
 			-- Update that doesn't change the ref dependencies
-			ReactNoop.render(React.createElement(Counter, {
+			ReactNoop.render(React.createElement(CounterRef, {
 				ref = counter,
 			}))
 			jestExpect(Scheduler).toFlushAndYield({ "Count: 1" })
@@ -3918,7 +3953,7 @@ return function()
 				end
 
 				return React.createElement(Text, {
-					text = ("A: %s, B: %s, C: %s"):format(A, B, C),
+					text = ("A: %s, B: %s, C: %s"):format(tostring(A), tostring(B), tostring(C)),
 				})
 			end
 
@@ -3966,7 +4001,8 @@ return function()
 				updateA = _updateA
 				updateB = _updateB
 
-				local C
+				-- ROBLOX FIXME Luau: Luau should infer this annotation
+				local C: string | number
 				if props.loadC then
 					local _C, _updateC = useState(0)
 					C = _C
@@ -3976,7 +4012,7 @@ return function()
 				end
 
 				return React.createElement(Text, {
-					text = ("A: %s, B: %s, C: %s"):format(A, B, C),
+					text = ("A: %s, B: %s, C: %s"):format(tostring(A), tostring(B), tostring(C)),
 				})
 			end
 
@@ -4056,15 +4092,16 @@ return function()
 		local function Component(props)
 			-- ROBLOX deviation: can't destructure list in Lua function arguments
 			local count = props.count
-			local state, dispatch = useReducer(function()
+			-- ROBLOX Luau FIXME: I have to explicit add _action: nil, but it should be inferred: https://jira.rbx.com/browse/CLI-49121
+			local state, dispatch = useReducer(function(_, _action: nil)
 				-- This reducer closes over a value from props. If the reducer is not
 				-- properly updated, the eager reducer will compare to an old value
 				-- and bail out incorrectly.
-				Scheduler.unstable_yieldValue("Reducer: " .. count)
+				Scheduler.unstable_yieldValue("Reducer: " .. tostring(count))
 				return count
 			end, -1)
 			useEffect(function()
-				Scheduler.unstable_yieldValue("Effect: " .. count)
+				Scheduler.unstable_yieldValue("Effect: " .. tostring(count))
 				dispatch()
 			end, {
 				count,
@@ -4106,8 +4143,8 @@ return function()
 	end)
 
 	-- ROBLOX FIXME: this test needs to be enabled
-	-- -- Regression test. Covers a case where an internal state variable
-	-- -- (`didReceiveUpdate`) is not reset properly.
+	-- Regression test. Covers a case where an internal state variable
+	-- (`didReceiveUpdate`) is not reset properly.
 	-- it('state bail out edge case (#16359)', async function()
 	--   local setCounterA
 	--   local setCounterB
@@ -4172,7 +4209,8 @@ return function()
 		local shadow, dispatch
 		local function App()
 			local step, setStep = useState(0)
-			shadow, dispatch = useReducer(function()
+			-- ROBLOX Luau FIXME: I have to explicit add _action: nil, but it should be inferred: https://jira.rbx.com/browse/CLI-49121
+			shadow, dispatch = useReducer(function(_, __: nil)
 				return step
 			end, step)
 

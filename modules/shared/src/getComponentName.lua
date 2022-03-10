@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/a774502e0ff2a82e3c0a3102534dbc3f1406e5ea/packages/shared/getComponentName.js
 --[[*
 * Copyright (c) Facebook, Inc. and its affiliates.
@@ -7,7 +8,16 @@
 *
 * @flow
 ]]
+type Function = (...any) -> ...any
 local console = require(script.Parent.console)
+
+-- ROBLOX deviation: inline this typedef to avoid upstream's circular dependency
+type LazyComponent<T, P> = {
+	["$$typeof"]: number,
+	_payload: P,
+	_init: (payload: P) -> T,
+}
+
 local ReactSymbols = require(script.Parent.ReactSymbols)
 local REACT_CONTEXT_TYPE = ReactSymbols.REACT_CONTEXT_TYPE
 local REACT_FORWARD_REF_TYPE = ReactSymbols.REACT_FORWARD_REF_TYPE
@@ -21,25 +31,28 @@ local REACT_SUSPENSE_TYPE = ReactSymbols.REACT_SUSPENSE_TYPE
 local REACT_SUSPENSE_LIST_TYPE = ReactSymbols.REACT_SUSPENSE_LIST_TYPE
 local REACT_LAZY_TYPE = ReactSymbols.REACT_LAZY_TYPE
 local REACT_BLOCK_TYPE = ReactSymbols.REACT_BLOCK_TYPE
+local ReactTypes = require(script.Parent.ReactTypes)
+type ReactContext<T> = ReactTypes.ReactContext<T>
+type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
 
-local function getWrappedName(outerType, innerType, wrapperName)
+local function getWrappedName(outerType: any, innerType: any, wrapperName: string): string
 	-- deviation: Account for indexing into function
 	local functionName = "<function>"
 	if typeof(innerType) == "table" then
 		functionName = innerType.displayName or innerType.name or ""
 	end
-	return outerType.displayName or (functionName ~= "" and string.format(
-		"%s(%s)",
-		wrapperName,
-		functionName
-	) or wrapperName)
+	return outerType.displayName
+		or (
+			functionName ~= "" and string.format("%s(%s)", wrapperName, functionName)
+			or wrapperName
+		)
 end
 
-local function getContextName(type): string
+local function getContextName(type: ReactContext<any>): string
 	return type.displayName or "Context"
 end
 
-local function getComponentName(type): string?
+local function getComponentName(type: any): string | nil
 	if type == nil then
 		-- Host root, text node or just invalid type.
 		return nil
@@ -57,9 +70,10 @@ local function getComponentName(type): string?
 
 	if typeofType == "function" then
 		-- ROBLOX deviation: we can't deref functions in Lua, so get the name of the function and move logic to table section
-		local name = debug.info(type, "n")
+		-- ROBLOX FIXME Luau: this line gets a bunch of bizarre errors in strict mode
+		local name = debug.info((type :: any) :: Function, "n")
 		-- ROBLOX deviaton:when name = (null) we want it to be treated as nil, not as an empty (truthy) string
-		if name and #name > 0 then
+		if name and string.len(name) > 0 then
 			return name
 		else
 			return nil
@@ -67,7 +81,7 @@ local function getComponentName(type): string?
 	end
 
 	if typeofType == "string" then
-		return type
+		return (type :: any) :: string
 	end
 
 	if type == REACT_FRAGMENT_TYPE then
@@ -87,10 +101,10 @@ local function getComponentName(type): string?
 	if typeofType == "table" then
 		local typeProp = type["$$typeof"]
 		if typeProp == REACT_CONTEXT_TYPE then
-			local context = type
+			local context: ReactContext<any> = type :: any
 			return getContextName(context) .. ".Consumer"
 		elseif typeProp == REACT_PROVIDER_TYPE then
-			local provider = type
+			local provider: ReactProviderType<any> = type :: any
 			return getContextName(provider._context) .. ".Provider"
 		elseif typeProp == REACT_FORWARD_REF_TYPE then
 			return getWrappedName(type, type.render, "ForwardRef")
@@ -99,7 +113,7 @@ local function getComponentName(type): string?
 		elseif typeProp == REACT_BLOCK_TYPE then
 			return getComponentName(type._render)
 		elseif typeProp == REACT_LAZY_TYPE then
-			local lazyComponent = type
+			local lazyComponent: LazyComponent<any, any> = type :: any
 			local payload = lazyComponent._payload
 			local init = lazyComponent._init
 

@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/16654436039dd8f16a63928e71081c7745872e8f/packages/react-reconciler/src/ReactChildFiber.new.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -22,7 +23,7 @@ local console = require(Packages.Shared).console
 local ReactTypes = require(Packages.Shared)
 -- ROBLOX deviation: ReactElement is defined at the top level of Shared along
 -- with the rest of the ReactTypes
-type ReactElement = ReactTypes.ReactElement
+type ReactElement = ReactTypes.ReactElement<any, any>
 type ReactPortal = ReactTypes.ReactPortal
 
 local React = require(Packages.React)
@@ -325,13 +326,9 @@ end
 
 -- // We avoid inlining this to avoid potential deopts from using try/catch.
 -- /** @noinline */
--- function resolveLazyType<T, P>(
---   lazyComponent: LazyComponent<T, P>
--- ): LazyComponent<T, P> | T
--- ROBLOX TODO: needs Luau function generics
-function resolveLazyType(
-	lazyComponent: LazyComponent<any, any>
-): LazyComponent<any, any> | any
+function resolveLazyType<T, P>(
+	lazyComponent: LazyComponent<T, P>
+): LazyComponent<T, P> | T
 	-- ROBLOX performance: hoist non-throwable lines so we eliminate an anon function for the pcall
 	-- If we can, let's peek at the resulting type.
 	local payload = lazyComponent._payload
@@ -392,7 +389,8 @@ local function ChildReconciler(shouldTrackSideEffects)
 		-- instead.
 		local existingChildren: { [string | number]: Fiber } = {}
 
-		local existingChild = currentFirstChild
+		-- ROBLOX FIXME Luau: Luau doesn't correctly infer in repeat until nil scenarios
+		local existingChild: Fiber? = currentFirstChild
 		while existingChild ~= nil do
 			if existingChild.key ~= nil then
 				existingChildren[existingChild.key] = existingChild
@@ -496,9 +494,10 @@ local function ChildReconciler(shouldTrackSideEffects)
 			elseif enableBlocksAPI and (current :: Fiber).tag == Block then
 				-- The new Block might not be initialized yet. We need to initialize
 				-- it in case initializing it turns out it would match.
-				local type = element.type
-				if type["$$typeof"] == REACT_LAZY_TYPE then
-					type = resolveLazyType(type)
+				-- ROBLOX FIXME Luau: Luau should analyze closure and create union of assignments
+				local type: any = element.type
+				if typeof(type) == "table" and type["$$typeof"] == REACT_LAZY_TYPE then
+					type = resolveLazyType(type) :: LazyComponent<any, any>
 				end
 				if
 					type["$$typeof"] == REACT_BLOCK_TYPE
@@ -696,10 +695,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 
 		-- Update the fiber if the keys match, otherwise return nil.
 
-		local key = nil
-		if oldFiber then
-			key = oldFiber.key
-		end
+		local key = if oldFiber ~= nil then oldFiber.key else nil
 		-- ROBLOX performance: avoid repeated calls to typeof since Luau doesn't cache
 		local typeOfNewChild = typeof(newChild)
 
@@ -717,7 +713,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 							oldFiber,
 							newChild.props.children,
 							lanes,
-							key
+							key :: string?
 						)
 					end
 					return updateElement(returnFiber, oldFiber, newChild, lanes)
@@ -736,7 +732,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 					local init = newChild._init
 					-- ROBLOX deviation: Roact stable keys - Since the table key was
 					-- already applied to `newChild` above, we don't need to pass it along
-					return updateSlot(returnFiber, oldFiber, init(payload), lanes, nil)
+					return updateSlot(returnFiber, oldFiber, init(payload), lanes)
 				end
 			end
 
@@ -746,7 +742,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 				return nil
 			end
 
-			return updateFragment(returnFiber, oldFiber, newChild, lanes, nil)
+			return updateFragment(returnFiber, oldFiber, newChild, lanes)
 
 			-- ROBLOX performance deviation: unreachable with the above table check
 			-- throwOnInvalidObjectType(returnFiber, newChild)
@@ -842,7 +838,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 			-- ROBLOX deviation peformance: this is the equiv of checking for a table, and we already know typeof(newChild) is a table in this branch
 			-- if isArray(newChild) or getIteratorFn(newChild) then
 			local matchedFiber = existingChildren[newIdx]
-			return updateFragment(returnFiber, matchedFiber, newChild, lanes, nil)
+			return updateFragment(returnFiber, matchedFiber, newChild, lanes)
 
 			-- ROBLOX performance deviation: unreachable with the above table check
 			-- throwOnInvalidObjectType(returnFiber, newChild)
@@ -949,10 +945,10 @@ local function ChildReconciler(shouldTrackSideEffects)
 		local resultingFirstChild: Fiber | nil = nil
 		local previousNewFiber: Fiber | nil = nil
 
-		local oldFiber = currentFirstChild
+		local oldFiber: Fiber | nil = currentFirstChild
 		local lastPlacedIndex = 1
 		local newIdx = 1
-		local nextOldFiber = nil
+		local nextOldFiber: Fiber | nil = nil
 		-- ROBLOX performance: don't re-evaluate length of newChildren on each iteration through the loop
 		local newChildrenCount = #newChildren
 		-- ROBLOX deviation: use while loop in place of modified for loop
@@ -992,13 +988,15 @@ local function ChildReconciler(shouldTrackSideEffects)
 				break
 			end
 			if shouldTrackSideEffects then
-				if oldFiber and newFiber.alternate == nil then
+				-- ROBLOX FIXME Luau: needs type states to understand the continue above
+				if oldFiber and (newFiber :: Fiber).alternate == nil then
 					-- We matched the slot, but we didn't reuse the existing fiber, so we
 					-- need to delete the existing child.
-					deleteChild(returnFiber, oldFiber)
+				-- ROBLOX FIXME Luau: needs type states to understand the break above
+				deleteChild(returnFiber, oldFiber :: Fiber)
 				end
 			end
-			lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx)
+			lastPlacedIndex = placeChild(newFiber :: Fiber, lastPlacedIndex, newIdx)
 			if previousNewFiber == nil then
 				-- TODO: Move out of the loop. This only happens for the first run.
 				resultingFirstChild = newFiber
@@ -1045,11 +1043,12 @@ local function ChildReconciler(shouldTrackSideEffects)
 					newFiber = createChild(returnFiber, newChildNewIdx, lanes)
 				end
 				if newFiber == nil then
-					-- deviation: increment manually since we're not using a modified for loop
+					-- ROBLOX deviation: increment manually since we're not using a modified for loop
 					newIdx += 1
 					continue
 				end
-				lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx)
+				-- ROBLOX FIXME Luau: needs type state to understand the continue above
+				lastPlacedIndex = placeChild(newFiber :: Fiber, lastPlacedIndex, newIdx)
 				if previousNewFiber == nil then
 					-- TODO: Move out of the loop. This only happens for the first run.
 					resultingFirstChild = newFiber
@@ -1064,7 +1063,8 @@ local function ChildReconciler(shouldTrackSideEffects)
 		end
 
 		-- Add all children to a key map for quick lookups.
-		local existingChildren = mapRemainingChildren(returnFiber, oldFiber)
+		-- ROBLOX FIXME Luau: need type state to understand the if/return above
+		local existingChildren = mapRemainingChildren(returnFiber, oldFiber :: Fiber)
 
 		-- Keep scanning and use the map to restore deleted items as moves.
 		-- ROBLOX deviation: use while loop in place of modified for loop
@@ -1085,14 +1085,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 						-- current, that means that we reused the fiber. We need to delete
 						-- it from the child list so that we don't add it to the deletion
 						-- list.
-						-- deviation: Split out ternary into safer/more readable logic
-						local key
-						if newFiber.key == nil then
-							key = newIdx
-						else
-							key = newFiber.key :: string | number
-						end
-						existingChildren[key] = nil
+						existingChildren[if newFiber.key == nil then newIdx else newFiber.key] = nil
 					end
 				end
 				lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx)
@@ -1196,7 +1189,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 		local oldFiber = currentFirstChild
 		local lastPlacedIndex = 1
 		local newIdx = 1
-		local nextOldFiber = nil
+		local nextOldFiber: Fiber | nil = nil
 
 		local step = newChildren.next()
 		while oldFiber ~= nil and not step.done do
@@ -1224,13 +1217,14 @@ local function ChildReconciler(shouldTrackSideEffects)
 				break
 			end
 			if shouldTrackSideEffects then
-				if oldFiber and newFiber.alternate == nil then
+				-- ROBLOX FIXME Luau: need type states to understand the break above
+				if oldFiber and (newFiber :: Fiber).alternate == nil then
 					-- We matched the slot, but we didn't reuse the existing fiber, so we
 					-- need to delete the existing child.
 					deleteChild(returnFiber, oldFiber)
 				end
 			end
-			lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx)
+			lastPlacedIndex = placeChild(newFiber :: Fiber, lastPlacedIndex, newIdx)
 			if previousNewFiber == nil then
 				-- TODO: Move out of the loop. This only happens for the first run.
 				resultingFirstChild = newFiber
@@ -1239,9 +1233,9 @@ local function ChildReconciler(shouldTrackSideEffects)
 				-- I.e. if we had nil values before, then we want to defer this
 				-- for each nil value. However, we also don't want to call updateSlot
 				-- with the previous one.
-				previousNewFiber.sibling = newFiber
+				previousNewFiber.sibling = newFiber :: Fiber
 			end
-			previousNewFiber = newFiber
+			previousNewFiber = newFiber :: Fiber
 			oldFiber = nextOldFiber
 
 			newIdx += 1
@@ -1264,14 +1258,15 @@ local function ChildReconciler(shouldTrackSideEffects)
 					step = newChildren.next()
 					continue
 				end
-				lastPlacedIndex = placeChild(newFiber, lastPlacedIndex, newIdx)
+				-- ROBLOX FIXME Luau: need type states to understand the continue above
+				lastPlacedIndex = placeChild(newFiber :: Fiber, lastPlacedIndex, newIdx)
 				if previousNewFiber == nil then
 					-- TODO: Move out of the loop. This only happens for the first run.
 					resultingFirstChild = newFiber
 				else
 					previousNewFiber.sibling = newFiber
 				end
-				previousNewFiber = newFiber
+				previousNewFiber = newFiber :: Fiber
 
 				newIdx += 1
 				step = newChildren.next()
@@ -1286,7 +1281,8 @@ local function ChildReconciler(shouldTrackSideEffects)
 		-- Keep scanning and use the map to restore deleted items as moves.
 		while not step.done do
 			if not existingChildren then
-				existingChildren = mapRemainingChildren(returnFiber, oldFiber)
+				-- ROBLOX FIXME LUau: need type states to understand the guard+return above
+				existingChildren = mapRemainingChildren(returnFiber, oldFiber :: Fiber)
 			end
 			local newFiber = updateFromMap(
 				existingChildren,
@@ -1446,7 +1442,8 @@ local function ChildReconciler(shouldTrackSideEffects)
 				element.props.children,
 				returnFiber.mode,
 				lanes,
-				element.key
+				-- ROBLOX FIXME Luau: needs normalization: TypeError: Type '(number | string)?' could not be converted into 'string?'
+				element.key :: string
 			)
 			created.return_ = returnFiber
 			return created
@@ -1655,7 +1652,7 @@ exports.cloneChildFibers = function(current: Fiber | nil, workInProgress: Fiber)
 		return
 	end
 
-	local currentChild = workInProgress.child
+	local currentChild = workInProgress.child :: Fiber
 	local newChild = createWorkInProgress(currentChild, currentChild.pendingProps)
 	workInProgress.child = newChild
 
@@ -1663,7 +1660,8 @@ exports.cloneChildFibers = function(current: Fiber | nil, workInProgress: Fiber)
 	while currentChild.sibling ~= nil do
 		currentChild = currentChild.sibling
 		newChild.sibling = createWorkInProgress(currentChild, currentChild.pendingProps)
-		newChild = newChild.sibling
+		-- ROBLOX FIXME Luau: luau doesn't track/narrow the direct assignment on the line above
+		newChild = newChild.sibling :: Fiber
 		newChild.return_ = workInProgress
 	end
 	newChild.sibling = nil

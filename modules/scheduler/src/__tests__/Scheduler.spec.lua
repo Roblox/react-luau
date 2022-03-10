@@ -778,7 +778,7 @@ return function()
 		end)
 
 		it("gracefully handles scheduled tasks that are not a function", function()
-			scheduleCallback(ImmediatePriority, nil)
+			scheduleCallback(ImmediatePriority)
 			jestExpect(Scheduler).toFlushWithoutYielding()
 
 			scheduleCallback(ImmediatePriority, {})

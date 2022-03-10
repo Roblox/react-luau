@@ -1,7 +1,9 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/c57fe4a2c1402acdbf31ac48cfc6a6bf336c4067/react-is/src/__tests__/ReactIs-test.js
 
 return function()
 	local Packages = script.Parent.Parent.Parent
+	local Promise = require(Packages.Dev.Promise)
 	local JestGlobals = require(Packages.Dev.JestGlobals)
 	local jestExpect = JestGlobals.expect
 	local jest = JestGlobals.jest
@@ -48,11 +50,15 @@ return function()
 			end
 
 			local ForwardRefComponent = React.forwardRef(function(_props, ref)
-				React.createElement(Component, { forwardedRef = ref })
+				return React.createElement(Component, { forwardedRef = ref })
 			end)
 
+			-- ROBLOX TODO: this is incorrect in upstream
+			-- ROBLOX note: Lazy will need deeper adaptation for the Luau module system
 			local LazyComponent = React.lazy(function()
-				return Component
+				return Promise.delay(0):andThen(function()
+					return { default = Component }
+				end)
 			end)
 			local MemoComponent = React.memo(Component)
 			local Context = React.createContext(false)
@@ -203,8 +209,11 @@ return function()
 			local Component = function()
 				return React.createElement("div")
 			end
+			-- ROBLOX TODO: this is incorrect in upstream
 			local LazyComponent = React.lazy(function()
-				return Component
+				return Promise.delay(0):andThen(function()
+					return { default = Component }
+				end)
 			end)
 			jestExpect(ReactIs.isValidElementType(LazyComponent)).toBe(true)
 			jestExpect(ReactIs.typeOf(React.createElement(LazyComponent))).toBe(

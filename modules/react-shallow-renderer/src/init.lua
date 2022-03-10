@@ -12,6 +12,7 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 local Error = LuauPolyfill.Error
 local Array = LuauPolyfill.Array
+type Array<T> = LuauPolyfill.Array<T>
 
 local React = require(Packages.React)
 
@@ -302,7 +303,8 @@ function ReactShallowRenderer:_createDispatcher()
 		)
 	end
 
-	local function useMemo(nextCreate, deps)
+	-- ROBLOX FIXME Luau: work around 'Failed to unify type packs' error: : CLI-51338
+	local function useMemo<T...>(nextCreate: () -> T..., deps: Array<any>| nil): ...any
 		self:_validateCurrentlyRenderingComponent()
 		self:_createWorkInProgressHook()
 
@@ -388,7 +390,8 @@ function ReactShallowRenderer:_createDispatcher()
 		useEffect = noOp,
 		useImperativeHandle = noOp,
 		useLayoutEffect = noOp,
-		useMemo = useMemo,
+		-- ROBLOX FIXME Luau: needs : CLI-51338
+		useMemo = useMemo :: any,
 		useReducer = useReducer,
 		useRef = useRef,
 		useState = useState,

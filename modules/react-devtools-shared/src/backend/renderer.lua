@@ -658,7 +658,7 @@ exports.attach = function(
 		hideElementsWithTypes:clear()
 		hideElementsWithDisplayNames:clear()
 		hideElementsWithPaths:clear()
-		-- ROBLOX deviation: for loop instead of forEach
+		-- ROBLOX TODO: translate to Array.forEach
 		for _, componentFilter in ipairs(componentFilters) do
 			if not componentFilter.isEnabled then
 				continue
@@ -1998,7 +1998,9 @@ exports.attach = function(
 			and #(localPendingOperationsQueue :: Array<Array<number>>) > 0
 		then
 			-- ROBLOX deviation: for loop instead of forEach
-			for _, operations in ipairs(localPendingOperationsQueue :: Array<Array<number>>) do
+			for _, operations in
+				ipairs(localPendingOperationsQueue :: Array<Array<number>>)
+			do
 				hook.emit("operations", operations)
 			end
 		else
@@ -3190,7 +3192,9 @@ exports.attach = function(
 			error("getProfilingData() called before any profiling data was recorded")
 		end
 
-		for rootID, commitProfilingMetadata in pairs(rootToCommitProfilingMetadataMap :: CommitProfilingMetadataMap) do
+		for rootID, commitProfilingMetadata in
+			pairs(rootToCommitProfilingMetadataMap :: CommitProfilingMetadataMap)
+		do
 			local commitData = {}
 			local initialTreeBaseDurations = {}
 			local allInteractions = {}
@@ -3200,7 +3204,9 @@ exports.attach = function(
 				or "Unknown"
 
 			if initialTreeBaseDurationsMap ~= nil then
-				for id, treeBaseDuration in pairs(initialTreeBaseDurationsMap :: Map<number, number>) do
+				for id, treeBaseDuration in
+					pairs(initialTreeBaseDurationsMap :: Map<number, number>)
+				do
 					if
 						initialIDToRootMap ~= nil
 						and (initialIDToRootMap :: Map<number, number>)[id] == rootID

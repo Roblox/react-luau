@@ -25,7 +25,7 @@ return function()
 	end)
 
 	it("should properly initialize a fiber created with createFiberRoot", function()
-		local fiberRoot = ReactFiberRoot.createFiberRoot({}, ReactRootTags.BlockingRoot, false, nil)
+		local fiberRoot = ReactFiberRoot.createFiberRoot({}, ReactRootTags.BlockingRoot, false)
 
 		jestExpect(fiberRoot.current).toBeDefined()
 		jestExpect(fiberRoot.current.updateQueue).toBeDefined()

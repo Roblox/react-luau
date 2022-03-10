@@ -33,7 +33,7 @@ return function()
 				return nil
 			end
 			-- FunctionalComponent.defaultProps = { testProp = true }
-			ReactNoop.render(React.createElement(FunctionalComponent, nil))
+			ReactNoop.render(React.createElement(FunctionalComponent))
 			jestExpect(function()
 				return jestExpect(Scheduler).toFlushWithoutYielding()
 			end).toErrorDev(
@@ -98,7 +98,7 @@ return function()
 					{ ref = "refComponent", __self = {} }
 				)
 			end
-			ReactNoop.render(React.createElement(Component, nil))
+			ReactNoop.render(React.createElement(Component))
 
 			-- ROBLOX deviation: we removed string ref support ahead of upstream schedule
 			local expectedName = _G.__DEV__ and "Component" or "<enable __DEV__ mode for component names>"
@@ -134,7 +134,7 @@ return function()
 		-- 			-- 	{}
 		-- 			-- )
 		-- 		end
-		-- 		ReactNoop.render(React.createElement(Component, nil))
+		-- 		ReactNoop.render(React.createElement(Component))
 		-- 		jestExpect(function()
 		-- 			return jestExpect(Scheduler).toFlushWithoutYielding()
 		-- 		end).toErrorDev(

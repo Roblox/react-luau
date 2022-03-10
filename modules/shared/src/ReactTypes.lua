@@ -8,89 +8,80 @@
  * @flow
 ]]
 
--- deviation: Common types
-type Array<T> = { [number]: T }
-type Object = { [string]: any }
+local Packages = script.Parent.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
+type Array<T> = LuauPolyfill.Array<T>
+type Object = LuauPolyfill.Object
+type void = nil
+type NonMaybeType<T> = T
 
--- deviation: disabled flow types
--- export type ReactNode =
---   | React$Element<any>
---   | ReactPortal
---   | ReactText
---   | ReactFragment
---   | ReactProvider<any>
---   | ReactConsumer<any>;
+local flowtypes = require(script.Parent["flowtypes.roblox"])
+type React_Element<T> = flowtypes.React_Element<T>
+type React_Node = flowtypes.React_Node
+type SimpleMap<K, V> = { [K]: V }
+type Iterable<T> = SimpleMap<string | number, T> | Array<T>
 
--- ROBLOX deviation: alias for internal React$ flow types
-export type React_Node =
-	nil
-	| boolean
-	| number
-	| string
-	| React_Element<any>
-	| React_Portal
-	| Array<React_Node?>
-export type React_Element<ElementType> = {
-	type: ElementType,
-	props: any?, -- ROBLOX TODO: can't find this definition React_ElementProps<ElementType>,
-	key: React_Key | nil,
-	ref: any,
-}
-export type React_Portal = any
-export type React_Key = string | number
+export type ReactNode<T = any> =
+	React_Element<T>
+	| ReactPortal
+	-- | ReactText
+	| ReactFragment
+	| ReactProvider<T>
+	| ReactConsumer<T>
 
+export type ReactEmpty = nil | void | boolean
 
-export type ReactEmpty = boolean?
-
--- deviation: No `Iterable` equivalent other than an array
-export type ReactFragment = ReactEmpty | Array<React_Node>
+export type ReactFragment = ReactEmpty | Iterable<React_Node>
 
 export type ReactNodeList = ReactEmpty | React_Node
 
+-- ROBLOX deviation START: Roblox renderer doesn't support TextNode, only use of this type is in this file
 -- export type ReactText = string | number;
-
+-- ROBLOX deviation END
 export type ReactProvider<T> = {
-	-- ROBLOX TODO: remove [string] once we can express ["$$typeof"] as a type key
-	-- $$typeof: Symbol | number,
-	[string]: number,
+	["$$typeof"]: number,
 	type: ReactProviderType<T>,
 	key: nil | string,
 	ref: nil,
 	props: {
 		value: T,
 		children: ReactNodeList?,
+		-- ROBLOX deviation START: only make this open to extension if absolutely necessary
 		-- ...
+		-- ROBLOX deviation END
 	},
+	-- ROBLOX deviation START: only make this open to extension if absolutely necessary
 	-- ...
+	-- ROBLOX deviation END
 }
 
 export type ReactProviderType<T> = {
-	-- ROBLOX TODO: remove [string] once we can express ["$$typeof"] as a type key
-	-- $$typeof: Symbol | number,
-	[string]: number,
+	["$$typeof"]: number,
 	_context: ReactContext<T>,
+	-- ROBLOX deviation START: only make this open to extension if absolutely necessary
 	-- ...
+	-- ROBLOX deviation END
 }
 
 export type ReactConsumer<T> = {
-	-- ROBLOX TODO: remove [string] once we can express ["$$typeof"] as a type key
-	-- $$typeof: Symbol | number,
-	[string]: number,
-	type: ReactContext<T>,
+	["$$typeof"]: number,
+	type: ReactContext<T>, -- ROBLOX FIXME: Luau can't do <T> because:  Recursive type being used with different parameters
 	key: nil | string,
 	ref: nil,
 	props: {
 		children: (value: T) -> ReactNodeList,
 		unstable_observedBits: number?,
+		-- ROBLOX deviation START: only make this open to extension if absolutely necessary
 		-- ...
+		-- ROBLOX deviation END
 	},
-  -- ...
+	-- ROBLOX deviation START: only make this open to extension if absolutely necessary
+	-- ...
+	-- ROBLOX deviation END
 }
 
 export type ReactContext<T> = {
-	-- ROBLOX TODO: remove [string] once we can express ["$$typeof"] as a type key
-	-- $$typeof: Symbol | number,
-	[string]: number,
+	["$$typeof"]: number,
 	Consumer: ReactContext<T>,
 	Provider: ReactProviderType<T>,
 	_calculateChangedBits: ((T, T) -> number)?,
@@ -98,31 +89,34 @@ export type ReactContext<T> = {
 	_currentValue2: T,
 	_threadCount: number,
 	-- DEV only
-	_currentRenderer: Object?,
-	_currentRenderer2: Object?,
+	_currentRenderer: Object | nil,
+	_currentRenderer2: Object | nil,
 	-- This value may be added by application code
 	-- to improve DEV tooling display names
 	displayName: string?,
+	-- ROBLOX deviation START: only make this open to extension if absolutely necessary
 	-- ...
+	-- ROBLOX deviation END
 }
 
 export type ReactPortal = {
-	-- ROBLOX TODO: remove [string] once we can express ["$$typeof"] as a type key
-	-- $$typeof: Symbol | number,
-	[string]: number,
-	key: string?,
+	["$$typeof"]: number,
+	key: nil | string,
 	containerInfo: any,
 	children: ReactNodeList,
 	-- TODO: figure out the API for cross-renderer implementation.
 	implementation: any,
+	-- ROBLOX deviation START: only make this open to extension if absolutely necessary
 	-- ...
+	-- ROBLOX deviation END
 }
 
 export type RefObject = { current: any }
 
--- deviation: No Luau support for literal types
+-- ROBLOX deviation START: No Luau support for numeric literal types
 -- export type EventPriority = 0 | 1 | 2;
 export type EventPriority = number
+-- ROBLOX deviation END
 
 local exports = {}
 exports.DiscreteEvent = 0
@@ -153,21 +147,19 @@ export type ReactFundamentalImpl<C, H> = {
 	onFocus: nil | (C, Object, Object) -> boolean,
 }
 export type ReactFundamentalComponent<C, H> = {
-	-- ROBLOX TODO: remove [string] once we can express ["$$typeof"] as a type key
-	-- $$typeof: Symbol | number,
-	[string]: number,
+	["$$typeof"]: number,
 	impl: ReactFundamentalImpl<C, H>,
 }
 
 export type ReactScope = {
-	-- ROBLOX TODO: remove [string] once we can express ["$$typeof"] as a type key
-	-- $$typeof: Symbol | number,
-	[string]: number
+	["$$typeof"]: number,
 }
 
 export type ReactScopeQuery = (
 	type: string,
+	-- ROBLOX deviation START: leave closed to extension unless necessary
 	props: { [string]: any? },
+	-- ROBLOX deviation END
 	instance: any
 ) -> boolean
 
@@ -175,26 +167,23 @@ export type ReactScopeInstance = {
 	DO_NOT_USE_queryAllNodes: (ReactScopeQuery) -> nil | Array<Object>,
 	DO_NOT_USE_queryFirstNode: (ReactScopeQuery) -> nil | Object,
 	containsNode: (Object) -> boolean,
-	-- ROBLOX FIXME: function generics
-	-- getChildContextValues: <T>(context: ReactContext<T>) => Array<T>,
-	getChildContextValues: (context: ReactContext<any>) -> Array<any>,
+	getChildContextValues: <T>(context: ReactContext<T>) -> Array<T>,
 }
 
 -- Mutable source version can be anything (e.g. number, string, immutable data structure)
 -- so long as it changes every time any part of the source changes.
--- ROBLOX deviation: we don't have mixed, or a type system that can represent the above
-export type MutableSourceVersion = any -- $NonMaybeType<mixed>;
+export type MutableSourceVersion = NonMaybeType<any>
 
-export type MutableSourceGetSnapshotFn<Source, Snapshot> = (
-	source: Source
-) -> Snapshot
+export type MutableSourceGetSnapshotFn<Source, Snapshot> = (source: Source) -> Snapshot
 
 export type MutableSourceSubscribeFn<Source, Snapshot> = (
 	source: Source,
 	callback: (snapshot: Snapshot) -> ()
 ) -> (() -> ())
 
-export type MutableSourceGetVersionFn = (_source: any) -> MutableSourceVersion
+export type MutableSourceGetVersionFn = (
+	_source: NonMaybeType<any>
+) -> MutableSourceVersion
 
 export type MutableSource<Source> = {
 	_source: Source,
@@ -222,46 +211,38 @@ export type MutableSource<Source> = {
 	_currentSecondaryRenderer: Object | nil,
 }
 
--- -- The subset of a Thenable required by things thrown by Suspense.
--- -- This doesn't require a value to be passed to either handler.
+-- The subset of a Thenable required by things thrown by Suspense.
+-- This doesn't require a value to be passed to either handler.
 export type Wakeable = {
 	andThen: (
 		self: Wakeable,
 		onFulfill: () -> ...any,
 		onReject: () -> ...any
-	) -> Wakeable?,
+		-- ROBLOX FIXME Luau: needs union type packs to parse () | Wakeable
+	) -> nil | Wakeable,
 	-- Special flag to opt out of tracing interactions across a Suspense boundary.
 	__reactDoNotTraceInteractions: boolean?,
-	-- [any]: any,
 }
 
--- ROBLOX TODO: function generics
--- type system
--- -- The subset of a Promise that React APIs rely on. This resolves a value.
--- -- This doesn't require a return value neither from the handler nor the
--- -- then function.
--- export interface Thenable<+R> {
---   then<U>(
--- 	onFulfill: (value: R) => void | Thenable<U> | U,
--- 	onReject: (error: mixed) => void | Thenable<U> | U,
---   ): void | Thenable<U>;
--- }
-type _U = any?
+-- The subset of a Promise that React APIs rely on. This resolves a value.
+-- This doesn't require a return value neither from the handler nor the
+-- then function.
 -- ROBLOX FIXME: workaround for Luau recursive type used with different parameters. delete this copy once that issue is resolved.
 export type _Thenable<R> = {
-	andThen: (
+	andThen: <U>(
 		self: _Thenable<R>,
-		onFulfill: (R) -> () | any | _U,
-		onReject: (error: any) -> () | any | _U
-	) -> () | any,
+		onFulfill: (R) -> () | U,
+		onReject: (error: any) -> () | U
+	) -> (),
 }
 
 export type Thenable<R> = {
-	andThen: (
+	andThen: <U>(
 		self: Thenable<R>,
-		onFulfill: (R) -> () | _Thenable<_U> | _U,
-		onReject: (error: any) -> () | _Thenable<_U> | _U
-	) -> () | _Thenable<_U>,
+		onFulfill: (R) -> () | _Thenable<U> | U,
+		onReject: (error: any) -> () | _Thenable<U> | U
+		-- ROBLOX FIXME Luau: need union type packs to parse () | Thenable<U>: CLI-49836
+	) -> nil | _Thenable<U>,
 }
 
 return exports

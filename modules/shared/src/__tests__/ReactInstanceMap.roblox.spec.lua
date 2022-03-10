@@ -1,6 +1,6 @@
 -- ROBLOX deviation: we have a crash in production this deviant logic will help catch
 -- ROBLOX TODO: make this only pass in __DEV__
-	return function()
+return function()
 	local Packages = script.Parent.Parent.Parent
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
 
@@ -12,7 +12,7 @@
 				_reactInternals = {
 					tag = 0,
 					-- missing key fields of Fiber
-				}
+				},
 			}
 			jestExpect(function()
 				ReactInstanceMap.get(elementWithBadFiber)
@@ -28,10 +28,10 @@
 					lanes = 0,
 					childLanes = 0,
 					alternate = {
-						tag = 1
+						tag = 1,
 						-- missing key fields of Fiber
-					}
-				}
+					},
+				},
 			}
 			jestExpect(function()
 				ReactInstanceMap.get(elementWithGoodFiberBadAlternate)
@@ -47,10 +47,8 @@
 				-- missing key fields of Fiber
 			}
 			jestExpect(function()
-				ReactInstanceMap.set({displayName = "MyComponent"}, badFiber)
-			end).toThrow(
-				"invalid fiber in MyComponent being set in ReactInstanceMap!"
-			)
+				ReactInstanceMap.set({ displayName = "MyComponent" }, badFiber)
+			end).toThrow("invalid fiber in MyComponent being set in ReactInstanceMap!")
 		end)
 		it("with valid fiber with no return that has invalid alternate", function()
 			local goodFiberBadAlternate = {
@@ -59,9 +57,9 @@
 				lanes = 0,
 				childLanes = 0,
 				alternate = {
-					tag = 1
+					tag = 1,
 					-- missing key fields of Fiber
-				}
+				},
 			}
 			jestExpect(function()
 				ReactInstanceMap.set({}, goodFiberBadAlternate)
@@ -90,8 +88,7 @@
 						tag = 3,
 						-- missing key fields of Fiber
 					},
-				}
-
+				},
 			}
 			jestExpect(function()
 				ReactInstanceMap.set({}, goodFiberGoodReturnBadAlternate)

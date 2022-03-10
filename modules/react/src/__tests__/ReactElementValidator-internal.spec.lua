@@ -132,12 +132,12 @@ return function()
 			end
 			local function GrandParent()
 				return React.createElement(Parent, {
-					child = React.createElement(Component, nil),
+					child = React.createElement(Component),
 				})
 			end
 
 			jestExpect(function()
-				ReactTestUtils.renderIntoDocument(React.createElement(GrandParent, nil))
+				ReactTestUtils.renderIntoDocument(React.createElement(GrandParent))
 			end).toErrorDev(
 				"Warning: Each child in a list should have a unique " ..
 					'"key" prop.\n\nCheck the render method of `Component`. See ' ..
@@ -166,7 +166,7 @@ return function()
 						Wrapper,
 						nil,
 						React.createElement("Frame"),
-						React.createElement("Frame", nil)
+						React.createElement("Frame")
 					)
 				)
 			end).toErrorDev({})
@@ -625,15 +625,15 @@ return function()
 			local Component = React.Component:extend("Component")
 			function Component:render()
 				return React.createElement("Frame", nil, {
-					a = React.createElement("Frame", {key="a"}),
+					a1 = React.createElement("Frame", {key="a2"}),
 					b = React.createElement("Frame", {key="b"}),
 				})
 			end
 
 			jestExpect(function()
 				ReactTestUtils.renderIntoDocument(React.createElement(Component))
-			end).toErrorDev('Child element received a "key" prop in addition to a key in ' ..
-				'the "children" table of its parent. Please provide only ' ..
+			end).toErrorDev('Child element received a "key" prop ("a2") in addition to a key in ' ..
+				'the "children" table of its parent ("a1"). Please provide only ' ..
 				'one key definition. When both are present, the "key" prop ' ..
 				'will take precedence.\n\nCheck the render method of `Component`. ' ..
 				'See https://reactjs.org/link/warning-keys for more information.\n' ..

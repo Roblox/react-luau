@@ -9,15 +9,13 @@
 
 -- 'use strict'
 
-local Packages = script.Parent.Parent.Parent
-local RobloxJest = require(Packages.Dev.RobloxJest)
-
-local jestExpect = require(Packages.Dev.JestGlobals).expect
-
-local ReactRoblox
-local ReactTestRenderer
-
 return function()
+  local Packages = script.Parent.Parent.Parent
+  local ReactRoblox
+  local ReactTestRenderer
+  local jestExpect = require(Packages.Dev.JestGlobals).expect
+  local RobloxJest = require(Packages.Dev.RobloxJest)
+
   describe('ReactTestRenderer', function()
     beforeEach(function()
       RobloxJest.resetModules()
@@ -29,22 +27,20 @@ return function()
       ReactTestRenderer = require(Packages.ReactTestRenderer)
     end)
 
-    -- ROBLOX TODO: change xit -> it once parsing for "The above error occurred in one of your React components:" is fixed
-    xit('should warn if used to render a ReactRoblox portal', function()
+    it('should warn if used to render a ReactRoblox portal', function()
       local container = Instance.new("Folder")
 
       jestExpect(function()
         jestExpect(function()
           ReactTestRenderer.create(ReactRoblox.createPortal('foo', container))
         end).toThrow()
-      end).toErrorDev("An invalid container has been provided. "
-                      .. "This may indicate that another renderer is being used in addition to the test renderer. "
-                      .. "(For example, ReactDOM.createPortal inside of a ReactTestRenderer tree.) "
-                      .. "This is not supported.", {
+        -- ROBLOX deviation START: This has `Warning: ` appended to it versus upstream, wording adjusted to not mention ReactDOM
+      end).toErrorDev("Warning: An invalid container has been provided.", {
+        -- ROBLOX deviation END
         withoutStack = true,
       })
-      
-      
+
+
     end)
 
     -- describe('timed out Suspense hidden subtrees should not be observable via toJSON', () => {

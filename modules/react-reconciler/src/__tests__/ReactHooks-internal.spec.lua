@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/d13f5b9538e48f74f7c571ef3cde652ca887cca0/packages/react-reconciler/src/__tests__/ReactHooks-test.internal.js
 --  * Copyright (c) Facebook, Inc. and its affiliates.
 --  *
@@ -22,6 +23,8 @@ return function()
 		local Promise = require(Packages.Promise)
 		local LuauPolyfill = require(Packages.LuauPolyfill)
 		local Array = LuauPolyfill.Array
+		type Array<T> = LuauPolyfill.Array<T>
+		type Function = (...any) -> ...any
 		local Error = LuauPolyfill.Error
 
 		beforeEach(function()
@@ -53,8 +56,7 @@ return function()
 				)
 			end)
 		end
-		-- ROBLOX FIXME: this fails intermittently across different machines. Mac gets -0 for some of these, Linux gets 0.
-		itSKIP("bails out in the render phase if all of the state is the same", function()
+		it("bails out in the render phase if all of the state is the same", function()
 			local useState, useLayoutEffect = React.useState, React.useLayoutEffect
 			local function Child(props)
 				local text = props.text
@@ -68,7 +70,7 @@ return function()
 				setCounter1 = _setCounter1
 				local counter2, _setCounter2 = useState(0)
 				setCounter2 = _setCounter2
-				local text = ("%s, %s"):format(counter1, counter2)
+				local text = ("%s, %s"):format(tostring(counter1), tostring(counter2))
 				Scheduler.unstable_yieldValue(("Parent: %s"):format(text))
 				useLayoutEffect(function()
 					Scheduler.unstable_yieldValue(("Effect: %s"):format(text))
@@ -76,7 +78,8 @@ return function()
 				return React.createElement(Child, { text = text })
 			end
 			local root = ReactTestRenderer.create(nil, { unstable_isConcurrent = true })
-			root.update(React.createElement(Parent, nil))
+
+			root.update(React.createElement(Parent))
 			jestExpect(Scheduler).toFlushAndYield({
 				"Parent: 0, 0",
 				"Child: 0, 0",
@@ -153,22 +156,27 @@ return function()
 				end
 				local setCounter1
 				local setCounter2
-				local function Parent(ref)
-					local theme = ref.theme
+				local function Parent(props)
+					local theme = props.theme
 					local counter1, _setCounter1 = useState(0)
 					setCounter1 = _setCounter1
 					local counter2, _setCounter2 = useState(0)
 					setCounter2 = _setCounter2
-					local text = ("%s, %s (%s)"):format(counter1, counter2, theme)
+					local text = ("%s, %s (%s)"):format(
+						tostring(counter1),
+						tostring(counter2),
+						theme
+					)
 					Scheduler.unstable_yieldValue(("Parent: %s"):format(text))
 					return React.createElement(Child, { text = text })
 				end
-				Parent = memo(Parent)
+				-- ROBLOX TODO: contribute this rename upstream, it makes the code and types sane
+				local ParentMemo = memo(Parent)
 				local root = ReactTestRenderer.create(
 					nil,
 					{ unstable_isConcurrent = true }
 				)
-				root.update(React.createElement(Parent, { theme = "light" }))
+				root.update(React.createElement(ParentMemo, { theme = "light" }))
 				jestExpect(Scheduler).toFlushAndYield({
 					"Parent: 0, 0 (light)",
 					"Child: 0, 0 (light)",
@@ -197,7 +205,7 @@ return function()
 				act(function()
 					setCounter1(1)
 					setCounter2(2)
-					root.update(React.createElement(Parent, { theme = "dark" }))
+					root.update(React.createElement(ParentMemo, { theme = "dark" }))
 				end)
 				jestExpect(Scheduler).toHaveYielded({
 					"Parent: 1, 2 (dark)",
@@ -206,7 +214,7 @@ return function()
 				act(function()
 					setCounter1(1)
 					setCounter2(2)
-					root.update(React.createElement(Parent, { theme = "dark" }))
+					root.update(React.createElement(ParentMemo, { theme = "dark" }))
 				end)
 				jestExpect(Scheduler).toHaveYielded({ "Parent: 1, 2 (dark)" })
 			end
@@ -217,16 +225,17 @@ return function()
 			local function Counter()
 				local counter, _setCounter = useState(0)
 				setCounter = _setCounter
-				Scheduler.unstable_yieldValue(("Count: %s"):format(counter))
+				Scheduler.unstable_yieldValue(("Count: %s"):format(tostring(counter)))
 				return counter
 			end
 			local root = ReactTestRenderer.create(nil, { unstable_isConcurrent = true })
-			root.update(React.createElement(Counter, nil))
+			root.update(React.createElement(Counter))
 			jestExpect(Scheduler).toFlushAndYield({ "Count: 0" })
 			jestExpect(root).toMatchRenderedOutput("0")
 			jestExpect(function()
 				act(function()
-					return setCounter(1, function()
+					-- ROBLOX deviation: Luau types prevent us from even trying this abuse case unless we cast away safety
+					return (setCounter :: any)(1, function()
 						error(Error.new("Expected to ignore the callback."))
 					end)
 				end)
@@ -253,12 +262,13 @@ return function()
 				return counter
 			end
 			local root = ReactTestRenderer.create(nil, { unstable_isConcurrent = true })
-			root.update(React.createElement(Counter, nil))
+			root.update(React.createElement(Counter))
 			jestExpect(Scheduler).toFlushAndYield({ "Count: 0" })
 			jestExpect(root).toMatchRenderedOutput("0")
 			jestExpect(function()
 				act(function()
-					return dispatch(1, function()
+					-- ROBLOX deviation: Luau types prevent us from even trying this abuse case unless we cast away safety
+					return (dispatch :: any)(1, function()
 						error(Error.new("Expected to ignore the callback."))
 					end)
 				end)
@@ -298,7 +308,7 @@ return function()
 				local counter, _setCounter = useState(0)
 				setCounter = _setCounter
 				local theme = useContext(ThemeContext)
-				local text = ("%s (%s)"):format(counter, theme)
+				local text = ("%d (%s)"):format(counter, theme)
 				Scheduler.unstable_yieldValue(("Parent: %s"):format(text))
 				useLayoutEffect(function()
 					Scheduler.unstable_yieldValue(("Effect: %s"):format(text))
@@ -308,11 +318,7 @@ return function()
 			local root = ReactTestRenderer.create(nil, { unstable_isConcurrent = true })
 			act(function()
 				root.update(
-					React.createElement(
-						ThemeProvider,
-						nil,
-						React.createElement(Parent, nil)
-					)
+					React.createElement(ThemeProvider, nil, React.createElement(Parent))
 				)
 			end)
 			jestExpect(Scheduler).toHaveYielded({
@@ -374,7 +380,7 @@ return function()
 					nil,
 					{ unstable_isConcurrent = true }
 				)
-				root.update(React.createElement(Parent, nil))
+				root.update(React.createElement(Parent))
 				jestExpect(Scheduler).toFlushAndYield({
 					"Parent: 0",
 					"Child: 0",
@@ -455,13 +461,16 @@ return function()
 				return React.createElement(Child, { text = counter })
 			end
 			local root = ReactTestRenderer.create(nil, { unstable_isConcurrent = true })
-			root.update(React.createElement(Parent, nil))
+			root.update(React.createElement(Parent))
 			jestExpect(Scheduler).toFlushAndYield({ "Parent: 0", "Child: 0" })
 			jestExpect(root).toMatchRenderedOutput("0")
 			local function update(value)
 				setCounter(function(previous)
 					Scheduler.unstable_yieldValue(
-						("Compute state (%s -> %s)"):format(previous, value)
+						("Compute state (%s -> %s)"):format(
+							tostring(previous),
+							tostring(value)
+						)
 					)
 					return value
 				end)
@@ -503,14 +512,17 @@ return function()
 				return React.createElement(Child, { text = counter })
 			end
 			local root = ReactTestRenderer.create(nil, { unstable_isConcurrent = true })
-			root.update(React.createElement(Parent, nil))
+			root.update(React.createElement(Parent))
 			jestExpect(Scheduler).toFlushAndYield({ "Parent: 1", "Child: 1" })
 			jestExpect(root).toMatchRenderedOutput("1")
 			local function update(compute)
 				setCounter(function(previous)
 					local value = compute(previous)
 					Scheduler.unstable_yieldValue(
-						("Compute state (%s -> %s)"):format(previous, value)
+						("Compute state (%s -> %s)"):format(
+							tostring(previous),
+							tostring(value)
+						)
 					)
 					return value
 				end)
@@ -559,21 +571,22 @@ return function()
 				"Warning: The final argument passed to useLayoutEffect changed size "
 					.. "between renders. The order and size of this array must remain "
 					.. "constant.\n\n"
-					.. "Previous: [\"A\"]\n"
-					.. "Incoming: [\"A\", \"B\"]\n",
+					.. 'Previous: ["A"]\n'
+					.. 'Incoming: ["A", "B"]\n',
 			})
 		end)
 		it("warns if switching from dependencies to no dependencies", function()
 			local useMemo = React.useMemo
-			local function App(ref)
-				local text, hasDeps = ref.text, ref.hasDeps
+			local function App(props)
+				local text, hasDeps = props.text, props.hasDeps
 				local resolvedText = useMemo(
 					function()
 						Scheduler.unstable_yieldValue("Compute")
 						-- ROBLOX TODO: add String.toUpperCase to polyfill
 						return string.upper(text)
 					end,
-					(function()
+					-- ROBLOX Luau FIXME: Luau forced me put in this annotation to avoid Type '{string}' could not be converted into 'nil'
+					(function(): { string } | nil
 						if hasDeps then
 							return nil
 						else
@@ -601,13 +614,17 @@ return function()
 			local function App(props)
 				useEffect(function() end, props.deps)
 				useLayoutEffect(function() end, props.deps)
-				useMemo(function() end, props.deps)
+				-- ROBLOX TODO: upstream this type safety fix
+				useMemo(function()
+					return nil
+				end, props.deps)
 				useCallback(function() end, props.deps)
 				return nil
 			end
 			jestExpect(function()
 				act(function()
-					ReactTestRenderer.create(React.createElement(App, { deps = "hello" }))
+					-- ROBLOX TODO: upstream this hard cast, since this abuse case violates the API
+					ReactTestRenderer.create(React.createElement(App, { deps = "hello" :: any }))
 				end)
 			end).toErrorDev({
 				"Warning: useEffect received a final argument that is not an array (instead, received `string`). "
@@ -621,7 +638,8 @@ return function()
 			})
 			jestExpect(function()
 				act(function()
-					ReactTestRenderer.create(React.createElement(App, { deps = 100500 }))
+					-- ROBLOX TODO: upstream this hard cast, since this abuse case violates the API
+					ReactTestRenderer.create(React.createElement(App, { deps = 100500 :: any}))
 				end)
 			end).toErrorDev({
 				"Warning: useEffect received a final argument that is not an array (instead, received `number`). "
@@ -637,7 +655,8 @@ return function()
 				act(function()
 					-- ROBLOX deviation: empty table isn't distinguishable from an array
 					ReactTestRenderer.create(
-						React.createElement(App, { deps = { notempty = true } })
+						-- ROBLOX TODO: upstream this hard cast, since this abuse case violates the API
+						React.createElement(App, { deps = { notempty = true } :: any})
 					)
 				end)
 			end).toErrorDev({
@@ -656,11 +675,17 @@ return function()
 				ReactTestRenderer.create(React.createElement(App, { deps = nil }))
 			end)
 		end)
-		-- ROBLOX FIXME: doesn't seem to get the string "hello"
-		it("warns if deps is not an array for useImperativeHandle", function()
+		-- ROBLOX FIXME: this test depends on fix in https://github.com/Roblox/luau-polyfill/pull/112
+		xit("warns if deps is not an array for useImperativeHandle", function()
 			local useImperativeHandle = React.useImperativeHandle
-			local App = React.forwardRef(function(props, ref)
-				useImperativeHandle(ref, function() end, props.deps)
+			local App = React.forwardRef(function(props: { deps: any }, ref)
+				useImperativeHandle(
+					ref,
+					function()
+						return nil
+					end,
+					props.deps
+				)
 				return nil
 			end)
 			jestExpect(function()
@@ -697,7 +722,7 @@ return function()
 			end
 			local root = ReactTestRenderer.create(nil)
 			act(function()
-				root.update(React.createElement(Counter, nil))
+				root.update(React.createElement(Counter))
 			end)
 			jestExpect(root).toMatchRenderedOutput("4")
 		end)
@@ -705,7 +730,9 @@ return function()
 			"does not forget render phase useReducer updates inside an effect with hoisted reducer",
 			function()
 				local useReducer, useEffect = React.useReducer, React.useEffect
-				local function reducer(x)
+				-- ROBLOX Luau FIXME: Luau should know x is number because of the useReducer<> generic: https://jira.rbx.com/browse/CLI-29033
+				-- ROBLOX Luau FIXME: I have to explicit add _action: nil, but it should be inferred: https://jira.rbx.com/browse/CLI-49121
+				local function reducer(x: number, _action: nil)
 					return x + 1
 				end
 				local function Counter()
@@ -722,7 +749,7 @@ return function()
 				end
 				local root = ReactTestRenderer.create(nil)
 				act(function()
-					root.update(React.createElement(Counter, nil))
+					root.update(React.createElement(Counter))
 				end)
 				jestExpect(root).toMatchRenderedOutput("4")
 			end
@@ -732,9 +759,14 @@ return function()
 			function()
 				local useReducer, useEffect = React.useReducer, React.useEffect
 				local function Counter()
-					local counter, increment = useReducer(function(x)
-						return x + 1
-					end, 0)
+					-- ROBLOX Luau FIXME: Luau should know x is number because of the useReducer<> generic: https://jira.rbx.com/browse/CLI-29033
+					-- ROBLOX Luau FIXME: I have to explicit add _action: nil, but it should be inferred: https://jira.rbx.com/browse/CLI-49121
+					local counter, increment = useReducer(
+						function(x: number, _action: nil)
+							return x + 1
+						end,
+						0
+					)
 					if counter == 0 then
 						increment()
 						increment()
@@ -747,7 +779,7 @@ return function()
 				end
 				local root = ReactTestRenderer.create(nil)
 				act(function()
-					root.update(React.createElement(Counter, nil))
+					root.update(React.createElement(Counter))
 				end)
 				jestExpect(root).toMatchRenderedOutput("4")
 			end
@@ -755,12 +787,13 @@ return function()
 		it("warns for bad useImperativeHandle first arg", function()
 			local useImperativeHandle = React.useImperativeHandle
 			local function App()
-				useImperativeHandle({ focus = function(self) end })
+				-- ROBLOX deviation: Luau types prevent this abuse, so we cast away to any to test the scenario
+				(useImperativeHandle :: any)({ focus = function(self) end })
 				return nil
 			end
 			jestExpect(function()
 				jestExpect(function()
-					ReactTestRenderer.create(React.createElement(App, nil))
+					ReactTestRenderer.create(React.createElement(App))
 					-- ROBLOX deviation: Lua has different error when trying to call a nil
 				end).toThrow("attempt to call a nil value")
 			end).toErrorDev({
@@ -775,11 +808,12 @@ return function()
 		it("warns for bad useImperativeHandle second arg", function()
 			local useImperativeHandle = React.useImperativeHandle
 			local App = React.forwardRef(function(props, ref)
-				useImperativeHandle(ref, { focus = function(self) end })
+				-- ROBLOX deviation: Luau types prevent this abuse, so we cast away to any to test the scenario
+				(useImperativeHandle :: any)(ref, { focus = function(self) end })
 				return nil
 			end)
 			jestExpect(function()
-				ReactTestRenderer.create(React.createElement(App, nil))
+				ReactTestRenderer.create(React.createElement(App))
 			end).toErrorDev({
 				-- ROBLOX deviation: Lua says `table` instead of `object`
 				"Expected useImperativeHandle() second argument to be a function " .. "that creates a handle. Instead received: table.",
@@ -798,7 +832,7 @@ return function()
 		-- 			local counter = useState(0)
 		-- 			return markup1 + counter + markup2
 		-- 		end
-		-- 		local root = ReactTestRenderer.create(React.createElement(App, nil))
+		-- 		local root = ReactTestRenderer.create(React.createElement(App))
 		-- 		jestExpect(root.toJSON()).toMatchSnapshot()
 		-- 	end)
 		it("throws when calling hooks inside .memo's compare function", function()
@@ -811,9 +845,9 @@ return function()
 				useState(0)
 				return false
 			end)
-			local root = ReactTestRenderer.create(React.createElement(MemoApp, nil))
+			local root = ReactTestRenderer.create(React.createElement(MemoApp))
 			jestExpect(function()
-				return root.update(React.createElement(MemoApp, nil))
+				return root.update(React.createElement(MemoApp))
 			end).toThrow(
 				"Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for"
 					.. " one of the following reasons:\n"
@@ -823,7 +857,7 @@ return function()
 					.. "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem."
 			)
 			jestExpect(function()
-				return root.update(React.createElement(MemoApp, nil))
+				return root.update(React.createElement(MemoApp))
 			end).never.toThrow(
 				"Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for"
 					.. " one of the following reasons:\n"
@@ -833,7 +867,7 @@ return function()
 					.. "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem."
 			)
 			jestExpect(function()
-				return root.update(React.createElement(MemoApp, nil))
+				return root.update(React.createElement(MemoApp))
 			end).toThrow(
 				"Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for"
 					.. " one of the following reasons:\n"
@@ -848,11 +882,12 @@ return function()
 			local function App()
 				useMemo(function()
 					useState(0)
+					return nil
 				end)
 				return nil
 			end
 			jestExpect(function()
-				return ReactTestRenderer.create(React.createElement(App, nil))
+				return ReactTestRenderer.create(React.createElement(App))
 			end).toErrorDev(
 				"Do not call Hooks inside useEffect(...), useMemo(...), or other built-in Hooks."
 			)
@@ -864,11 +899,11 @@ return function()
 			local ThemeContext = createContext("light")
 			local function App()
 				return useMemo(function()
-					return ReactCurrentDispatcher.current:readContext(ThemeContext)
+					return ReactCurrentDispatcher.current.readContext(ThemeContext)
 				end, {})
 			end
 			jestExpect(function()
-				return ReactTestRenderer.create(React.createElement(App, nil))
+				return ReactTestRenderer.create(React.createElement(App))
 			end).toErrorDev("Context can only be read while React is rendering")
 		end)
 		it(
@@ -881,14 +916,16 @@ return function()
 				local firstRead, secondRead
 				local function App()
 					firstRead = ReactCurrentDispatcher.current.readContext(ThemeContext)
-					useMemo(function() end)
+					useMemo(function()
+						return nil
+					end)
 					secondRead = ReactCurrentDispatcher.current.readContext(ThemeContext)
 					return useMemo(function()
 						return ReactCurrentDispatcher.current.readContext(ThemeContext)
 					end, {})
 				end
 				jestExpect(function()
-					return ReactTestRenderer.create(React.createElement(App, nil))
+					return ReactTestRenderer.create(React.createElement(App))
 				end).toErrorDev("Context can only be read while React is rendering")
 				jestExpect(firstRead).toBe("light")
 				jestExpect(secondRead).toBe("light")
@@ -908,7 +945,7 @@ return function()
 			end
 			jestExpect(function()
 				act(function()
-					ReactTestRenderer.create(React.createElement(App, nil))
+					ReactTestRenderer.create(React.createElement(App))
 				end)
 			end).toThrow("Context can only be read while React is rendering")
 		end)
@@ -920,12 +957,12 @@ return function()
 			local ThemeContext = createContext("light")
 			local function App()
 				useLayoutEffect(function()
-					ReactCurrentDispatcher.current:readContext(ThemeContext)
+					ReactCurrentDispatcher.current.readContext(ThemeContext)
 				end)
 				return nil
 			end
 			jestExpect(function()
-				return ReactTestRenderer.create(React.createElement(App, nil))
+				return ReactTestRenderer.create(React.createElement(App))
 			end).toThrow("Context can only be read while React is rendering")
 		end)
 		it("warns when reading context inside useReducer", function()
@@ -935,7 +972,7 @@ return function()
 			local ThemeContext = createContext("light")
 			local function App()
 				local state, dispatch = useReducer(function(s, action)
-					ReactCurrentDispatcher.current:readContext(ThemeContext)
+					ReactCurrentDispatcher.current.readContext(ThemeContext)
 					return action
 				end, 0)
 				if state == 0 then
@@ -944,7 +981,7 @@ return function()
 				return nil
 			end
 			jestExpect(function()
-				return ReactTestRenderer.create(React.createElement(App, nil))
+				return ReactTestRenderer.create(React.createElement(App))
 			end).toErrorDev({ "Context can only be read while React is rendering" })
 		end)
 		it("warns when reading context inside eager useReducer", function()
@@ -954,14 +991,15 @@ return function()
 				React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentDispatcher
 			local _setState
 			local function Fn()
-				local _, setState = useState(0)
+				-- ROBLOX TODO: this is `0` upstream, which is incorrect
+				local _, setState = useState(nil :: string?)
 				_setState = setState
 				return nil
 			end
 			local Cls = React.Component:extend("Cls")
 			function Cls:render()
 				_setState(function()
-					return ReactCurrentDispatcher.current:readContext(ThemeContext)
+					return ReactCurrentDispatcher.current.readContext(ThemeContext)
 				end)
 				return nil
 			end
@@ -970,8 +1008,8 @@ return function()
 					React.createElement(
 						React.Fragment,
 						nil,
-						React.createElement(Fn, nil),
-						React.createElement(Cls, nil)
+						React.createElement(Fn),
+						React.createElement(Cls)
 					)
 				)
 			end).toErrorDev({
@@ -983,19 +1021,21 @@ return function()
 			local useReducer, useState, useRef =
 				React.useReducer, React.useState, React.useRef
 			local function App()
-				local value, dispatch = useReducer(function(state, action)
+				-- ROBLOX Luau FIXME: Luau should know x is number because of the useReducer<> generic: https://jira.rbx.com/browse/CLI-29033
+				-- ROBLOX Luau FIXME: I have to explicit add _action: nil, but it should be inferred: https://jira.rbx.com/browse/CLI-49121
+				local value, dispatch = useReducer(function(state: number, _action)
 					useRef(0)
 					return state + 1
 				end, 0)
 				if value == 0 then
 					dispatch("foo")
 				end
-				useState()
+				useState(0)
 				return value
 			end
 			jestExpect(function()
 				jestExpect(function()
-					ReactTestRenderer.create(React.createElement(App, nil))
+					ReactTestRenderer.create(React.createElement(App))
 				end).toThrow("Rendered more hooks than during the previous render.")
 			end).toErrorDev({
 				"Do not call Hooks inside useEffect(...), useMemo(...), or other built-in Hooks",
@@ -1020,7 +1060,7 @@ return function()
 				return nil
 			end
 			jestExpect(function()
-				return ReactTestRenderer.create(React.createElement(App, nil))
+				return ReactTestRenderer.create(React.createElement(App))
 			end).toErrorDev(
 				"Do not call Hooks inside useEffect(...), useMemo(...), or other built-in Hooks."
 			)
@@ -1031,8 +1071,8 @@ return function()
 			local ThemeContext = React.createContext("light")
 			local function App()
 				React.useMemo(function()
-					ReactCurrentDispatcher.current:readContext(ThemeContext)
-					React.useRef()
+					ReactCurrentDispatcher.current.readContext(ThemeContext)
+					React.useRef(0)
 					error(Error.new("No."))
 				end, {})
 			end
@@ -1049,7 +1089,7 @@ return function()
 			end
 			jestExpect(function()
 				ReactTestRenderer.create(
-					React.createElement(Boundary, nil, React.createElement(App, nil))
+					React.createElement(Boundary, nil, React.createElement(App))
 				)
 			end).toErrorDev({
 				"Context can only be read while React is rendering",
@@ -1058,25 +1098,33 @@ return function()
 				"Do not call Hooks inside useEffect(...), useMemo(...), or other built-in Hooks",
 			})
 			local function Valid()
-				React.useState()
-				React.useMemo(function() end)
-				React.useReducer(function() end)
+				React.useState(0)
+				React.useMemo(function()
+					return nil
+				end)
+				React.useReducer(function()
+					return nil
+				end, 0)
 				React.useEffect(function() end)
 				React.useLayoutEffect(function() end)
 				React.useCallback(function() end)
-				React.useRef()
-				React.useImperativeHandle(function() end, function() end)
+				React.useRef(0)
+				React.useImperativeHandle(function()
+					return nil
+				end, function()
+					return nil
+				end)
 				if _G.__DEV__ then
-					React.useDebugValue()
+					React.useDebugValue(0)
 				end
 				return nil
 			end
 			act(function()
-				ReactTestRenderer.create(React.createElement(Valid, nil))
+				ReactTestRenderer.create(React.createElement(Valid))
 			end)
 			jestExpect(function()
 				ReactTestRenderer.create(
-					React.createElement(Boundary, nil, React.createElement(App, nil))
+					React.createElement(Boundary, nil, React.createElement(App))
 				)
 			end).toErrorDev({
 				"Context can only be read while React is rendering",
@@ -1092,71 +1140,71 @@ return function()
 			local renderCount = 0
 			local function NoHooks()
 				renderCount += 1
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
 			local function HasHooks()
 				useState(0)
 				renderCount += 1
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
 			local FwdRef = React.forwardRef(function(props, ref)
 				renderCount += 1
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end)
 			local FwdRefHasHooks = React.forwardRef(function(props, ref)
 				useState(0)
 				renderCount += 1
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end)
 			local Memo = React.memo(function(props)
 				renderCount += 1
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end)
 			local MemoHasHooks = React.memo(function(props)
 				useState(0)
 				renderCount += 1
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end)
 			local function Factory()
 				return {
 					state = {},
 					render = function(self)
 						renderCount += 1
-						return React.createElement("div", nil)
+						return React.createElement("div")
 					end,
 				}
 			end
 			local renderer = ReactTestRenderer.create(nil)
 			renderCount = 0
-			renderer.update(React.createElement(NoHooks, nil))
+			renderer.update(React.createElement(NoHooks))
 			jestExpect(renderCount).toBe(1)
 			renderCount = 0
-			renderer.update(React.createElement(NoHooks, nil))
+			renderer.update(React.createElement(NoHooks))
 			jestExpect(renderCount).toBe(1)
 			renderCount = 0
 			renderer.update(
-				React.createElement(StrictMode, nil, React.createElement(NoHooks, nil))
+				React.createElement(StrictMode, nil, React.createElement(NoHooks))
 			)
 			jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
 			renderCount = 0
 			renderer.update(
-				React.createElement(StrictMode, nil, React.createElement(NoHooks, nil))
+				React.createElement(StrictMode, nil, React.createElement(NoHooks))
 			)
 			jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
 			renderCount = 0
-			renderer.update(React.createElement(FwdRef, nil))
+			renderer.update(React.createElement(FwdRef))
 			jestExpect(renderCount).toBe(1)
 			renderCount = 0
-			renderer.update(React.createElement(FwdRef, nil))
+			renderer.update(React.createElement(FwdRef))
 			jestExpect(renderCount).toBe(1)
 			renderCount = 0
 			renderer.update(
-				React.createElement(StrictMode, nil, React.createElement(FwdRef, nil))
+				React.createElement(StrictMode, nil, React.createElement(FwdRef))
 			)
 			jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
 			renderCount = 0
 			renderer.update(
-				React.createElement(StrictMode, nil, React.createElement(FwdRef, nil))
+				React.createElement(StrictMode, nil, React.createElement(FwdRef))
 			)
 			jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
 			renderCount = 0
@@ -1186,7 +1234,7 @@ return function()
 			if not ReactFeatureFlags.disableModulePatternComponents then
 				renderCount = 0
 				jestExpect(function()
-					return renderer.update(React.createElement(Factory, nil))
+					return renderer.update(React.createElement(Factory))
 				end).toErrorDev(
 					"Warning: The <Factory /> component appears to be a function component that returns a class instance. "
 						.. "Change Factory to a class that extends React.Component instead. "
@@ -1197,65 +1245,49 @@ return function()
 				)
 				jestExpect(renderCount).toBe(1)
 				renderCount = 0
-				renderer.update(React.createElement(Factory, nil))
+				renderer.update(React.createElement(Factory))
 				jestExpect(renderCount).toBe(1)
 				renderCount = 0
 				renderer.update(
-					React.createElement(
-						StrictMode,
-						nil,
-						React.createElement(Factory, nil)
-					)
+					React.createElement(StrictMode, nil, React.createElement(Factory))
 				)
 				jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
 				renderCount = 0
 				renderer.update(
-					React.createElement(
-						StrictMode,
-						nil,
-						React.createElement(Factory, nil)
-					)
+					React.createElement(StrictMode, nil, React.createElement(Factory))
 				)
 				jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
 			end
 			renderCount = 0
-			renderer.update(React.createElement(HasHooks, nil))
+			renderer.update(React.createElement(HasHooks))
 			jestExpect(renderCount).toBe(1)
 			renderCount = 0
-			renderer.update(React.createElement(HasHooks, nil))
+			renderer.update(React.createElement(HasHooks))
 			jestExpect(renderCount).toBe(1)
 			renderCount = 0
 			renderer.update(
-				React.createElement(StrictMode, nil, React.createElement(HasHooks, nil))
+				React.createElement(StrictMode, nil, React.createElement(HasHooks))
 			)
 			jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
 			renderCount = 0
 			renderer.update(
-				React.createElement(StrictMode, nil, React.createElement(HasHooks, nil))
+				React.createElement(StrictMode, nil, React.createElement(HasHooks))
 			)
 			jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
 			renderCount = 0
-			renderer.update(React.createElement(FwdRefHasHooks, nil))
+			renderer.update(React.createElement(FwdRefHasHooks))
 			jestExpect(renderCount).toBe(1)
 			renderCount = 0
-			renderer.update(React.createElement(FwdRefHasHooks, nil))
+			renderer.update(React.createElement(FwdRefHasHooks))
 			jestExpect(renderCount).toBe(1)
 			renderCount = 0
 			renderer.update(
-				React.createElement(
-					StrictMode,
-					nil,
-					React.createElement(FwdRefHasHooks, nil)
-				)
+				React.createElement(StrictMode, nil, React.createElement(FwdRefHasHooks))
 			)
 			jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
 			renderCount = 0
 			renderer.update(
-				React.createElement(
-					StrictMode,
-					nil,
-					React.createElement(FwdRefHasHooks, nil)
-				)
+				React.createElement(StrictMode, nil, React.createElement(FwdRefHasHooks))
 			)
 			jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
 			renderCount = 0
@@ -1290,17 +1322,14 @@ return function()
 			local useMemoCount = 0
 			local function BadUseMemo()
 				useMemo(function()
-					(function()
-						local result = useMemoCount
-						useMemoCount += 1
-						return result
-					end)()
+					useMemoCount += 1
+					return nil
 				end, {})
-				return React.createElement("div", nil)
+				return React.createElement("div")
 			end
 			useMemoCount = 0
 			ReactTestRenderer.create(
-				React.createElement(StrictMode, nil, React.createElement(BadUseMemo, nil))
+				React.createElement(StrictMode, nil, React.createElement(BadUseMemo))
 			)
 			jestExpect(useMemoCount).toBe(_G.__DEV__ and 2 or 1)
 			ReactFeatureFlags.debugRenderPhaseSideEffectsForStrictMode = false
@@ -1310,23 +1339,23 @@ return function()
 				return React.useCallback(function() end, {})
 			end
 			local function useContextHelper()
-				return React.useContext(React.createContext())
+				return React.useContext(React.createContext(0))
 			end
 			local function useDebugValueHelper()
-				return React.useDebugValue("abc")
+				React.useDebugValue("abc")
 			end
 			local function useEffectHelper()
-				return React.useEffect(function()
+				React.useEffect(function()
 					return function() end
 				end, {})
 			end
 			local function useImperativeHandleHelper()
-				React.useImperativeHandle({ current = nil }, function()
-					return {}
+				React.useImperativeHandle({ current = 0 }, function()
+					return 0
 				end, {})
 			end
 			local function useLayoutEffectHelper()
-				return React.useLayoutEffect(function()
+				React.useLayoutEffect(function()
 					return function() end
 				end, {})
 			end
@@ -1343,10 +1372,10 @@ return function()
 			local function useRefHelper()
 				return React.useRef(nil)
 			end
-			local function useStateHelper()
+			local function useStateHelper(): number
 				return React.useState(0)
 			end
-			local orderedHooks = {
+			local orderedHooks: Array<Function> = {
 				useCallbackHelper,
 				useContextHelper,
 				useDebugValueHelper,
@@ -1357,7 +1386,7 @@ return function()
 				useRefHelper,
 				useStateHelper,
 			}
-			local hooksInList = {
+			local hooksInList: Array<Function> = {
 				useCallbackHelper,
 				useEffectHelper,
 				useImperativeHandleHelper,
@@ -1369,16 +1398,16 @@ return function()
 			}
 			-- ROBLOX TODO: unflag this when we implement useTransition and useDeferredValueHelper
 			if _G.__EXPERIMENTAL__ then
-				local function useTransitionHelper()
-					return React.useTransition()
-				end
-				local function useDeferredValueHelper()
-					return React.useDeferredValue(0, { timeoutMs = 1000 })
-				end
-				Array.push(orderedHooks, useTransitionHelper)
-				Array.push(orderedHooks, useDeferredValueHelper)
-				Array.push(hooksInList, useTransitionHelper)
-				Array.push(hooksInList, useDeferredValueHelper)
+				-- local function useTransitionHelper()
+				-- 	return React.useTransition()
+				-- end
+				-- local function useDeferredValueHelper()
+				-- 	return React.useDeferredValue(0, { timeoutMs = 1000 })
+				-- end
+				-- table.insert(orderedHooks, useTransitionHelper)
+				-- table.insert(orderedHooks, useDeferredValueHelper)
+				-- table.insert(hooksInList, useTransitionHelper)
+				-- table.insert(hooksInList, useDeferredValueHelper)
 			end
 			local function formatHookNamesToMatchErrorMessage(hookNameA, hookNameB)
 				return ("use%s%s%s"):format(
@@ -1388,12 +1417,13 @@ return function()
 						if hookNameB then
 							return ("use%s"):format(hookNameB)
 						else
-							return nil
+							return ""
 						end
 					end)()
 				)
 			end
-			Array.forEach(orderedHooks, function(firstHelper, index)
+			-- ROBLOX Luau FIXME: Luau should infer the correct T and not require explicit annotations here
+			Array.forEach(orderedHooks, function(firstHelper: () -> (), index: number)
 				local secondHelper = (function()
 					if
 						index
@@ -1432,7 +1462,7 @@ return function()
 							return nil
 						end
 						local root
-						act (function()
+						act(function()
 							root = ReactTestRenderer.create(
 								React.createElement(App, { update = false })
 							)
@@ -1517,7 +1547,8 @@ return function()
 					end
 				)
 			end)
-			Array.forEach(hooksInList, function(firstHelper, index)
+			-- ROBLOX Luau FIXME: Luau should infer the correct T and not require explicit annotations here
+			Array.forEach(hooksInList, function(firstHelper: () -> (), index: number)
 				local secondHelper = (function()
 					if
 						index
@@ -1671,8 +1702,8 @@ return function()
 								React.createElement(
 									React.Fragment,
 									nil,
-									React.createElement(A, nil),
-									React.createElement(B, nil)
+									React.createElement(A),
+									React.createElement(B)
 								)
 							)
 							jestExpect(function()
@@ -1687,6 +1718,7 @@ return function()
 				)
 			end
 		)
+		-- Regression test for https://github.com/facebook/react/issues/15057
 		it(
 			"does not fire a false positive warning when previous effect unmounts the component",
 			function()
@@ -1698,20 +1730,16 @@ return function()
 					local function hideMe()
 						setShow(false)
 					end
-					return (function()
-						if show then
-							return React.createElement(B, { hideMe = hideMe })
-						else
-							return nil
-						end
-					end)()
+					return if show
+						then React.createElement(B, { hideMe = hideMe })
+						else nil
 				end
 				function B(props)
 					return React.createElement(C, props)
 				end
 				function C(ref)
 					local hideMe = ref.hideMe
-					local _, setState = useState()
+					local _, setState = useState("")
 					useEffect(function()
 						local isStale = false
 						globalListener = function()
@@ -1727,7 +1755,7 @@ return function()
 					return nil
 				end
 				act(function()
-					ReactTestRenderer.create(React.createElement(A, nil))
+					ReactTestRenderer.create(React.createElement(A))
 				end)
 				jestExpect(function()
 					globalListener()
@@ -1750,7 +1778,7 @@ return function()
 				end
 			end
 			local function Child()
-				useState()
+				useState(0)
 				trySuspend()
 				return "hello"
 			end
@@ -1759,7 +1787,7 @@ return function()
 				React.createElement(
 					Suspense,
 					{ fallback = "loading" },
-					React.createElement(Wrapper, nil)
+					React.createElement(Wrapper)
 				)
 			)
 			jestExpect(root).toMatchRenderedOutput("loading")
@@ -1779,7 +1807,7 @@ return function()
 				end
 			end
 			local function render(props, ref)
-				useState()
+				useState(0)
 				trySuspend()
 				return "hello"
 			end
@@ -1788,7 +1816,7 @@ return function()
 				React.createElement(
 					Suspense,
 					{ fallback = "loading" },
-					React.createElement(Wrapper, nil)
+					React.createElement(Wrapper)
 				)
 			)
 			jestExpect(root).toMatchRenderedOutput("loading")
@@ -1810,7 +1838,7 @@ return function()
 					end
 				end
 				local function render(props, ref)
-					useState()
+					useState(0)
 					trySuspend()
 					return "hello"
 				end
@@ -1819,7 +1847,7 @@ return function()
 					React.createElement(
 						Suspense,
 						{ fallback = "loading" },
-						React.createElement(Wrapper, nil)
+						React.createElement(Wrapper)
 					)
 				)
 				jestExpect(root).toMatchRenderedOutput("loading")
@@ -1864,7 +1892,7 @@ return function()
 						React.createElement(
 							ErrorBoundary,
 							nil,
-							React.createElement(Thrower, nil)
+							React.createElement(Thrower)
 						)
 					)
 				end)

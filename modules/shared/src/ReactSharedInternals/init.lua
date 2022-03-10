@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/607148673b3156d051d1fed17cd49e83698dce54/packages/react/src/ReactSharedInternals.js
 --[[*
 * Copyright (c) Facebook, Inc. and its affiliates.
@@ -29,7 +30,6 @@ local function onlyInTestError(functionName: string)
 	end
 end
 
-
 -- import assign from 'object-assign';
 local ReactCurrentDispatcher = require(script.ReactCurrentDispatcher)
 export type Dispatcher = ReactCurrentDispatcher.Dispatcher
@@ -44,17 +44,14 @@ local ReactSharedInternals = {
 	ReactCurrentOwner = ReactCurrentOwner,
 	IsSomeRendererActing = IsSomeRendererActing,
 	-- ROBLOX deviation: Luau type checking requires us to have a consistent export shape regardless of __DEV__
-    -- ROBLOX TODO: use if-expressions when all clients are on 503+
-	ReactDebugCurrentFrame = (function()
-		if _G.__DEV__ then
-			return ReactDebugCurrentFrame
-		end
-		return {
-			setExtraStackFrame = function()
+	-- ROBLOX TODO: use if-expressions when all clients are on 503+
+	ReactDebugCurrentFrame = if _G.__DEV__
+		then ReactDebugCurrentFrame
+		else {
+			setExtraStackFrame = function(_: string?): ()
 				onlyInTestError("setExtraStackFrame")
-			end
-		}
-	end)(),
+			end,
+		},
 	-- deviation: We shouldn't have to worry about duplicate bundling here
 	-- Used by renderers to avoid bundling object-assign twice in UMD bundles:
 	-- assign,

@@ -296,7 +296,7 @@ return function()
                 fallback = React.createElement(Text, {
                         text = 'Loading...',
                     })
-            }, React.createElement(Async, nil)), React.createElement(Text, {
+            }, React.createElement(Async)), React.createElement(Text, {
                 text = 'After Suspense',
             }), React.createElement(Text, {
                 text = 'Sibling',
@@ -527,7 +527,7 @@ return function()
         --                 })
         --             end
 
-        --             return React.createElement(Async, nil)
+        --             return React.createElement(Async)
         --         end)()
         --     end
 
@@ -535,7 +535,7 @@ return function()
         --     local root = ReactTestRenderer.create(nil, {unstable_isConcurrent = true})
 
         --     return _awaitIgnored(act(_async(function()
-        --         root.update(React.createElement(App, nil))
+        --         root.update(React.createElement(App))
         --         jestExpect(Scheduler).toFlushAndYield({
         --             'shouldHideInParent: false',
         --             'A',
@@ -779,7 +779,7 @@ return function()
                 }, React.createElement(MemoizedChild)))
             end
 
-            local root = ReactTestRenderer.create(React.createElement(App, nil), {unstable_isConcurrent = true})
+            local root = ReactTestRenderer.create(React.createElement(App), {unstable_isConcurrent = true})
 
             jestExpect(Scheduler).toFlushAndYield({
                 'Suspend! [default]',
@@ -829,10 +829,10 @@ return function()
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
         --             }),
-        --         }, React.createElement(MemoizedChild, nil)))
+        --         }, React.createElement(MemoizedChild)))
         --     end
 
-        --     local root = ReactTestRenderer.create(React.createElement(App, nil), {unstable_isConcurrent = true})
+        --     local root = ReactTestRenderer.create(React.createElement(App), {unstable_isConcurrent = true})
 
         --     jestExpect(Scheduler).toFlushAndYield({
         --         'Suspend! [default]',
@@ -885,7 +885,7 @@ return function()
         --         fallback = React.createElement(Text, {
         --             text = 'Loading...',
         --         }),
-        --     }, React.createElement(MemoizedChild, nil))), {unstable_isConcurrent = true})
+        --     }, React.createElement(MemoizedChild))), {unstable_isConcurrent = true})
 
         --     jestExpect(Scheduler).toFlushAndYield({
         --         'Suspend! [default]',
@@ -936,7 +936,7 @@ return function()
         --         fallback = React.createElement(Text, {
         --             text = 'Loading...',
         --         }),
-        --     }, React.createElement(MemoizedChild, nil))), {unstable_isConcurrent = true})
+        --     }, React.createElement(MemoizedChild))), {unstable_isConcurrent = true})
 
         --     jestExpect(Scheduler).toFlushAndYield({
         --         'Suspend! [default]',
@@ -1037,7 +1037,7 @@ return function()
             --         }))
             --     end
 
-            --     local root = ReactTestRenderer.create(React.createElement(App, nil))
+            --     local root = ReactTestRenderer.create(React.createElement(App))
 
             --     jestExpect(Scheduler).toHaveYielded({
             --         'A',
@@ -1104,7 +1104,7 @@ return function()
         --                 fallback = React.createElement(Text, {
         --                     text = 'Loading...',
         --                 }),
-        --             }, React.createElement(Stateful, nil), React.createElement(AsyncText, {
+        --             }, React.createElement(Stateful), React.createElement(AsyncText, {
         --                 ms = 1000,
         --                 text = props.text,
         --             }))
@@ -1176,7 +1176,7 @@ return function()
                         fallback = React.createElement(Text, {
                             text = 'Loading...',
                         }),
-                    }, React.createElement(Stateful, nil), React.createElement(Indirection, nil, React.createElement(Indirection, nil, React.createElement(Indirection, nil, React.createElement(AsyncText, {
+                    }, React.createElement(Stateful), React.createElement(Indirection, nil, React.createElement(Indirection, nil, React.createElement(Indirection, nil, React.createElement(AsyncText, {
                         ms = 1000,
                         text = props.text,
                     })))))
@@ -1419,7 +1419,7 @@ return function()
 
         --         local function App(props)
         --             return React.createElement(Suspense, {
-        --                 fallback = React.createElement(ShouldMountOnce, nil),
+        --                 fallback = React.createElement(ShouldMountOnce),
         --             }, React.createElement(AsyncText, {
         --                 ms = 1000,
         --                 text = 'Child 1',
@@ -1432,7 +1432,7 @@ return function()
         --             }))
         --         end
 
-        --         local root = ReactTestRenderer.create(React.createElement(App, nil))
+        --         local root = ReactTestRenderer.create(React.createElement(App))
 
         --         -- Initial render
         --         jestExpect(Scheduler).toHaveYielded({
@@ -1488,7 +1488,7 @@ return function()
         --             }))
         --         end
 
-        --         local root = ReactTestRenderer.create(React.createElement(App, nil), {unstable_isConcurrent = true})
+        --         local root = ReactTestRenderer.create(React.createElement(App), {unstable_isConcurrent = true})
 
         --         jestExpect(Scheduler).toFlushAndYield({
         --             'Suspend! [Child 1]',
@@ -1539,7 +1539,7 @@ return function()
         --             }))
         --         end
 
-        --         local root = ReactTestRenderer.create(React.createElement(App, nil))
+        --         local root = ReactTestRenderer.create(React.createElement(App))
 
         --         jestExpect(Scheduler).toHaveYielded({
         --             'Suspend! [Tab: 0]',
@@ -1656,7 +1656,7 @@ return function()
 
         --         local root = ReactTestRenderer.create(nil)
 
-        --         root.update(React.createElement(App, nil))
+        --         root.update(React.createElement(App))
         --         jestExpect(Scheduler).toHaveYielded({
         --             'Suspend! [A]',
         --             'Suspend! [B]',
@@ -1820,7 +1820,7 @@ return function()
         --         function App:render()
         --             return React.createElement(Suspense, {
         --                 fallback = React.createElement('span', nil, 'loading...'),
-        --             }, self.state.render and React.createElement(LazyHello, nil))
+        --             }, self.state.render and React.createElement(LazyHello))
         --         end
 
         --         local root = ReactTestRenderer.create(nil)
@@ -1847,10 +1847,10 @@ return function()
         --                 fallback = React.createElement(Text, {
         --                     text = 'Loading...',
         --                 }),
-        --             }, React.createElement(MemoizedChild, nil)))
+        --             }, React.createElement(MemoizedChild)))
         --         end
 
-        --         local root = ReactTestRenderer.create(React.createElement(App, nil))
+        --         local root = ReactTestRenderer.create(React.createElement(App))
 
         --         jestExpect(Scheduler).toHaveYielded({
         --             'Suspend! [default]',
@@ -1899,10 +1899,10 @@ return function()
         --                 fallback = React.createElement(Text, {
         --                     text = 'Loading...',
         --                 }),
-        --             }, React.createElement(MemoizedChild, nil)))
+        --             }, React.createElement(MemoizedChild)))
         --         end
 
-        --         local root = ReactTestRenderer.create(React.createElement(App, nil))
+        --         local root = ReactTestRenderer.create(React.createElement(App))
 
         --         jestExpect(Scheduler).toHaveYielded({
         --             'Suspend! [default]',
@@ -1955,7 +1955,7 @@ return function()
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
         --             }),
-        --         }, React.createElement(MemoizedChild, nil))))
+        --         }, React.createElement(MemoizedChild))))
 
         --         jestExpect(Scheduler).toHaveYielded({
         --             'Suspend! [default]',
@@ -2002,10 +2002,10 @@ return function()
         --                 fallback = React.createElement(Text, {
         --                     text = 'Loading...',
         --                 }),
-        --             }, React.createElement(MemoizedChild, nil)))
+        --             }, React.createElement(MemoizedChild)))
         --         end
 
-        --         local root = ReactTestRenderer.create(React.createElement(App, nil))
+        --         local root = ReactTestRenderer.create(React.createElement(App))
 
         --         jestExpect(Scheduler).toHaveYielded({
         --             'Suspend! [default]',

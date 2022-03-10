@@ -7,14 +7,16 @@
  *
  * @emails react-core
  ]]
---!strict
+-- ROBLOX FIXME Luau: this doesn't play nicely with Object.assign
+--!nonstrict
 
 return function()
   local Packages = script.Parent.Parent.Parent
   local RobloxJest = require(Packages.Dev.RobloxJest)
   local jestExpect = require(Packages.Dev.JestGlobals).expect
   local Error = require(Packages.LuauPolyfill).Error
-  local Cryo = require(Packages.Cryo)
+  local LuauPolyfill = require(Packages.LuauPolyfill)
+  local Object = LuauPolyfill.Object
 
   local React
   local ReactFeatureFlags
@@ -39,14 +41,16 @@ return function()
     end
 
     local function Wrapper(props)
-      return React.createElement(Child, Cryo.Dictionary.join(props, {ref=props.forwardedRef}))
+      return React.createElement(Child, Object.assign({}, props, {ref=props.forwardedRef}))
     end
 
     local RefForwardingComponent = React.forwardRef(function(props, ref)
-      return React.createElement(Wrapper, Cryo.Dictionary.join(props, {forwardedRef=ref}))
+      return React.createElement(Wrapper, Object.assign({}, props, {forwardedRef=ref}))
     end)
 
-    ReactNoop.render(React.createElement(RefForwardingComponent, {value=123}))
+    ReactNoop.render(
+      React.createElement(RefForwardingComponent, {value=123})
+    )
     jestExpect(Scheduler).toFlushAndYield({123})
   end)
 
@@ -58,19 +62,17 @@ return function()
     end
 
     local function Wrapper(props)
-    -- ROBLOX TODO: Erroneous warnings in dev here
-      return React.createElement(Child, Cryo.Dictionary.join(props, {ref=props.forwardedRef}))
+      return React.createElement(Child, Object.assign({}, props, {ref=props.forwardedRef}))
     end
 
     local RefForwardingComponent = React.forwardRef(function(props, ref)
-      return React.createElement(Wrapper, Cryo.Dictionary.join(props, {forwardedRef=ref}))
+      return React.createElement(Wrapper, Object.assign({}, props, {forwardedRef=ref}))
     end)
 
     local ref = React.createRef()
 
     ReactNoop.render(React.createElement(RefForwardingComponent, {ref=ref, value=123}))
     jestExpect(Scheduler).toFlushAndYield({123})
-    -- ROBLOX FIXME: When instanceof is implemented, use it
     -- jestExpect(Object.instanceof(ref.current, Child)).toBe(true)
     jestExpect(getmetatable(ref.current).__index).toBe(Child)
   end)
@@ -83,12 +85,11 @@ return function()
     end
 
     local function Wrapper(props)
-    -- ROBLOX TODO: Erroneous warnings in dev here
-    return React.createElement(Child, Cryo.Dictionary.join(props, {ref=props.forwardedRef}))
+      return React.createElement(Child, Object.assign({}, props, {ref=props.forwardedRef}))
     end
 
     local RefForwardingComponent = React.forwardRef(function(props, ref)
-      return React.createElement(Wrapper, Cryo.Dictionary.join(props, {forwardedRef=ref}))
+      return React.createElement(Wrapper, Object.assign({}, props, {forwardedRef=ref}))
     end)
 
     local ref = React.createRef()
@@ -114,12 +115,11 @@ return function()
     end
 
     local function Wrapper(props)
-      -- ROBLOX TODO: Erroneous warnings in dev here
-      return React.createElement(Child, Cryo.Dictionary.join(props, {ref=props.forwardedRef}))
+      return React.createElement(Child, Object.assign({}, props, {ref=props.forwardedRef}))
     end
 
     local RefForwardingComponent = React.forwardRef(function(props, ref)
-      return React.createElement(Wrapper, Cryo.Dictionary.join(props, {forwardedRef=ref}))
+      return React.createElement(Wrapper, Object.assign({}, props, {forwardedRef=ref}))
     end)
 
     local setRefCount = 0
@@ -171,11 +171,11 @@ return function()
     local function Wrapper(props)
       local forwardedRef = props.forwardedRef
       Scheduler.unstable_yieldValue("Wrapper")
-      return React.createElement(BadRender, Cryo.Dictionary.join(props, {ref=forwardedRef}))
+      return React.createElement(BadRender, Object.assign({}, props, {ref=forwardedRef}))
     end
 
     local RefForwardingComponent = React.forwardRef(function(props, ref)
-      return React.createElement(Wrapper, Cryo.Dictionary.join(props, {forwardedRef=ref}))
+      return React.createElement(Wrapper, Object.assign({}, props, {forwardedRef=ref}))
     end)
 
     local ref = React.createRef()
@@ -219,7 +219,7 @@ return function()
 
     local Forward = React.forwardRef(function(props, ref)
       Scheduler.unstable_yieldValue("Forward")
-      return React.createElement(Middle, Cryo.Dictionary.join(props, {forwardedRef=ref}))
+      return React.createElement(Middle, Object.assign({}, props, {forwardedRef=ref}))
     end)
 
     local function App()

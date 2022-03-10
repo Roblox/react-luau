@@ -52,7 +52,8 @@ type PathType = string
 
 -- ROBLOX deviation: Luau can't use ...type, use intersection instead
 type DeletePath =
-	ElementAndRendererID & { type: PathType, hookID: number?, path: Array<string | number> }
+	ElementAndRendererID
+	& { type: PathType, hookID: number?, path: Array<string | number> }
 
 -- ROBLOX deviation: Luau can't use ...type, use intersection instead
 type RenamePath = ElementAndRendererID & {
@@ -84,7 +85,8 @@ type InspectElementParams = ElementAndRendererID & { path: Array<string | number
 
 -- ROBLOX deviation: Luau can't use ...type, use intersection instead
 type StoreAsGlobalParams =
-	ElementAndRendererID & { count: number, path: Array<string | number> }
+	ElementAndRendererID
+	& { count: number, path: Array<string | number> }
 
 -- ROBLOX deviation: Luau can't use ...type, use intersection instead
 type NativeStyleEditor_RenameAttributeParams = ElementAndRendererID & {
@@ -95,7 +97,8 @@ type NativeStyleEditor_RenameAttributeParams = ElementAndRendererID & {
 
 -- ROBLOX deviation: Luau can't use ...type, use intersection instead
 type NativeStyleEditor_SetValueParams =
-	ElementAndRendererID & { name: string, value: string }
+	ElementAndRendererID
+	& { name: string, value: string }
 
 type UpdateConsolePatchSettingsParams = {
 	appendComponentStack: boolean,

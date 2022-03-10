@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/702fad4b1b48ac8f626ed3f35e8f86f5ea728084/packages/react/src/__tests__/ReactElement-test.js
 
 return function()
@@ -8,19 +9,20 @@ return function()
 	local ReactSymbols = require(Packages.Shared).ReactSymbols
 	local element
 
-
 	describe("creates valid React elements", function()
 		it("from strings", function()
-			element = ReactElement.createElement('TextLabel')
+			element = ReactElement.createElement("TextLabel")
 			jestExpect(element).toBeDefined()
 			jestExpect(ReactElement.isValidElement(element)).toEqual(true)
-			jestExpect(element['$$typeof']).toEqual(ReactSymbols.REACT_ELEMENT_TYPE)
+			jestExpect(element["$$typeof"]).toEqual(ReactSymbols.REACT_ELEMENT_TYPE)
 			-- isValidElement considers basic ELEMENT_TYPE to be false
 			jestExpect(isValidElementType(element)).toBe(false)
 		end)
 
 		it("from functions", function()
-			element = ReactElement.createElement(function() end)
+			element = ReactElement.createElement(function()
+				return nil
+			end)
 			jestExpect(element).toBeDefined()
 			jestExpect(ReactElement.isValidElement(element)).toEqual(true)
 			-- isValidElement considers basic ELEMENT_TYPE to be false
@@ -35,7 +37,6 @@ return function()
 			jestExpect(element).toBeDefined()
 			jestExpect(element.props.Value).toEqual("Foo")
 			jestExpect(element.props.children).never.toBeDefined()
-
 		end)
 
 		it("a child and props", function()
@@ -69,7 +70,7 @@ return function()
 			jestExpect(element).toBeDefined()
 			jestExpect(element.props.Value).toEqual(nil)
 			jestExpect(element.props.children).toBeDefined()
-			jestExpect(element.props.children).toEqual({child1, child2})
+			jestExpect(element.props.children).toEqual({ child1, child2 })
 		end)
 
 		it("a table of children and no props", function()

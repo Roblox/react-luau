@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/6edaf6f764f23043f0cd1c2da355b42f641afd8b/packages/react-reconciler/src/ReactFiberHotReloading.new.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -10,10 +11,10 @@
 
 local Packages = script.Parent.Parent
 
-local ReactTypes = require(Packages.Shared)
+local ReactElementType = require(Packages.Shared)
 -- ROBLOX deviation: ReactElement is defined at the top level of Shared along
 -- with the rest of the ReactTypes
-type ReactElement = ReactTypes.ReactElement
+type ReactElement = ReactElementType.ReactElement<any, any>
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber;
@@ -125,6 +126,8 @@ local function resolveForwardRefForHotReloading(type: any): any
 					local syntheticType = {
 						["$$typeof"] = REACT_FORWARD_REF_TYPE,
 						render = currentRender,
+						-- ROBLOX deviation: Luau needs table initializers to be complete
+						displayName = nil,
 					}
 					if type.displayName ~= nil then
 						syntheticType.displayName = type.displayName

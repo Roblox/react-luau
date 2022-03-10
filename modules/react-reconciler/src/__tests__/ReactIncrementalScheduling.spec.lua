@@ -310,7 +310,7 @@ return function()
                 });
             end
             ReactNoop.flushSync(function()
-                ReactNoop.render(React.createElement(Foo, nil))
+                ReactNoop.render(React.createElement(Foo))
             end)
             -- The cDM update should not have flushed yet because it has async priority.
             jestExpect(Scheduler).toHaveYielded({
@@ -383,7 +383,7 @@ return function()
                     prop = self.state.step
                   })
             end
-            ReactNoop.render(React.createElement(Foo, nil))
+            ReactNoop.render(React.createElement(Foo))
             -- This should be just enough to complete all the work, but not enough to
             -- commit it.
             jestExpect(Scheduler).toFlushAndYieldThrough({
@@ -461,7 +461,7 @@ return function()
                 })
             end
 
-            ReactNoop.render(React.createElement(Foo, nil))
+            ReactNoop.render(React.createElement(Foo))
             jestExpect(Scheduler).toFlushAndYield({
                 "render: 0",
             })

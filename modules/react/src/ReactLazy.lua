@@ -1,3 +1,4 @@
+--!nonstrict
 -- upstream: https://github.com/facebook/react/blob/v17.0.2/packages/react/src/ReactLazy.js
 --[[
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -31,7 +32,7 @@ type UninitializedPayload<T> = {
 	-- ROBLOX deviaton: Luau doesn't support literals
 	--   _status: -1,
 	_status: number,
-	_result: () -> Thenable<{ default: T, [any]: any }>,
+	_result: () -> Thenable<{ default: T, [string]: any }>,
 }
 
 type PendingPayload = {
@@ -45,7 +46,7 @@ type ResolvedPayload<T> = {
 	-- ROBLOX deviaton: Luau doesn't support literals
 	-- _status: 1,
 	_status: number,
-	_result: T,
+	_result: { default: T, [string]: any },
 }
 
 type RejectedPayload = {
@@ -62,21 +63,18 @@ type Payload<T> =
 	| RejectedPayload
 
 export type LazyComponent<T, P> = {
-	[string]: number, -- ROBLOX deviation: we don't use Symbol for $$typeof
+	["$$typeof"]: number,
 	_payload: P,
-	_init: (P) -> T,
+	_init: (payload: P) -> T,
 	--   ...
 }
 
--- ROBLOX TODO: function generics
--- function lazyInitializer<T>(payload: Payload<T>): T {
-function lazyInitializer(payload: Payload<any>): any
+function lazyInitializer<T>(payload: Payload<T>): T
 	if payload._status == Uninitialized then
 		local ctor = payload._result
 		local thenable = ctor()
 		-- Transition to the next state.
-		-- ROBLOX TODO: workaround Luau false positive, removed : PendingPayload
-		local pending = payload
+		local pending: PendingPayload = payload :: any
 		pending._status = Pending
 		pending._result = thenable
 		thenable:andThen(function(moduleObject)
@@ -96,14 +94,14 @@ function lazyInitializer(payload: Payload<any>): any
 					end
 				end
 				-- Transition to the next state.
-				local resolved: ResolvedPayload<any> = payload
+				local resolved: ResolvedPayload<T> = (payload :: any)
 				resolved._status = Resolved
 				resolved._result = defaultExport
 			end
 		end, function(error_)
 			if payload._status == Pending then
 				-- Transition to the next state.
-				local rejected: RejectedPayload = payload
+				local rejected: RejectedPayload = payload :: any
 				rejected._status = Rejected
 				rejected._result = error_
 			end
@@ -118,74 +116,70 @@ end
 
 local exports = {}
 
--- ROBLOX TODO: function generics
--- function lazy<T>(
---     ctor: () => Thenable<{default: T, ...}>,
--- ): LazyComponent<T, Payload<T>> {
-exports.lazy = function(
-	ctor: () -> Thenable<{ default: any }> -- ROBLOX TODO: Luau can't express: , ...}>,
-): LazyComponent<any, Payload<any>>
-	local payload: Payload<any> = {
-		-- We use these fields to store the result.
-		_status = -1,
-		_result = ctor,
-	}
+exports.lazy =
+	function<T>(ctor: () -> Thenable<{ default: T, [string]: any }>): LazyComponent<T, Payload<T>>
+		local payload: Payload<T> = {
+			-- We use these fields to store the result.
+			_status = -1,
+			_result = ctor,
+		}
 
-	local lazyType: LazyComponent<any, Payload<any>> = {
-		["$$typeof"] = REACT_LAZY_TYPE,
-		_payload = payload,
-		_init = lazyInitializer,
-	}
+		local lazyType: LazyComponent<T, Payload<T>> = {
+			["$$typeof"] = REACT_LAZY_TYPE,
+			_payload = payload,
+			-- ROBLOX FIXME Luau: needs something even beyond normalization to avoid Property '_init' is not compatible. Type '<T>(Payload<T>) -> T?' could not be converted into '(Payload<T>) -> T?'; different number of generic type parameters
+			_init = lazyInitializer :: any,
+		}
 
-	if _G.__DEV__ then
-		-- In production, this would just set it on the object.
-		local defaultProps
-		local propTypes
-		-- $FlowFixMe
-		setmetatable(lazyType, {
-			__index = function(self, key)
-				if key == "defaultProps" then
-					return defaultProps
-				end
-				if key == "propTypes" then
-					return propTypes
-				end
-				return
-			end,
-			__newindex = function(self, key, value)
-				if key == "defaultProps" then
-					console.error(
-						"React.lazy(...): It is not supported to assign `defaultProps` to "
-							.. "a lazy component import. Either specify them where the component "
-							.. "is defined, or create a wrapping component around it."
-					)
-					defaultProps = value
-					-- Match production behavior more closely:
-					-- $FlowFixMe
-					setmetatable(self, {
-						__index = function() end,
-						__newindex = function() end,
-					})
-				end
-				if key == "propTypes" then
-					console.error(
-						"React.lazy(...): It is not supported to assign `propTypes` to "
-							.. "a lazy component import. Either specify them where the component "
-							.. "is defined, or create a wrapping component around it."
-					)
-					propTypes = value
-					-- Match production behavior more closely:
-					-- $FlowFixMe
-					setmetatable(self, {
-						__index = function() end,
-						__newindex = function() end,
-					})
-				end
-			end,
-		})
+		if _G.__DEV__ then
+			-- In production, this would just set it on the object.
+			local defaultProps
+			local propTypes
+			-- $FlowFixMe
+			setmetatable(lazyType, {
+				__index = function(self, key)
+					if key == "defaultProps" then
+						return defaultProps
+					end
+					if key == "propTypes" then
+						return propTypes
+					end
+					return
+				end,
+				__newindex = function(self, key, value)
+					if key == "defaultProps" then
+						console.error(
+							"React.lazy(...): It is not supported to assign `defaultProps` to "
+								.. "a lazy component import. Either specify them where the component "
+								.. "is defined, or create a wrapping component around it."
+						)
+						defaultProps = value
+						-- Match production behavior more closely:
+						-- $FlowFixMe
+						setmetatable(self, {
+							__index = function() end,
+							__newindex = function() end,
+						})
+					end
+					if key == "propTypes" then
+						console.error(
+							"React.lazy(...): It is not supported to assign `propTypes` to "
+								.. "a lazy component import. Either specify them where the component "
+								.. "is defined, or create a wrapping component around it."
+						)
+						propTypes = value
+						-- Match production behavior more closely:
+						-- $FlowFixMe
+						setmetatable(self, {
+							__index = function() end,
+							__newindex = function() end,
+						})
+					end
+				end,
+			})
+		end
+
+		return lazyType
 	end
-
-	return lazyType
-end
 
 return exports

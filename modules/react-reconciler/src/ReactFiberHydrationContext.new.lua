@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/16654436039dd8f16a63928e71081c7745872e8f/packages/react-reconciler/src/ReactFiberHydrationContext.new.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -279,7 +280,8 @@ function tryToClaimNextHydratableInstance(fiber: Fiber)
     hydrationParentFiber = fiber
     return
   end
-  local firstAttemptedInstance = nextInstance
+  -- ROBLOX FIXME Luau: Luau doesn't narrow based on the guard above
+  local firstAttemptedInstance = nextInstance :: HydratableInstance
   if not tryHydrate(fiber, nextInstance) then
     -- If we can't hydrate this instance let's try the next one.
     -- We use this as a heuristic. It's based on intuition and not data so it

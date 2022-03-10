@@ -235,7 +235,7 @@ return function()
                 fallback = React.createElement(Text, {
                     text = 'Loading...',
                 }),
-            }, React.createElement(LazyFoo, nil), React.createElement(LazyBar, nil)), {unstable_isConcurrent = true})
+            }, React.createElement(LazyFoo), React.createElement(LazyBar)), {unstable_isConcurrent = true})
 
             jestExpect(Scheduler).toFlushAndYield({
                 'Loading...',
@@ -421,7 +421,7 @@ return function()
         --         fallback = React.createElement(Text, {
         --             text = 'Loading...',
         --         }),
-        --     }, React.createElement(LazyText, nil)), {unstable_isConcurrent = true})
+        --     }, React.createElement(LazyText)), {unstable_isConcurrent = true})
 
         --     jestExpect(Scheduler).toFlushAndYield({
         --         'Loading...',
@@ -442,7 +442,7 @@ return function()
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
         --             }),
-        --         }, React.createElement(LazyText, nil)))
+        --         }, React.createElement(LazyText)))
         --         jestExpect(Scheduler).toFlushAndYield({
         --             'Hi again',
         --         })
@@ -480,7 +480,7 @@ return function()
         --         })
         --     end
 
-        --     local stateful = React.createRef(nil)
+        --     local stateful = React.createRef()
         --     local root = ReactTestRenderer.create(React.createElement(Suspense, {
         --         fallback = React.createElement(Text, {
         --             text = 'Loading...',
@@ -523,8 +523,8 @@ return function()
         --     local Lazy = lazy(function()
         --         return fakeImport(LazyImpl)
         --     end)
-        --     local instance1 = React.createRef(nil)
-        --     local instance2 = React.createRef(nil)
+        --     local instance1 = React.createRef()
+        --     local instance2 = React.createRef()
         --     local root = ReactTestRenderer.create(React.createElement(React.Fragment, nil, React.createElement(LazyImpl, {
         --         ref = instance1,
         --         label = 'Not lazy',
@@ -577,8 +577,8 @@ return function()
         --     local Lazy = lazy(function()
         --         return fakeImport(LazyImpl)
         --     end)
-        --     local instance1 = React.createRef(nil)
-        --     local instance2 = React.createRef(nil)
+        --     local instance1 = React.createRef()
+        --     local instance2 = React.createRef()
         --     local root = ReactTestRenderer.create(React.createElement(React.Fragment, nil, React.createElement(LazyImpl, {
         --         ref = instance1,
         --         label = 'Not lazy',
@@ -799,7 +799,7 @@ return function()
         --         fallback = React.createElement(Text, {
         --             text = 'Loading...',
         --         }),
-        --     }, React.createElement(LazyText, nil)), {unstable_isConcurrent = true})
+        --     }, React.createElement(LazyText)), {unstable_isConcurrent = true})
 
         --     jestExpect(Scheduler).toFlushAndYield({
         --         'Loading...',
@@ -843,7 +843,7 @@ return function()
                 fallback = React.createElement(Text, {
                     text = 'Loading...',
                 }),
-            }, React.createElement(BadLazy, nil)), {unstable_isConcurrent = true})
+            }, React.createElement(BadLazy)), {unstable_isConcurrent = true})
 
             jestExpect(Scheduler).toFlushAndYield({
                 'Loading...',
@@ -855,7 +855,7 @@ return function()
                 fallback = React.createElement(Text, {
                     text = 'Loading...',
                 }),
-            }, React.createElement(BadLazy, nil)))
+            }, React.createElement(BadLazy)))
             jestExpect(Scheduler).toFlushAndThrow('Element type is invalid. Received a promise that resolves to: 42. ' .. 'Lazy element type must resolve to a class or function.')
         end)
         it('throws with a useful error when wrapping lazy() multiple times', function()
@@ -1075,7 +1075,7 @@ return function()
         --         fallback = React.createElement(Text, {
         --             text = 'Loading...',
         --         }),
-        --     }, React.createElement(LazyText, nil)), {unstable_isConcurrent = true})
+        --     }, React.createElement(LazyText)), {unstable_isConcurrent = true})
 
         --     jestExpect(Scheduler).toFlushAndYield({
         --         'Loading...',
@@ -1176,7 +1176,7 @@ return function()
                 fallback = React.createElement(Text, {
                     text = 'Loading...',
                 }),
-            }, React.createElement(LazyClass, nil), React.createElement(LazyForwardRef, {ref = ref})), {unstable_isConcurrent = true})
+            }, React.createElement(LazyClass), React.createElement(LazyForwardRef, {ref = ref})), {unstable_isConcurrent = true})
 
             jestExpect(Scheduler).toFlushAndYield({
                 'Loading...',
@@ -1309,7 +1309,7 @@ return function()
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
         --             }),
-        --         }, React.createElement(LazyAdd, nil)))
+        --         }, React.createElement(LazyAdd)))
         --         jestExpect(Scheduler).toFlushWithoutYielding()
         --         jestExpect(root).toMatchRenderedOutput('2')
         --     end)
@@ -1317,7 +1317,7 @@ return function()
         it('warns about ref on functions for lazy-loaded components', function()
             local LazyFoo = lazy(function()
                 local Foo = function(props)
-                    return React.createElement('div', nil)
+                    return React.createElement('div')
                 end
                 return fakeImport(Foo)
             end)

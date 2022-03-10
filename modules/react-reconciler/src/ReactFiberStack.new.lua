@@ -32,9 +32,7 @@ end
 
 local index = 0
 
--- ROBLOX TODO: needs Luau function generics.
--- local function createCursor<T>(defaultValue: T): StackCursor<T>
-local function createCursor(defaultValue): StackCursor<any>
+local function createCursor<T>(defaultValue: T): StackCursor<T>
 	return {
 		current = defaultValue,
 	}
@@ -44,9 +42,7 @@ local function isEmpty(): boolean
 	return index == 0
 end
 
--- ROBLOX TODO: needs Luau function generics.
--- local function pop<T>(cursor: StackCursor<T>, fiber: Fiber)
-local function pop(cursor: StackCursor<any>, fiber: Fiber): ()
+local function pop<T>(cursor: StackCursor<T>, fiber: Fiber): ()
 	if index < 1 then
 		if _G.__DEV__ then
 			console.error('Unexpected pop.')
@@ -63,7 +59,8 @@ local function pop(cursor: StackCursor<any>, fiber: Fiber): ()
 
 	local value = valueStack[index]
 	if value == NULL then
-		cursor.current = nil
+		-- ROBLOX TODO: this is a sort of incorrect typing in upstream
+		cursor.current = nil :: any
 	else
 		cursor.current = value
 	end
@@ -77,9 +74,7 @@ local function pop(cursor: StackCursor<any>, fiber: Fiber): ()
 	index -= 1
 end
 
--- ROBLOX TODO: needs Luau function generics
--- local function push<T>(cursor: StackCursor<T>, value: T, fiber: Fiber)
-local function push(cursor: StackCursor<any>, value: any, fiber: Fiber): ()
+local function push<T>(cursor: StackCursor<T>, value: T, fiber: Fiber): ()
 	index += 1
 
 	local stackValue = cursor.current

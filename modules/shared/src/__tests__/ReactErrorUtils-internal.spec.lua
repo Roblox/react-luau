@@ -120,7 +120,7 @@ return function()
 		ReactErrorUtils1.invokeGuardedCallback(nil, function()
 			ReactErrorUtils2.invokeGuardedCallback(nil, function()
 				error(Error("nested error"))
-			end, nil)
+			end)
 			-- ReactErrorUtils2 should catch the error
 			table.insert(ops, ReactErrorUtils2.hasCaughtError())
 			table.insert(ops, ReactErrorUtils2.clearCaughtError().message)

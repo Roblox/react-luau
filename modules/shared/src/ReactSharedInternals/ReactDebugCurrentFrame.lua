@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/98d410f5005988644d01c9ec79b7181c3dd6c847/packages/react/src/ReactDebugCurrentFrame.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -10,9 +11,9 @@
 
 local ReactDebugCurrentFrame = {}
 
-local currentExtraStackFrame = nil
+local currentExtraStackFrame = (nil :: nil | string)
 
-function ReactDebugCurrentFrame.setExtraStackFrame(stack: string?)
+function ReactDebugCurrentFrame.setExtraStackFrame(stack: string?): ()
 	if _G.__DEV__ then
 		currentExtraStackFrame = stack
 	end
@@ -27,7 +28,7 @@ if _G.__DEV__ then
 	-- end
 
 	-- Stack implementation injected by the current renderer.
-	ReactDebugCurrentFrame.getCurrentStack = nil
+	ReactDebugCurrentFrame.getCurrentStack = (nil :: nil | (() -> string))
 
 	function ReactDebugCurrentFrame.getStackAddendum(): string
 		local stack = ""

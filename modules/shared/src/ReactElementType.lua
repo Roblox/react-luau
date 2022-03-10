@@ -7,35 +7,38 @@
  *
  * @flow
 ]]
-local ReactTypes = require(script.Parent.ReactTypes)
-type React_Element<ElementType> = ReactTypes.React_Element<ElementType>
+local flowtypes = require(script.Parent["flowtypes.roblox"])
+type React_Element<ElementType> = flowtypes.React_Element<ElementType>
+type React_StatelessFunctionalComponent<P> = flowtypes.React_StatelessFunctionalComponent<
+	P
+>
+type React_ComponentType<P> = flowtypes.React_ComponentType<P>
 
 export type Source = {
 	fileName: string,
 	lineNumber: number,
 }
+type Key = string | number
+-- ROBLOX deviation: we're using the TypeScript definition here, which is more strict
+export type ReactElement<P = any, T = any> = {
+	["$$typeof"]: number,
 
-export type ReactElement = {
-	-- deviation: No way to specify string with special characters
-	-- $$typeof: any,
-	[string]: any,
-
-	type: any,
-	key: any,
+	-- ROBLOX FIXME Luau: Luau has some trouble and inlining the type param from createElement doesn't help
+	type: React_StatelessFunctionalComponent<P> | React_ComponentType<P> | string,
+	-- type: T,
+	key: Key | nil,
 	ref: any,
-	props: any,
+	props: P,
+
+	-- ROBLOX deviation: upstream has this as interface, which is extensible, Luau types are closed by default
 	-- ReactFiber
 	_owner: any,
 
 	-- __DEV__
-	_store: {
-		validated: boolean,
-		[string]: any,
-	},
-	-- deviation: No built in element flow types
-	_self: React_Element<any>,
-	_shadowChildren: any,
-	_source: Source,
+	_store: any?,
+	_self: React_Element<any>?,
+	_shadowChildren: any?,
+	_source: Source?,
 }
 
 -- deviation: Return something so that the module system is happy
