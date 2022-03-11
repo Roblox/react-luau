@@ -1,6 +1,10 @@
+local CollectionService = game:GetService("CollectionService")
 local Packages = script.Parent.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
+local Set = LuauPolyfill.Set
+local String = LuauPolyfill.String
+local inspect = LuauPolyfill.util.inspect
 
 local console = require(Packages.Shared).console
 
@@ -12,6 +16,7 @@ local Type = require(script.Parent.Type)
 local getDefaultInstanceProperty = require(script.Parent.getDefaultInstanceProperty)
 local ReactRobloxHostTypes = require(script.Parent.Parent["ReactRobloxHostTypes.roblox"])
 type HostInstance = ReactRobloxHostTypes.HostInstance;
+local Tag = require(script.Parent.PropMarkers.Tag)
 
 -- ROBLOX deviation: Essentially a placeholder for dom-specific logic, taking the place
 -- of ReactDOMComponent. Most of the logic will differ pretty dramatically
@@ -101,6 +106,42 @@ local function attachBinding(hostInstance, key, newBinding): ()
   updateBoundProperty(newBinding:getValue())
 end
 
+local function applyTags(hostInstance: Instance, oldTags: string?, newTags: string?)
+    if _G.__DEV__ then
+      -- TODO: Even after we move the tags feature out of dev, we still want
+      -- these checks in dev mode
+      if newTags ~= nil and typeof(newTags) ~= "string" then
+        console.error(
+          "Type provided for ReactRoblox.Tag is invalid - tags should be "
+            .. "specified as a single string, with individual tags delimited "
+            .. "by spaces. Instead received:\n%s",
+          inspect(newTags)
+        )
+        return
+      end
+    end
+
+    local oldTagSet = Set.new(String.split(oldTags or "", " "))
+    local newTagSet = Set.new(String.split(newTags or "", " "))
+
+    for _, tag in oldTagSet:ipairs() do
+        if not newTagSet:has(tag) then
+            CollectionService:RemoveTag(hostInstance, tag)
+        end
+    end
+    for _, tag in newTagSet:ipairs() do
+        if not oldTagSet:has(tag) then
+            CollectionService:AddTag(hostInstance, tag)
+        end
+    end
+end
+
+local function removeAllTags(hostInstance: Instance)
+    for _, tag in ipairs(CollectionService:GetTags(hostInstance)) do
+        CollectionService:RemoveTag(hostInstance, tag)
+    end
+end
+
 local function applyProp(hostInstance: Instance, key, newValue, oldValue): ()
   -- ROBLOX performance: gets checked in applyProps so we can assume the key is valid
   -- if key == "ref" or key == "children" then
@@ -136,6 +177,11 @@ local function applyProp(hostInstance: Instance, key, newValue, oldValue): ()
 
   if newIsBinding then
     attachBinding(hostInstance, key, newValue)
+  elseif key == Tag then
+    -- ROBLOX TODO: Promote tags to non-dev mode
+    if _G.__DEV__ then
+      applyTags(hostInstance, oldValue, newValue)
+    end
   else
     setRobloxInstanceProperty(hostInstance, key, newValue)
   end
@@ -151,7 +197,6 @@ local function applyProps(hostInstance: Instance, props: Object): ()
     applyProp(hostInstance, propKey, value)
   end
 end
-
 
 local function setInitialProperties(
   domElement: HostInstance,
@@ -251,12 +296,20 @@ local function cleanupHostComponent(domElement: HostInstance)
     return
   end
 
+  -- ROBLOX TODO: Promote tags to non-dev mode
+  if _G.__DEV__ then
+    removeAllTags(domElement)
+  end
   for _, descElement in ipairs(domElement:GetDescendants()) do
     if instanceToEventManager[descElement] ~= nil then
       instanceToEventManager[descElement] = nil
     end
     if instanceToBindings[descElement] ~= nil then
       instanceToBindings[descElement] = nil
+    end
+    -- ROBLOX TODO: Promote tags to non-dev mode
+    if _G.__DEV__ then
+      removeAllTags(domElement)
     end
   end
 end

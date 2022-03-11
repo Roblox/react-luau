@@ -16,8 +16,11 @@ local function unimplemented(message: string)
   error("FIXME (roblox): " .. message .. " is unimplemented", 2)
 end
 
+local CollectionService = game:GetService("CollectionService")
 local Packages = script.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
+local inspect = LuauPolyfill.util.inspect
+local console = require(Packages.Shared).console
 local Object = LuauPolyfill.Object
 local setTimeout = LuauPolyfill.setTimeout
 local clearTimeout = LuauPolyfill.clearTimeout
@@ -502,7 +505,7 @@ exports.commitUpdate = function(
   -- with current event handlers.
   updateFiberProps(domElement, newProps)
   -- Apply the diff to the DOM node.
-  updateProperties(domElement, updatePayload, type_, oldProps, newProps)
+  updateProperties(domElement, updatePayload, oldProps)
 end
 
 -- ROBLOX deviation: Ignore TextInstance logic, which isn't applicable to Roblox
@@ -519,6 +522,25 @@ end
 --   textInstance.nodeValue = newText
 -- end
 
+local function checkTags(instance: Instance)
+  if typeof(instance :: any) ~= "Instance" then
+    console.warn("Could not check tags on non-instance %s.", inspect(instance))
+    return
+  end
+  if not instance:IsDescendantOf(game) then
+    if #CollectionService:GetTags(instance) > 0 then
+      console.warn(
+        'Tags applied to orphaned %s "%s" cannot be accessed via'
+          .. " CollectionService:GetTagged. If you're relying on tag"
+          .. " behavior in a unit test, consider mounting your test "
+          .. "root into the DataModel.",
+        instance.ClassName,
+        instance.Name
+      )
+    end
+  end
+end
+
 exports.appendChild = function(
   parentInstance: Instance,
   child: Instance
@@ -526,6 +548,9 @@ exports.appendChild = function(
   -- ROBLOX deviation: Roblox's DOM is based on child->parent references
   child.Parent = parentInstance
   -- parentInstance.appendChild(child)
+  if _G.__DEV__ then
+    checkTags(child)
+  end
 end
 
 exports.appendChildToContainer = function(
@@ -568,15 +593,19 @@ exports.insertBefore = function(
   -- ROBLOX deviation: Roblox's DOM is based on child->parent references
   child.Parent = parentInstance
   -- parentInstance.insertBefore(child, beforeChild)
+  if _G.__DEV__ then
+    checkTags(child)
+  end
 end
 
 exports.insertInContainerBefore = function(
   container: Container,
   child: Instance,
-  _beforeChild: Instance
+  beforeChild: Instance
 )
   -- ROBLOX deviation: use our container definition
-  child.Parent = container
+  local parentNode = container
+  exports.insertBefore(parentNode, child, beforeChild)
   -- if container.nodeType == COMMENT_NODE)
   --   (container.parentNode: any).insertBefore(child, beforeChild)
   -- } else {

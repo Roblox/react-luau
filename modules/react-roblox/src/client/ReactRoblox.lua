@@ -81,6 +81,7 @@ local getClosestInstanceFromNode = ReactRobloxComponentTree.getClosestInstanceFr
 
 local Event = require(script.Parent.roblox.PropMarkers.Event)
 local Change = require(script.Parent.roblox.PropMarkers.Change)
+local Tag = require(script.Parent.roblox.PropMarkers.Tag)
 
 -- setAttemptSynchronousHydration(attemptSynchronousHydration)
 -- setAttemptUserBlockingHydration(attemptUserBlockingHydration)
@@ -248,6 +249,7 @@ local exports = {
   -- to import `ReactRoblox` will need to do so in order to set events/change
   Event = Event,
   Change = Change,
+  Tag = Tag,
   unstable_isNewReconciler = enableNewReconciler,
 
   -- ROBLOX deviation: Export `act` function for testing purposes; in
