@@ -20,19 +20,19 @@ There are also some features that are undocumented in React JS 17.0.1, but are i
 Refer to [`React.Component` documentation](https://reactjs.org/docs/react-api.html#reactcomponent).
 
 ### Deviations
+Luau does not have ES6's class semantics, so class components work differently from React JS in a few ways:
 
-* (use `:extend` in place of ES6 class semantics)
-* (implement `:init` instead of a constructor)
-* (rules about setState and `init`)
-* (this should probably be a brief section that links to more detailed deviations info)
+* Use `Component:extend` in place of ES6 class semantics
+* Implement an `init` method on components instead of a constructor
+* Instead of initializing component state by assigning a value to `self.state` in the `init` method, use `setState` as you would elsewhere
+
+Check the [deviations guide](../deviations.md#class-components) for more detailed information.
 
 ## React.PureComponent
 Refer to [`React.PureComponent` documentation](https://reactjs.org/docs/react-api.html#reactpurecomponent).
 
 ### Deviations
-
-* (same rules apply as above)
-* (link to same deviations section)
+The same deviations to `React.Component` apply equivalently to `React.PureComponent`. Check the [deviations guide](../deviations.md#class-components) for more detailed information.
 
 ## React.memo
 Refer to [`React.memo` documentation](https://reactjs.org/docs/react-api.html#reactmemo). Guidance specified in the React documentation applies to Roact as well. Use this only as a performance optimization, and only when relevant to the use case.
@@ -130,10 +130,45 @@ Refer to [relevant React RFC](https://github.com/reactjs/rfcs/pull/147).
 Refer to [relevant React RFC](https://github.com/reactjs/rfcs/pull/147).
 
 <!-- Roact only -->
+## React.None
+*This API is unique to Roact and does not have an equivalent in React JS.*
+
+A placeholder value that can be used to remove fields from a table (by changing the value to nil) when merging tables. This allows state fields to be nil-able despite lua treating table fields with `nil` values as semantically equivalent to absent fields.
+
+`React.None` can be used to remove values from React class component state via these uses:
+
+* When returning a table from the updater function passed to a class component's [`setState`]() method
+    ```lua
+    self:setState(function(_prevState)
+        return { myStateValue = React.None }
+    end)
+    ```
+* When passing a table directly to a class component's `setState` method
+    ```lua
+    self:setState({ myStateValue = React.None })
+    ```
+* When returning a table from a component's `getDerivedStateFromProps` implementation
+    ```lua
+    function MyComponent.getDerivedStateFromProps(props, state)
+        return {
+            value = if props.someCondition
+                then state.value
+                else React.None
+        }
+    end
+    ```
+
+!!! caution
+    `React.None` should be used sparingly; component state fields can generally be expressed more clearly with enumerated values or reasonable defaults than with nil-able values.
+
+    Additionally, `React.None` is not intended to be used as a prop value, and may be reverted to nil by internal React logic in some cases if it's provided as one.
+
 ## React.createBinding
-*Roact-only*
+*This API is unique to Roact and does not have an equivalent in React JS.*
+
 Creates a binding object. This a feature from legacy Roact that's been ported into Roact 17. [Refer to legacy documentation on `Roact.createBinding`](https://roblox.github.io/roact/api-reference/#roactcreatebinding).
 
 ## React.joinBindings
-*Roact-only*
+*This API is unique to Roact and does not have an equivalent in React JS.*
+
 Joins multiple bindings together. This is a feature from legacy Roact that's been ported into Roact 17. [Refer to legacy documentation on `Roact.joinBindings`](https://roblox.github.io/roact/api-reference/#roactjoinbindings).

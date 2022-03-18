@@ -2,19 +2,17 @@
 
 return function()
     local Packages = script.Parent.Parent.Parent
-    local React
+    local React, Shared, ReactNoop
     local RobloxJest = require(Packages.Dev.RobloxJest)
-	local JestGlobals = require(Packages.Dev.JestGlobals)
+    local JestGlobals = require(Packages.Dev.JestGlobals)
     local jestExpect = JestGlobals.expect
-    local ReactNoop
 
     beforeEach(function()
-		RobloxJest.resetModules()
+        RobloxJest.resetModules()
         ReactNoop = require(Packages.Dev.ReactNoopRenderer)
         React = require(script.Parent.Parent)
-
-
-	end)
+        Shared = require(Packages.Shared)
+    end)
 
     local function initTests(defineInitMethod, name)
         it("has correct state populated in render w/ " .. name, function()
@@ -62,6 +60,33 @@ return function()
 
             jestExpect(capturedState).toEqual({
                 name = "Mike",
+                surname = "Smith"
+            })
+        end)
+
+        it("respects React.None in derived state w/ " .. name, function()
+            local Component = React.Component:extend("Component")
+
+            defineInitMethod(Component, "name", "Mike")
+
+            local capturedState
+
+            function Component:render()
+                capturedState = self.state
+            end
+
+            function Component.getDerivedStateFromProps(props, state)
+                return {
+                    name = React.None,
+                    surname = props.surname
+                }
+            end
+
+            ReactNoop.act(function()
+                ReactNoop.render(React.createElement(Component, {surname = "Smith"}))
+            end)
+
+            jestExpect(capturedState).toEqual({
                 surname = "Smith"
             })
         end)
@@ -233,4 +258,167 @@ return function()
             }
         end
     end, "self.state in constructor")
+
+    describe("setState-specific behavior", function()
+        it("allows multiple setStates in sequence during init", function()
+            local MyComponent = React.Component:extend("MyComponent")
+            local capturedState
+            function MyComponent:init()
+                self:setState({ value = 1 })
+                self:setState({ otherValue = 2 })
+            end
+            function MyComponent:render()
+                return nil
+            end
+            function MyComponent:componentDidMount()
+                capturedState = self.state
+            end
+
+            ReactNoop.act(function()
+                ReactNoop.render(React.createElement(MyComponent))
+            end)
+
+            jestExpect(capturedState).toEqual({ value = 1, otherValue = 2 })
+        end)
+
+        it("accounts for `None` values", function()
+            local MyComponent = React.Component:extend("MyComponent")
+            local capturedState
+            function MyComponent:init()
+                self:setState({ a = 1, b = 2 })
+                self:setState({ a = React.None })
+            end
+            function MyComponent:render()
+                return nil
+            end
+            function MyComponent:componentDidMount()
+                capturedState = self.state
+            end
+
+            ReactNoop.act(function()
+                ReactNoop.render(React.createElement(MyComponent))
+            end)
+
+            jestExpect(capturedState).toEqual({ b = 2 })
+        end)
+
+        it("provides an empty table to functional setState on first run", function()
+            local MyComponent = React.Component:extend("MyComponent")
+            local capturedState, capturedPrevState
+            function MyComponent:init()
+                self:setState(function(prevState)
+                    capturedPrevState = prevState
+                    return { value = 1 }
+                end)
+            end
+            function MyComponent:render()
+                return nil
+            end
+            function MyComponent:componentDidMount()
+                capturedState = self.state
+            end
+
+            ReactNoop.act(function()
+                ReactNoop.render(React.createElement(MyComponent))
+            end)
+
+            -- The UninitializedState object uses a metatable to emit warnings
+            -- when read from, so this expectation ends up being noisy due to
+            -- jest poking around:
+            -- jestExpect(capturedPrevState).toEqual(Shared.UninitializedState)
+
+            -- Instead, use a simple assert:
+            assert(
+                capturedPrevState == Shared.UninitializedState,
+                "captured previous state differs from UninitializedState placeholder"
+            )
+            jestExpect(capturedState).toEqual({ value = 1 })
+        end)
+
+        it("warns on accessing the initial empty state table", function()
+            local MyComponent = React.Component:extend("MyComponent")
+            function MyComponent:init()
+                self:setState(function(prevState)
+                    return { value = (prevState.value or 0) + 1 }
+                end)
+            end
+            function MyComponent:render()
+                return nil
+            end
+
+            jestExpect(function()
+                ReactNoop.act(function()
+                    ReactNoop.render(React.createElement(MyComponent))
+                end)
+            end).toWarnDev(
+                "Attempted to access unitialized state. Use setState to initialize state"
+            )
+        end)
+
+        it("allows functional setState", function()
+            local MyComponent = React.Component:extend("MyComponent")
+            local capturedState
+            function MyComponent:init()
+                self:setState({ value = 1 })
+                self:setState(function(prevState)
+                    return { value = prevState.value + 1 }
+                end)
+            end
+            function MyComponent:render()
+                return nil
+            end
+            function MyComponent:componentDidMount()
+                capturedState = self.state
+            end
+
+            ReactNoop.act(function()
+                ReactNoop.render(React.createElement(MyComponent))
+            end)
+
+            jestExpect(capturedState).toEqual({ value = 2 })
+        end)
+
+        it("warns when given a `callback` argument", function()
+            local MyComponent = React.Component:extend("MyComponent")
+            function MyComponent:init()
+                self:setState({ value = 1 }, function() end)
+            end
+            function MyComponent:render()
+                return nil
+            end
+
+            jestExpect(function()
+                ReactNoop.act(function()
+                    ReactNoop.render(React.createElement(MyComponent))
+                end)
+            end).toWarnDev(
+                'Received a `callback` argument to `setState` during '
+                    .. 'initialization of "MyComponent". The callback behavior '
+                    .. 'is not supported when using `setState` in `init`.\n\n'
+                    .. 'Consider defining similar behavior in a '
+                    .. '`compontentDidMount` method instead.'
+            )
+        end)
+
+        it("throws when given an invalid state payload", function()
+            local MyComponent = React.Component:extend("MyComponent")
+            function MyComponent:init()
+                self:setState(true)
+            end
+            function MyComponent:render()
+                return nil
+            end
+
+            jestExpect(function()
+                jestExpect(function()
+                    ReactNoop.act(function()
+                        ReactNoop.render(React.createElement(MyComponent))
+                    end)
+                end).toErrorDev('The above error occurred in the <MyComponent> component')
+            end).toThrow(
+                'setState(...): takes an object of state variables to update '
+                .. 'or a function which returns an object of state variables.'
+            )
+        end)
+    end)
 end

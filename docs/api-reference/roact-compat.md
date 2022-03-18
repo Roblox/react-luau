@@ -131,13 +131,7 @@ Roact.createElement("Frame", nil, self.props.children)
 
 ## RoactCompat.None
 
-A placeholder value that can be used to reassign a state value to `nil` when calling `setState` on a class component.
-
-!!! info
-	This has not yet been added to the React interface. We may choose not to port it until we understand the component state patterns that it might encourage.
-
-!!! caution
-	This should be used sparingly; component state fields can generally be expressed more clearly with enumerated values or reasonable defaults than with nillable values.
+Re-exports [React.None](react.md#reactnone).
 
 ## RoactCompat.Event
 

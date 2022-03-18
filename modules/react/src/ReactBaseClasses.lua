@@ -23,8 +23,8 @@ if _G.__DEV__ then
   Object.freeze(emptyObject)
 end
 
--- ROBLOX DEVIATION: Initialize state to a singleton that warns on access and errors on assignment
--- initial state singleton
+-- ROBLOX DEVIATION: Initialize state to a singleton that warns on access and
+-- errors on assignment
 local UninitializedState = require(Packages.Shared).UninitializedState
 
 
@@ -132,6 +132,34 @@ for i=1, InstancePoolSize do
 })
 end
 
+local function setStateInInit(componentInstance: React_Component<any, any>, statePayload: any, callback: nil): ()
+  if _G.__DEV__ and (callback :: any) ~= nil then
+    console.warn(
+      'Received a `callback` argument to `setState` during initialization of '
+        .. '"%s". The callback behavior is not supported when using `setState` '
+        .. 'in `init`.\n\nConsider defining similar behavior in a '
+        .. '`compontentDidMount` method instead.',
+      componentInstance.__componentName
+    )
+  end
+
+  -- Use the same warning as in the "real" `setState` below
+  invariant(
+    typeof(statePayload) == 'table' or typeof(statePayload) == 'function' or statePayload == nil,
+    'setState(...): takes an object of state variables to update or a '
+      .. 'function which returns an object of state variables.'
+  )
+  local prevState = componentInstance.state
+  local partialState
+  if typeof(statePayload) == "function" then
+    -- Updater function
+    partialState = statePayload(prevState, componentInstance.props)
+  else
+    -- Partial state object
+    partialState = statePayload
+  end
+  componentInstance.state = Object.assign({}, prevState, partialState)
+end
 
 function Component:extend(name): React_Component<any, any>
   -- ROBLOX note: legacy Roact will accept nil here and default to empty string
@@ -210,17 +238,16 @@ function Component:extend(name): React_Component<any, any>
     -- of misbehavior
     instance = setmetatable(instance, class)
 
-    -- ROBLOX deviation: TODO: revisit this; make sure that we properly initialize
-    -- things like `state` if its necessary, consider if we want some sort of
-    -- alternate naming or syntax for the constructor equivalent
     -- ROBLOX performance: only do typeof if it's non-nil to begin with
     if class.init and typeof(class.init) == "function" then
-      function instance.setState(_, initialState)
-        instance.state = initialState
-      end
+      -- ROBLOX deviation: Override setState to allow it to be used in init.
+      -- This maintains legacy Roact behavior and allows more consistent
+      -- adherance to the "never assign directly to state" rule
+      instance.setState = setStateInInit
 
       class.init(instance, props, context)
 
+      -- ROBLOX devition: Unbind specialized version of setState used in init
       instance.setState = (nil :: any)
     end
 

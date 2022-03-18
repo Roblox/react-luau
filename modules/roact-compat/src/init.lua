@@ -14,6 +14,9 @@ return {
 	createRef = React.createRef,
 	forwardRef = React.forwardRef,
 	createContext = React.createContext,
+	-- This public interface is aligned but is a deviation in React. It's
+	-- necessary to accommodate lua table semantics when merging state
+	None = React.None,
 
 	-- Compatibility layer for top-level interface, stands in for `createRoot`
 	-- and similar APIs
@@ -35,7 +38,6 @@ return {
 	-- and accept that React.Children and RoactCompat.Children will be totally
 	-- different things?
 	Children = "children",
-	None = require(script.None),
 
 	-- Event/Change keys for Roact-specific event subscription behavior
 	Event = ReactRoblox.Event,

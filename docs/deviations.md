@@ -116,9 +116,22 @@ In React JS, `setState` is not allowed inside component constructors. Instead, R
 
 Legacy Roact opts to allow `setState` inside of the `init` method (equivalent to a constructor), because it allows documentation to consistently warn against assigning directly to `self.state`. However, for backwards compatibility, it still supports direct assignments to `self.state` in `init`.
 
+#### Recommended Use
+
 As with legacy Roact, Roact 17 allows both direct assignment and use of `setState`. This allows guidance from legacy Roact documentation and common practice to remain accurate.
 
 In Roact 17+, it is still recommended to use `setState` inside of component `init` methods. This means that you will _always_ avoid assigning directly to `self.state`.
+
+#### Behavior
+
+When used in a constructor, `setState` will treat the `updater` argument exactly as it does elsewhere.
+
+* If `setState` is called multiple times in a constructor, each subsequent update will be merged into previous state
+* The `updater` argument can be a function that accepts previous state and returns a new table that will be merged into any previous state
+* The `updater` argument can be a table that will be merged into any previous state
+
+!!! caution
+	When using `setState` in a constructor, the optional `callback` argument will not be used. Instead, consider putting the desired behavior in a `componentDidMount` implementation.
 
 ### Property Validation
 The legacy api `validateProps` is still present and has a backwards-compatible API.

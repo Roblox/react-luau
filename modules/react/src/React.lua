@@ -16,6 +16,9 @@ local ReactContext = require(React.ReactContext)
 local ReactLazy = require(React.ReactLazy)
 -- ROBLOX DEVIATION: Bindings
 local ReactBinding = require(React["ReactBinding.roblox"])
+-- ROBLOX DEVIATION: Re-export `None` marker
+local ReactNone = require(React["None.roblox"])
+
 local SharedModule = require(Packages.Shared)
 local ReactSymbols = SharedModule.ReactSymbols
 
@@ -99,6 +102,9 @@ return {
 	-- ROBLOX DEVIATION: Bindings
 	createBinding = ReactBinding.create,
 	joinBindings = ReactBinding.join,
+
+	-- ROBLOX DEVIATION: export the `None` placeholder for use with setState
+	None = ReactNone,
 
 	-- ROBLOX FIXME: These aren't supposed to be exposed, but they're needed by
 	-- the renderer in order to update properly
