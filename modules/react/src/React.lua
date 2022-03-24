@@ -2,6 +2,9 @@
 -- upstream: https://github.com/facebook/react/blob/56e9feead0f91075ba0a4f725c9e4e343bca1c67/packages/react/src/React.js
 local React = script.Parent
 local Packages = React.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
+type Object = LuauPolyfill.Object
+
 local createMutableSource = require(React.ReactMutableSource)
 local ReactSharedInternals = require(Packages.Shared).ReactSharedInternals
 local ReactBaseClasses = require(React.ReactBaseClasses)
@@ -27,7 +30,7 @@ local ReactTypes = require(Packages.Shared)
 export type React_StatelessFunctionalComponent<P> = ReactTypes.React_StatelessFunctionalComponent<P>
 export type React_ComponentType<P> = ReactTypes.React_ComponentType<P>
 export type React_ElementProps<ElementType> = ReactTypes.React_ElementProps<ElementType>
-export type ReactElement<P, T> = ReactTypes.ReactElement<P, T>
+export type ReactElement<P = Object, T = any> = ReactTypes.ReactElement<P, T>
 export type ReactContext<T> = ReactTypes.ReactContext<T>
 export type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
 export type React_Node = ReactTypes.React_Node

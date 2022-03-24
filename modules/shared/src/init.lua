@@ -1,6 +1,9 @@
 --!strict
 -- ROBLOX deviation: Promote `shared` to an actual unpublished package with a
 -- real interface instead of just a bag of loose source code
+local Packages = script.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
+type Object = LuauPolyfill.Object
 
 local ReactTypes = require(script.ReactTypes)
 local flowtypes = require(script["flowtypes.roblox"])
@@ -38,7 +41,7 @@ export type MutableSource<Source> = ReactTypes.MutableSource<Source>
 export type Wakeable = ReactTypes.Wakeable
 export type Thenable<R> = ReactTypes.Thenable<R>
 export type Source = ReactElementType.Source
-export type ReactElement<P, T> = ReactElementType.ReactElement<P, T>
+export type ReactElement<P = Object, T = any> = ReactElementType.ReactElement<P, T>
 export type OpaqueIDType = ReactFiberHostConfig.OpaqueIDType
 export type Dispatcher = ReactSharedInternals.Dispatcher
 
@@ -61,7 +64,10 @@ export type React_StatelessFunctionalComponent<Props> =
 export type React_Node = flowtypes.React_Node
 export type React_Element<ElementType> = flowtypes.React_Element<ElementType>
 export type React_ElementType = flowtypes.React_ElementType
+export type React_ElementConfig<C> = flowtypes.React_ElementConfig<C>
+export type React_ElementRef<C> = flowtypes.React_ElementRef<C>
 export type React_Portal = flowtypes.React_Portal
+export type React_Key = flowtypes.React_Key
 
 return {
 	checkPropTypes = require(script.checkPropTypes),

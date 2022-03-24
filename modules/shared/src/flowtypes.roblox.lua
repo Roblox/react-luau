@@ -23,6 +23,7 @@ export type React_Node =
 	| Array<React_Node?>
 	-- ROBLOX TODO Luau: this more closely matches the upstream Iterable<>, hypothetically the UNIQUE_TAG field makes it so we don't unify with other tables and squad field resolution
 	| { [string]: React_Node?, UNIQUE_TAG: any? }
+
 export type React_Element<ElementType> = {
 	type: ElementType,
 	props: React_ElementProps<ElementType>?,
@@ -43,6 +44,9 @@ export type React_AbstractComponent<Config, Instance> = {
 	-- allows methods to be hung on a component, used in forwardRef.spec regression test we added
 	[string]: any,
 }
+
+-- ROBLOX TODO: ElementConfig: something like export type React_ElementConfig<React_Component<P>> = P
+export type React_ElementConfig<C> = Object
 
 -- ROBLOX deviation: this is a class export upstream, so optional overrides are nil-able, and it's extensible by default
 export type React_Component<Props, State = nil> = {
@@ -164,7 +168,9 @@ export type React_ElementProps<ElementType> = {
 --       : never
 --     : never
 
-type React_ElementRef<C> = any
+-- ROBLOX TODO: Not sure how to model this, upstream: https://github.com/facebook/flow/blob/main/tests/react_instance/class.js#L10
+-- ROBLOX FIXME Luau: if I make this Object, we run into normalization issues: '{| current: React_ElementRef<any>? |}' could not be converted into '(((?) -> any) | {| current: ? |})?
+export type React_ElementRef<C> = any
 
 export type React_Ref<ElementType> =
 	{ current: React_ElementRef<ElementType> | nil }
@@ -177,6 +183,7 @@ export type React_Context<T> = {
 	Consumer: React_ComponentType<{ children: (value: T) -> React_Node? }>,
 }
 
+-- ROBLOX TODO: declared as an opaque type in flowtype: https://github.com/facebook/flow/blob/422821fd42c09c3ef609c60516fe754b601ea205/lib/react.js#L182
 export type React_Portal = any
 export type React_Key = string | number
 

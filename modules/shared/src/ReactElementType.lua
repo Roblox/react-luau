@@ -7,6 +7,10 @@
  *
  * @flow
 ]]
+local Packages = script.Parent.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
+type Object = LuauPolyfill.Object
+
 local flowtypes = require(script.Parent["flowtypes.roblox"])
 type React_Element<ElementType> = flowtypes.React_Element<ElementType>
 type React_StatelessFunctionalComponent<P> = flowtypes.React_StatelessFunctionalComponent<
@@ -20,7 +24,7 @@ export type Source = {
 }
 type Key = string | number
 -- ROBLOX deviation: we're using the TypeScript definition here, which is more strict
-export type ReactElement<P = any, T = any> = {
+export type ReactElement<P = Object, T = any> = {
 	["$$typeof"]: number,
 
 	-- ROBLOX FIXME Luau: Luau has some trouble and inlining the type param from createElement doesn't help
