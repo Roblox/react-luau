@@ -6,10 +6,6 @@ There are currently a few notable absences from React JS 17.0.1:
 
 * `React.createFactory` - Considered legacy and will likely not be included
 * `React.useDebugValue` - Not yet implemented
-* `React.Children.forEach` - Not yet implemented
-* `React.Children.map` - Not yet implemented
-* `React.Children.count` - Not yet implemented
-* `React.Children.toArray` - Not yet implemented
 
 There are also some features that are undocumented in React JS 17.0.1, but are implemented. The following are included, but may be less stable than existing features:
 
@@ -54,10 +50,26 @@ Refer to [`React.isValidElement` documentation](https://reactjs.org/docs/react-a
 ## React.Children
 Refer to [`React.Children` documentation](https://reactjs.org/docs/react-api.html#reactchildren).
 
-At this time, only `React.Children.only` is implemented.
+### Deviations
+
+* React Children with type "userdata" will be treated as nil in callbacks. This means that a `React.None` child passed to forEach or map will be treated the same as a nil value or boolean in the callbacks. React.Children.count will not include userdata children in the count.
+* The `context` argument for mapChildren is not passed to the callback. This is typically used to pass `this` in javascript, but does not have an equivalent in lua.
+* React Children works with keyed arrays
 
 ### React.Children.only
 Refer to [`React.Children.only` documentation](https://reactjs.org/docs/react-api.html#reactchildrenonly).
+
+### React.Children.map
+Refer to [`React.Children.map` documentation](https://reactjs.org/docs/react-api.html#reactchildrenmap)
+
+### React.Children.toArray
+Refer to [`React.Children.toArray` documentation](https://reactjs.org/docs/react-api.html#reactchildrentoarray)
+
+### React.Children.forEach
+Refer to [`React.Children.forEach` documentation](https://reactjs.org/docs/react-api.html#reactchildrenforeach)
+
+### React.Children.count
+Refer to [`React.Children.count` documentation](https://reactjs.org/docs/react-api.html#reactchildrencount)
 
 ## React.Fragment
 Refer to [`React.Fragment` documentation](https://reactjs.org/docs/react-api.html#reactfragment).
