@@ -7,9 +7,9 @@ A comprehensive, but not exhaustive, translation of upstream ReactJS 17.x into R
 ## TL;DR
 
 * In a new project, you can consume this library by adding this line to your rotriever.toml
-  * `React = "github.com/roblox/roact-alignment@17.0.1-rc.4"`
-* If you're have legacy Roact code, use the roact-compat library instead
-  * `RoactCompat = "github.com/roblox/roact-alignment@17.0.1-rc.1"`
+  * `React = "github.com/roblox/roact-alignment@17.0.1-rc.11"`
+* If you have legacy Roact code, use the roact-compat library instead
+  * `RoactCompat = "github.com/roblox/roact-alignment@17.0.1-rc.11"`
 * Make sure you are using the latest [rotriever](https://github.com/Roblox/rotriever/releases) 0.5 (or later) release
   * you can download the release binary, or add it to your `foreman.toml`: ```rotrieve = { source = "roblox/rotriever", version = "0.5.0-rc.4" }```
 * For unit testing components and trees of components, you'll want to use the [`act()`](https://github.com/threepointone/react-act-examples/blob/master/sync.md) API exported from the react-roblox package.
@@ -79,7 +79,7 @@ You need to create a GitHub Access Token:
 * GitHub.com -> Settings -> Developer Settings -> Personal Access Tokens
 * Your token must have the `repo` and read:packages` scopes
 * On that same page, you then need to click Enable SSO
-* BE SURE TO COPY THE ACCESS TOKEN SOMEWHERE 
+* BE SURE TO COPY THE ACCESS TOKEN SOMEWHERE
 
 ```
 npm login --registry=https://npm.pkg.github.com/ --scope=@roblox
@@ -120,7 +120,7 @@ foreman install
 export PATH=$PATH:~/.foreman/bin/ # you might want to add this to your bash profile file too
 ```
 
-Now you can run the tests, edit code, and contribute! Next we need to install our Lua package dependencies. We do this with a tool called Rotriever, which Foreman just installed for us. The package dependencies are listed in `rotriever.toml`. 
+Now you can run the tests, edit code, and contribute! Next we need to install our Lua package dependencies. We do this with a tool called Rotriever, which Foreman just installed for us. The package dependencies are listed in `rotriever.toml`.
 
 ```
 rotrieve install
@@ -149,7 +149,7 @@ To avoid this in the future, be sure that your foreman binary path is *before* t
 
 ## Contribution Guidelines
 
-* Try to keep the directory structure, file name/location, and code symbol names aligned with React upstream. At the top of the mirrored files, put a comment in this format that includes the specific hash of the version of the file you're mirroring: 
+* Try to keep the directory structure, file name/location, and code symbol names aligned with React upstream. At the top of the mirrored files, put a comment in this format that includes the specific hash of the version of the file you're mirroring:
 ```
 -- ROBLOX upstream https://github.com/facebook/react/blob/9abc2785cb070148d64fae81e523246b90b92016/packages/scheduler/src/Scheduler.js
 ```
@@ -158,7 +158,7 @@ To avoid this in the future, be sure that your foreman binary path is *before* t
 * If you have a deviation from upstream code logic for Lua-specific reasons (1-based array indices, etc) put a comment above the deviated line:
 ```
 -- ROBLOX deviation: use explicit nil check instead of falsey
-``` 
+```
 
 * For deviations due to Lua language differences (no spread operator) that don't involve changing the logic, don't put a deviation comment. Just use the appropriate equivalent from the Cryo and other utility libraries.
 
@@ -237,4 +237,3 @@ Shortly after you see the status bar change colors to indicate an active debugge
 ![image](https://user-images.githubusercontent.com/1550766/104785584-b4095a00-573f-11eb-8363-3b73a612e2a2.png)
 
 Note that VS Code even tells you the value of the variables on the line. Pretty cool!
-
