@@ -357,27 +357,21 @@ return function()
 		xit(
 			"should append component stacks to errors and warnings logged from gDSFP",
 			function()
-				local Intermediate = function(_ref10)
-					local children = _ref10.children
+				local Intermediate = function(props)
+					local children = props.children
 					return children
 				end
 				-- ROBLOX deviation: switched ordering for variable definition order
-				local Child = {}
-				local ChildMetatable = { __index = Child }
-				local Parent = function(_ref11)
-					local _children = _ref11.children
+				local Child = React.Component:extend("Child")
+				local Parent = function(props)
+					local _children = props.children
 					return React.createElement(
 						Intermediate,
 						nil,
-						React.createElement(Child, nil)
+						React.createElement(Child)
 					)
 				end
 
-				function Child.new()
-					local self = setmetatable({}, ChildMetatable)
-					local _temp
-					return self
-				end
 				function Child.getDerivedStateFromProps()
 					fakeConsole.error("error")
 					fakeConsole.log("log")

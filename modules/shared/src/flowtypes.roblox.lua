@@ -36,7 +36,7 @@ export type React_PureComponent<Props, State = nil> = React_Component<Props, Sta
 -- ROBLOX note: this flowtype built-in is derived from the object shape returned by forwardRef
 export type React_AbstractComponent<Config, Instance> = {
 	["$$typeof"]: number,
-	render: (props: Config, ref: React_Ref<Instance>) -> React_Node,
+	render: ((props: Config, ref: React_Ref<Instance>) -> React_Node)?,
 	displayName: string?,
 	defaultProps: Config?,
 	-- not in React flowtype, but is in definitelytyped and is used in ReactElement
@@ -170,11 +170,11 @@ export type React_ElementProps<ElementType> = {
 
 -- ROBLOX TODO: Not sure how to model this, upstream: https://github.com/facebook/flow/blob/main/tests/react_instance/class.js#L10
 -- ROBLOX FIXME Luau: if I make this Object, we run into normalization issues: '{| current: React_ElementRef<any>? |}' could not be converted into '(((?) -> any) | {| current: ? |})?
-export type React_ElementRef<C> = any
+export type React_ElementRef<C> = C
 
 export type React_Ref<ElementType> =
 	{ current: React_ElementRef<ElementType> | nil }
-	| ((React_ElementRef<ElementType> | nil) -> any)
+	| ((React_ElementRef<ElementType> | nil) -> ())
 -- ROBLOX deviation: we don't support string refs, and this is unsound flowtype when used with ref param of useImperativeHandle
 -- | string
 

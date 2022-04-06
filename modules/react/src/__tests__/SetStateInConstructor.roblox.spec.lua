@@ -14,7 +14,7 @@ return function()
         Shared = require(Packages.Shared)
     end)
 
-    local function initTests(defineInitMethod, name)
+    local function initTests(defineInitMethod: (any, string | number, any) -> (), name)
         it("has correct state populated in render w/ " .. name, function()
             local Component = React.Component:extend("Component")
 

@@ -7,7 +7,7 @@
  * @emails react-core
  ]]
 -- ROBLOX FIXME Luau: this doesn't play nicely with Object.assign
---!nonstrict
+--!strict
 
 -- ROBLOX deviation: prompted by selene to add a type
 local Packages = script.Parent.Parent.Parent
@@ -447,7 +447,8 @@ return function()
 
 		it("warns on forwardRef(memo(...))", function()
 			jestExpect(function()
-				React.forwardRef(React.memo(function(props, ref)
+				-- ROBLOX deviation: this vioaltes strong types, so we have to cast away safety to test runtime check
+				(React.forwardRef :: any)(React.memo(function(props, ref)
 					return nil
 				end))
 			end).toErrorDev({

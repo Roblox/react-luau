@@ -899,6 +899,8 @@ return function()
 			local ThemeContext = createContext("light")
 			local function App()
 				return useMemo(function()
+					-- ROBLOX TODO: this assert/invariant should be in upstream
+					assert(ReactCurrentDispatcher.current ~= nil, "current dispatcher is nil!")
 					return ReactCurrentDispatcher.current.readContext(ThemeContext)
 				end, {})
 			end
@@ -915,6 +917,8 @@ return function()
 				local ThemeContext = createContext("light")
 				local firstRead, secondRead
 				local function App()
+					-- ROBLOX TODO: this assert/invariant should be in upstream
+					assert(ReactCurrentDispatcher.current ~= nil, "current dispatcher is nil!")
 					firstRead = ReactCurrentDispatcher.current.readContext(ThemeContext)
 					useMemo(function()
 						return nil
@@ -939,6 +943,8 @@ return function()
 			local ThemeContext = createContext("light")
 			local function App()
 				useEffect(function()
+					-- ROBLOX TODO: this assert/invariant should be in upstream
+					assert(ReactCurrentDispatcher.current ~= nil, "current dispatcher is nil!")
 					ReactCurrentDispatcher.current.readContext(ThemeContext)
 				end)
 				return nil
@@ -957,6 +963,8 @@ return function()
 			local ThemeContext = createContext("light")
 			local function App()
 				useLayoutEffect(function()
+					-- ROBLOX TODO: this assert/invariant should be in upstream
+					assert(ReactCurrentDispatcher.current ~= nil, "current dispatcher is nil!")
 					ReactCurrentDispatcher.current.readContext(ThemeContext)
 				end)
 				return nil
@@ -972,6 +980,8 @@ return function()
 			local ThemeContext = createContext("light")
 			local function App()
 				local state, dispatch = useReducer(function(s, action)
+					-- ROBLOX TODO: this assert/invariant should be in upstream
+					assert(ReactCurrentDispatcher.current ~= nil, "current dispatcher is nil!")
 					ReactCurrentDispatcher.current.readContext(ThemeContext)
 					return action
 				end, 0)
@@ -999,6 +1009,8 @@ return function()
 			local Cls = React.Component:extend("Cls")
 			function Cls:render()
 				_setState(function()
+					-- ROBLOX TODO: this assert/invariant should be in upstream
+					assert(ReactCurrentDispatcher.current ~= nil, "current dispatcher is nil!")
 					return ReactCurrentDispatcher.current.readContext(ThemeContext)
 				end)
 				return nil
@@ -1071,6 +1083,8 @@ return function()
 			local ThemeContext = React.createContext("light")
 			local function App()
 				React.useMemo(function()
+					-- ROBLOX TODO: this assert/invariant should be in upstream
+					assert(ReactCurrentDispatcher.current ~= nil, "current dispatcher is nil!")
 					ReactCurrentDispatcher.current.readContext(ThemeContext)
 					React.useRef(0)
 					error(Error.new("No."))

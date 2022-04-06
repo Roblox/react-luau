@@ -183,17 +183,19 @@ return function()
     local function Fragment(props)
       if props.condition then
         return {{
+					-- ROBLOX FIXME Luau: Luau needs to allow mixed arrays and/or normalize these two things to a common ancestor
           React.createElement("Frame", {key="b"},
             React.createElement("TextLabel", {Text="World"})
-          ),
+          ) :: any,
           React.createElement(Stateful, {key="a"})
         }}
       else
         return {{
-          React.createElement(Stateful, {key="a"}),
+					-- ROBLOX FIXME Luau: Luau needs to allow mixed arrays and/or normalize these two things to a common ancestor
+          React.createElement(Stateful, {key="a"}) :: any,
           React.createElement("Frame", {key="b"},
             React.createElement("TextLabel", {Text="World"})
-          )},
+          )} :: any,
           React.createElement("Frame", {key="c"})
         }
       end

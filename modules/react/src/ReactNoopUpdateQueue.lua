@@ -12,7 +12,7 @@ local console = require(Packages.Shared).console
 
 local didWarnStateUpdateForUnmountedComponent = {}
 
-local function warnNoop(publicInstance, callerName: string)
+local function warnNoop(publicInstance: any, callerName: string)
   if _G.__DEV__ then
     -- local constructor = publicInstance.constructor
     -- local componentName = ((constructor and (constructor.displayName or constructor.name)) or 'ReactClass')

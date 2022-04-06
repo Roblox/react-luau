@@ -1,3 +1,4 @@
+--!strict
 local warnOnce = require(script.Parent.warnOnce)
 
 return function(_config)

@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/17f582e0453b808860be59ed3437c6a426ae52de/packages/react-reconciler/src/ReactFiberLazyComponent.new.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -18,7 +19,8 @@ local function resolveDefaultProps(Component: any, baseProps: Object): Object
 	-- ROBLOX deviation: check if type is table before checking defaultProps to prevent non-table index
 	if typeof(Component) == 'table' and Component and Component.defaultProps then
 		-- Resolve default props. Taken from ReactElement
-		local props = Object.assign({}, baseProps)
+		-- ROBLOX FIXME Luau: hard cast to object until we can model this better in Luau. avoids Expected type table, got 'Object & any & any & { [any]: any }' instead
+		local props = Object.assign({}, baseProps) :: Object
 		local defaultProps = Component.defaultProps
 		for propName, _ in pairs(defaultProps) do
 			if props[propName] == nil then

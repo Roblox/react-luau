@@ -1,3 +1,4 @@
+--!strict
 local Packages = script.Parent.Parent
 local console = require(Packages.Shared).console
 

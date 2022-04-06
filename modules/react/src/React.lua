@@ -1,4 +1,4 @@
---!nonstrict
+--!strict
 -- upstream: https://github.com/facebook/react/blob/56e9feead0f91075ba0a4f725c9e4e343bca1c67/packages/react/src/React.js
 local React = script.Parent
 local Packages = React.Parent
@@ -17,6 +17,8 @@ local ReactHooks = require(React.ReactHooks)
 local ReactMemo = require(React.ReactMemo)
 local ReactContext = require(React.ReactContext)
 local ReactLazy = require(React.ReactLazy)
+type LazyComponent<T, P> = ReactLazy.LazyComponent<T, P>
+
 -- ROBLOX DEVIATION: Bindings
 local ReactBinding = require(React["ReactBinding.roblox"])
 -- ROBLOX DEVIATION: Re-export `None` marker
@@ -36,9 +38,9 @@ export type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
 export type React_Node = ReactTypes.React_Node
 export type PureComponent<Props, State = nil> = ReactTypes.React_PureComponent<Props, State>
 type createElementFn = <P, T>(
-	type_: React_StatelessFunctionalComponent<P> | React_ComponentType<P> | string | ReactContext<any> | ReactProviderType<any>,
+	type_: React_StatelessFunctionalComponent<P> | React_ComponentType<P> | string | ReactContext<any> | ReactProviderType<any> | LazyComponent<T, P>,
 	props: P?,
-	...React_Node
+	...(React_Node | (...any) -> React_Node)
 ) -> ReactElement<P, T>
 
 type cloneElementFn = <P, T>(

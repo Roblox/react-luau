@@ -16,11 +16,15 @@ local console = require(Packages.Shared).console
 local ReactTypes = require(Packages.Shared)
 type React_StatelessFunctionalComponent<P> = ReactTypes.React_StatelessFunctionalComponent<P>
 type React_ComponentType<P> = ReactTypes.React_ComponentType<P>
+type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
 type React_ElementProps<ElementType> = ReactTypes.React_ElementProps<ElementType>
 type React_Node = ReactTypes.React_Node
-type ReactElement<P, T> = ReactTypes.ReactElement<P, T>
+type ReactElement<P = Object, T = any> = ReactTypes.ReactElement<P, T>
 type ReactContext<T> = ReactTypes.ReactContext<T>
 type Source = ReactTypes.Source
+
+local ReactLazy = require(script.Parent.ReactLazy)
+type LazyComponent<T, P> = ReactLazy.LazyComponent<T, P>
 
 local getComponentName = require(Packages.Shared).getComponentName
 local invariant = require(Packages.Shared).invariant
@@ -383,9 +387,9 @@ end
 -- 	props?: Attributes & P | null,
 -- 	...children: ReactNode[]): ReactElement<P>;
 local function createElement<P, T>(
-	type_: React_StatelessFunctionalComponent<P> | React_ComponentType<P> | ReactContext<any> | string,
+	type_: React_StatelessFunctionalComponent<P> | React_ComponentType<P> | ReactContext<any> | LazyComponent<T, P> | ReactProviderType<any> | string,
 	config: P?,
-	...: React_Node
+	...: React_Node | (...any) -> React_Node
 ): ReactElement<P, T>
 	local props = {}
 	local key = nil

@@ -1,5 +1,5 @@
 -- ROBLOX upstream: https://github.com/facebook/react/blob/7516bdfce3f0f8c675494b5c5d0e7ae441bef1d9/packages/react/src/__tests__/ReactChildren-test.js
---!strict
+--!nonstrict
 --[[
 	**
 	* Copyright (c) Facebook, Inc. and its affiliates.
@@ -25,7 +25,7 @@ return function()
 	type React_Node = React.React_Node
 	type React_Element<ElementType> = React.React_Element<ElementType>
 	type React_ElementProps<C> = React.ElementProps<C>
-	type ReactElement<P, T> = React.ReactElement<P, T>
+	type ReactElement<P = Object, T = any> = React.ReactElement<P, T>
 
 	describe("ReactChildren", function()
 		beforeEach(function()

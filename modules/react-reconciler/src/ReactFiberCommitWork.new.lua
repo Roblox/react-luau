@@ -299,6 +299,7 @@ local function safelyDetachRef(current: Fiber, nearestMountedAncestor: Fiber): (
         captureCommitPhaseError(current, nearestMountedAncestor, error_)
       end
     else
+      -- ROBLOX FIXME Luau: next line gets Expected type table, got 'RefObject | {| [string]: any, _stringRef: string? |}' instead
       ref.current = nil
     end
   end
@@ -1601,7 +1602,8 @@ function unmountHostComponents(
 
   while true do
     if not currentParentIsValid then
-      local parent = node.return_
+      -- ROBLOX FIXME Luau: Luau doesn't understand the nil guard at the top of the loop
+      local parent = node.return_ :: Fiber
       while true do
 
         -- ROBLOX deviation START: use React 18 approach so Luau understands control flow better
@@ -1632,7 +1634,8 @@ function unmountHostComponents(
         --     currentParentIsContainer = false
         --   end
         end
-        parent = parent.return_
+        -- ROBLOX FIXME Luau: Luau doesn't understand the nil guard at the top of the loop
+        parent = parent.return_ :: Fiber
       end
       currentParentIsValid = true
     end

@@ -1443,7 +1443,8 @@ return function()
 							React.createElement(Child, { label = "two" })
 						)
 					else
-						return nil
+						-- ROBLOX FIXME Luau: needs local type inference and normalization
+						return nil :: any
 					end
 				end
 
@@ -1684,7 +1685,8 @@ return function()
 				local Child
 				local function Parent()
 					Scheduler.unstable_yieldValue("Parent")
-					local updaterRef = React.useRef(nil)
+					-- ROBLOX TODO: this explicit typing should be upstreamed
+					local updaterRef = React.useRef(nil :: ((boolean) -> ())?)
 					React.useEffect(function()
 						Scheduler.unstable_yieldValue("Parent passive create")
 						return function()

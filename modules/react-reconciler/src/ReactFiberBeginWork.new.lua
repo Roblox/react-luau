@@ -1,3 +1,4 @@
+--!strict
 -- upstream: https://github.com/facebook/react/blob/1faf9e3dd5d6492f3607d5c721055819e4106bc6/packages/react-reconciler/src/ReactFiberBeginWork.new.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -162,9 +163,9 @@ local pushProvider = ReactFiberNewContext.pushProvider
 
 -- ROBLOX deviation: Lazy init all methods from ReactFiberHooks
 local lazyRefs = {
-  renderWithHooksRef = nil,
-  bailoutHooksRef = nil,
-  shouldSuspendRef = nil
+  renderWithHooksRef = nil :: any,
+  bailoutHooksRef = nil :: any,
+  shouldSuspendRef = nil :: any
 }
 
 local function shouldSuspend(fiber: Fiber): boolean
@@ -260,12 +261,12 @@ local didReceiveUpdate: boolean = false
 
 -- ROBLOX deviation: put didWarns in table to reduce number of local variables
 local DidWarn = {
-  didWarnAboutBadClass = nil,
-  didWarnAboutModulePatternComponent = nil,
-  didWarnAboutContextTypeOnFunctionComponent = nil,
-  didWarnAboutGetDerivedStateOnFunctionComponent = nil,
-  didWarnAboutFunctionRefs = nil,
-  didWarnAboutDefaultPropsOnFunctionComponent = nil
+  didWarnAboutBadClass = {} :: { [string]: boolean },
+  didWarnAboutModulePatternComponent = {} :: { [string]: boolean },
+  didWarnAboutContextTypeOnFunctionComponent = {} :: { [string]: boolean },
+  didWarnAboutGetDerivedStateOnFunctionComponent = {} :: { [string]: boolean },
+  didWarnAboutFunctionRefs = {} :: { [string]: boolean },
+  didWarnAboutDefaultPropsOnFunctionComponent = {} :: { [string]: boolean }
 }
 -- export local didWarnAboutReassigningProps
 -- local didWarnAboutRevealOrder
@@ -674,7 +675,7 @@ local function updateOffscreenComponent(
   current: Fiber?,
   workInProgress: Fiber,
   renderLanes: Lanes
-)
+): Fiber | nil
   local nextProps: OffscreenProps = workInProgress.pendingProps
   local nextChildren = nextProps.children
 
@@ -1992,7 +1993,7 @@ local function updateSuspenseComponent(current, workInProgress, renderLanes)
         nextFallbackChildren,
         renderLanes
       )
-      local primaryChildFragment: Fiber = workInProgress.child
+      local primaryChildFragment: Fiber = workInProgress.child :: any
       primaryChildFragment.memoizedState = mountSuspenseOffscreenState(
         renderLanes
       )
@@ -2008,7 +2009,7 @@ local function updateSuspenseComponent(current, workInProgress, renderLanes)
         nextFallbackChildren,
         renderLanes
       )
-      local primaryChildFragment: Fiber = workInProgress.child
+      local primaryChildFragment: Fiber = workInProgress.child :: any
       primaryChildFragment.memoizedState = mountSuspenseOffscreenState(
         renderLanes
       )
@@ -2065,7 +2066,7 @@ local function updateSuspenseComponent(current, workInProgress, renderLanes)
             workInProgress.child = current.child
             -- The dehydrated completion pass expects this flag to be there
             -- but the normal suspense pass doesn't.
-            workInProgress.flags = bit32.bor(workInProgress, DidCapture)
+            workInProgress.flags = bit32.bor(workInProgress.flags, DidCapture)
             return nil
           else
             -- Suspended but we should no longer be in dehydrated mode.
@@ -2079,7 +2080,7 @@ local function updateSuspenseComponent(current, workInProgress, renderLanes)
               nextFallbackChildren,
               renderLanes
             )
-            local primaryChildFragment: Fiber = workInProgress.child
+            local primaryChildFragment: Fiber = workInProgress.child :: any
             primaryChildFragment.memoizedState = mountSuspenseOffscreenState(
               renderLanes
             )
@@ -2099,8 +2100,8 @@ local function updateSuspenseComponent(current, workInProgress, renderLanes)
           nextFallbackChildren,
           renderLanes
         )
-        local primaryChildFragment: Fiber = workInProgress.child
-        local prevOffscreenState: OffscreenState | nil = current.child
+        local primaryChildFragment: Fiber = workInProgress.child :: any
+        local prevOffscreenState: OffscreenState | nil = (current.child :: any)
           .memoizedState
 
         -- ROBLOX deviation: if/else in place of ternary
@@ -2141,8 +2142,8 @@ local function updateSuspenseComponent(current, workInProgress, renderLanes)
           nextFallbackChildren,
           renderLanes
         )
-        local primaryChildFragment: Fiber = workInProgress.child
-        local prevOffscreenState: OffscreenState | nil = current.child
+        local primaryChildFragment: Fiber = workInProgress.child :: any
+        local prevOffscreenState: OffscreenState | nil = (current.child :: any)
           .memoizedState
 
         -- ROBLOX deviation: if/else in place of ternary
@@ -2276,7 +2277,7 @@ function updateSuspensePrimaryChildren(
   primaryChildren,
   renderLanes
 )
-  local currentPrimaryChildFragment: Fiber = current.child
+  local currentPrimaryChildFragment: Fiber = current.child :: any
   local currentFallbackChildFragment: Fiber | nil =
     currentPrimaryChildFragment.sibling
 
@@ -2316,7 +2317,7 @@ function updateSuspenseFallbackChildren(
   renderLanes
 )
   local mode = workInProgress.mode
-  local currentPrimaryChildFragment: Fiber = current.child
+  local currentPrimaryChildFragment: Fiber = current.child :: any
   local currentFallbackChildFragment: Fiber | nil = currentPrimaryChildFragment.sibling
 
   local primaryChildProps: OffscreenProps = {
@@ -3260,6 +3261,8 @@ function remountFiber(
     if returnFiber == nil then
       error('Cannot swap the root fiber.')
     end
+    -- ROBLOX FIXME Luau: remove this assert when Luau type states understands the above guard
+    assert(returnFiber ~= nil, "returnFiber was nil in remountFiber")
 
     -- Disconnect from the old current.
     -- It will get deleted.
@@ -3280,6 +3283,9 @@ function remountFiber(
       if prevSibling == nil then
         error('Expected parent to have a child.')
       end
+      -- ROBLOX FIXME Luau: remove this assert when Luau type states understands the above guard
+      assert(prevSibling ~= nil, "prevSibling was nil in remountFiber")
+
       while prevSibling.sibling ~= oldWorkInProgress do
         prevSibling = prevSibling.sibling
         if prevSibling == nil then
@@ -3329,7 +3335,8 @@ local function beginWork(
         workInProgress,
         createFiberFromTypeAndProps(
           workInProgress.type,
-          workInProgress.key,
+          -- ROBLOX FIXME: we widen this to be number|string for Roact compatibility
+          workInProgress.key :: string?,
           workInProgress.pendingProps,
           workInProgress._debugOwner or nil,
           workInProgress.mode,
@@ -3342,19 +3349,12 @@ local function beginWork(
   if current ~= nil then
     local oldProps = current.memoizedProps
     local newProps = workInProgress.pendingProps
-    -- ROBLOX TODO: use if-expression when all clients on 503+
-    local _tmp
-    if _G.__DEV__ then
-      _tmp = workInProgress.type ~= current.type
-    else
-      _tmp = false
-    end
 
     if
       oldProps ~= newProps or
       hasLegacyContextChanged() or
       -- Force a re-render if the implementation changed due to hot reload:
-      _tmp
+      if _G.__DEV__ then workInProgress.type ~= current.type else false
     then
       -- If props or context changed, mark the fiber as having performed work.
       -- This may be unset if the props are determined to be equal later (memo).
@@ -3413,7 +3413,7 @@ local function beginWork(
           -- whether to retry the primary children, or to skip over it and
           -- go straight to the fallback. Check the priority of the primary
           -- child fragment.
-          local primaryChildFragment: Fiber = (workInProgress.child :: Fiber)
+          local primaryChildFragment: Fiber = (workInProgress.child :: any)
           local primaryChildLanes = primaryChildFragment.childLanes
           if ReactFiberLane.includesSomeLane(renderLanes, primaryChildLanes) then
             -- The primary children have pending work. Use the normal path

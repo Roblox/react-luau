@@ -1,3 +1,4 @@
+--!strict
 -- ROBLOX upstream https://github.com/facebook/react/blob/8af27aeedbc6b00bc2ef49729fc84f116c70a27c/packages/scheduler/src/SchedulerProfiling.js
 --[[*
 * Copyright (c) Facebook, Inc. and its affiliates.
@@ -74,8 +75,9 @@ end
 exports.stopLoggingProfilingEvents = function()
 	local buffer = eventLogBuffer
 	eventLogSize = 0
-	eventLogBuffer = nil
-	eventLog = nil
+	-- ROBLOX FIXME Luau: needs local inference? Type 'nil' could not be converted into '{|  |}'
+	eventLogBuffer = nil :: any
+	eventLog = nil :: any
 	eventLogIndex = 1
 	return buffer
 end

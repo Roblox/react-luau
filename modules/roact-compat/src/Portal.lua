@@ -1,3 +1,4 @@
+--!strict
 local Packages = script.Parent.Parent
 local ReactRoblox = require(Packages.ReactRoblox)
 

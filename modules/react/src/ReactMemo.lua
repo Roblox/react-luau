@@ -34,13 +34,13 @@ local getComponentName = Shared.getComponentName
 
 local exports = {}
 
-exports.memo = function<Props>(
+exports.memo = function<Props, T>(
 	-- ROBLOX deviation START: expanded type pulled from definitelytyped, not sure why upstream doesn't accept function component types
 	-- ROBLOX TODO Luau: React_Component<Props, any> gave me  Type 'React_Component<any, any>' could not be converted into '((any, any) -> (Array<(Array<<CYCLE>> | React_Element<any> | boolean | number | string)?> | React_Element<any> | boolean | number | string)?) | string'; none of the union options are compatible
-	type_: React_StatelessFunctionalComponent<Props> | React_Component<any, any> | string,
+	type_: React_StatelessFunctionalComponent<Props> | React_AbstractComponent<Props, T> | string,
 	-- ROBLOX deviation END
 	compare: ((oldProps: Props, newProps: Props) -> boolean)?
-)
+): React_AbstractComponent<Props, any>
 	if _G.__DEV__ then
 		local validType = isValidElementType(type_)
 
@@ -95,23 +95,31 @@ exports.memo = function<Props>(
 	}
 
 	if _G.__DEV__ then
-		local ownName = nil
-		elementType.displayName = function(...)
-			-- ROBLOX TODO: made this a select("#", ...)
-			if #{ ... } == 0 then
-				return ownName
-			end
-
-			-- ROBLOX TODO: made this a select(1, ...)
-			local name = ({ ... })[1]
-			ownName = name
-
-			if typeof(type_) == "table" and type_.displayName == nil then
-				type_.displayName = name
-			end
-
-			return nil
-		end
+		local name
+		-- ROBLOX deviation: use metatables to approximate Object.defineProperty logic
+		setmetatable(elementType, {
+			__index = function(self, key)
+				if key == "displayName" then
+					return name
+				end
+				return rawget(self, key)
+			end,
+			__newindex = function(self, key, value)
+				if key == "displayName" then
+					name = value
+					-- ROBLOX deviation: render is a function and cannot have properties
+					if
+						typeof(type_) == "table"
+						and (type_ :: React_AbstractComponent<Props, T>).displayName
+							== nil
+					then
+						(type_ :: React_AbstractComponent<Props, T>).displayName = name
+					end
+				else
+					rawset(self, key, value)
+				end
+			end,
+		})
 	end
 
 	return elementType

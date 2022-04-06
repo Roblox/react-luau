@@ -1,4 +1,5 @@
 -- upstream: https://github.com/facebook/react/blob/b87aabdfe1b7461e7331abb3601d9e6bb27544bc/packages/react/src/ReactCreateRef.js
+--!strict
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -17,7 +18,7 @@ local exports = {}
 local Binding = require(script.Parent["ReactBinding.roblox"])
 
 -- an immutable object with a single mutable value
-exports.createRef = function(): any -- ROBLOX FIXME: Redefine RefObject type
+exports.createRef = function() -- ROBLOX FIXME: Redefine RefObject type
   local binding, _ = Binding.create(nil)
 
   local ref = {}

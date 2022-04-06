@@ -194,13 +194,14 @@ function Component:extend(name): React_Component<any, any>
   class.__index = class
   -- class.__componentName = name
 
-  function class.__ctor(props, context, updater)
+  function class.__ctor<P>(props: P, context, updater): React_Component<P, any>
     local instance
     -- ROBLOX performance: use a pooled object
     if InstancePoolIndex <= InstancePoolSize then
       instance = InstancePool[InstancePoolIndex]
       -- fill in the dynamic fields
-      instance.props = props
+      -- ROBLOX FIXME Luau: TypeError: Type 'P' could not be converted into 'nil'
+      instance.props = props :: any
       instance.context = context
       -- release the premade object from the pool -- we aren't recycling objects right now
       InstancePool[InstancePoolIndex] = nil
@@ -209,7 +210,8 @@ function Component:extend(name): React_Component<any, any>
   		-- ROBLOX note: uncomment to tune pool size for lua-apps
       -- print("!!!!! hit ReactBaseClass instance pool limit")
       instance = {
-        props = props,
+        -- ROBLOX FIXME Luau: TypeError: Type 'P' could not be converted into 'nil'
+        props = props :: any,
         context = context,
         state = UninitializedState,
         __refs = emptyObject,
@@ -251,7 +253,7 @@ function Component:extend(name): React_Component<any, any>
       instance.setState = (nil :: any)
     end
 
-    return instance
+    return (instance :: any) :: React_Component<P, any>
   end
 
 

@@ -86,10 +86,11 @@ return function()
 				Scheduler.unstable_yieldValue("Foo")
 
 				return {
+					-- ROBLOX FIXME Luau: Luau needs to allow mixed arrays and/or normalize these two things to a common ancestor
 					React.createElement(Bar, {
 						key = "a",
 						isBar = true,
-					}),
+					}) :: any,
 					React.createElement(Bar, {
 						key = "b",
 						isBar = true,
@@ -98,7 +99,7 @@ return function()
 			end
 
 			ReactNoop.render(React.createElement(Foo), function()
-				return Scheduler.unstable_yieldValue("callback")
+				Scheduler.unstable_yieldValue("callback")
 			end)
 
 			-- Do one step of work.

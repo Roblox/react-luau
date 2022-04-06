@@ -1,2 +1,2 @@
--- deviation: simulates `index.js` and exports ReactNoop's public interface
+--!strict
 return require(script.ReactNoop)

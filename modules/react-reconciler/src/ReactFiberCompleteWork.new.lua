@@ -249,7 +249,8 @@ if supportsMutation then
         end
         node = node.return_
       end
-      node.sibling.return_ = node.return_
+      -- ROBLOX FIXME Luau: Luau doesn't understand loop predicates above results in node.sibling ~= nil
+      (node.sibling :: Fiber).return_ = node.return_
       node = node.sibling
     end
   end

@@ -123,7 +123,8 @@ return function()
 			end)
 			-- ReactErrorUtils2 should catch the error
 			table.insert(ops, ReactErrorUtils2.hasCaughtError())
-			table.insert(ops, ReactErrorUtils2.clearCaughtError().message)
+			-- ROBLOX TODO: this is a missing assert/cast in upstream
+			table.insert(ops, (ReactErrorUtils2.clearCaughtError() :: any).message)
 		end, nil)
 
 		-- ReactErrorUtils1 should not catch the error

@@ -15,13 +15,13 @@ local ReactSymbols = require(Packages.Shared).ReactSymbols
 local ReactTypes = require(Packages.Shared)
 type React_Node = ReactTypes.React_Node
 type React_Ref<ElementType> = ReactTypes.React_Ref<ElementType>
-type React_Component<Config, Instance> = ReactTypes.React_Component<Config, Instance>
+type React_AbstractComponent<Config, Instance> = ReactTypes.React_AbstractComponent<Config, Instance>
 local REACT_FORWARD_REF_TYPE = ReactSymbols.REACT_FORWARD_REF_TYPE
 local REACT_MEMO_TYPE = ReactSymbols.REACT_MEMO_TYPE
 
 local exports = {}
 -- ROBLOX TODO? should return Component's ELementType be REACT_FORWARD_REF_TYPE? probably, right?
-exports.forwardRef = function <Props, ElementType>(render: (props: Props, ref: React_Ref<ElementType>) -> React_Node): React_Component<Props, ElementType>
+exports.forwardRef = function <Props, ElementType>(render: (props: Props, ref: React_Ref<ElementType>) -> React_Node): React_AbstractComponent<Props, ElementType>
   if _G.__DEV__ then
     -- ROBLOX deviation START: Lua functions can't have properties given a table (which we can index to see if it's the Memo type)
     if typeof(render :: any) == "table" and (render :: any)["$$typeof"] == REACT_MEMO_TYPE then
@@ -77,7 +77,7 @@ exports.forwardRef = function <Props, ElementType>(render: (props: Props, ref: R
         if key == "displayName" then
           return ownName
         end
-        return nil
+        return rawget(self, key)
       end,
       __newindex = function(self, key, value)
         if key == "displayName" then
@@ -93,7 +93,7 @@ exports.forwardRef = function <Props, ElementType>(render: (props: Props, ref: R
     })
   end
   -- ROBLOX FIXME Luau: making us explicitly add nilable (optional) fields: because the former is missing fields 'forceUpdate', 'getChildContext', 'props', 'setState', and 'state
-  return (elementType :: any) :: React_Component<Props, ElementType>
+  return (elementType :: any) :: React_AbstractComponent<Props, ElementType>
 end
 
 return exports

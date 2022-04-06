@@ -1,4 +1,5 @@
 -- Upstream: https://github.com/facebook/react/blob/16654436039dd8f16a63928e71081c7745872e8f/packages/react-test-renderer/src/__tests__/ReactTestRendererTraversal-test.js
+--!strict
 -- /**
 --  * Copyright (c) Facebook, Inc. and its affiliates.
 --  *
@@ -9,7 +10,6 @@
 --  * @jest-environment node
 --  */
 
--- !strict
 
 local Packages = script.Parent.Parent.Parent
 local RobloxJest = require(Packages.Dev.RobloxJest)
@@ -38,7 +38,7 @@ return function()
 		-- ROBLOX deviation: predeclare to avoid changing upstream declaration order
 		local ExampleFn
 		local ExampleNull
-		local ExampleSpread
+		local ExampleSpread = React.Component:extend("ExampleSpread")
 		local ExampleForwardRef
 
 		local Example = React.Component:extend("Example")
@@ -114,8 +114,6 @@ return function()
 				)
 			)
 		end
-
-		ExampleSpread = React.Component:extend("ExampleSpread")
 
 		function ExampleSpread:render()
 			return React.createElement(View, self.props)
