@@ -183,7 +183,75 @@ end
 Refer to documentation on [React JS' `act` function](https://reactjs.org/docs/test-utils.html#act) for more details and examples.
 
 ## Updating Conventions and APIs
-*Under construction 🔨*
+### When to use RoactCompat vs. React/ReactRoblox
+* Almost all legacy Roact code can be patched to Roact 17 using the RoactCompat library. However, while RoactCompat is backwards compatible with with Legacy Roact, it does not export new Roact 17 features like hooks.
+* When writing code exclusively for Roact 17, you should access the primary APIs of Roact 17 through the `React` and `ReactRoblox` APIs, instead of through `RoactCompat`
+* `React` exposes all of the Legacy Roact APIs (`createElement`, `createContext`, `Fragment`, `Children`, etc.), and some new ones (`useState`, `useRef`, `memo`, `cloneElement`, etc.).
+* `ReactRoblox` exposes APIs to handle `Change` and `Event` callbacks for React components, replacing RoactCompat's `Roact.Change.<property>` and `Roact.Event.<event>` API.
+* Try to avoid using `RoactCompat` and `React`/`ReactRoblox` in the same file. If you are adding new Roact features to code that uses `RoactCompat` syntax, you should take the following steps:
+    1. Replace the `Roact` import with the `React` import.
+	2. Swap all uses of `Roact` with `React`.
+	3. If there are uses of `Roact.Change` or `Roact.Event`, import `ReactRoblox` and replace the uses with `ReactRoblox.Change` and `ReactRoblox.Event`, respectively.
+	4. Begin adopting new features as needed.
+
+
+#### RoactCompat Code:
+```lua
+local Roact = require(Packages.Roact)
+
+function GenericComponent(props)
+    return Roact.createElement("TextButton", {
+        BackgroundColor3 = props.color,
+	[Roact.Event.Activated] = props.onClickCallback,
+    })
+end
+```
+
+#### React/ReactRoblox Code:
+```lua
+local React = require(Packages.React)
+local ReactRoblox = require(Packages.ReactRoblox)
+
+function GenericComponent(props)
+    -- use React.createElement
+    return React.createElement("TextButton", {
+        BackgroundColor3 = props.color,
+	-- Use ReactRoblox for event callbacks
+	[ReactRoblox.Event.Activated] = props.onClickCallback,
+    })
+end
+```
+
+!!! info
+
+	Right now, the ReactRoblox package owns the `Event` and `Change` logic. This is because these features are specific to the Roblox engine and its event semantics. In the future, we'd like to explore the idea of hoisting them into the React package, so that they can be generalized for the ReactTestRenderer to improve compatibility and remove renderer-specific abstractions from component definitions.
+
+### Using Hooks
+Be sure to use the `React` and `ReactRoblox` API when writing code with hooks. `RoactCompat` **does not** export the hooks API.
+
+#### Hooks Example
+```lua
+local React = require(Packages.React)
+local ReactRoblox = require(Packages.ReactRoblox)
+
+function ClickerComponent(props)
+    -- useState is exported through React
+    local count, setCount = React.useState(0)
+    local function onClick()
+        setCount(function(oldCount)
+             return oldCount + 1
+        end)
+    end
+    -- use React.createElement
+    return React.createElement("TextButton", {
+        Text = tostring(count),
+	-- Use ReactRoblox
+        [ReactRoblox.Event.Activated] = onClick,
+    })
+end
+```
+
+## Under construction 🔨
 
 While not necessary to function properly, some additional changes can be made to adopt the naming conventions and API shape of React JS.
 
