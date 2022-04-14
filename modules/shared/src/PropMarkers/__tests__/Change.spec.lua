@@ -1,8 +1,8 @@
 return function()
-	local Packages = script.Parent.Parent.Parent.Parent.Parent.Parent
+	local Packages = script.Parent.Parent.Parent.Parent
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
-	local Type = require(script.Parent.Parent.Parent.Type)
 
+	local Type = require(script.Parent.Parent.Parent["Type.roblox"])
 	local Change = require(script.Parent.Parent.Change)
 
 	it("should yield change listener objects when indexed", function()

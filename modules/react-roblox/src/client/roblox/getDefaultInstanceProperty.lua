@@ -8,7 +8,8 @@
 	of an object without constructing an instance of it.
 ]]
 
-local Symbol = require(script.Parent.Symbol)
+local Packages = script.Parent.Parent.Parent.Parent
+local Symbol = require(Packages.Shared).Symbol
 
 local Nil = Symbol.named("Nil")
 local _cachedPropertyValues = {}

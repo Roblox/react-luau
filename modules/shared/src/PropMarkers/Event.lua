@@ -13,7 +13,7 @@
 		})
 ]]
 
-local Type = require(script.Parent.Parent.Type)
+local Type = require(script.Parent.Parent["Type.roblox"])
 
 local Event = {}
 

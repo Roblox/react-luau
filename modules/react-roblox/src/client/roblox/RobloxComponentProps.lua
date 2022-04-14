@@ -12,11 +12,11 @@ local React = require(Packages.React)
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 local SingleEventManager = require(script.Parent.SingleEventManager)
 type EventManager = SingleEventManager.EventManager
-local Type = require(script.Parent.Type)
+local Type = require(Packages.Shared).Type
 local getDefaultInstanceProperty = require(script.Parent.getDefaultInstanceProperty)
 local ReactRobloxHostTypes = require(script.Parent.Parent["ReactRobloxHostTypes.roblox"])
 type HostInstance = ReactRobloxHostTypes.HostInstance;
-local Tag = require(script.Parent.PropMarkers.Tag)
+local Tag = require(Packages.React).Tag
 
 -- ROBLOX deviation: Essentially a placeholder for dom-specific logic, taking the place
 -- of ReactDOMComponent. Most of the logic will differ pretty dramatically

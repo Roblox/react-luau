@@ -1,8 +1,8 @@
 return function()
-	local Packages = script.Parent.Parent.Parent.Parent.Parent.Parent
+	local Packages = script.Parent.Parent.Parent.Parent
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
-	local Type = require(script.Parent.Parent.Parent.Type)
 
+	local Type = require(script.Parent.Parent.Parent["Type.roblox"])
 	local Event = require(script.Parent.Parent.Event)
 
 	it("should yield event objects when indexed", function()

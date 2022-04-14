@@ -9,7 +9,7 @@
 		}
 ]]
 
-local Symbol = require(script.Parent.Symbol)
+local Symbol = require(script.Parent["Symbol.roblox"])
 
 local Type = newproxy(true)
 

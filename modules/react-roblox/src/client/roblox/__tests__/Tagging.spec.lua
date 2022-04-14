@@ -16,7 +16,7 @@ return function()
 		React = require(Packages.React)
 		ReactRoblox = require(Packages.ReactRoblox)
 		Scheduler = require(Packages.Scheduler)
-		Tag = require(script.Parent.Parent.PropMarkers.Tag)
+		Tag = require(Packages.React).Tag
 	end)
 
 	-- ROBLOX TODO: Promote tag support to non-dev
@@ -270,7 +270,7 @@ return function()
 				jestExpect(tag2RemovedMock).toHaveBeenCalledTimes(1)
 				jestExpect(CollectionService:GetTagged("tag1")).toEqual({})
 				jestExpect(CollectionService:GetTagged("tag2")).toEqual({})
-			end)	
+			end)
 		end)
 
 		it("should warn when assigning tags with an incorrect type", function()

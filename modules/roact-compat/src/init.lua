@@ -3,6 +3,7 @@ local Packages = script.Parent
 
 local React = require(Packages.React)
 local ReactRoblox = require(Packages.ReactRoblox)
+local Shared = require(Packages.Shared)
 
 local RoactTree = require(script.RoactTree)
 
@@ -40,8 +41,8 @@ return {
 	Children = "children",
 
 	-- Event/Change keys for Roact-specific event subscription behavior
-	Event = ReactRoblox.Event,
-	Change = ReactRoblox.Change,
+	Event = Shared.Event,
+	Change = Shared.Change,
 
 	-- Binding interface entry-point for Roact-specific 'bindings' feature
 	createBinding = React.createBinding,

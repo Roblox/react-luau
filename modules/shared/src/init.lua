@@ -101,4 +101,13 @@ return {
 	shallowEqual = require(script.shallowEqual),
 	UninitializedState = require(script["UninitializedState.roblox"]),
 	ReactTypes = ReactTypes,
+
+	-- ROBLOX DEVIATION: export Symbol and Type from Shared
+	Symbol = require(script["Symbol.roblox"]),
+	Type = require(script["Type.roblox"]),
+
+	-- ROBLOX DEVIATION: export propmarkers from Shared
+	Change = require(script.PropMarkers.Change),
+	Event = require(script.PropMarkers.Event),
+	Tag = require(script.PropMarkers.Tag),
 }

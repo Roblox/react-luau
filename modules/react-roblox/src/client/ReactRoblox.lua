@@ -79,9 +79,9 @@ local getClosestInstanceFromNode = ReactRobloxComponentTree.getClosestInstanceFr
 -- local enqueueStateRestore = ReactDOMControlledComponent.enqueueStateRestore
 -- local restoreStateIfNeeded = ReactDOMControlledComponent.restoreStateIfNeeded
 
-local Event = require(script.Parent.roblox.PropMarkers.Event)
-local Change = require(script.Parent.roblox.PropMarkers.Change)
-local Tag = require(script.Parent.roblox.PropMarkers.Tag)
+local Event = require(Packages.Shared).Event
+local Change = require(Packages.Shared).Change
+local Tag = require(Packages.Shared).Tag
 
 -- setAttemptSynchronousHydration(attemptSynchronousHydration)
 -- setAttemptUserBlockingHydration(attemptUserBlockingHydration)

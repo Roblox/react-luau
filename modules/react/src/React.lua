@@ -114,4 +114,9 @@ return {
 	-- ROBLOX FIXME: These aren't supposed to be exposed, but they're needed by
 	-- the renderer in order to update properly
 	__subscribeToBinding = ReactBinding.subscribe,
+
+	-- ROBLOX DEVIATION: export Change, Event, and Tag from React
+	Event = require(Packages.Shared).Event,
+	Change = require(Packages.Shared).Change,
+	Tag = require(Packages.Shared).Tag,
 }
