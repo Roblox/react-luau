@@ -109,15 +109,23 @@ cd roact-alignment
 roblox-cli analyze default.project.json
 ```
 
-Foreman is an un-package manager that retrieves code directly from GitHub repositories. We'll use this to get a Lua package manager and other utilities. The Foreman packages are listed in `foreman.toml`. Foreman uses Rust, so you'll have to install Rust first.
+Foreman is an un-package manager that retrieves code directly from GitHub repositories. We'll use this to get a Lua package manager and other utilities. The Foreman packages are listed in `foreman.toml`.
+
+You can install Foreman from a binary by downloading the appropriate version for your platform from [the GitHub releases page](https://github.com/roblox/foreman/releases/latest).
+
+Alternatively, since Foreman uses Rust, you can install Rust and use cargo to install it:
 
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 export PATH=$PATH:$HOME/.cargo/bin
 cargo install foreman
+```
+
+Once Foreman is installed, provide an API token so that it can access private tools like [rotriever](https://github.com/roblox/rotriever) and make sure that it's added to your path.
+```
 foreman github-auth <your GitHub API token that you used for npm login above>
 foreman install
-export PATH=$PATH:~/.foreman/bin/ # you might want to add this to your bash profile file too
+export PATH=~/.foreman/bin/:$PATH # you might want to add this to your bash profile file too
 ```
 
 Now you can run the tests, edit code, and contribute! Next we need to install our Lua package dependencies. We do this with a tool called Rotriever, which Foreman just installed for us. The package dependencies are listed in `rotriever.toml`.
@@ -126,16 +134,10 @@ Now you can run the tests, edit code, and contribute! Next we need to install ou
 rotrieve install
 ```
 
-Next we're going to use Rojo (installed by Foreman above) to compile and package our Lua code into a format that Roblox understands.
+Now we can use `roblox-cli` to run our tests. We need to specify some additional arguments to make sure that the latest luau language features are enabled as well as `debug.loadmodule`, which allows us to reset module state between tests.
 
 ```
-rojo build tests.project.json  --output model.rbxmx
-```
-
-Now we can use `roblox-cli` to run our tests. We specify the Rojo build output file and our test runner file.
-
-```
-roblox-cli run --load.model model.rbxmx --run bin/spec.lua
+roblox-cli run --load.model tests.project.json --run bin/spec.lua --fastFlags.overrides EnableLoadModule=true --fastFlags.allOnLuau
 ```
 
 ### Common Issues
@@ -169,6 +171,8 @@ To avoid this in the future, be sure that your foreman binary path is *before* t
 ### How to debug local tests
 
 First, install the roblox-lrdb debugger extension for VSCode (following [the installation instructions here](https://github.com/Roblox/vscode-rbx-lrdb)).
+
+Note: As specified in the lrdb installation instructions, you _must_ be connected to the VPN in order for the Internal Tool Provider to be able to download what it needs.
 
 In order for breakpoints to work correctly, you'll need to disable the module reloading behavior that relies on `debug.loadmodule` by providing the `__NO_LOADMODULE__` global. To do so, create a `launch.json` file with the following contents:
 ```
