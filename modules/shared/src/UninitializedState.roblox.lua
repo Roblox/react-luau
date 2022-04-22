@@ -9,7 +9,7 @@ setmetatable(UninitializedState, {
 	__index = function(table, key)
 		if _G.__DEV__ then
 			console.warn(
-				"Attempted to access unitialized state. Use setState to initialize state"
+				"Attempted to access uninitialized state. Use setState to initialize state"
 			)
 		end
 		return nil

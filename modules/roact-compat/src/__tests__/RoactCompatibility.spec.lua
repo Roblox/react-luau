@@ -167,8 +167,8 @@ return function()
 		end)
 	end)
 
-	describe("handles unitialized state", function()
-		it("errors if unitialized state is assigned", function()
+	describe("handles uninitialized state", function()
+		it("errors if uninitialized state is assigned", function()
 			local ReactRoblox = require(Packages.ReactRoblox)
 			local Scheduler = require(Packages.Dev.Scheduler)
 			local parent = Instance.new("Folder")
@@ -189,7 +189,7 @@ return function()
 			)
 		end)
 
-		it("warns if unitialized state is accessed", function()
+		it("warns if uninitialized state is accessed", function()
 			local ReactRoblox = require(Packages.ReactRoblox)
 			local parent = Instance.new("Folder")
 			local Scheduler = require(Packages.Dev.Scheduler)
@@ -210,7 +210,7 @@ return function()
 				root:render(componentInstance)
 				Scheduler.unstable_flushAllWithoutAsserting()
 			end).toWarnDev(
-				"Attempted to access unitialized state. Use setState to initialize state"
+				"Attempted to access uninitialized state. Use setState to initialize state"
 			)
 
 			jestExpect(capturedBool).toBe(true)

@@ -351,7 +351,7 @@ return function()
                     ReactNoop.render(React.createElement(MyComponent))
                 end)
             end).toWarnDev(
-                "Attempted to access unitialized state. Use setState to initialize state"
+                "Attempted to access uninitialized state. Use setState to initialize state"
             )
         end)
 
