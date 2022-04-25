@@ -18,6 +18,8 @@ local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
 local setTimeout = LuauPolyfill.setTimeout
 local ReactTypes = require(Packages.Shared)
+local getInstancesForTag =
+	require(script.Parent.roblox.RobloxComponentProps).getInstancesForTag
 type ReactElement<P, T> = ReactTypes.ReactElement<P, T>
 
 local ReactInternalTypes = require(Packages.ReactReconciler)
@@ -100,6 +102,8 @@ type ReactTestRendererNode = ReactTestRendererJSON | string
 --     ...
 -- }>
 type FindOptions = any
+
+type Instance = ReactTestHostConfig.Instance
 
 export type Predicate = (Object) -> boolean?
 
@@ -541,8 +545,11 @@ function ReactTestInstance:findAllByProps(
 end
 
 -- ROBLOX deviation START: the first argument gets an explicit nil in many tests
-local function create(element: ReactElement<any, any> | nil, options: TestRendererOptions?)
--- ROBLOX deviation END
+local function create(
+	element: ReactElement<any, any> | nil,
+	options: TestRendererOptions?
+)
+	-- ROBLOX deviation END
 	local createNodeMock = defaultTestOptions.createNodeMock
 	local isConcurrent = false
 
@@ -646,6 +653,13 @@ local function create(element: ReactElement<any, any> | nil, options: TestRender
 		end,
 		unstable_flushSync = function(fn)
 			return flushSync(fn)
+		end,
+		getInstancesForTag = function(tag: string): Array<Instance>
+			if root == nil or root.containerInfo == nil then
+				return {}
+			end
+
+			return getInstancesForTag(root.containerInfo, tag)
 		end,
 	}
 

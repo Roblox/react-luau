@@ -31,6 +31,8 @@ type ReactFundamentalComponentInstance<T, U> =
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 local REACT_OPAQUE_ID_TYPE = ReactSymbols.REACT_OPAQUE_ID_TYPE
 
+local RobloxComponentProps = require(script.Parent.roblox.RobloxComponentProps)
+
 type Array<T> = { [number]: T }
 type Object = { [string]: any }
 type Function = (any) -> any
@@ -145,6 +147,7 @@ end
 
 exports.removeChild =
 	function(parentInstance: Instance | Container, child: Instance | TextInstance)
+		RobloxComponentProps.removeTags(child)
 		local index = Array.indexOf(parentInstance.children, child)
 		Array.splice(parentInstance.children, index, 1)
 	end
@@ -203,11 +206,12 @@ exports.appendInitialChild =
 
 exports.finalizeInitialChildren = function(
 	testElement: Instance,
-	type: string,
+	type_: string,
 	props: Props,
 	rootContainerInstance: Container,
 	hostContext: Object
 ): boolean
+	RobloxComponentProps.setInitialTags(testElement, type_, props, rootContainerInstance)
 	return false
 end
 
@@ -262,6 +266,7 @@ exports.commitUpdate = function(
 )
 	instance.type = type
 	instance.props = newProps
+	RobloxComponentProps.updateTags(instance, newProps, oldProps)
 end
 
 exports.commitMount =
