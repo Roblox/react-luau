@@ -24,6 +24,9 @@ local Object = LuauPolyfill.Object
 local inspect = LuauPolyfill.util.inspect
 local Cryo = require(Packages.Cryo)
 
+-- ROBLOX: use Bindings to implement useRef
+local createRef = require(Packages.React).createRef
+
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 
@@ -1176,12 +1179,14 @@ end
 -- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
 function mountRef<T>(initialValue: T): {current: T | nil}
   local hook = mountWorkInProgressHook()
-  local ref = {current = initialValue}
+  -- ROBLOX DEVIATION: Implement useRef with bindings
+  local ref : any = createRef()
+  ref.current = initialValue
   -- if (__DEV__) then
   --   Object.seal(ref)
   -- end
   hook.memoizedState = ref
-  return ref
+  return ref :: {current: T | nil}
 end
 
 -- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
