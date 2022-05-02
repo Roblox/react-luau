@@ -94,7 +94,8 @@ end
 -- The same thing applies to Suspense boundaries.
 -- ROBLOX TODO: This function is untested and may not work!
 exports.getClosestInstanceFromNode = function(targetNode: Instance): Fiber?
-	local targetInst = (targetNode :: any)[internalInstanceKey]
+	-- ROBLOX deviation: Use internal maps since we can't set properties on Containers
+	local targetInst = instanceToFiber[targetNode]
 	if targetInst then
 		-- Don't return HostRoot or SuspenseComponent here.
 		return targetInst
@@ -111,8 +112,7 @@ exports.getClosestInstanceFromNode = function(targetNode: Instance): Fiber?
 		-- itself because the fibers are conceptually between the container
 		-- node and the first child. It isn't surrounding the container node.
 		-- If it's not a container, we check if it's an instance.
-		targetInst = (parentNode :: any)[internalContainerInstanceKey]
-			or (parentNode :: any)[internalInstanceKey]
+		targetInst = instanceToFiber[parentNode]
 		if targetInst then
 			-- Since this wasn't the direct target of the event, we might have
 			-- stepped past dehydrated DOM nodes to get here. However they could
@@ -151,7 +151,7 @@ exports.getClosestInstanceFromNode = function(targetNode: Instance): Fiber?
 					-- have had an internalInstanceKey on it.
 					-- Let's get the fiber associated with the SuspenseComponent
 					-- as the deepest instance.
-					local targetSuspenseInst = suspenseInstance[internalInstanceKey]
+					local targetSuspenseInst = instanceToFiber[suspenseInstance]
 					if targetSuspenseInst then
 						return targetSuspenseInst
 					end
