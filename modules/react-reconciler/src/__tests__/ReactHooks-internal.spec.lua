@@ -817,8 +817,7 @@ return function()
 			end).toErrorDev({
 				-- ROBLOX deviation: Lua says `table` instead of `object`
 				"Expected useImperativeHandle() second argument to be a function " .. "that creates a handle. Instead received: table.",
-				-- ROBLOX FIXME? we seem to require withoutStack=true, but upstream doesn't
-			}, { withoutStack = true })
+			})
 		end)
 		-- 	it("works with ReactDOMServer calls inside a component", function()
 		-- 		local useState = React.useState

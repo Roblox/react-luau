@@ -15,8 +15,17 @@ type Function = (...any) -> ...any
 local ReactElementType = require(script.Parent.ReactElementType)
 type Source = ReactElementType.Source
 
-local ReactFeatureFlags = require(script.Parent.ReactFeatureFlags)
-local enableComponentStackLocations = ReactFeatureFlags.enableComponentStackLocations
+-- ROBLOX deviation: Needed to properly type class components
+local flowtypes = require(script.Parent["flowtypes.roblox"])
+type React_StatelessFunctionalComponent<P> = flowtypes.React_StatelessFunctionalComponent<
+	P
+>
+type React_ComponentType<P> = flowtypes.React_ComponentType<P>
+type ReactComponent<P> = React_StatelessFunctionalComponent<P> | React_ComponentType<P>
+
+-- ROBLOX DEVIATION: Ignore enableComponentStackLocations
+-- local ReactFeatureFlags = require(script.Parent.ReactFeatureFlags)
+-- local enableComponentStackLocations = ReactFeatureFlags.enableComponentStackLocations
 
 local ReactSymbols = require(script.Parent.ReactSymbols)
 local REACT_SUSPENSE_TYPE = ReactSymbols.REACT_SUSPENSE_TYPE
@@ -33,44 +42,66 @@ local reenableLogs = ConsolePatchingDev.reenableLogs
 local ReactSharedInternals = require(script.Parent.ReactSharedInternals)
 local ReactCurrentDispatcher = ReactSharedInternals.ReactCurrentDispatcher
 
--- deviation: the prefix is constant because the console prints the stack frames
--- the same way on every platform.
+-- ROBLOX deviation: the prefix is constant because the console prints the stack
+-- frames the same way on every platform.
 local prefix = "    in "
 
--- deviation: declare these now because of scoping differences between in Lua and JS
+-- ROBLOX deviation: declare these now because of scoping differences between in
+-- Lua and JS
 local describeComponentFrame
 local describeFunctionComponentFrame
+
+-- ROBLOX deviation: since owner could be a function or a class component, we
+-- need to do additional handling to get its name. It's easier to make this a
+-- reusable function
+local function describeOwner(owner: nil | ReactComponent<any>): string?
+	if typeof(owner) == "function" then
+		return debug.info(owner :: (any) -> any, "n")
+	elseif typeof(owner) == "table" then
+		return tostring(owner)
+	end
+	return nil
+end
 
 local function describeBuiltInComponentFrame(
 	name: string,
 	source: Source | nil,
-	_ownerFn: nil | (any) -> any
+	-- ROBLOX deviation: owner could be a class component
+	owner: nil | ReactComponent<any>
 ): string
-	if enableComponentStackLocations then
-		-- deviation: the prefix is constant in our implementation
-		-- if prefix == nil then
-		-- 	-- Extract the VM specific prefix used by each line.
-		-- 	local _, x = pcall(error, debug.traceback())
+	-- ROBLOX deviation START: for built-in components, we can provide the full
+	-- description regardless of `enableStackLocations` since we don't actually
+	-- need to do any callstack trickery to get it
 
-		-- 	local match = x.stack.trim().match("\n00:00:00.000 - ")
-		-- 	if match then
-		-- 		prefix = match[1]
-		-- 	else
-		-- 		prefix = ''
-		-- 	end
-		-- end
-		-- We use the prefix to ensure our stacks line up with native stack frames.
-		return "\n" .. prefix .. name
-	else
-		local ownerName = nil
+	-- if enableComponentStackLocations then
+	-- 	if prefix == nil then
+	-- 		-- Extract the VM specific prefix used by each line.
+	-- 		local _, x = pcall(error, debug.traceback())
 
-		-- deviation: functions cannot be indexed in Lua
-		-- if _G.__DEV__ and ownerFn then
-		-- 	ownerName = ownerFn.displayName or ownerFn.name or nil
-		-- end
+	-- 		local match = x.stack.trim().match("\n00:00:00.000 - ")
+	-- 		if match then
+	-- 			prefix = match[1]
+	-- 		else
+	-- 			prefix = ''
+	-- 		end
+	-- 	end
+	-- 	-- We use the prefix to ensure our stacks line up with native stack frames.
+	-- 	return "\n" .. prefix .. name
+	-- else
+	-- 	local ownerName = nil
+	-- 	if _G.__DEV__ and owner then
+	-- 		ownerName = describeOwner(owner)
+	-- 	end
 
-		return describeComponentFrame(name, source, ownerName)
+	-- 	return describeComponentFrame(name, source, ownerName)
+	-- end
+	local ownerName = nil
+	if _G.__DEV__ and owner then
+		ownerName = describeOwner(owner)
 	end
+
+	return describeComponentFrame(name, source, ownerName)
+	-- ROBLOX deviation END
 end
 
 local reentry = false
@@ -80,7 +111,7 @@ if _G.__DEV__ then
 end
 
 local function describeNativeComponentFrame(
-	fn: nil | Function | Object, -- ROBLOX TODO: only accept tables with __tostring metamethod overridden
+	fn: nil | ReactComponent<any>, -- ROBLOX TODO: only accept tables with __tostring metamethod overridden
 	construct: boolean
 ): string
 	-- // If something asked for a stack inside a fake render, it should get ignored.
@@ -233,7 +264,7 @@ local function describeNativeComponentFrame(
 	-- ROBLOX deviation: Can't get displayName for functions
 	if typeof(fn) == "function" then
 		-- ROBLOX FIXME: type refinement
-		name = debug.info((fn :: ((any) -> any)), "n")
+		name = debug.info(fn :: ((any) -> any), "n")
 		-- ROBLOX deviation: since fn can be a class, we can get the class name here
 	elseif typeof(fn) == "table" then
 		name = tostring(fn)
@@ -251,13 +282,12 @@ local function describeNativeComponentFrame(
 	return syntheticFrame
 end
 
--- deviation: Lua's patterns work slightly differently than regexes
+-- ROBLOX deviation: Lua's patterns work slightly differently than regexes
 local BEFORE_SLASH_PATTERN = "^(.*)[\\/]"
 
 function describeComponentFrame(
 	name: string | nil,
-	source: any,
-	-- source: Source | nil,
+	source: Source | nil,
 	ownerName: string | nil
 ): string
 	local sourceInfo = ""
@@ -268,7 +298,7 @@ function describeComponentFrame(
 
 		-- // In DEV, include code for a common special case:
 		-- // prefer "folder/index.js" instead of just "index.js".
-		-- deviation: instead of having a special case for 'index.',
+		-- ROBLOX deviation: instead of having a special case for 'index.',
 		-- we use 'init.'
 		if fileName:match("^init%.") then
 			-- deviation: finding matching strings works differently in Lua
@@ -289,42 +319,68 @@ function describeComponentFrame(
 end
 
 local function describeClassComponentFrame(
-	ctor: (any) -> any,
+	-- ROBLOX deviation: React.Component<any>
+	ctor: any,
 	source: nil | Source,
-	ownerFn: nil | (any) -> any
+	-- ROBLOX deviation: this could be a class component OR a function component
+	owner: nil | ReactComponent<any>
 ): string
-	if enableComponentStackLocations then
-		return describeNativeComponentFrame(ctor, true)
-	else
-		return describeFunctionComponentFrame(ctor, source, ownerFn)
+	-- ROBLOX deviation START: In Roact, class components are tables, so we
+	-- jump directly to using the basic component description.
+
+	-- if enableComponentStackLocations then
+	-- 	return describeNativeComponentFrame(componentClass, true)
+	-- else
+	-- 	return describeFunctionComponentFrame(ctor, source, ownerFn);
+	-- end
+	local name = tostring(ctor)
+	local ownerName = nil
+	if _G.__DEV__ and owner then
+		ownerName = describeOwner(owner)
 	end
+	return describeComponentFrame(name, source, ownerName)
+	-- ROBLOX deviation END
 end
 
 function describeFunctionComponentFrame(
 	-- ROBLOX TODO: this annotation is incorrect upstream, we fix it here
 	fn: nil | Function,
 	source: nil | Source,
-	ownerFn: nil | (any) -> any
+	-- ROBLOX deviation: this could be a class component OR a function component
+	ownerFn: nil | ReactComponent<any>
 ): string
-	if enableComponentStackLocations then
-		return describeNativeComponentFrame(fn, false)
-	else
-		if not fn then
-			return ""
-		end
-		-- deviation: Lua functions don't have names
-		local name = nil -- fn.displayName or fn.name or nil
-		local ownerName = nil
-		-- if _G.__DEV__ and ownerFn then
-		-- 	ownerName = ownerFn.displayName or ownerFn.name or nil
-		-- end
-		return describeComponentFrame(name, source, ownerName)
+	-- ROBLOX DEVIATION Jump directly to using basic component description:
+	-- if enableComponentStackLocations then
+	-- 	return describeNativeComponentFrame(fn, false)
+	-- else
+	-- 	if not fn then
+	-- 		return ""
+	-- 	end
+	-- 	-- ROBLOX deviation: use debug.info to discover function names
+	-- 	local name = debug.info(fn :: Function, "n")
+	-- 	local ownerName = nil
+	-- 	if _G.__DEV__ and ownerFn then
+	-- 		-- ROBLOX deviation: owner may be a function or a table
+	-- 		ownerName = describeOwner(ownerFn)
+	-- 	end
+	-- 	return describeComponentFrame(name, source, ownerName)
+	-- end
+	if not fn then
+		return ""
 	end
+	-- ROBLOX deviation: use debug.info to discover function names
+	local name = debug.info(fn :: Function, "n")
+	local ownerName = nil
+	if _G.__DEV__ and ownerFn then
+		-- ROBLOX deviation: owner may be a function or a table
+		ownerName = describeOwner(ownerFn)
+	end
+	return describeComponentFrame(name, source, ownerName)
 end
 
--- deviation: because of deviations in other functions, this function
--- is not needed. If we need to bring it, it should return true if
--- Component is a class component, and false if a function component
+-- ROBLOX deviation: because of deviations in other functions, this function is
+-- not needed. If we need to bring it, it should return true if Component is a
+-- class component, and false if a function component
 -- local function shouldConstruct(Component)
 -- 	local prototype = Component.prototype
 -- 	return not not (prototype and prototype.isReactComponent)
@@ -333,7 +389,8 @@ end
 local function describeUnknownElementTypeFrameInDEV(
 	type: any,
 	source: nil | Source,
-	ownerFn: nil | Function
+	-- ROBLOX deviation: owner could be a class component
+	ownerFn: nil | ReactComponent<any>
 ): string
 	if not _G.__DEV__ then
 		return ""
@@ -342,24 +399,26 @@ local function describeUnknownElementTypeFrameInDEV(
 		return ""
 	end
 
-	-- deviation: in JavaScript, if `type` contains a class, typeof will return
-	-- "function". We need to specifically check for the class.
+	-- ROBLOX deviation: in JavaScript, if `type` contains a class, typeof will
+	-- return "function". We need to specifically check for the class.
 	if typeof(type) == "table" and typeof(type.__ctor) == "function" then
-		if enableComponentStackLocations then
-			return describeNativeComponentFrame(type, true)
-		else
-			return describeFunctionComponentFrame(type, source, ownerFn)
-		end
+		-- ROBLOX deviation: since Roact class components are tables, we can't
+		-- count on describeClassComponent being a thin wrapper for
+		-- describeFunctionComponent like upstream does implicitly
+		return describeClassComponentFrame(type, source, ownerFn)
 	end
 
 	if typeof(type) == "function" then
-		if enableComponentStackLocations then
-			-- deviation: since functions and classes have different types in Lua,
-			-- we already know that shouldConstruct would return false
-			return describeNativeComponentFrame(type, false)
-		else
-			return describeFunctionComponentFrame(type, source, ownerFn)
-		end
+		-- ROBLOX DEVIATION: ignore enableComponentStackLocations
+		-- if enableComponentStackLocations then
+		-- 	-- ROBLOX deviation: since functions and classes have different
+		-- 	-- types in Lua, we already know that shouldConstruct would return
+		-- 	-- false
+		-- 	return describeNativeComponentFrame(type, false)
+		-- else
+		-- 	return describeFunctionComponentFrame(type, source, ownerFn)
+		-- end
+		return describeFunctionComponentFrame(type, source, ownerFn)
 	end
 
 	if typeof(type) == "string" then

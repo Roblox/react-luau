@@ -189,17 +189,92 @@ return function()
 
 				assertStringContains(frame, componentName)
 			end)
-
-			it("does not have the file name", function()
-				local componentName = "foo"
-				local fileName = "file name"
-				local frame = describeBuiltInComponentFrame(componentName, {
-					fileName = fileName,
-					lineNumber = 7,
-				})
-
-				jestExpect(frame:find(fileName)).never.toBeDefined()
-			end)
 		end)
+	end)
+
+	describe("DEV warning stack trace", function()
+		local React
+		local describeUnknownElementTypeFrameInDev
+
+		beforeEach(function()
+			RobloxJest.resetModules()
+			React = require(Packages.Dev.React)
+			describeUnknownElementTypeFrameInDev = require(
+				script.Parent.Parent.ReactComponentStackFrame
+			).describeUnknownElementTypeFrameInDEV
+		end)
+
+		it(
+			"should accept class component to describeUnknownElementTypeFrameInDev",
+			function()
+				local TestDevStackComponent = React.Component:extend(
+					"TestDevStackComponent"
+				)
+
+				function TestDevStackComponent:render()
+					return if self.state.isFrame
+						then React.createElement("Frame")
+						else React.createElement("TextLabel", {
+							Text = "Hello!",
+						})
+				end
+
+				local source = {
+					fileName = "TestDev-file.lua",
+					lineNumber = 20,
+				}
+
+				local function DevParent()
+					return React.createElement("Frame")
+				end
+
+				local description = describeUnknownElementTypeFrameInDev(
+					React.createElement(TestDevStackComponent).type,
+					source,
+					DevParent
+				)
+
+				if _G.__DEV__ then
+					jestExpect(description).toEqual(
+						"\n    in TestDevStackComponent (at TestDev-file.lua:20)"
+					)
+				else
+					jestExpect(description).toEqual("")
+				end
+			end
+		)
+
+		it(
+			"should accept function component in describeUnknownElementTypeFrameInDev",
+			function()
+				local function DevStackFunctionComponent()
+					error("Thrown Error")
+					return React.createElement("Frame")
+				end
+
+				local source = {
+					fileName = "TestDevFunction-file.lua",
+					lineNumber = 15,
+				}
+
+				local function DevParent()
+					return React.createElement("Frame")
+				end
+
+				local description = describeUnknownElementTypeFrameInDev(
+					React.createElement(DevStackFunctionComponent).type,
+					source,
+					DevParent
+				)
+
+				if _G.__DEV__ then
+					jestExpect(description).toEqual(
+						"\n    in DevStackFunctionComponent (at TestDevFunction-file.lua:15)"
+					)
+				else
+					jestExpect(description).toEqual("")
+				end
+			end
+		)
 	end)
 end

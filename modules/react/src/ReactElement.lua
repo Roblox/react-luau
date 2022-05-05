@@ -5,7 +5,7 @@
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
- ]]
+]]
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
@@ -237,10 +237,14 @@ local function ReactElement<P, T>(type_: T, key, ref, self, source: Source?, own
 			end
 		})
 		-- self and source are DEV only properties.
-		element._self = self
-		-- Two elements created in two different places should be considered
-		-- equal for testing purposes and therefore we hide it from enumeration.
-		element._source = source
+		setmetatable(element, {
+			__index = {
+				_self = self,
+				-- Two elements created in two different places should be considered
+				-- equal for testing purposes and therefore we hide it from enumeration.
+				_source = source,
+			}
+		})
 	end
 
 	-- ROBLOX FIXME Luau: this cast is needed until normalization lands
@@ -487,7 +491,7 @@ local function createElement<P, T>(
 
 			-- ROBLOX deviation START: Lua can't store fields like displayName on functions
 			-- ROBLOX FIXME Luau: should know this can be a table due to type_ intersection with React_StatelessFunctionalComponent<>. needs normalization?
-				if typeof(type_ :: any) == "function" then
+			if typeof(type_ :: any) == "function" then
 				-- displayName = (type_.displayName or type_.name) or "Unknown"
 				displayName = debug.info(type_ :: T & React_StatelessFunctionalComponent<P>, "n") or "<function>"
 			elseif typeof(type_ :: any) == "table" then
@@ -506,6 +510,17 @@ local function createElement<P, T>(
 				defineRefPropWarningGetter(props, displayName)
 			end
 		end
+
+		-- ROBLOX deviation START: In upstream, JSX transformation is what
+		-- produces the `__source` field, so we'll just simulate it here for now
+		if source == nil then
+			-- go up one more because of ReactElementValidator indirection
+			source = {
+				fileName = debug.info(3, "s"),
+				lineNumber = debug.info(3, "l"),
+			}
+		end
+		-- ROBLOX deviation END
 	end
 
 	-- ROBLOX FIXME Luau: this cast is needed until normalization lands
