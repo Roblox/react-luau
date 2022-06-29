@@ -2489,7 +2489,7 @@ exports.attach = function(
 			local owner: Fiber? = _debugOwner
 
 			while owner ~= nil do
-				owners.unshift({
+				Array.unshift(owners, {
 					displayName = getDisplayNameForFiber(owner :: Fiber) or "Anonymous",
 					id = getFiberID(getPrimaryFiber(owner :: Fiber)),
 					type = getElementTypeForFiber(owner :: Fiber),
