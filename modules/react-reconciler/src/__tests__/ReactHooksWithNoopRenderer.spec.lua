@@ -457,9 +457,16 @@ return function()
 	describe("updates during the render phase", function()
 		it("restarts the render function and applies the new updates on top", function()
 			local function ScrollView(props)
-				local newRow = props.row
+				-- ROBLOX LUAU FIXME: without annotation, generates the
+				-- following error:
+				-- roact-alignment\modules\react-reconciler\src\__tests__\ReactHooksWithNoopRenderer.spec.lua:473:53-63: (E001) TypeError: Type '{ row: number }' could not be converted into 'any?'
+				-- caused by:
+				--   None of the union options are compatible. For example: Type '{ row: number }' could not be converted into '{+ row: never +}'
+				-- caused by:
+				--   Property 'row' is not compatible. Type 'number' could not be converted into 'never'
+				local newRow: number = props.row
 				local isScrollingDown, setIsScrollingDown = useState(false)
-				local row, setRow = useState(nil)
+				local row, setRow = useState(nil :: number?)
 
 				if row ~= newRow then
 					-- Row changed since last render. Update isScrollingDown.

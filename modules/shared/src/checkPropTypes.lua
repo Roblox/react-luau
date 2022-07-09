@@ -25,6 +25,8 @@ local describeUnknownElementTypeFrameInDEV =
 
 local ReactSharedInternals = require(script.Parent.ReactSharedInternals)
 
+local describeError = require(script.Parent["ErrorHandling.roblox"]).describeError
+
 local ReactDebugCurrentFrame = ReactSharedInternals.ReactDebugCurrentFrame
 
 -- ROBLOX FIXME Luau: doesn't see `if element` as nilable table, so we get TypeError: Type 'any?' could not be converted into '{| _owner: {| type: nil |}, _source: Source?, type: any |}'
@@ -108,7 +110,7 @@ local function checkPropTypes<P>(
 				-- Prop type validation may throw. In case they do, we don't want to
 				-- fail the render phase where it didn't fail before. So we log it.
 				-- After these have been cleaned up, we'll local them throw.
-				local _, result = pcall(function()
+				local _, result = xpcall(function()
 					-- This is intentionally an invariant that gets caught. It's the same
 					-- behavior as without this statement except with a better message.
 					if typeof(propTypes[typeSpecName]) ~= "function" then
@@ -136,7 +138,7 @@ local function checkPropTypes<P>(
 						nil,
 						"SECRET_DO_NOT_PASS_THIS_OR_YOU_WILL_BE_FIRED"
 					)
-				end)
+				end, describeError)
 
 				-- ROBLOX deviation: FIXME: Can we expose something from JSPolyfill that
 				-- will let us verify that this is specifically the Error object

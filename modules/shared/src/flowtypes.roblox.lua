@@ -113,6 +113,8 @@ export type React_Component<Props, State = nil> = {
 			componentStack: string,
 		}
 	) -> any)?,
+	getDerivedStateFromProps: ((props: Props, state: State) -> any)?,
+	getDerivedStateFromError: ((error: Error) -> any)?,
 
 	-- long tail of other stuff not modeled very well
 
@@ -121,6 +123,7 @@ export type React_Component<Props, State = nil> = {
 	-- context: any,
 	getChildContext: (self: React_Component<Props, State>) -> any,
 	-- statics
+	__componentName: string,
 	displayName: string?,
 	childContextTypes: any?,
 	contextTypes: any?,

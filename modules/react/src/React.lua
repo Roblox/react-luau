@@ -119,4 +119,9 @@ return {
 	Event = require(Packages.Shared).Event,
 	Change = require(Packages.Shared).Change,
 	Tag = require(Packages.Shared).Tag,
+
+	-- ROBLOX DEVIATION: used by error reporters to parse caught errors. React
+	-- stringifies at its boundaries to maintain compatibility with
+	-- ScriptContext signals that may ultimately catch them
+	unstable_parseReactError = require(Packages.Shared).parseReactError,
 }

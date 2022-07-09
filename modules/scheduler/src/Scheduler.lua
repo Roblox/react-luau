@@ -10,6 +10,9 @@
 -- ROBLOX deviation: return an initializer function instead of the module itself
 -- for easier dependency injection with unstable_mock
 return function(hostConfig)
+	local Packages = script.Parent.Parent
+	local describeError = require(Packages.Shared).describeError
+
 	local SchedulerFeatureFlags = require(script.Parent.SchedulerFeatureFlags)
 	local enableSchedulerDebugging = SchedulerFeatureFlags.enableSchedulerDebugging
 	local enableProfiling = SchedulerFeatureFlags.enableProfiling
@@ -241,7 +244,7 @@ return function(hostConfig)
 		if not _G.__YOLO__ then
 			-- ROBLOX performance: don't nest try/catch here, Lua can do better, and it eliminated an anon function creation
 			if enableProfiling then
-				ok, result = pcall(workLoop, hasTimeRemaining, initialTime)
+				ok, result = xpcall(workLoop, describeError, hasTimeRemaining, initialTime)
 
 				if not ok then
 					if currentTask ~= nil then
@@ -353,7 +356,7 @@ return function(hostConfig)
 		-- ROBLOX deviation: YOLO flag for disabling pcall
 		local ok, result
 		if not _G.__YOLO__ then
-			ok, result = pcall(eventHandler)
+			ok, result = xpcall(eventHandler, describeError)
 		else
 			ok = true
 			result = eventHandler()
@@ -389,7 +392,7 @@ return function(hostConfig)
 		-- ROBLOX deviation: YOLO flag for disabling pcall
 		local ok, result
 		if not _G.__YOLO__ then
-			ok, result = pcall(eventHandler)
+			ok, result = xpcall(eventHandler, describeError)
 		else
 			ok = true
 			result = eventHandler()
@@ -416,7 +419,7 @@ return function(hostConfig)
 			-- ROBLOX deviation: YOLO flag for disabling pcall
 			local ok, result
 			if not _G.__YOLO__ then
-				ok, result = pcall(callback, ...)
+				ok, result = xpcall(callback, describeError, ...)
 			else
 				ok = true
 				result = callback(...)

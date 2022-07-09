@@ -35,6 +35,8 @@ local ReactTypes = require(script.Parent.ReactTypes)
 type ReactContext<T> = ReactTypes.ReactContext<T>
 type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
 
+local describeError = require(script.Parent["ErrorHandling.roblox"]).describeError
+
 local function getWrappedName(outerType: any, innerType: any, wrapperName: string): string
 	-- deviation: Account for indexing into function
 	local functionName = "<function>"
@@ -118,7 +120,7 @@ local function getComponentName(type: any): string | nil
 			local init = lazyComponent._init
 
 			-- ROBLOX performance: getComponentName won't throw, but init() might, extract it out to eliminate an anon function
-			local ok, result = pcall(init, payload)
+			local ok, result = xpcall(init, describeError, payload)
 			if ok then
 				return getComponentName(result)
 			else

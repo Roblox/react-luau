@@ -14,6 +14,7 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
+type Error = LuauPolyfill.Error
 type Map<K, V> = { [K]: V }
 type Object = { [string]: any }
 type Set<T> = { [T]: boolean }
@@ -31,6 +32,7 @@ local ReactUpdateQueue = require(script.Parent["ReactUpdateQueue.new"])
 type Update<T> = ReactInternalTypes.Update<T>
 
 local ReactTypes = require(Packages.Shared)
+type React_Component<Props, State> = ReactTypes.React_Component<Props, State>
 type Thenable<T> = ReactTypes.Thenable<T>
 type Wakeable = ReactTypes.Wakeable
 
@@ -124,7 +126,7 @@ local pickArbitraryLane = ReactFiberLane.pickArbitraryLane
 
 function createRootErrorUpdate(
   fiber: Fiber,
-  errorInfo: CapturedValue<any>,
+  errorInfo: CapturedValue<Error>,
   lane: Lane,
   -- ROBLOX deviation: parameterize method to avoid circular dependency
   onUncaughtError
@@ -147,12 +149,12 @@ end
 
 function createClassErrorUpdate(
   fiber: Fiber,
-  errorInfo: CapturedValue<any>,
+  errorInfo: CapturedValue<Error>,
   lane: Lane
 ): Update<any>
   local update = createUpdate(NoTimestamp, lane)
   update.tag = CaptureUpdate
-  local getDerivedStateFromError = fiber.type.getDerivedStateFromError
+  local getDerivedStateFromError = (fiber.type :: React_Component<any, any>).getDerivedStateFromError
   if typeof(getDerivedStateFromError) == 'function' then
     local error_ = errorInfo.value
     update.payload = function()

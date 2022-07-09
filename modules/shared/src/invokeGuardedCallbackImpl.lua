@@ -9,6 +9,7 @@
  * @flow
  ]]
 -- local invariant = require(script.Parent.invariant)
+local describeError = require(script.Parent["ErrorHandling.roblox"]).describeError
 
 -- deviation: with flow types stripped, it's easier to use varargs directly
 local function invokeGuardedCallbackProd(reporter, name, func, context, ...)
@@ -22,9 +23,9 @@ local function invokeGuardedCallbackProd(reporter, name, func, context, ...)
 		-- a function with a nil "context", where context in this case is
 		-- analogous to the implicit `self` that we get with a `:` call
 		if context == nil then
-			ok, result = pcall(func, ...)
+			ok, result = xpcall(func, describeError, ...)
 		else
-			ok, result = pcall(func, context, ...)
+			ok, result = xpcall(func, describeError, context, ...)
 		end
 	else
 		ok = true

@@ -138,6 +138,7 @@ local PassiveMask = ReactFiberFlags.PassiveMask
 local Ref = ReactFiberFlags.Ref
 local getComponentName = require(Packages.Shared).getComponentName
 local invariant = require(Packages.Shared).invariant
+local describeError = require(Packages.Shared).describeError
 local ReactCurrentFiber = require(script.Parent.ReactCurrentFiber)
 --  ROBLOX deviation: this property would be captured as values instead of bound
 local currentDebugFiberInDEV = ReactCurrentFiber.current
@@ -258,11 +259,11 @@ local function callComponentWillUnmountWithTimer(current, instance)
     bit32.band(current.mode, ProfileMode) ~= 0
   then
     -- ROBLOX performance? we could hoist start...Timer() out and eliminate the anon function, but then the timer would incldue the pcall overhead
-    local ok, exception = pcall(function()
+    local ok, exception = xpcall(function()
       startLayoutEffectTimer()
       -- ROBLOX deviation: Call with ":" so that the method receives self
       instance:componentWillUnmount()
-    end)
+    end, describeError)
 
     recordLayoutEffectDuration(current)
 
@@ -282,7 +283,7 @@ function safelyCallComponentWillUnmount(
   nearestMountedAncestor
 ): ()
   -- ROBLOX performance: eliminate the __DEV__ and invokeGuardedCallback, like React 18 has done
-  local ok, error_ = pcall(callComponentWillUnmountWithTimer, current, instance)
+  local ok, error_ = xpcall(callComponentWillUnmountWithTimer, describeError, current, instance)
 
   if not ok then
     captureCommitPhaseError(current, nearestMountedAncestor, error_)
@@ -294,7 +295,7 @@ local function safelyDetachRef(current: Fiber, nearestMountedAncestor: Fiber): (
   if ref ~= nil then
     if typeof(ref) == "function" then
       -- ROBLOX performance: eliminate the __DEV__ and invokeGuardedCallback, like React 18 has done
-      local ok, error_ = pcall(ref)
+      local ok, error_ = xpcall(ref, describeError)
       if not ok then
         captureCommitPhaseError(current, nearestMountedAncestor, error_)
       end
@@ -311,7 +312,7 @@ local function safelyCallDestroy(
   destroy: () -> ()
 ): ()
   -- ROBLOX performance: eliminate the __DEV__ and invokeGuardedCallback, like React 18 has done
-  local ok, error_ = pcall(destroy)
+  local ok, error_ = xpcall(destroy, describeError)
   if not ok then
     captureCommitPhaseError(current, nearestMountedAncestor, error_)
   end
@@ -584,9 +585,10 @@ local function recursivelyCommitLayoutEffects(
             resetCurrentDebugFiberInDEV()
           end
         else
-          local ok, error_ = pcall(
-            -- ROBLOX deviation: pass in captureCommitPhaseError function to avoid dependency cycle
-            recursivelyCommitLayoutEffects,
+          local ok, error_ = xpcall(
+              -- ROBLOX deviation: pass in captureCommitPhaseError function to avoid dependency cycle
+              recursivelyCommitLayoutEffects,
+              describeError,
               child,
               finishedRoot,
               captureCommitPhaseError,
@@ -624,7 +626,7 @@ local function recursivelyCommitLayoutEffects(
           end
         else
           -- ROBLOX TODO? pass in captureCommitPhaseError?
-          local ok, error_ = pcall(commitLayoutEffectsForProfiler, finishedWork, finishedRoot)
+          local ok, error_ = xpcall(commitLayoutEffectsForProfiler, describeError, finishedWork, finishedRoot)
           if not ok then
             captureCommitPhaseError(finishedWork, finishedWork.return_, error_)
           end
@@ -692,9 +694,9 @@ local function recursivelyCommitLayoutEffects(
             ]]
             runDepth += 1
 
-            ok, error_ = pcall(
+            ok, error_ = xpcall(
             -- ROBLOX deviation: pass in this function to avoid dependency cycle
-              recursivelyCommitLayoutEffects, child, finishedRoot, captureCommitPhaseError, schedulePassiveEffectCallback
+              recursivelyCommitLayoutEffects, describeError, child, finishedRoot, captureCommitPhaseError, schedulePassiveEffectCallback
             )
 
             runDepth -= 1
@@ -725,13 +727,13 @@ local function recursivelyCommitLayoutEffects(
           bit32.band(finishedWork.mode, ProfileMode) ~= 0
         then
           -- ROBLOX try
-          local ok, error_ = pcall(function()
+          local ok, error_ = xpcall(function()
             startLayoutEffectTimer()
             commitHookEffectListMount(
               bit32.bor(HookLayout, HookHasEffect),
               finishedWork
             )
-          end)
+          end, describeError)
           -- ROBLOX finally
           recordLayoutEffectDuration(finishedWork)
           if not ok then
@@ -919,11 +921,11 @@ function commitLayoutEffectsForClassComponent(finishedWork: Fiber)
         enableProfilerCommitHooks and
         bit32.band(finishedWork.mode, ProfileMode) ~= 0
       then
-        local ok, result = pcall(function()
+        local ok, result = xpcall(function()
           startLayoutEffectTimer()
           -- ROBLOX deviation: Call with ":" so that the method receives self
           instance:componentDidMount()
-        end)
+        end, describeError)
         -- finally
         recordLayoutEffectDuration(finishedWork)
         if not ok then
@@ -974,7 +976,7 @@ function commitLayoutEffectsForClassComponent(finishedWork: Fiber)
         enableProfilerCommitHooks and
         bit32.band(finishedWork.mode, ProfileMode) ~= 0
       then
-        local ok, result = pcall(function()
+        local ok, result = xpcall(function()
           startLayoutEffectTimer()
           -- deviation: Call with ":" so that the method receives self
           instance:componentDidUpdate(
@@ -982,7 +984,7 @@ function commitLayoutEffectsForClassComponent(finishedWork: Fiber)
             prevState,
             instance.__reactInternalSnapshotBeforeUpdate
           )
-        end)
+        end, describeError)
         -- finally
         recordLayoutEffectDuration(finishedWork)
         if not ok then
@@ -1885,14 +1887,14 @@ end
       bit32.band(finishedWork.mode, ProfileMode) ~= 0
     then
       -- ROBLOX try
-      local ok, result = pcall(function()
+      local ok, result = xpcall(function()
         startLayoutEffectTimer()
         commitHookEffectListUnmount(
           bit32.bor(HookLayout, HookHasEffect),
           finishedWork,
           finishedWork.return_
         )
-      end)
+      end, describeError)
       -- ROBLOX finally
       recordLayoutEffectDuration(finishedWork)
       if not ok then
@@ -2219,7 +2221,7 @@ local function commitPassiveMount(
     then
       startPassiveEffectTimer()
       -- ROBLOX try
-      local ok, error_ = pcall(commitHookEffectListMount, bit32.bor(HookPassive, HookHasEffect), finishedWork)
+      local ok, error_ = xpcall(commitHookEffectListMount, describeError, bit32.bor(HookPassive, HookHasEffect), finishedWork)
       -- ROBLOX finally
       recordPassiveEffectDuration(finishedWork)
       if not ok then

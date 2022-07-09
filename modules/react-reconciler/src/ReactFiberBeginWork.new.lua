@@ -30,6 +30,7 @@ local inspect = LuauPolyfill.util.inspect
 local ReactTypes = require(Packages.Shared)
 type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
 type ReactContext<T> = ReactTypes.ReactContext<T>
+type React_Component<Props, State> = ReactTypes.React_Component<Props, State>
 
 local React = require(Packages.React)
 type LazyComponentType<T, P> = React.LazyComponent<T, P>
@@ -103,6 +104,7 @@ local enableSuspenseServerRenderer = ReactFeatureFlags.enableSuspenseServerRende
 local warnAboutDefaultPropsOnFunctionComponents = ReactFeatureFlags.warnAboutDefaultPropsOnFunctionComponents
 -- local enableScopeAPI = ReactFeatureFlags.enableScopeAPI
 local invariant = require(Packages.Shared).invariant
+local describeError = require(Packages.Shared).describeError
 local shallowEqual = require(Packages.Shared).shallowEqual
 local getComponentName = require(Packages.Shared).getComponentName
 local ReactSymbols = require(Packages.Shared).ReactSymbols
@@ -403,7 +405,8 @@ local function updateForwardRef(
       bit32.band(workInProgress.mode, StrictMode) ~= 0
     then
       disableLogs()
-      local ok, result = pcall(renderWithHooks,
+      local ok, result = xpcall(renderWithHooks,
+          describeError,
           current,
           workInProgress,
           render,
@@ -589,7 +592,7 @@ function updateSimpleMemoComponent(
         local lazyComponent: LazyComponentType<any, any> = outerMemoType
         local payload = lazyComponent._payload
         local init = lazyComponent._init
-        local ok, result = pcall(init, payload)
+        local ok, result = xpcall(init, describeError, payload)
         if ok then
           outerMemoType = result
         else
@@ -874,7 +877,8 @@ function updateFunctionComponent(
       bit32.band(workInProgress.mode, StrictMode) ~= 0
     then
       disableLogs()
-      local ok, result = pcall(renderWithHooks,
+      local ok, result = xpcall(renderWithHooks,
+          describeError,
           current,
           workInProgress,
           Component,
@@ -1136,7 +1140,7 @@ function finishClassComponent(
       then
         disableLogs()
         -- deviation: Pass instance so that render can access self
-        local ok, result = pcall(instance.render, instance)
+        local ok, result = xpcall(instance.render, describeError, instance)
         -- finally
         reenableLogs()
         if not ok then
@@ -1677,7 +1681,7 @@ local function mountIndeterminateComponent(
     -- ROBLOX deviation: don't access field on function
     local getDerivedStateFromProps
     if typeof(Component) ~= "function" then
-      getDerivedStateFromProps = Component.getDerivedStateFromProps
+      getDerivedStateFromProps = (Component :: React_Component<any, any>).getDerivedStateFromProps
     end
     if typeof(getDerivedStateFromProps) == "function" then
       applyDerivedStateFromProps(
@@ -1715,7 +1719,8 @@ local function mountIndeterminateComponent(
         bit32.band(workInProgress.mode, StrictMode) ~= 0
       then
         disableLogs()
-        local ok, result = pcall(renderWithHooks,
+        local ok, result = xpcall(renderWithHooks,
+            describeError,
             nil,
             workInProgress,
             Component,

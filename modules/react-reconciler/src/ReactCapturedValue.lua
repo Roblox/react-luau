@@ -22,10 +22,10 @@ export type CapturedValue<T> = {
 
 local exports = {}
 
-exports.createCapturedValue = function(
-  value,
-  source
-)
+exports.createCapturedValue = function<T>(
+  value: T,
+  source: Fiber | nil
+): CapturedValue<T>
   -- If the value is an error, call this function immediately after it is thrown
   -- so the stack is accurate.
   return {

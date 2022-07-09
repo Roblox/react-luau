@@ -10,6 +10,7 @@ local flowtypes = require(script["flowtypes.roblox"])
 local ReactElementType = require(script.ReactElementType)
 local ReactFiberHostConfig = require(script.ReactFiberHostConfig)
 local ReactSharedInternals = require(script.ReactSharedInternals)
+local ErrorHandling = require(script["ErrorHandling.roblox"])
 
 -- Re-export all top-level public types
 export type ReactEmpty = ReactTypes.ReactEmpty
@@ -75,7 +76,6 @@ return {
 	ConsolePatchingDev = require(script["ConsolePatchingDev.roblox"]),
 	consoleWithStackDev = require(script.consoleWithStackDev),
 	enqueueTask = require(script["enqueueTask.roblox"]),
-	errorToString = require(script["errorToString.roblox"]),
 	ExecutionEnvironment = require(script["ExecutionEnvironment.roblox"]),
 	formatProdErrorMessage = require(script.formatProdErrorMessage),
 	getComponentName = require(script.getComponentName),
@@ -101,6 +101,12 @@ return {
 	shallowEqual = require(script.shallowEqual),
 	UninitializedState = require(script["UninitializedState.roblox"]),
 	ReactTypes = ReactTypes,
+
+	-- ROBLOX DEVIATION: export error-stack-preserving utilities for use in
+	-- scheduler and reconciler, and parsing function for use in public API
+	describeError = ErrorHandling.describeError,
+	errorToString = ErrorHandling.errorToString,
+	parseReactError = ErrorHandling.parseReactError,
 
 	-- ROBLOX DEVIATION: export Symbol and Type from Shared
 	Symbol = require(script["Symbol.roblox"]),

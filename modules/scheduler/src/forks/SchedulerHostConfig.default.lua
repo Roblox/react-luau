@@ -14,6 +14,7 @@ local Object = LuauPolyfill.Object
 local Shared = require(Packages.Shared)
 local console = Shared.console
 local errorToString = Shared.errorToString
+local describeError = Shared.describeError
 
 -- ROBLOX deviation: getCurrentTime will always map to `tick` in Luau
 local getCurrentTime = function()
@@ -100,19 +101,20 @@ local function performWorkUntilDeadline()
 			end
 		end
 		if not _G.__YOLO__ then
-			ok, result = xpcall(doWork, errorToString)
+			ok, result = xpcall(doWork, describeError)
 		else
 			result = doWork()
 			ok = true
 		end
 
 		if not ok then
-			-- If a scheduler task throws, exit the current browser task so the
+			-- If a scheduler task throws, exit the current coroutine so the
 			-- error can be observed.
 			task.delay(0, performWorkUntilDeadline)
 
-	      	-- ROBLOX FIXME: the top-level Luau VM handler doesn't deal with non-string errors, so massage it until VM support lands
-			error(result)
+			-- ROBLOX FIXME: the top-level Luau VM handler doesn't deal with
+			-- non-string errors, so massage it until VM support lands
+			error(errorToString(result))
 		end
 	else
 		isMessageLoopRunning = false

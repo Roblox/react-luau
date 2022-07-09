@@ -61,6 +61,7 @@ local HostRoot = ReactWorkTags.HostRoot
 local SuspenseComponent = ReactWorkTags.SuspenseComponent
 local getComponentName = require(Packages.Shared).getComponentName
 local invariant = require(Packages.Shared).invariant
+local describeError = require(Packages.Shared).describeError
 local enableSchedulingProfiler = require(Packages.Shared).ReactFeatureFlags.enableSchedulingProfiler
 local ReactSharedInternals = require(Packages.Shared).ReactSharedInternals
 local getPublicInstance = require(script.Parent.ReactFiberHostConfig).getPublicInstance
@@ -239,7 +240,7 @@ local function findHostInstanceWithWarning(
 				didWarnAboutFindNodeInStrictMode[componentName] = true
 
 				local previousFiber = ReactCurrentFiber.current
-				local ok, result = pcall(function()
+				local ok, result = xpcall(function()
 					setCurrentDebugFiberInDEV(hostFiber)
 					if bit32.band(fiber.mode, StrictMode) ~= 0 then
 						console.error(
@@ -264,7 +265,7 @@ local function findHostInstanceWithWarning(
 							componentName
 						)
 					end
-				end)
+				end, describeError)
 
 				-- Ideally this should reset to previous but this shouldn't be called in
 				-- render and there's another warning for that anyway.
@@ -492,7 +493,7 @@ exports.runWithPriority = function<T>(priority: LanePriority, fn: () -> T): T
 	local previousPriority = getCurrentUpdateLanePriority()
 	-- ROBLOX performance: hoist non-throwable out of try{} to eliminate anon function
 	setCurrentUpdateLanePriority(priority)
-	local ok, result = pcall(fn)
+	local ok, result = xpcall(fn, describeError)
 	setCurrentUpdateLanePriority(previousPriority)
 	if not ok then
 		error(result)

@@ -355,7 +355,7 @@ local PureComponent = Component:extend("PureComponent") :: React_Component<any, 
 -- This is to promote composition over inheritance.
 -- PureComponent is an exception to this rule.
 -- ROBLOX FIXME Luau: this is so we get *some* type checking despite the FIXME Luau above
-PureComponent.extend = Component.extend :: (string) -> React_Component<any, any>
+(PureComponent :: any).extend = Component.extend :: (string) -> React_Component<any, any>
 
 -- ROBLOX note: We copy members directly from the Component prototype above; we
 -- don't need to redefine the constructor or do dummy function trickery to apply
@@ -380,5 +380,5 @@ setmetatable(PureComponent, {
 
 return {
   Component = Component,
-  PureComponent = PureComponent,
+  PureComponent = PureComponent :: typeof(Component),
 }

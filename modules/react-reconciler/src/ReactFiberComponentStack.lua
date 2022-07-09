@@ -73,10 +73,10 @@ local function describeFiber(fiber: Fiber): string
 end
 
 return {
-	getStackByFiberInDevAndProd = function(workInProgress: Fiber): string
+	getStackByFiberInDevAndProd = function(workInProgress: Fiber?): string
 		local ok: boolean, result: Error | string = pcall(function()
 			local info = ""
-			local node: Fiber? = workInProgress
+			local node = workInProgress
 			repeat
 				info ..= describeFiber(node :: Fiber)
 				node = (node :: Fiber).return_

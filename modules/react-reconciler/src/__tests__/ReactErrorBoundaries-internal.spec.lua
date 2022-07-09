@@ -6,7 +6,7 @@
 --  *
 --  * @emails react-core
 --  */
--- !strict
+--!strict
 return function()
 	local Packages = script.Parent.Parent.Parent
 	local RobloxJest = require(Packages.Dev.RobloxJest)
@@ -27,11 +27,11 @@ return function()
 		local res
 		local queue = Array.slice(node.getChildren())
 		while #queue > 0 do
-			local currentNode = table.remove(queue)
-			if currentNode.text then
+			local currentNode: any? = table.remove(queue)
+			if currentNode and currentNode.text then
 				res = currentNode.text .. (res or "")
 			end
-			if currentNode.children then
+			if currentNode and currentNode.children then
 				for _, value in ipairs(currentNode.children) do
 					table.insert(queue, value)
 				end
@@ -1512,10 +1512,10 @@ return function()
 		end)
 		it("picks the right boundary when handling unmounting errors", function()
 			local function renderInnerError(error_)
-				return React.createElement("div", nil, "Caught an inner error: ", error_, ".")
+				return React.createElement("div", nil, "Caught an inner error: ", error_.message, ".")
 			end
 			local function renderOuterError(error_)
-				return React.createElement("div", nil, "Caught an outer error: ", error_, ".")
+				return React.createElement("div", nil, "Caught an outer error: ", error_.message, ".")
 			end
 
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
@@ -1680,10 +1680,10 @@ return function()
 
 				local currentIndex = #elements
 
-				while 0 ~= currentIndex do
-					local randomIndex = math.floor(math.random() * currentIndex)
+				while 1 ~= currentIndex do
+					local randomIndex = math.floor(math.random() * currentIndex) + 1
 
-					currentIndex = currentIndex - 1
+					currentIndex -= 1
 
 					local temporaryValue = elements[currentIndex]
 
@@ -1696,12 +1696,16 @@ return function()
 
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
-			root.render(React.createElement(ErrorBoundary, nil, getAMixOfNormalAndBrokenRenderElements()))
+			-- ROBLOX FIXME LUAU: For some reason, `{React_Element<any, any>}`
+			-- is not a valid type for children here
+			root.render(React.createElement(ErrorBoundary, nil, getAMixOfNormalAndBrokenRenderElements() :: any))
 			jestExpect(textContent(root)).never.toContain("Caught an error")
 
 			fail_ = true
 
-			root.render(React.createElement(ErrorBoundary, nil, getAMixOfNormalAndBrokenRenderElements()))
+			-- ROBLOX FIXME LUAU: For some reason, `{React_Element<any, any>}`
+			-- is not a valid type for children here
+			root.render(React.createElement(ErrorBoundary, nil, getAMixOfNormalAndBrokenRenderElements() :: any))
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			Scheduler.unstable_clearYields()
 			root.render(nil)
@@ -1946,10 +1950,10 @@ return function()
 		end)
 		it("calls static getDerivedStateFromError for each error that is captured", function()
 			local function renderUnmountError(error_)
-				return React.createElement("div", nil, "Caught an unmounting error: ", error_, ".")
+				return React.createElement("div", nil, "Caught an unmounting error: ", error_.message, ".")
 			end
 			local function renderUpdateError(error_)
-				return React.createElement("div", nil, "Caught an updating error: ", error_, ".")
+				return React.createElement("div", nil, "Caught an updating error: ", error_.message, ".")
 			end
 
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
@@ -2158,12 +2162,12 @@ return function()
 
 			-- Here, we test the behavior where there is no error boundary and we
 			-- delegate to the host root.
-			local ok, result = pcall(root.render, React.createElement(Parent))
+			local ok, e = pcall(root.render, React.createElement(Parent))
 			if not ok then
-				if not (result:sub(-#"parent sad") == "parent sad") and not (result:sub(-#"child sad") == "child sad") then
-					error(result)
+				if e.message ~= "parent sad" and e.message ~= "child sad" then
+					error(e)
 				end
-				caughtError = result
+				caughtError = e
 			end
 
 			jestExpect(errors).toEqual({
@@ -2171,7 +2175,7 @@ return function()
 				"parent sad",
 			})
 			-- Error should be the first thrown
-			jestExpect(caughtError:sub(-#"child sad")).toEqual("child sad")
+			jestExpect(caughtError.message).toBe("child sad")
 		end)
 		it("propagates uncaught error inside unbatched initial mount", function()
 			local function Foo()
@@ -2218,19 +2222,19 @@ return function()
 			local root = ReactNoop.createLegacyRoot()
 
 			root.render(React.createElement(Parent, { value = 1 }))
-			local ok, result = pcall(root.render, React.createElement(Parent, { value = 2 }))
+			local ok, e = pcall(root.render, React.createElement(Parent, { value = 2 }))
 			if not ok then
-				if not (result:sub(-#"parent sad") == "parent sad") and not (result:sub(-#"child sad") == "child sad") then
-					error(result)
+				if not (e.message:sub(-#"parent sad") == "parent sad") and not (e.message:sub(-#"child sad") == "child sad") then
+					error(e)
 				end
-				caughtError = result
+				caughtError = e
 			end
 			jestExpect(errors).toEqual({
 				"child sad",
 				"parent sad",
 			})
 			-- Error should be the first thrown
-			jestExpect(caughtError:sub(-#"child sad")).toEqual("child sad")
+			jestExpect(caughtError.message).toBe("child sad")
 		end)
 		it("should warn if an error boundary with only componentDidCatch does not update state", function()
 			local InvalidErrorBoundary = React.Component:extend("InvalidErrorBoundary")
@@ -2287,8 +2291,7 @@ return function()
 				end)()
 			end
 
-			-- ROBLOX deviation: using a string 'expected' thrownError in place of JS's error object.
-			local thrownError = "expected"
+			local thrownError = LuauPolyfill.Error.new("expected")
 			local Throws = function()
 				error(thrownError, 0)
 			end
@@ -2296,9 +2299,8 @@ return function()
 			root.render(React.createElement(ErrorBoundaryWithBothMethods, nil, React.createElement(Throws)))
 			jestExpect(textContent(root)).toEqual("ErrorBoundary")
 
-			-- ROBLOX deviation: using a string 'expected' thrownError in place of JS's error object.
-			jestExpect(componentDidCatchError).toEqual("expected")
-			jestExpect(getDerivedStateFromErrorError).toEqual("expected")
+			jestExpect(componentDidCatchError).toEqual(thrownError)
+			jestExpect(getDerivedStateFromErrorError).toEqual(thrownError)
 		end)
 		-- ROBLOX TODO: ReactDOMComponent not translated
 		xit("should catch errors from invariants in completion phase", function()

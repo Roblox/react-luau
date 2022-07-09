@@ -22,6 +22,9 @@ type Lanes = ReactFiberLane.Lanes
 local ReactUpdateQueue = require(script.Parent["ReactUpdateQueue.new"])
 type UpdateQueue<State> = ReactInternalTypes.UpdateQueue<State>
 
+local ReactTypes = require(Packages.Shared)
+type React_Component<Props, State> = ReactTypes.React_Component<Props, State>
+
 local React = require(Packages.React)
 
 local ReactFiberFlags = require(script.Parent.ReactFiberFlags)
@@ -45,6 +48,7 @@ local setInstance = ReactInstanceMap.set
 local shallowEqual = require(Packages.Shared).shallowEqual
 local getComponentName = require(Packages.Shared).getComponentName
 local UninitializedState = require(Packages.Shared).UninitializedState
+local describeError = require(Packages.Shared).describeError
 -- local invariant = require(Packages.Shared).invariant
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 local REACT_CONTEXT_TYPE = ReactSymbols.REACT_CONTEXT_TYPE
@@ -185,11 +189,11 @@ if _G.__DEV__ then
 --   Object.freeze(fakeInternalInstance)
 end
 
-local function applyDerivedStateFromProps(
+local function applyDerivedStateFromProps<Props, State>(
   workInProgress: Fiber,
-  ctor: any,
-  getDerivedStateFromProps: (any, any) -> any,
-  nextProps: any
+  ctor: React_Component<Props, State>,
+  getDerivedStateFromProps: (Props, State) -> State?,
+  nextProps: Props
 )
   local prevState = workInProgress.memoizedState
 
@@ -200,7 +204,7 @@ local function applyDerivedStateFromProps(
     then
       disableLogs()
       -- Invoke the function an extra time to help detect side-effects.
-      local ok, result = pcall(getDerivedStateFromProps, nextProps, prevState)
+      local ok, result = xpcall(getDerivedStateFromProps, describeError, nextProps, prevState)
 
       reenableLogs()
 
@@ -362,7 +366,7 @@ function checkShouldComponentUpdate(
         disableLogs()
         -- deviation: Pass instance so that the method receives self
         -- Invoke the function an extra time to help detect side-effects.
-        local ok, result = pcall(instance.shouldComponentUpdate, instance, newProps, newState, nextContext)
+        local ok, result = xpcall(instance.shouldComponentUpdate, describeError, instance, newProps, newState, nextContext)
         -- finally
         reenableLogs()
         if not ok then
@@ -722,7 +726,7 @@ local function constructClassInstance(
       disableLogs()
       -- deviation: ctor will actually refer to a class component, we use the
     -- `__ctor` function that it exposes
-      local ok, result = pcall(ctor.__ctor, props, context) -- eslint-disable-line no-new
+      local ok, result = xpcall(ctor.__ctor, describeError, props, context) -- eslint-disable-line no-new
       -- finally
       reenableLogs()
 
