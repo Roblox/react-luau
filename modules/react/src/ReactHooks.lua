@@ -126,6 +126,13 @@ exports.useRef = function<T>(initialValue: T): { current: T | nil }
 	return dispatcher.useRef(initialValue)
 end
 
+-- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
+exports.useBinding = function<T>(initialValue: T): (any, any)
+-- ROBLOX deviation END
+	local dispatcher = resolveDispatcher()
+	return dispatcher.useBinding(initialValue)
+end
+
 exports.useEffect = function(
 	-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
 	create: (() -> ()) | (() -> (() -> ())),

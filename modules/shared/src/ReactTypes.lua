@@ -170,6 +170,17 @@ export type ReactScopeInstance = {
 	getChildContextValues: <T>(context: ReactContext<T>) -> Array<T>,
 }
 
+-- ROBLOX deviation START: Bindings are unique to Roact
+export type ReactBinding<T> = {
+	getValue: (self: ReactBinding<T>) -> T,
+	-- FIXME Luau: can't create recursive type with different parameters, so we
+	-- approximate for now
+	map: <U>(self: ReactBinding<T>, (T) -> U) -> any,
+	_source: string?,
+}
+export type ReactBindingUpdater<T> = (T) -> ()
+-- ROBLOX deviation END
+
 -- Mutable source version can be anything (e.g. number, string, immutable data structure)
 -- so long as it changes every time any part of the source changes.
 export type MutableSourceVersion = NonMaybeType<any>

@@ -36,6 +36,8 @@ local useLayoutEffect
 local useCallback
 local useMemo
 local useRef
+-- ROBLOX deviation: binding support
+local useBinding
 local useImperativeHandle
 -- local useTransition
 -- local useDeferredValue
@@ -70,6 +72,8 @@ return function()
 		useCallback = React.useCallback
 		useMemo = React.useMemo
 		useRef = React.useRef
+		-- ROBLOX deviation: binding support
+		useBinding = React.useBinding
 		useImperativeHandle = React.useImperativeHandle
 		forwardRef = React.forwardRef
 		memo = React.memo
@@ -3672,6 +3676,98 @@ return function()
 			jestExpect(Scheduler).toFlushAndYield({ "val" })
 		end)
 	end)
+
+	-- ROBLOX deviation START: binding support (these tests mimic the ref tests)
+	describe("useBinding", function()
+		-- ROBLOX TODO: clearTimeout: attempt to index number with userdata (LUAFDN-293)
+		it("creates a binding object initialized with the provided value", function()
+			local jest = RobloxJest
+
+			local function useDebouncedCallback(callback, ms, inputs)
+				-- ROBLOX FIXME: Our setTimeout returns a table that doesn't convert into a number, resolve this
+				local timeoutID, updateTimeout = useBinding(setTimeout(function() end, 0))
+				useEffect(function()
+					return function()
+						if typeof(timeoutID:getValue()) == "table" then
+							clearTimeout(timeoutID:getValue())
+						end
+					end
+				end, {})
+				local debouncedCallback = useCallback(function(...)
+					if typeof(timeoutID:getValue()) == "table" then
+						clearTimeout(timeoutID:getValue())
+					end
+					updateTimeout(setTimeout(callback, ms, ...))
+				end, {
+					callback,
+					ms,
+				} :: Array<any>)
+				return useCallback(debouncedCallback, inputs)
+			end
+
+			local ping
+			local function App()
+				ping = useDebouncedCallback(function(value)
+					Scheduler.unstable_yieldValue("ping: " .. value)
+				end, 100, {})
+				return nil
+			end
+
+			act(function()
+				ReactNoop.render(React.createElement(App))
+			end)
+			jestExpect(Scheduler).toHaveYielded({})
+
+			ping(1)
+			ping(2)
+			ping(3)
+
+			jestExpect(Scheduler).toHaveYielded({})
+
+			jest.advanceTimersByTime(100)
+
+			jestExpect(Scheduler).toHaveYielded({ "ping: 3" })
+
+			ping(4)
+			jest.advanceTimersByTime(20)
+			jestExpect(Scheduler).toHaveYielded({})
+			ping(5)
+			jestExpect(Scheduler).toHaveYielded({})
+			ping(6)
+			jestExpect(Scheduler).toHaveYielded({})
+			jest.advanceTimersByTime(80)
+
+			jestExpect(Scheduler).toHaveYielded({})
+
+			jest.advanceTimersByTime(20)
+			jestExpect(Scheduler).toHaveYielded({ "ping: 6" })
+		end)
+
+		it("should return the same binding value during re-renders", function()
+			local function Counter()
+				local binding, _updater = useBinding("val")
+				local count, setCount = useState(0)
+				local firstBinding = useState(binding)
+
+				if firstBinding ~= binding then
+					error("should never change")
+				end
+
+				if count < 3 then
+					setCount(count + 1)
+				end
+
+				return React.createElement(Text, { text = binding:getValue() })
+			end
+
+			ReactNoop.render(React.createElement(Counter))
+			jestExpect(Scheduler).toFlushAndYield({ "val" })
+
+			ReactNoop.render(React.createElement(Counter))
+			jestExpect(Scheduler).toFlushAndYield({ "val" })
+		end)
+	end)
+	-- ROBLOX deviation END
 
 	describe("useImperativeHandle", function()
 		it("does not update when deps are the same", function()

@@ -22,6 +22,10 @@ type Source = ReactElementType.Source
 local ReactTypes = require(script.Parent.Parent.ReactTypes)
 type RefObject = ReactTypes.RefObject
 type ReactContext<T> = ReactTypes.ReactContext<T>
+-- ROBLOX deviation START: binding support
+type ReactBinding<T> = ReactTypes.ReactBinding<T>
+type ReactBindingUpdater<T> = ReactTypes.ReactBindingUpdater<T>
+-- ROBLOX deviation END: binding support
 type MutableSourceVersion = ReactTypes.MutableSourceVersion
 type MutableSource<Source> = ReactTypes.MutableSource<Source>
 type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscribeFn<
@@ -53,6 +57,9 @@ export type Dispatcher = {
 	) -> T,
 	-- ROBLOX deviation START: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
 	useRef: <T>(initialValue: T) -> { current: T | nil },
+	-- ROBLOX deviation END
+	-- ROBLOX deviation START: Bindings are a feature unique to Roact
+	useBinding: <T>(initialValue: T) -> (ReactBinding<T>, ReactBindingUpdater<T>),
 	-- ROBLOX deviation END
 	useEffect: (
 		-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically

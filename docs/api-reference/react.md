@@ -184,3 +184,36 @@ Creates a binding object. This a feature from legacy Roact that's been ported in
 *This API is unique to Roact and does not have an equivalent in React JS.*
 
 Joins multiple bindings together. This is a feature from legacy Roact that's been ported into Roact 17. [Refer to legacy documentation on `Roact.joinBindings`](https://roblox.github.io/roact/api-reference/#roactjoinbindings).
+
+## React.useBinding
+
+!!! warning "Unreleased"
+
+*This API is unique to Roact and does not have an equivalent in React JS.*
+
+A [hook](https://reactjs.org/docs/hooks-intro.html) introduced in Roact to complement its [bindings](#reactcreatebinding) feature. Creates and returns a binding and its associated updater function as multiple return values, [similar to `useState`](#reactusestate).
+
+```
+useBinding<T>(initialValue: T) -> (ReactBinding<T>, (T) -> ())
+```
+
+In class components, you would typically use `createBinding` in your component's `init` lifecycle method to generate a reusable binding.
+
+In function components, the `useBinding` hook provides equivalent functionality, and guarantees that it will return the same binding and updater objects on subsequent calls (just like `useRef` does).
+
+```lua
+local function MyComponent(props)
+    local absSize, setAbsSize = React.useBinding(Vector2.new(0, 0))
+    return React.createElement(React.Fragment, nil,
+        React.createElement("ImageLabel", {
+            Image = props.image,
+            [React.Change.AbsoluteSize] = setAbsSize,
+        }),
+        React.createElement("TextLabel", {
+            Text = absSize:map(function(value)
+                return "X = " .. tostring(value.X) .. "; Y = " .. tostring(value.Y)
+            end)
+        }
+    )
+end
+```

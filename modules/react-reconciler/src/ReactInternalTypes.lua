@@ -79,6 +79,8 @@ export type HookType =
 	| "useReducer"
 	| "useContext"
 	| "useRef"
+	-- ROBLOX deviation: Bindings are a feature unique to Roact
+	| "useBinding"
 	| "useEffect"
 	| "useLayoutEffect"
 	| "useCallback"

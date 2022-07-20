@@ -1,23 +1,40 @@
+--!strict
 local Packages = script.Parent.Parent
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local ReactSymbols = require(Packages.Shared).ReactSymbols
+
+local ReactTypes = require(Packages.Shared)
+type Binding<T> = ReactTypes.ReactBinding<T>
+type BindingUpdater<T> = ReactTypes.ReactBindingUpdater<T>
 
 local Symbol = LuauPolyfill.Symbol
 local createSignal = require(script.Parent["createSignal.roblox"])
 
 local BindingImpl = Symbol("BindingImpl")
 
+type BindingInternal<T> = {
+	["$$typeof"]: typeof(ReactSymbols.REACT_BINDING_TYPE),
+	value: T,
+
+	getValue: (BindingInternal<T>) -> T,
+	-- FIXME Luau: can't define recursive types with different parameters
+	map: <U>(BindingInternal<T>, (T) -> U) -> any,
+
+	update: (T) -> (),
+	subscribe: ((T) -> ()) -> (() -> ()),
+}
+
 local BindingInternalApi = {}
 
 local bindingPrototype = {}
 
-function bindingPrototype:getValue()
-	return BindingInternalApi.getValue(self)
+function bindingPrototype.getValue<T>(binding: BindingInternal<T>): T
+	return BindingInternalApi.getValue(binding)
 end
 
-function bindingPrototype:map(predicate)
-	return BindingInternalApi.map(self, predicate)
+function bindingPrototype.map<T, U>(binding: BindingInternal<T>, predicate: (T) -> U): Binding<U>
+	return BindingInternalApi.map(binding, predicate)
 end
 
 local BindingPublicMeta = {
@@ -27,29 +44,28 @@ local BindingPublicMeta = {
 	end,
 }
 
-function BindingInternalApi.update(binding, newValue)
-	return binding[BindingImpl].update(newValue)
+function BindingInternalApi.update<T>(binding: any, newValue: T)
+	return (binding[BindingImpl] :: BindingInternal<T>).update(newValue)
 end
 
-function BindingInternalApi.subscribe(binding, callback)
-	return binding[BindingImpl].subscribe(callback)
+function BindingInternalApi.subscribe<T>(binding: any, callback: (T) -> ())
+	return (binding[BindingImpl] :: BindingInternal<T>).subscribe(callback)
 end
 
-function BindingInternalApi.getValue(binding)
-	return binding[BindingImpl].getValue()
+function BindingInternalApi.getValue<T>(binding: any): T
+	return (binding[BindingImpl] :: BindingInternal<T>):getValue()
 end
 
-function BindingInternalApi.create(initialValue)
+function BindingInternalApi.create<T>(initialValue: T): (Binding<T>, BindingUpdater<T>)
 	local subscribe, fire = createSignal()
 	local impl = {
 		value = initialValue,
 		subscribe = subscribe,
-		fire = fire,
 	}
 
-	function impl.update(newValue)
+	function impl.update(newValue: T)
 		impl.value = newValue
-		impl.fire(newValue)
+		fire(newValue)
 	end
 
 	function impl.getValue()
@@ -62,14 +78,14 @@ function BindingInternalApi.create(initialValue)
 		source = debug.traceback("Binding created at:", 3)
 	end
 
-	return setmetatable({
+	return (setmetatable({
 		["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
 		[BindingImpl] = impl,
 		_source = source,
-	}, BindingPublicMeta), impl.update
+	}, BindingPublicMeta) :: any) :: Binding<T>, impl.update
 end
 
-function BindingInternalApi.map(upstreamBinding, predicate)
+function BindingInternalApi.map<T, U>(upstreamBinding: BindingInternal<T>, predicate: (T) -> U): Binding<U>
 	if _G.__DEV__ then
 		-- ROBLOX TODO: More informative error messages here
 		assert(
@@ -101,14 +117,16 @@ function BindingInternalApi.map(upstreamBinding, predicate)
 		source = debug.traceback("Mapped binding created at:", 3)
 	end
 
-	return setmetatable({
+	return (setmetatable({
 		["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
 		[BindingImpl] = impl,
 		_source = source,
-	}, BindingPublicMeta)
+	}, BindingPublicMeta) :: any) :: Binding<U>
 end
 
-function BindingInternalApi.join(upstreamBindings)
+-- The `join` API is used statically, so the input will be a table with values
+-- typed as the public Binding type
+function BindingInternalApi.join<T>(upstreamBindings: { [string | number]: Binding<any> }): Binding<T>
 	if _G.__DEV__ then
 		assert(typeof(upstreamBindings) == "table", "Expected arg #1 to be of type table")
 
@@ -173,11 +191,11 @@ function BindingInternalApi.join(upstreamBindings)
 		source = debug.traceback("Joined binding created at:", 2)
 	end
 
-	return setmetatable({
+	return (setmetatable({
 		["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
 		[BindingImpl] = impl,
 		_source = source,
-	}, BindingPublicMeta)
+	}, BindingPublicMeta) :: any) :: Binding<T>
 end
 
 return BindingInternalApi

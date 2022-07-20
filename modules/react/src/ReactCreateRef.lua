@@ -8,7 +8,9 @@
  * @flow
 *]]
 
-local exports = {}
+local Packages = script.Parent.Parent
+local ReactTypes = require(Packages.Shared)
+type RefObject = ReactTypes.RefObject
 
 -- ROBLOX DEVIATION: In Roact, refs are implemented in terms of bindings
 --[[
@@ -17,8 +19,10 @@ local exports = {}
 ]]
 local Binding = require(script.Parent["ReactBinding.roblox"])
 
+local exports = {}
+
 -- an immutable object with a single mutable value
-exports.createRef = function() -- ROBLOX FIXME: Redefine RefObject type
+exports.createRef = function(): RefObject
   local binding, _ = Binding.create(nil)
 
   local ref = {}
@@ -59,7 +63,7 @@ exports.createRef = function() -- ROBLOX FIXME: Redefine RefObject type
     end,
   })
 
-  return ref
+  return (ref :: any) :: RefObject
 end
 
 return exports

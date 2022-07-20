@@ -26,12 +26,15 @@ local Cryo = require(Packages.Cryo)
 
 -- ROBLOX: use Bindings to implement useRef
 local createRef = require(Packages.React).createRef
+local createBinding = require(Packages.React).createBinding
 
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 
 local ReactTypes = require(Packages.Shared)
 type ReactContext<T> = ReactTypes.ReactContext<T>
+type ReactBinding<T> = ReactTypes.ReactBinding<T>
+type ReactBindingUpdater<T> = ReactTypes.ReactBindingUpdater<T>
 type MutableSource<T> = ReactTypes.MutableSource<T>
 type MutableSourceGetSnapshotFn<Source, Snapshot> = ReactTypes.MutableSourceGetSnapshotFn<Source, Snapshot>
 type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscribeFn<Source, Snapshot>
@@ -1176,6 +1179,22 @@ local function pushEffect(tag, create, destroy, deps)
   return effect
 end
 
+-- ROBLOX deviation: Bindings are a feature unique to Roact
+function mountBinding<T>(initialValue: T): (ReactBinding<T>, ReactBindingUpdater<T>)
+  local hook = mountWorkInProgressHook()
+  local value, updateValue = createBinding(initialValue)
+
+  -- ROBLOX Luau FIXME: Luau doesn't allow mixed arrays, forcing us to use any here
+  hook.memoizedState = {value :: any, updateValue :: any}
+  return value, updateValue
+end
+
+-- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
+function updateBinding<T>(initialValue: T): (ReactBinding<T>, ReactBindingUpdater<T>)
+  local hook = updateWorkInProgressHook()
+  return unpack(hook.memoizedState)
+end
+
 -- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
 function mountRef<T>(initialValue: T): {current: T | nil}
   local hook = mountWorkInProgressHook()
@@ -1868,6 +1887,7 @@ local ContextOnlyDispatcher: Dispatcher = {
   useMemo = throwInvalidHookError :: any,
   useReducer = throwInvalidHookError :: any,
   useRef = throwInvalidHookError :: any,
+  useBinding = throwInvalidHookError :: any,
   useState = throwInvalidHookError :: any,
   useDebugValue = throwInvalidHookError :: any,
   -- useDeferredValue = throwInvalidHookError,
@@ -1891,6 +1911,7 @@ local HooksDispatcherOnMount: Dispatcher = {
   useMemo = mountMemo :: any,
   useReducer = mountReducer,
   useRef = mountRef,
+  useBinding = mountBinding,
   useState = mountState,
   useDebugValue = mountDebugValue,
   -- useDeferredValue = mountDeferredValue,
@@ -1913,6 +1934,7 @@ local HooksDispatcherOnUpdate: Dispatcher = {
   useMemo = updateMemo :: any,
   useReducer = updateReducer,
   useRef = updateRef,
+  useBinding = updateBinding,
   useState = updateState,
   useDebugValue = updateDebugValue,
   -- useDeferredValue = updateDeferredValue,
@@ -1935,6 +1957,7 @@ local HooksDispatcherOnRerender: Dispatcher = {
   useMemo = updateMemo :: any,
   useReducer = rerenderReducer,
   useRef = updateRef,
+  useBinding = updateBinding,
   useState = rerenderState,
   useDebugValue = updateDebugValue,
   -- useDeferredValue = rerenderDeferredValue,
@@ -2057,6 +2080,12 @@ if _G.__DEV__ then
       currentHookNameInDev = 'useRef'
       mountHookTypesDev()
       return mountRef(initialValue)
+    end,
+    -- ROBLOX deviation: Bindings are a feature unique to Roact
+    useBinding = function<T>(initialValue: T): (ReactBinding<T>, ReactBindingUpdater<T>)
+      currentHookNameInDev = 'useBinding'
+      mountHookTypesDev()
+      return mountBinding(initialValue)
     end,
     useState = function<S>(
       initialState: (() -> S) | S
@@ -2196,6 +2225,12 @@ if _G.__DEV__ then
       updateHookTypesDev()
       return mountRef(initialValue)
     end,
+    -- ROBLOX deviation: Bindings are a feature unique to Roact
+    useBinding = function<T>(initialValue: T): (ReactBinding<T>, ReactBindingUpdater<T>)
+      currentHookNameInDev = 'useBinding'
+      updateHookTypesDev()
+      return mountBinding(initialValue)
+    end,
     useState = function<S>(
       initialState: (() -> S) | S
     ): (S, Dispatch<BasicStateAction<S>>)
@@ -2292,8 +2327,8 @@ if _G.__DEV__ then
       updateHookTypesDev()
       return updateLayoutEffect(create, deps)
     end,
--- ROBLOX FIXME Luau: work around 'Failed to unify type packs' error: CLI-51338
-useMemo = function<T...>(create: () -> T..., deps: Array<any> | nil): ...any
+    -- ROBLOX FIXME Luau: work around 'Failed to unify type packs' error: CLI-51338
+    useMemo = function<T...>(create: () -> T..., deps: Array<any> | nil): ...any
       currentHookNameInDev = 'useMemo'
       updateHookTypesDev()
       local prevDispatcher = ReactCurrentDispatcher.current
@@ -2332,6 +2367,12 @@ useMemo = function<T...>(create: () -> T..., deps: Array<any> | nil): ...any
       currentHookNameInDev = 'useRef'
       updateHookTypesDev()
       return updateRef(initialValue)
+    end,
+    -- ROBLOX deviation: Bindings are a feature unique to Roact
+    useBinding = function<T>(initialValue: T): (ReactBinding<T>, ReactBindingUpdater<T>)
+      currentHookNameInDev = 'useBinding'
+      updateHookTypesDev()
+      return updateBinding(initialValue)
     end,
     useState = function<S>(
       initialState: (() -> S) | S
@@ -2429,7 +2470,6 @@ useMemo = function<T...>(create: () -> T..., deps: Array<any> | nil): ...any
       updateHookTypesDev()
       return updateLayoutEffect(create, deps)
     end,
-
     -- ROBLOX FIXME Luau: work around 'Failed to unify type packs' error: CLI-51338
     useMemo = function<T...>(create: () -> T..., deps: Array<any> | nil): ...any
       currentHookNameInDev = 'useMemo'
@@ -2471,27 +2511,33 @@ useMemo = function<T...>(create: () -> T..., deps: Array<any> | nil): ...any
       updateHookTypesDev()
       return updateRef(initialValue)
     end,
-  useState = function<S>(
-    initialState: (() -> S) | S
-  ): (S, Dispatch<BasicStateAction<S>>)
-      currentHookNameInDev = 'useState'
+    -- ROBLOX deviation: Bindings are a feature unique to Roact
+    useBinding = function<T>(initialValue: T): (ReactBinding<T>, ReactBindingUpdater<T>)
+      currentHookNameInDev = 'useBinding'
       updateHookTypesDev()
-      local prevDispatcher = ReactCurrentDispatcher.current
-      ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnRerenderInDEV
-      -- deviation: Lua version of useState returns two items, not list like upstream
-      local ok, result, setResult = pcall(rerenderState, initialState)
-        ReactCurrentDispatcher.current = prevDispatcher
-      if not ok then
-        error(result)
-      end
-      -- deviation: Lua version of useState returns two items, not list like upstream
-      return result, setResult
+      return updateBinding(initialValue)
     end,
-    useDebugValue = function<T>(value: T, formatterFn: ((value: T) -> any)?): ()
-      currentHookNameInDev = 'useDebugValue'
-      updateHookTypesDev()
-      return updateDebugValue(value, formatterFn)
-    end,
+    useState = function<S>(
+      initialState: (() -> S) | S
+    ): (S, Dispatch<BasicStateAction<S>>)
+        currentHookNameInDev = 'useState'
+        updateHookTypesDev()
+        local prevDispatcher = ReactCurrentDispatcher.current
+        ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnRerenderInDEV
+        -- deviation: Lua version of useState returns two items, not list like upstream
+        local ok, result, setResult = pcall(rerenderState, initialState)
+          ReactCurrentDispatcher.current = prevDispatcher
+        if not ok then
+          error(result)
+        end
+        -- deviation: Lua version of useState returns two items, not list like upstream
+        return result, setResult
+      end,
+      useDebugValue = function<T>(value: T, formatterFn: ((value: T) -> any)?): ()
+        currentHookNameInDev = 'useDebugValue'
+        updateHookTypesDev()
+        return updateDebugValue(value, formatterFn)
+      end,
 --     useDeferredValue<T>(value: T): T {
 --       currentHookNameInDev = 'useDeferredValue'
 --       updateHookTypesDev()
@@ -2573,8 +2619,8 @@ useMemo = function<T...>(create: () -> T..., deps: Array<any> | nil): ...any
       mountHookTypesDev()
       return mountLayoutEffect(create, deps)
     end,
-	-- ROBLOX FIXME Luau: work around 'Failed to unify type packs' error: CLI-51338
-  useMemo = function<T...>(create: () -> T..., deps: Array<any> | nil): ...any
+    -- ROBLOX FIXME Luau: work around 'Failed to unify type packs' error: CLI-51338
+    useMemo = function<T...>(create: () -> T..., deps: Array<any> | nil): ...any
       currentHookNameInDev = 'useMemo'
       warnInvalidHookAccess()
       mountHookTypesDev()
@@ -2616,6 +2662,13 @@ useMemo = function<T...>(create: () -> T..., deps: Array<any> | nil): ...any
       warnInvalidHookAccess()
       mountHookTypesDev()
       return mountRef(initialValue)
+    end,
+    -- ROBLOX deviation: Bindings are a feature unique to Roact
+    useBinding = function<T>(initialValue: T): (ReactBinding<T>, ReactBindingUpdater<T>)
+      currentHookNameInDev = 'useBinding'
+      warnInvalidHookAccess()
+      mountHookTypesDev()
+      return mountBinding(initialValue)
     end,
     useState = function<S>(
       initialState: (() -> S) | S
@@ -2770,6 +2823,13 @@ useMemo = function<T...>(create: () -> T..., deps: Array<any> | nil): ...any
       updateHookTypesDev()
       return updateRef(initialValue)
     end,
+    -- ROBLOX deviation: Bindings are a feature unique to Roact
+    useBinding = function<T>(initialValue: T): (ReactBinding<T>, ReactBindingUpdater<T>)
+      currentHookNameInDev = 'useBinding'
+      warnInvalidHookAccess()
+      updateHookTypesDev()
+      return updateBinding(initialValue)
+    end,
     useState = function<S>(
       initialState: (() -> S) | S
     ): (S, Dispatch<BasicStateAction<S>>)
@@ -2921,6 +2981,13 @@ useMemo = function<T...>(create: () -> T..., deps: Array<any> | nil): ...any
       warnInvalidHookAccess()
       updateHookTypesDev()
       return updateRef(initialValue)
+    end,
+    -- ROBLOX deviation: Bindings are a feature unique to Roact
+    useBinding = function<T>(initialValue: T): (ReactBinding<T>, ReactBindingUpdater<T>)
+      currentHookNameInDev = 'useBinding'
+      warnInvalidHookAccess()
+      updateHookTypesDev()
+      return updateBinding(initialValue)
     end,
     useState = function<S>(
       initialState: (() -> S) | S

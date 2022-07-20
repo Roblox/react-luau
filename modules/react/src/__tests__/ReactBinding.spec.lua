@@ -1,8 +1,12 @@
+--!strict
 return function()
 	local Packages = script.Parent.Parent.Parent
 	local JestGlobals = require(Packages.Dev.JestGlobals)
 	local jestExpect = JestGlobals.expect
 	local jest = JestGlobals.jest
+
+	local ReactTypes = require(Packages.Shared)
+	type Binding<T> = ReactTypes.ReactBinding<T>
 
 	local Binding = require(script.Parent.Parent["ReactBinding.roblox"])
 	local ReactCreateRef = require(script.Parent.Parent.ReactCreateRef)
@@ -16,11 +20,25 @@ return function()
 		end)
 
 		it("should support tostring on bindings", function()
-			local binding, update = Binding.create(1)
+			local binding, update = Binding.create(1 :: number | string)
 			jestExpect(tostring(binding)).toBe("RoactBinding(1)")
 
 			update("foo")
 			jestExpect(tostring(binding)).toBe("RoactBinding(foo)")
+		end)
+
+		it("should allow mapping a mapped binding", function()
+			local binding, update = Binding.create(1)
+			local asPercent = binding:map(function(value)
+				return value * 100
+			end):map(function(value)
+				return tostring(value) .. "%"
+			end)
+
+			jestExpect(asPercent:getValue()).toEqual("100%")
+
+			update(0.3)
+			jestExpect(asPercent:getValue()).toEqual("30%")
 		end)
 
 		if _G.__DEV__ then
@@ -75,7 +93,7 @@ return function()
 		it("should be composable", function()
 			local word, updateWord = Binding.create("hi")
 
-			local wordLength = word:map(string.len)
+			local wordLength = word:map(string.len) :: Binding<number>
 			local isEvenLength = wordLength:map(function(value)
 				return value % 2 == 0
 			end)
@@ -102,7 +120,7 @@ return function()
 			)
 
 			-- binding -> base binding
-			local length = word:map(string.len)
+			local length = word:map(string.len) :: Binding<number>
 
 			local lengthSpy = jest.fn()
 			local disconnectLength = Binding.subscribe(
@@ -163,7 +181,7 @@ return function()
 				local binding, _ = Binding.create(1)
 				local mappedBinding = binding:map(function(value)
 					return value
-				end)
+				end) :: Binding<number>
 				jestExpect(mappedBinding._source).toContain(script.name)
 				jestExpect(mappedBinding._source).toContain("Mapped binding created")
 			end)
@@ -287,7 +305,7 @@ return function()
 		if _G.__DEV__ then
 			it("should throw when a non-table value is passed", function()
 				jestExpect(function()
-					Binding.join("hi")
+					Binding.join(("hi" :: any) :: { [string]: Binding<any> })
 				end).toThrow()
 			end)
 
@@ -297,7 +315,7 @@ return function()
 
 					Binding.join({
 						binding,
-						"abcde",
+						("abcde" :: any) :: Binding<any>,
 					})
 				end).toThrow()
 			end)
@@ -326,7 +344,7 @@ return function()
 
 		if _G.__DEV__ then
 			it("should include a stack in DEV mode", function()
-				local ref = ReactCreateRef.createRef()
+				local ref = (ReactCreateRef.createRef() :: any) :: { _source: string }
 				jestExpect(ref._source).toContain(script.name)
 				jestExpect(ref._source).toContain("Ref created")
 			end)

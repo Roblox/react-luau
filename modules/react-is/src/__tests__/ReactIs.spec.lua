@@ -281,7 +281,8 @@ return function()
 
 		-- ROBLOX deviation: Bindings are a feature migrated from Roact
 		it("should identify bindings", function()
-			jestExpect(ReactIs.isBinding(React.createBinding(nil))).toBe(true)
+			local binding, _ = React.createBinding(nil)
+			jestExpect(ReactIs.isBinding(binding)).toBe(true)
 
 			local mappedBinding = React.createBinding(nil):map(tostring)
 			jestExpect(ReactIs.isBinding(mappedBinding)).toBe(true)

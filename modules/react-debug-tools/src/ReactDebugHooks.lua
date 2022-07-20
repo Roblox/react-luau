@@ -23,6 +23,10 @@ type Function = (...any) -> ...any
 local exports = {}
 
 local ReactTypes = require(Packages.Shared)
+-- ROBLOX deviation START: binding support
+type ReactBinding<T> = ReactTypes.ReactBinding<T>
+type ReactBindingUpdater<T> = ReactTypes.ReactBindingUpdater<T>
+-- ROBLOX deviation END: binding support
 type MutableSource<T> = ReactTypes.MutableSource<T>
 type MutableSourceGetSnapshotFn<Source, Snapshot> = ReactTypes.MutableSourceGetSnapshotFn<
 	Source,
@@ -121,6 +125,8 @@ local function getPrimitiveStackCache(): Map<string, Array<any>>
 				return s
 			end, nil)
 			Dispatcher.useRef(nil)
+			-- ROBLOX deviation: support bindings
+			Dispatcher.useBinding(nil)
 			Dispatcher.useLayoutEffect(function() end)
 			Dispatcher.useEffect(function() end)
 			Dispatcher.useImperativeHandle(nil, function()
@@ -217,14 +223,7 @@ end
 -- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
 local function useRef<T>(initialValue: T): { current: T | nil }
 	local hook = nextHook()
-	local ref = (function()
-		if hook ~= nil then
-			return hook.memoizedState
-		end
-
-		return { current = initialValue }
-	end)()
-
+	local ref = if hook ~= nil then hook.memoizedState else { current = initialValue }
 	table.insert(hookLog, {
 		primitive = "Ref",
 		stackError = Error.new(),
@@ -232,6 +231,32 @@ local function useRef<T>(initialValue: T): { current: T | nil }
 	})
 
 	return ref
+end
+
+-- ROBLOX deviaition: binding support; these aren't fully working hooks, so this
+-- is just an approximation modeled off of the `ref` hook above
+local function useBinding<T>(initialValue: T): (ReactBinding<T>, ReactBindingUpdater<T>)
+	local hook = nextHook()
+	local binding = if hook ~= nil
+		then hook.memoizedState
+		else
+			(
+				{
+					getValue = function(_self)
+						return initialValue
+					end,
+					-- FIXME Luau: I'd expect luau to complain about a lack of `map`
+					-- field, but it only complains when non-nil and incorrectly typed
+				} :: ReactBinding<T>
+			)
+
+	table.insert(hookLog, {
+		primitive = "Binding",
+		stackError = Error.new(),
+		value = binding:getValue(),
+	})
+
+	return binding, function(_value) end
 end
 
 local function useLayoutEffect(
@@ -435,6 +460,7 @@ Dispatcher = {
 	useMemo = useMemo :: any,
 	useReducer = useReducer,
 	useRef = useRef,
+	useBinding = useBinding,
 	useState = useState,
 	-- useTransition = useTransition,
 	useMutableSource = useMutableSource,

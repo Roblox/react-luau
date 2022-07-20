@@ -30,6 +30,10 @@ export type ReactFundamentalComponent<C, H> = ReactTypes.ReactFundamentalCompone
 export type ReactScope = ReactTypes.ReactScope
 export type ReactScopeQuery = ReactTypes.ReactScopeQuery
 export type ReactScopeInstance = ReactTypes.ReactScopeInstance
+-- ROBLOX deviation START: Re-export bindings types
+export type ReactBinding<T> = ReactTypes.ReactBinding<T>
+export type ReactBindingUpdater<T> = ReactTypes.ReactBindingUpdater<T>
+-- ROBLOX deviation END
 export type MutableSourceVersion = ReactTypes.MutableSourceVersion
 export type MutableSourceGetSnapshotFn<Source, Snapshot> =
 	ReactTypes.MutableSourceGetSnapshotFn<Source, Snapshot>

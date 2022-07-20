@@ -77,6 +77,8 @@ return {
 	useMutableSource = ReactHooks.useMutableSource,
 	useReducer = ReactHooks.useReducer,
 	useRef = ReactHooks.useRef,
+	-- ROBLOX deviation: bindings support
+	useBinding = ReactHooks.useBinding,
 	useState = ReactHooks.useState,
 	Fragment = ReactSymbols.REACT_FRAGMENT_TYPE,
 	Profiler = ReactSymbols.REACT_PROFILER_TYPE,
@@ -104,9 +106,10 @@ return {
 	-- ROBLOX TODO: REACT_SCOPE_TYPE as unstable_Scope,
 	-- ROBLOX TODO: useOpaqueIdentifier as unstable_useOpaqueIdentifier,
 
-	-- ROBLOX DEVIATION: Bindings
+	-- ROBLOX deviation START: bindings support
 	createBinding = ReactBinding.create,
 	joinBindings = ReactBinding.join,
+	-- ROBLOX deviation END
 
 	-- ROBLOX DEVIATION: export the `None` placeholder for use with setState
 	None = ReactNone,
