@@ -150,8 +150,8 @@ return function()
 		-- local currentTime
 
 		describe("works in profiling and non-profiling bundles", function()
-			for _, enableSchedulerTracing in pairs({ true, false }) do
-				for _, enableProfilerTimer in pairs({ true, false }) do
+			for _, enableSchedulerTracing in { true, false } do
+				for _, enableProfilerTimer in { true, false } do
 					describe("enableSchedulerTracing:" .. (function()
 						if enableSchedulerTracing then
 							return "enabled"
@@ -257,7 +257,7 @@ return function()
 			end
 		end)
 
-		for _, enableSchedulerTracing in pairs({ true, false }) do
+		for _, enableSchedulerTracing in { true, false } do
 			describe("onRender enableSchedulerTracing:" .. (function()
 				if enableSchedulerTracing then
 					return "enabled"
@@ -836,7 +836,7 @@ return function()
 				end)
 
 				describe("with regard to interruptions", function()
-					for _, replayFailedUnitOfWorkWithInvokeGuardedCallback in pairs({ true, false }) do
+					for _, replayFailedUnitOfWorkWithInvokeGuardedCallback in { true, false } do
 						describe("replayFailedUnitOfWorkWithInvokeGuardedCallback " .. (function()
 							if replayFailedUnitOfWorkWithInvokeGuardedCallback then
 								return "enabled"

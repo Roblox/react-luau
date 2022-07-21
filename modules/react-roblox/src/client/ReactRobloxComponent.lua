@@ -87,7 +87,7 @@ local function diffProperties(
   -- let propKey;
   -- let styleName;
   -- let styleUpdates = null;
-  for propKey, _ in pairs(lastProps) do
+  for propKey, _ in lastProps do
     if nextProps[propKey] ~= nil then
       continue
     end
@@ -126,7 +126,7 @@ local function diffProperties(
       table.insert(updatePayload, Object.None)
     -- }
   end
-  for propKey, nextProp in pairs(nextProps) do
+  for propKey, nextProp in nextProps do
     local lastProp = lastProps ~= nil and lastProps[propKey] or nil
     if nextProp == lastProp then
       continue

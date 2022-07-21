@@ -22,7 +22,7 @@ local function resolveDefaultProps(Component: any, baseProps: Object): Object
 		-- ROBLOX FIXME Luau: hard cast to object until we can model this better in Luau. avoids Expected type table, got 'Object & any & any & { [any]: any }' instead
 		local props = Object.assign({}, baseProps) :: Object
 		local defaultProps = Component.defaultProps
-		for propName, _ in pairs(defaultProps) do
+		for propName, _ in defaultProps do
 			if props[propName] == nil then
 				props[propName] = defaultProps[propName]
 			end

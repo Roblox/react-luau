@@ -102,7 +102,7 @@ local function checkPropTypes<P>(
 		if propTypes then
 			-- ROBLOX deviation: since we can't constrain the generic, we assert so Luau knows propTypes is a table
 			assert(typeof(propTypes) == "table", "propTypes needs to be a table")
-			for typeSpecName, _ in pairs(propTypes) do
+			for typeSpecName, _ in propTypes do
 				-- deviation: since our loop won't hit metatable members, we don't
 				-- need to worry about encountering inherited properties here
 				-- if has(propTypes, typeSpecName) then

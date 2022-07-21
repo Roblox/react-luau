@@ -134,7 +134,7 @@ exports.installHook = function(target: any): DevToolsHook | nil
 	end
 	local function emit(event, data)
 		if listeners[event] then
-			for _, fn in pairs(listeners[event]) do
+			for _, fn in listeners[event] do
 				fn(data)
 			end
 		end

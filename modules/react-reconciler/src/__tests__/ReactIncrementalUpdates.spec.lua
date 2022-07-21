@@ -25,7 +25,7 @@ return function()
         local function objectKeys(arr)
             local keytable = {}
             local n = 1
-            for k, _ in pairs(arr) do
+            for k, _ in arr do
                 keytable[n] = k
                 n = n + 1
             end

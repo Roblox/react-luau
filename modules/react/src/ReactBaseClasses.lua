@@ -182,7 +182,7 @@ function Component:extend(name): React_Component<any, any>
     forceUpdate = self.forceUpdate,
     init = nil, -- ROBLOX note: required to make Luau analyze happy, should be removed by bytecode compiler
   }
-  -- for key, value in pairs(self) do
+  -- for key, value in self do
   --   -- Roact opts to make consumers use composition over inheritance, which
   --   -- lines up with React.
   --   -- https://reactjs.org/docs/composition-vs-inheritance.html
@@ -322,10 +322,11 @@ end
 
 
 if _G.__DEV__ then
+  -- ROBLOX FIXME Luau: need CLI-53569 to remove the any cast
   local deprecatedAPIs = {
     isMounted = {'isMounted', 'Instead, make sure to clean up subscriptions and pending requests in ' .. 'componentWillUnmount to prevent memory leaks.'},
     replaceState = {'replaceState', 'Refactor your code to use setState instead (see ' .. 'https://github.com/facebook/react/issues/3236).'}
-  }
+  } :: any
 
   local defineDeprecationWarning = function (methodName, info)
     Component[methodName] =
@@ -335,7 +336,7 @@ if _G.__DEV__ then
       end
   end
 
-  for fnName, _ in pairs(deprecatedAPIs) do
+  for fnName, _ in deprecatedAPIs do
     if deprecatedAPIs[fnName] ~= nil then
       defineDeprecationWarning(fnName, deprecatedAPIs[fnName])
     end

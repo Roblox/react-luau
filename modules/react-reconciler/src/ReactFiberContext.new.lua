@@ -132,7 +132,7 @@ local function getMaskedContext(
 		end
 
 		local context = {}
-		for key, _ in pairs(contextTypes) do
+		for key, _ in contextTypes do
 			context[key] = unmaskedContext[key]
 		end
 
@@ -250,7 +250,7 @@ local function processChildContext(
 		end
 
 		local childContext = instance:getChildContext()
-		for contextKey, _ in pairs(childContext) do
+		for contextKey, _ in childContext do
 			if childContextTypes[contextKey] == nil then
 				local name = getComponentName(type) or "Unknown"
 				error(Error.new(string.format(

@@ -436,7 +436,7 @@ local function createElement<P, T>(
 			source = ((config :: any) :: React_ElementProps<T>).__source
 		end
 		-- Remaining properties are added to a new props object
-		for propName, _ in pairs(config :: any) do
+		for propName, _ in config :: any do
 			-- ROBLOX FIXME Luau: needs normalization to remove any
 			if (config :: any)[propName] ~= nil and not RESERVED_PROPS[propName] then
 				props[propName] = (config :: any)[propName]
@@ -478,7 +478,7 @@ local function createElement<P, T>(
 		local defaultProps = (type_ :: T & React_ComponentType<P>).defaultProps :: P
 
 		-- ROBLOX Luau TODO: defaultProps isn't known to be a table, since Luau doesn't allow us to do `<P extends {}>` yet
-		for propName, _ in pairs((defaultProps :: any) :: Object) do
+		for propName, _ in (defaultProps :: any) :: Object do
 			if props[propName] == nil then
 				props[propName] = ((defaultProps :: any) :: Object)[propName]
 			end
@@ -606,7 +606,7 @@ exports.cloneElement = function<P, T>(
 	-- ROBLOX deviation: cannot call pairs on nil the way you can use `for...in`
 	-- on nil in JS, so we check for nil before iterating
 	if config ~= nil then
-		for propName, _ in pairs(config :: any) do
+		for propName, _ in config :: any do
 			if (config :: any)[propName] ~= nil and not RESERVED_PROPS[propName] then
 				if (config :: any)[propName] == nil and defaultProps ~= nil then
 					-- Resolve default props

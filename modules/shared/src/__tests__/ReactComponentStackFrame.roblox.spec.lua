@@ -125,7 +125,8 @@ return function()
 			}
 
 			local lineNumber = 0
-			for fileName, expectedFileName in pairs(fileNames) do
+			-- ROBLOX FIXME Luau: need to fix CLI-56768 to remove any casts
+			for fileName, expectedFileName in fileNames :: any do
 				lineNumber = lineNumber + 1
 
 				it(("converts the file name %q"):format(fileName), function()

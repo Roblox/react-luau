@@ -58,7 +58,7 @@ function onInteractionTraced(interaction: Interaction): ()
 	local didCatchError = false
 	local caughtError = nil
 
-	for subscriber, _ in pairs(subscribers) do
+	for subscriber, _ in subscribers do
 		-- ROBLOX try
 		local ok, result = pcall(subscriber.onInteractionTraced, interaction)
 		-- ROBLOX catch
@@ -80,7 +80,7 @@ function onInteractionScheduledWorkCompleted(interaction: Interaction): ()
 	local didCatchError = false
 	local caughtError = nil
 
-	for subscriber, _ in pairs(subscribers) do
+	for subscriber, _ in subscribers do
 		-- ROBLOX try
 		local ok, result = pcall(subscriber.onInteractionScheduledWorkCompleted, interaction)
 		-- ROBLOX catch
@@ -102,7 +102,7 @@ function onWorkScheduled(interactions: Set<Interaction>, threadID: number): ()
 	local didCatchError = false
 	local caughtError = nil
 
-	for subscriber, _ in pairs(subscribers) do
+	for subscriber, _ in subscribers do
 		-- ROBLOX try
 		local ok, result = pcall(subscriber.onWorkScheduled, interactions, threadID)
 		-- ROBLOX catch
@@ -124,7 +124,7 @@ function onWorkStarted(interactions: Set<Interaction>, threadID: number): ()
 	local didCatchError = false
 	local caughtError = nil
 
-	for subscriber, _ in pairs(subscribers) do
+	for subscriber, _ in subscribers do
 		-- ROBLOX try
 		local ok, result = pcall(subscriber.onWorkStarted, interactions, threadID)
 		-- ROBLOX catch
@@ -146,7 +146,7 @@ function onWorkStopped(interactions: Set<Interaction>, threadID: number): ()
 	local didCatchError = false
 	local caughtError = nil
 
-	for subscriber, _ in pairs(subscribers) do
+	for subscriber, _ in subscribers do
 		-- ROBLOX try
 		local ok, result = pcall(subscriber.onWorkStopped, interactions, threadID)
 		-- ROBLOX catch
@@ -168,7 +168,7 @@ function onWorkCanceled(interactions: Set<Interaction>, threadID: number): ()
 	local didCatchError = false
 	local caughtError = nil
 
-	for subscriber, _ in pairs(subscribers) do
+	for subscriber, _ in subscribers do
 		-- ROBLOX try
 		local ok, result = pcall(subscriber.onWorkCanceled, interactions, threadID)
 		-- ROBLOX catch

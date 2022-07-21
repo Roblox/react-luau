@@ -708,7 +708,7 @@ local function commitUpdateQueue<State>(
 	local effects = finishedQueue.effects
 	finishedQueue.effects = nil
 	if effects ~= nil then
-		for _, effect in ipairs(effects) do
+		for _, effect in effects do
 			local callback = effect.callback
 			if callback ~= nil then
 				callCallback(callback, instance)

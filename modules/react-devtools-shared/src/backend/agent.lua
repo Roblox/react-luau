@@ -339,7 +339,7 @@ function Agent:getInstanceAndStyle(
 end
 
 function Agent:getIDForNode(node: Object): number | nil
-	for _rendererID, renderer in pairs(self._rendererInterfaces) do
+	for _rendererID, renderer in self._rendererInterfaces do
 		local ok, result = pcall(
 			(renderer :: RendererInterface).getFiberIDForNative,
 			node,
@@ -624,7 +624,7 @@ function Agent:setTraceUpdatesEnabled(traceUpdatesEnabled: boolean)
 
 	setTraceUpdatesEnabled(traceUpdatesEnabled)
 
-	for _rendererID, renderer in pairs(self._rendererInterfaces) do
+	for _rendererID, renderer in self._rendererInterfaces do
 		renderer.setTraceUpdatesEnabled(traceUpdatesEnabled)
 	end
 end
@@ -645,7 +645,7 @@ function Agent:startProfiling(recordChangeDescriptions: boolean)
 	self._recordChangeDescriptions = recordChangeDescriptions
 	self._isProfiling = true
 
-	for _rendererID, renderer in pairs(self._rendererInterfaces) do
+	for _rendererID, renderer in self._rendererInterfaces do
 		renderer.startProfiling(recordChangeDescriptions)
 	end
 
@@ -655,7 +655,7 @@ function Agent:stopProfiling()
 	self._isProfiling = false
 	self._recordChangeDescriptions = false
 
-	for _rendererID, renderer in pairs(self._rendererInterfaces) do
+	for _rendererID, renderer in self._rendererInterfaces do
 		renderer.stopProfiling()
 	end
 
@@ -700,7 +700,7 @@ function Agent:updateConsolePatchSettings(
 	end
 end
 function Agent:updateComponentFilters(componentFilters: Array<ComponentFilter>)
-	for _rendererID, renderer in pairs(self._rendererInterfaces) do
+	for _rendererID, renderer in self._rendererInterfaces do
 		renderer.updateComponentFilters(componentFilters)
 	end
 end

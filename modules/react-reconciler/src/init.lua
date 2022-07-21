@@ -17,7 +17,7 @@ export type RootTag = ReactRootTags.RootTag
 -- ROBLOX TODO: this effectively disconnects type checking from above to reconciler to below
 local function initialize(config): { [string]: any }
 	local ReactFiberHostConfig = require(script.ReactFiberHostConfig)
-	for name, implementation in pairs(config) do
+	for name, implementation in config do
 		ReactFiberHostConfig[name] = implementation
 	end
 

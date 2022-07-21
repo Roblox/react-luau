@@ -88,7 +88,7 @@ jsonChildrenToJSXChildren = function(jsonChildren)
 			local allJSXChildrenAreStrings = true
 			local jsxChildrenString = ""
 
-			for _, jsonChild in ipairs(jsonChildren) do
+			for _, jsonChild in jsonChildren do
 				local jsxChild = jsonChildToJSXChild(jsonChild)
 
 				table.insert(jsxChildren, jsxChild)

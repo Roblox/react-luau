@@ -24,7 +24,7 @@ local function copySet(from: Set<any>?): Set<any>
 	if from == nil then
 		return to
 	end
-	for _, v in (from :: Set<any>):ipairs() do
+	for _, v in (from :: Set<any>) do
 		to:add(v)
 	end
 
@@ -1235,7 +1235,7 @@ mod.flushPendingDiscreteUpdates = function()
     rootsWithPendingDiscreteUpdates = nil
     -- ROBLOX deviation: proper for loop instead of forEach;
     -- rootsWithPendingDiscreteUpdates is a Set, so we use the keys
-    for root, _ in pairs(roots) do
+    for root, _ in roots do
       markDiscreteUpdatesExpired(root)
       ensureRootIsScheduled(root, now())
     end
@@ -2513,7 +2513,7 @@ mod.commitMutationEffects = function(
     local deletions = fiber.deletions
     if deletions ~= nil then
       -- ROBLOX performance: React 18 inlines commitMutationEffectsDeletions, pulling that in based on tab switching hot path
-      for _, childToDelete in ipairs(deletions) do
+      for _, childToDelete in deletions do
         -- ROBLOX FIXME Luau: CLI-49835, "Function only returns 1 value, 2 are required"
         local ok, error_ = xpcall(commitDeletion,
           describeError,
@@ -2641,7 +2641,7 @@ mod.commitMutationEffectsDeletions = function(
   renderPriorityLevel
 )
   -- ROBLOX performance: align to React 18, which ditches the __DEV__ branch and use of invokeGuardedCallback
-  for _, childToDelete in ipairs(deletions) do
+  for _, childToDelete in deletions do
     -- ROBLOX FIXME Luau: CLI-49835, "Function only returns 1 value, 2 are required"
     local ok, error_ = xpcall(commitDeletion,
       describeError,
@@ -3624,37 +3624,20 @@ function scheduleInteractions(
     local pendingInteractionMap = root.pendingInteractionMap
     local pendingInteractions = pendingInteractionMap[lane]
     if pendingInteractions ~= nil then
-      if interactions.ipairs ~= nil then
-        for _, interaction in interactions:ipairs() do
-          if not pendingInteractions[interaction] then
-            -- Update the pending async work count for previously unscheduled interaction.
-            interaction.__count += 1
-          end
-
-          pendingInteractions[interaction] = true
+      for _, interaction in interactions do
+        if not pendingInteractions[interaction] then
+          -- Update the pending async work count for previously unscheduled interaction.
+          interaction.__count += 1
         end
-      else
-        for _, interaction in ipairs(interactions :: any) do
-          if not pendingInteractions[interaction] then
-            -- Update the pending async work count for previously unscheduled interaction.
-            interaction.__count += 1
-          end
 
-          pendingInteractions[interaction] = true
-        end
+        pendingInteractions[interaction] = true
       end
     else
       pendingInteractionMap[lane] = copySet(interactions)
 
       -- Update the pending async work count for the current interactions.
-      if interactions.ipairs ~= nil then
-        for _, interaction in interactions:ipairs() do
-          interaction.__count += 1
-        end
-      else
-        for _, interaction in ipairs(interactions :: any) do
-          interaction.__count += 1
-        end
+      for _, interaction in interactions do
+        interaction.__count += 1
       end
     end
 
@@ -3687,9 +3670,9 @@ mod.startWorkOnPendingInteractions = function(root: FiberRoot, lanes: Lanes)
   -- we can accurately attribute time spent working on it, And so that cascading
   -- work triggered during the render phase will be associated with it.
   local interactions: Set<Interaction> = Set.new()
-  for scheduledLane, scheduledInteractions in pairs(root.pendingInteractionMap) do
+  for scheduledLane, scheduledInteractions in root.pendingInteractionMap do
     if includesSomeLane(lanes, scheduledLane) then
-      for _, interaction in scheduledInteractions:ipairs() do
+      for _, interaction in scheduledInteractions do
         interactions:add(interaction)
       end
     end
@@ -3744,7 +3727,7 @@ mod.finishPendingInteractions = function(root: FiberRoot, committedLanes)
   -- Unless the render was suspended or cascading work was scheduled,
   -- In which case– leave pending interactions until the subsequent render.
   local pendingInteractionMap = root.pendingInteractionMap
-  for lane, scheduledInteractions in pairs(pendingInteractionMap) do
+  for lane, scheduledInteractions in pendingInteractionMap do
     -- Only decrement the pending interaction count if we're done.
     -- If there's still work at the current priority,
     -- That indicates that we are waiting for suspense data.
@@ -3756,7 +3739,7 @@ mod.finishPendingInteractions = function(root: FiberRoot, committedLanes)
       end
       -- ROBLOX TODO: standardize on a specific kind of Set and eliminate these checks, which cause Luau type noise
       if scheduledInteractions.ipairs ~= nil then
-        for _, interaction in scheduledInteractions:ipairs() do
+        for _, interaction in scheduledInteractions do
           interaction.__count -= 1
 
           if subscriber ~= nil and interaction.__count == 0 then
@@ -3770,7 +3753,7 @@ mod.finishPendingInteractions = function(root: FiberRoot, committedLanes)
           end
         end
       else
-        for _, interaction in ipairs(scheduledInteractions) do
+        for _, interaction in scheduledInteractions do
           interaction.__count -= 1
 
           if subscriber ~= nil and interaction.__count == 0 then

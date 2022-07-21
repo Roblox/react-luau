@@ -40,7 +40,7 @@ exports.markSourceAsDirty = function(mutableSource: MutableSource<any>)
 end
 
 exports.resetWorkInProgressVersions = function()
-  for i, mutableSource in ipairs(workInProgressSources) do
+  for i, mutableSource in workInProgressSources do
     if isPrimaryRenderer then
       mutableSource._workInProgressVersionPrimary = nil
     else

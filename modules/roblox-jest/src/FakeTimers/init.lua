@@ -19,7 +19,7 @@ local function reset()
 end
 
 local function runAllTimers()
-	for _, timer in pairs(timers) do
+	for _, timer in timers do
 		-- Move now to target time, in case the callback reads it via
 		-- `tick`
 		now = timer.expiry

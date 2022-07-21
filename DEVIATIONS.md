@@ -372,7 +372,7 @@ function NumberList(props)
     -- its sibling elements
     ListLayout = Roact.createElement("UIListLayout", {SortOrder = Enum.SortOrder.LayoutOrder})
   }
-  for i, number in ipairs(numbers) do
+  for i, number in numbers do
     -- Here, the key in the list (`i`) is the key associated with the
     -- equivalently-numbered element. It can be any kind of value.
     listItems[i] = Roact.createElement("TextLabel", {

@@ -1037,7 +1037,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 
 				-- ROBLOX FIXME: Might want to iterate in array order if
 				-- children _is_ an array
-				for _, child in pairs(children) do
+				for _, child in children do
 					local indent = string.rep("  ", depth)
 					if typeof(child.text) == "string" then
 						log(indent .. "- " .. (child :: TextInstance).text)
@@ -1133,7 +1133,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			logFiber(root.current, 0)
 
 			-- eslint-disable-next-line react-internal/no-production-logging
-			for _, line in ipairs(bufferedLog) do
+			for _, line in bufferedLog do
 				console.log(line)
 			end
 		end,

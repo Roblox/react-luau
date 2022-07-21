@@ -659,7 +659,7 @@ exports.attach = function(
 		hideElementsWithDisplayNames:clear()
 		hideElementsWithPaths:clear()
 		-- ROBLOX TODO: translate to Array.forEach
-		for _, componentFilter in ipairs(componentFilters) do
+		for _, componentFilter in componentFilters do
 			if not componentFilter.isEnabled then
 				continue
 			end
@@ -720,7 +720,7 @@ exports.attach = function(
 
 		-- Recursively unmount all roots.
 		-- ROBLOX deviation: for loop instead of forEach
-		for root in pairs(hook.getFiberRoots(rendererID)) do
+		for root in hook.getFiberRoots(rendererID) do
 			currentRootID = getFiberID(getPrimaryFiber(root.current))
 			unmountFiberChildrenRecursively(root.current)
 			recordUnmount(root.current, false)
@@ -733,7 +733,7 @@ exports.attach = function(
 		rootDisplayNameCounter = {}
 
 		-- Recursively re-mount all roots with new filter criteria applied.
-		for root in pairs(hook.getFiberRoots(rendererID)) do
+		for root in hook.getFiberRoots(rendererID) do
 			currentRootID = getFiberID(getPrimaryFiber(root.current :: Fiber))
 
 			setRootPseudoKey(currentRootID, root.current :: Fiber)
@@ -787,7 +787,7 @@ exports.attach = function(
 			local displayName = getDisplayNameForFiber(fiber)
 			if displayName ~= nil then
 				-- eslint-disable-next-line no-for-of-loops/no-for-of-loops
-				for _, displayNameRegExp in hideElementsWithDisplayNames:ipairs() do
+				for _, displayNameRegExp in hideElementsWithDisplayNames do
 					-- ROBLOX deviation: these are patterns not RegExps
 					if (displayName :: string):match(displayNameRegExp) then
 						return true
@@ -799,7 +799,7 @@ exports.attach = function(
 			local fileName = _debugSource.fileName
 
 			-- eslint-disable-next-line no-for-of-loops/no-for-of-loops
-			for _, pathRegExp in hideElementsWithPaths:ipairs() do
+			for _, pathRegExp in hideElementsWithPaths do
 				-- ROBLOX deviation: these are patterns not RegExps
 				if fileName:match(pathRegExp) then
 					return true
@@ -1086,16 +1086,16 @@ exports.attach = function(
 		-- })
 		-- local changedKeys = {}
 		-- -- eslint-disable-next-line no-for-of-loops/no-for-of-loops
-		-- for _, key in keys:ipairs() do
+		-- for _, key in keys do
 		-- 	if prev[key] ~= next_[key] then
 		local changedKeys = {}
 
-		for key, value in pairs(prev) do
+		for key, value in prev do
 			if value ~= next_[key] then
 				table.insert(changedKeys, key)
 			end
 		end
-		for key, value in pairs(next_) do
+		for key, value in next_ do
 			if prev[key] == nil then
 				table.insert(changedKeys, key)
 			end
@@ -1213,7 +1213,7 @@ exports.attach = function(
 		-- ROBLOX deviation: insert operations in pendingStringTable value-order
 		local stringTableStartIndex = #operations
 
-		for key, value in pairs(pendingStringTable) do
+		for key, value in pendingStringTable do
 			-- ROBLOX deviation: Don't encode strings
 			-- operations[POSTFIX_INCREMENT()] = key:len()
 			-- local encodedKey = utfEncodeString(key)
@@ -1935,7 +1935,7 @@ exports.attach = function(
 							getFiberID(getPrimaryFiber(nextFiber))
 						)
 
-						for _, hostFiber in ipairs(hostFibers) do
+						for _, hostFiber in hostFibers do
 							traceUpdatesForNodes:add(hostFiber.stateNode)
 						end
 					end
@@ -1998,9 +1998,7 @@ exports.attach = function(
 			and #(localPendingOperationsQueue :: Array<Array<number>>) > 0
 		then
 			-- ROBLOX deviation: for loop instead of forEach
-			for _, operations in
-				ipairs(localPendingOperationsQueue :: Array<Array<number>>)
-			do
+			for _, operations in localPendingOperationsQueue :: Array<Array<number>> do
 				hook.emit("operations", operations)
 			end
 		else
@@ -2012,7 +2010,7 @@ exports.attach = function(
 
 			-- If we have not been profiling, then we can just walk the tree and build up its current state as-is.
 			-- ROBLOX deviation: for loop instead of forEach
-			for root in pairs(hook.getFiberRoots(rendererID)) do
+			for root in hook.getFiberRoots(rendererID) do
 				currentRootID = getFiberID(getPrimaryFiber(root.current))
 
 				setRootPseudoKey(currentRootID, root.current)
@@ -2643,7 +2641,7 @@ exports.attach = function(
 
 			-- Temporarily disable all console logging before re-running the hook.
 			-- ROBLOX TODO: Is iterating over console methods be sensible here?
-			for method, _ in pairs(console) do
+			for method, _ in console do
 				pcall(function()
 					originalConsoleMethods[method] = console[method]
 					console[method] = function() end
@@ -2655,7 +2653,7 @@ exports.attach = function(
 			end)
 
 			-- Restore originl console functionality.
-			for method, _ in pairs(console) do
+			for method, _ in console do
 				pcall(function()
 					console[method] = originalConsoleMethods[method]
 				end)
@@ -2748,7 +2746,7 @@ exports.attach = function(
 		local current = currentlyInspectedPaths
 
 		-- ROBLOX deviation: for loop instead of forEach
-		for _, key in ipairs(path) do
+		for _, key in path do
 			if not current[key] then
 				current[key] = {}
 			end
@@ -3193,7 +3191,7 @@ exports.attach = function(
 		end
 
 		for rootID, commitProfilingMetadata in
-			pairs(rootToCommitProfilingMetadataMap :: CommitProfilingMetadataMap)
+			rootToCommitProfilingMetadataMap :: CommitProfilingMetadataMap
 		do
 			local commitData = {}
 			local initialTreeBaseDurations = {}
@@ -3205,7 +3203,7 @@ exports.attach = function(
 
 			if initialTreeBaseDurationsMap ~= nil then
 				for id, treeBaseDuration in
-					pairs(initialTreeBaseDurationsMap :: Map<number, number>)
+					initialTreeBaseDurationsMap :: Map<number, number>
 				do
 					if
 						initialIDToRootMap ~= nil
@@ -3218,7 +3216,7 @@ exports.attach = function(
 				end
 			end
 
-			for commitIndex, commitProfilingData in ipairs(commitProfilingMetadata) do
+			for commitIndex, commitProfilingData in commitProfilingMetadata do
 				local changeDescriptions, durations, interactions, maxActualDuration, priorityLevel, commitTime =
 					commitProfilingData.changeDescriptions,
 					commitProfilingData.durations,
@@ -3228,7 +3226,7 @@ exports.attach = function(
 					commitProfilingData.commitTime
 				local interactionIDs = {}
 
-				for _, interaction in ipairs(interactions) do
+				for _, interaction in interactions do
 					if not allInteractions[interaction.id] then
 						allInteractions[interaction.id] = interaction
 					end
@@ -3297,7 +3295,7 @@ exports.attach = function(
 		initialIDToRootMap = Object.assign({}, idToRootMap)
 		idToContextsMap = {}
 
-		for root in pairs(hook.getFiberRoots(rendererID)) do
+		for root in hook.getFiberRoots(rendererID) do
 			local rootID = getFiberID(getPrimaryFiber(root.current));
 			(displayNamesByRootID :: DisplayNamesByRootID)[rootID] =
 				getDisplayNameForRoot(

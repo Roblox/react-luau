@@ -52,7 +52,7 @@ return function()
 				end
 			end,
 			send = function(event: string, payload: any, transferable: Array<any>?)
-				for _, callback in ipairs(bridgeListeners) do
+				for _, callback in bridgeListeners do
 					callback({ event = event, payload = payload })
 				end
 			end,

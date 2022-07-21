@@ -102,7 +102,7 @@ function createUpdater(renderer)
 		local callbacks = updater._callbacks
 		updater._callbacks = {}
 
-		for _, value in pairs(callbacks) do
+		for _, value in callbacks do
 			local callback = value.callback
 			local publicInstance = value.publicInstance
 
@@ -910,7 +910,7 @@ function getMaskedContext(contextTypes, unmaskedContext)
 	end
 
 	local context = {}
-	for key, _ in pairs(contextTypes) do
+	for key, _ in contextTypes do
 		context[key] = unmaskedContext[key]
 	end
 	return context

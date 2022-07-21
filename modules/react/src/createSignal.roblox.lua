@@ -51,7 +51,7 @@ local function createSignal(): ((Function) -> (() -> ()), (...any) -> ())
 
 	local function fire(...)
 		firing = true
-		for callback, connection in pairs(connections) do
+		for callback, connection in connections do
 			if not connection.disconnected and not suspendedConnections[callback] then
 				callback(...)
 			end

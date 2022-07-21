@@ -16,7 +16,7 @@ local function setInitialTags(
 	rawProps: Object,
 	rootContainerElement: any
 )
-	for key, newValue in pairs(rawProps) do
+	for key, newValue in rawProps do
 		if key == Tag then
 			local rootTagManager = TagManagers[rootContainerElement]
 			if rootTagManager == nil then
@@ -26,7 +26,7 @@ local function setInitialTags(
 
 			local tagSet = string.split(newValue or "", ",")
 
-			for _, newTag in ipairs(tagSet) do
+			for _, newTag in tagSet do
 				local instancesForTag = rootTagManager[newTag]
 				if instancesForTag == nil then
 					instancesForTag = {}
@@ -43,7 +43,7 @@ local function updateTags(
 	newProps: Object,
 	lastProps: Object
 )
-	for propKey, newValue in pairs(newProps) do
+	for propKey, newValue in newProps do
 		if propKey == Tag then
 			local rootTagManager = TagManagers[hostInstance.rootContainerInstance]
 			if rootTagManager == nil then
@@ -54,7 +54,7 @@ local function updateTags(
 			local newTagSet = string.split(newValue or "", ",")
 			local lastTagSet = string.split(lastProps[Tag] or "", ",")
 
-			for _, lastTag in ipairs(lastTagSet) do
+			for _, lastTag in lastTagSet do
 				local existingTagIndex = table.find(newTagSet, lastTag)
 				if existingTagIndex == nil then
 					local index = table.find(rootTagManager[lastTag], hostInstance)
@@ -64,7 +64,7 @@ local function updateTags(
 				end
 			end
 
-			for _, newTag in ipairs(newTagSet) do
+			for _, newTag in newTagSet do
 				local instancesForTag = rootTagManager[newTag]
 				if instancesForTag == nil then
 					instancesForTag = {}
@@ -77,7 +77,7 @@ local function updateTags(
 end
 
 local function removeTags(hostInstance)
-	for _, childInstance in pairs(hostInstance.children or {}) do
+	for _, childInstance in hostInstance.children or {} do
 		removeTags(childInstance)
 	end
 
@@ -87,7 +87,7 @@ local function removeTags(hostInstance)
 	end
 
 	local tagSet = string.split(hostInstance.props[Tag] or "", ",")
-	for _, tag in ipairs(tagSet) do
+	for _, tag in tagSet do
 		local instancesForTag = rootTagManager[tag]
 		if instancesForTag ~= nil then
 			local index = table.find(instancesForTag, hostInstance)

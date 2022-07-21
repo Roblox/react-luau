@@ -604,7 +604,7 @@ return function()
 				repeat --[[ ROBLOX comment: switch statement conversion ]]
 					local entered_, break_ = false, false
 					local condition_ = kid
-					for _, v in ipairs({ zero, two, four, five }) do
+					for _, v in { zero, two, four, five } do
 						if condition_ == v then
 							if v == zero then
 								entered_ = true

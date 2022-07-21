@@ -23,10 +23,10 @@ if _G.__NO_LOADMODULE__ then
 			-- require module altogether with the result of the mock
 			local mockResult = fn()
 			local realModule = require(module) :: any
-			for k, v in pairs(mockResult) do
+			for k, v in mockResult do
 				realModule[k] = v
 			end
-			for k, _v in pairs(realModule) do
+			for k, _v in realModule do
 				if mockResult[k] == nil then
 					realModule[k] = nil
 				end
@@ -117,7 +117,7 @@ local function resetModules()
 	-- Clear all modules in the override require cache
 	requiredModules = {}
 
-	for script,cleanup in pairs(moduleCleanup) do
+	for script,cleanup in moduleCleanup do
 		(cleanup :: CleanupFn)()
 	end
 

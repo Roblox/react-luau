@@ -690,7 +690,7 @@ local function constructClassInstance(
           addendum = " Did you accidentally pass the Context.Consumer instead?"
         else
           addendum ..= " However, it is set to an object with keys {"
-          for key, _ in pairs(contextType) do
+          for key, _ in contextType do
             addendum ..= key .. ", "
           end
           addendum ..= "}."

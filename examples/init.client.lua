@@ -37,7 +37,7 @@ local exampleData = {
 	},
 }
 
-for _, example in ipairs(exampleData) do
+for _, example in exampleData do
 	example.source = script:WaitForChild(example.name)
 	example.start = require(example.source)
 end
@@ -104,7 +104,7 @@ function Examples.makeExampleList()
 	listLayout.SortOrder = Enum.SortOrder.LayoutOrder
 	listLayout.Parent = exampleList
 
-	for index, example in ipairs(exampleData) do
+	for index, example in exampleData do
 		local label = ("%s\nexamples/%s"):format(example.label, example.name)
 
 		local exampleCard = Instance.new("TextButton")

@@ -358,7 +358,7 @@ exports.separateDisplayNameAndHOCs =
 -- Pulled from preact-compat
 -- https://github.com/developit/preact-compat/blob/7c5de00e7c85e2ffd011bf3af02899b63f699d3a/src/index.js#L349
 exports.shallowDiffers = function(prev: Object, next_: Object): boolean
-	for key, value in pairs(prev) do
+	for key, value in prev do
 		if next_[key] ~= value then
 			return true
 		end

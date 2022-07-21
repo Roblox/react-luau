@@ -2092,7 +2092,7 @@ function attachSuspenseRetryListeners(finishedWork: Fiber)
       finishedWork.stateNode = Set.new()
       retryCache = finishedWork.stateNode
     end
-    for wakeable, _ in pairs((wakeables :: Set<Wakeable>)) do
+    for wakeable, _ in (wakeables :: Set<Wakeable>) do
       -- Memoize using the boundary fiber to prevent redundant listeners.
       local retry = function()
         return resolveRetryWakeable(finishedWork, wakeable)

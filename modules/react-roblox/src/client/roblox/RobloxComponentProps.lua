@@ -124,12 +124,12 @@ local function applyTags(hostInstance: Instance, oldTags: string?, newTags: stri
     local oldTagSet = Set.new(String.split(oldTags or "", " "))
     local newTagSet = Set.new(String.split(newTags or "", " "))
 
-    for _, tag in oldTagSet:ipairs() do
+    for _, tag in oldTagSet do
         if not newTagSet:has(tag) then
             CollectionService:RemoveTag(hostInstance, tag)
         end
     end
-    for _, tag in newTagSet:ipairs() do
+    for _, tag in newTagSet do
         if not oldTagSet:has(tag) then
             CollectionService:AddTag(hostInstance, tag)
         end
@@ -137,7 +137,7 @@ local function applyTags(hostInstance: Instance, oldTags: string?, newTags: stri
 end
 
 local function removeAllTags(hostInstance: Instance)
-    for _, tag in ipairs(CollectionService:GetTags(hostInstance)) do
+    for _, tag in CollectionService:GetTags(hostInstance) do
         CollectionService:RemoveTag(hostInstance, tag)
     end
 end
@@ -188,7 +188,7 @@ local function applyProp(hostInstance: Instance, key, newValue, oldValue): ()
 end
 
 local function applyProps(hostInstance: Instance, props: Object): ()
-  for propKey, value in pairs(props) do
+  for propKey, value in props do
     -- ROBLOX performance: avoid the function call by inlining check here
     if propKey == "ref" or propKey == "children" then
       continue
@@ -300,7 +300,7 @@ local function cleanupHostComponent(domElement: HostInstance)
   if _G.__DEV__ then
     removeAllTags(domElement)
   end
-  for _, descElement in ipairs(domElement:GetDescendants()) do
+  for _, descElement in domElement:GetDescendants() do
     if instanceToEventManager[descElement] ~= nil then
       instanceToEventManager[descElement] = nil
     end

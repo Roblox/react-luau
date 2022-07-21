@@ -74,7 +74,7 @@ exports.printStore = function(store: Store, includeWeight: boolean?)
 	local snapshotLines: Array<string> = {}
 	local rootWeight = 0
 
-	for _, rootID in ipairs(store:getRoots()) do
+	for _, rootID in store:getRoots() do
 		local rootElement: Element? = store:getElementByID(rootID)
 		local weight = (rootElement :: Element).weight
 

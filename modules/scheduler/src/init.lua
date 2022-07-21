@@ -57,10 +57,11 @@ local exports = {
     }
 }
 
-for k, v in pairs(Tracing) do
+-- ROBLOX FIXME Luau: need to fix CLI-56768 to remove any cast
+for k, v in Tracing :: any do
     exports.tracing[k] = v
 end
-for k, v in pairs(TracingSubscriptions) do
+for k, v in TracingSubscriptions :: any do
     exports.tracing[k] = v
 end
 

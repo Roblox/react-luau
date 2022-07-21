@@ -19,7 +19,7 @@ return function()
 
 	local function getSizeOfMap(map)
 		local count = 0
-		for _ in pairs(map) do
+		for _ in map do
 			count += 1
 		end
 		return count
@@ -44,7 +44,7 @@ return function()
 		jestExpect(getSizeOfMap(RobloxComponentProps._instanceToBindings)).toBe(1)
 
 		-- Validate that anything in the map is a mounted instance
-		for hostInstance in pairs(RobloxComponentProps._instanceToBindings) do
+		for hostInstance in RobloxComponentProps._instanceToBindings do
 			jestExpect(hostInstance:IsDescendantOf(target)).toBe(true)
 		end
 
@@ -77,7 +77,7 @@ return function()
 		jestExpect(getSizeOfMap(RobloxComponentProps._instanceToEventManager)).toBe(1)
 
 		-- Validate that anything in the map is a mounted instance
-		for hostInstance in pairs(RobloxComponentProps._instanceToEventManager) do
+		for hostInstance in RobloxComponentProps._instanceToEventManager do
 			jestExpect(hostInstance:IsDescendantOf(target)).toBe(true)
 		end
 
@@ -116,7 +116,7 @@ return function()
 		jestExpect(getSizeOfMap(RobloxComponentProps._instanceToBindings)).toBe(2)
 
 		-- Validate that anything in the map is a mounted instance
-		for hostInstance in pairs(RobloxComponentProps._instanceToBindings) do
+		for hostInstance in RobloxComponentProps._instanceToBindings do
 			jestExpect(hostInstance:IsDescendantOf(target)).toBe(true)
 		end
 
@@ -154,7 +154,7 @@ return function()
 		jestExpect(getSizeOfMap(RobloxComponentProps._instanceToEventManager)).toBe(2)
 
 		-- Validate that anything in the map is a mounted instance
-		for hostInstance in pairs(RobloxComponentProps._instanceToEventManager) do
+		for hostInstance in RobloxComponentProps._instanceToEventManager do
 			jestExpect(hostInstance:IsDescendantOf(target)).toBe(true)
 		end
 

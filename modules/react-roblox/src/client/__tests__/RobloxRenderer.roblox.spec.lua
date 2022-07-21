@@ -844,7 +844,7 @@ return function()
 
 	-- 		local childValues = {}
 
-	-- 		for _, child in pairs(parentChildren) do
+	-- 		for _, child in parentChildren do
 	-- 			expect(child.ClassName).to.equal("StringValue")
 	-- 			childValues[child.Value] = 1 + (childValues[child.Value] or 0)
 	-- 		end

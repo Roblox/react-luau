@@ -44,7 +44,7 @@ return function()
 				},
 			}
 
-			for _, inst in ipairs(hostInstances) do
+			for _, inst in hostInstances do
 				setInitialTags(inst, "Instance", inst.props, inst.rootContainerInstance)
 			end
 
@@ -85,7 +85,7 @@ return function()
 				},
 			}
 
-			for _, inst in ipairs(hostInstances) do
+			for _, inst in hostInstances do
 				setInitialTags(inst, "Instance", inst.props, inst.rootContainerInstance)
 			end
 
@@ -96,7 +96,7 @@ return function()
 				{ [Tag] = "bar"}
 			}
 
-			for i, inst in ipairs(hostInstances) do
+			for i, inst in hostInstances do
 				updateTags(inst, newProps[i], inst.props)
 			end
 
@@ -142,7 +142,7 @@ return function()
 				},
 			}
 
-			for _, inst in ipairs(hostInstances) do
+			for _, inst in hostInstances do
 				setInitialTags(inst, "Instance", inst.props, inst.rootContainerInstance)
 			end
 

@@ -26,7 +26,7 @@ local function setup(hook)
 			-- we don't need to verify their source
 			insert(bridgeListeners, fn)
 			return function()
-				for index, value in ipairs(bridgeListeners) do
+				for index, value in bridgeListeners do
 					if value == fn then
 						remove(bridgeListeners, index)
 						return
@@ -35,7 +35,7 @@ local function setup(hook)
 			end
 		end,
 		send = function(event: string, payload: any, transferable: Array<any>?)
-			for _, fn in ipairs(bridgeListeners) do
+			for _, fn in bridgeListeners do
 				fn({
 					source = "react-devtools-bridge",
 					event = event,

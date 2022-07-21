@@ -42,8 +42,8 @@ return function()
 			TransitionPriority = NormalPriority,
 			NoLanePriority = NoPriority,
 		}
-
-		for priorityName, priority in pairs(expectedPriorities) do
+		-- ROBLOX FIXME Luau: need to fix CLI-56768 to remove any casts
+		for priorityName, priority in expectedPriorities :: any do
 			it(("returns the expected priority (%d) for lane %s"):format(priority, priorityName), function()
 				local lane = ReactFiberLane[priorityName]
 				jestExpect(lane).toBeDefined()
@@ -196,7 +196,7 @@ return function()
 			"SelectiveHydrationLane",
 		}
 
-		for _, laneName in ipairs(nonIdleLaneNames) do
+		for _, laneName in nonIdleLaneNames do
 			it(("is true for %s"):format(laneName), function()
 				local lane = ReactFiberLane[laneName]
 
@@ -211,7 +211,7 @@ return function()
 			"IdleHydrationLane",
 		}
 
-		for _, laneName in ipairs(idleLaneNames) do
+		for _, laneName in idleLaneNames do
 			it(("is false for %s"):format(laneName), function()
 				local lane = ReactFiberLane[laneName]
 

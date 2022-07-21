@@ -224,7 +224,7 @@ flushSyncCallbackQueueImpl = function()
           ok, result = xpcall(runWithPriority, describeError, ImmediatePriority,
             -- ROBLOX FIXME Luau: Luau sees this as returning void, but then sees an explicit return in runWithPriority and errors
             function(): ...any
-              for index, callback in ipairs(queue) do
+              for index, callback in queue do
                 i = index
                 repeat
                   -- ROBLOX FIXME Luau: Luau doesn't understand loop until nil construct
@@ -242,7 +242,7 @@ flushSyncCallbackQueueImpl = function()
         setCurrentUpdateLanePriority(SyncLanePriority)
           -- ROBLOX FIXME Luau: Luau sees this as returning void, but then sees an explicit return in runWithPriority and errors
           runWithPriority(ImmediatePriority, function(): ...any
-          for index, callback in ipairs(queue) do
+          for index, callback in queue do
             i = index
             repeat
               -- ROBLOX FIXME Luau: Luau doesn't understand loop until nil construct
@@ -281,7 +281,7 @@ flushSyncCallbackQueueImpl = function()
         ok, result = xpcall(runWithPriority, describeError, ImmediatePriority,
           -- ROBLOX FIXME Luau: Luau sees this as returning void, but then sees an explicit return in runWithPriority and errors
           function(): ...any
-            for index, callback in ipairs(queue) do
+            for index, callback in queue do
               i = index
               repeat
                 -- ROBLOX FIXME Luau: Luau doesn't understand loop until nil construct
@@ -297,7 +297,7 @@ flushSyncCallbackQueueImpl = function()
         local queue = syncQueue
           -- ROBLOX FIXME Luau: Luau sees this as returning void, but then sees an explicit return in runWithPriority and errors
           runWithPriority(ImmediatePriority, function(): ...any
-          for index, callback in ipairs(queue) do
+          for index, callback in queue do
             i = index
             repeat
               -- ROBLOX FIXME Luau: Luau doesn't understand loop until nil construct

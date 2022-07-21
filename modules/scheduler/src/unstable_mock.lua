@@ -17,13 +17,14 @@ local Scheduler = initializeScheduler(HostConfig)
 
 local exports = {}
 exports.tracing = {}
-for key, value in pairs(Scheduler) do
+-- ROBLOX FIXME Luau: need to fix CLI-56768 to remove any casts
+for key, value in Scheduler :: any do
 	exports[key] = value
 end
-for key, value in pairs(Tracing) do
+for key, value in Tracing :: any do
 	exports.tracing[key] = value
 end
-for key, value in pairs(TracingSubscriptions) do
+for key, value in TracingSubscriptions :: any do
 	exports.tracing[key] = value
 end
 

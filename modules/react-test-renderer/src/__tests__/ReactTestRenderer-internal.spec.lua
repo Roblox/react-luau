@@ -36,7 +36,7 @@ local function cleanNodeOrArray(node)
 	end
 	if Array.isArray(node) then
 		-- ROBLOX deviation: for loop in place of forEach()
-		for _, v in ipairs(node) do
+		for _, v in node do
 			cleanNodeOrArray(v)
 		end
 		return
@@ -50,7 +50,7 @@ local function cleanNodeOrArray(node)
 	end
 	if Array.isArray(node.rendered) then
 		-- ROBLOX deviation: for loop in place of forEach()
-		for _, v in ipairs(node.rendered) do
+		for _, v in node.rendered do
 			cleanNodeOrArray(v)
 		end
 	elseif typeof(node.rendered) == "table" then
@@ -114,7 +114,7 @@ return function()
 			)
 
 			-- $$typeof should not be enumerable.
-			for key, _ in pairs(object) do
+			for key, _ in object do
 				jestExpect(key).never.toEqual("$$typeof")
 			end
 		end)

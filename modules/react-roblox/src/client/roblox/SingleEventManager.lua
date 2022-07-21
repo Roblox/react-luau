@@ -119,7 +119,7 @@ function SingleEventManager:resume()
 
 	-- More events might be added to the queue when evaluating events, so we
 	-- need to be careful in order to preserve correct evaluation order.
-	for _, eventInvocation in ipairs(self._suspendedEventQueue) do
+	for _, eventInvocation in self._suspendedEventQueue do
 		local listener = self._listeners[eventInvocation[1]]
 		local argumentCount = eventInvocation[2]
 

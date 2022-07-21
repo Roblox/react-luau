@@ -125,7 +125,7 @@ if _G.__NEW_ROACT__ then
 
 	-- Overwrite the contents of the `Roact` package with that of the
 	-- RoactCompat package
-	for api, _ in pairs(Roact) do
+	for api, _ in Roact do
 		Roact[api] = RoactCompat[api]
 	end
 end

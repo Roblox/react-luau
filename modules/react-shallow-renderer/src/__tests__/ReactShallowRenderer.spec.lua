@@ -31,7 +31,7 @@ return function()
 
 	local function validate(list)
 		if _G.__DEV__ then
-			for _, element in pairs(list) do
+			for _, element in list do
 				validateElement(element)
 			end
 		end

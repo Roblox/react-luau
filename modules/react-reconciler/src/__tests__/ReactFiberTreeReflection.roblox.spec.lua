@@ -229,8 +229,8 @@ return function()
 					placement = Placement,
 					hydrating = Hydrating,
 				}
-
-				for name, flag in pairs(fiberFlags) do
+				-- ROBLOX FIXME Luau: need to fix CLI-56768 to remove any casts
+				for name, flag in fiberFlags  :: any do
 					describe(('one of the return node has the %s flag'):format(name), function()
 						local rootFiber
 

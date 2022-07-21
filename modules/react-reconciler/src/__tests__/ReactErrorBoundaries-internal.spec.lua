@@ -32,7 +32,7 @@ return function()
 				res = currentNode.text .. (res or "")
 			end
 			if currentNode and currentNode.children then
-				for _, value in ipairs(currentNode.children) do
+				for _, value in currentNode.children do
 					table.insert(queue, value)
 				end
 			end

@@ -767,7 +767,7 @@ end
 exports.clearContainer = function(container: Container)
   -- ROBLOX deviation: with Roblox, we can simply enumerate and remove the children
   local parentInstance = container
-  for _, child in pairs(parentInstance:GetChildren()) do
+  for _, child in parentInstance:GetChildren() do
     child.Parent = nil
   end
   -- if container.nodeType == ELEMENT_NODE)

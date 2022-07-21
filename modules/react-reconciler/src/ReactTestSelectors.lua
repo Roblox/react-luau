@@ -512,7 +512,7 @@ local commitHooks: Array<Function> = {}
 
 exports.onCommitRoot = function(): ()
   if supportsTestSelectors then
-    for i, commitHook in ipairs(commitHooks) do
+    for i, commitHook in commitHooks do
             commitHook()
         end
     end

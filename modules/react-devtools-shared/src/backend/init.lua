@@ -93,7 +93,7 @@ local function initBackend(hook: DevToolsHook, agent: Agent, global: Object): ()
 	end
 
 	-- Connect renderers that have already injected themselves.
-	for id, renderer in pairs(hook.renderers) do
+	for id, renderer in hook.renderers do
 		attachRenderer(id, renderer)
 	end
 
@@ -124,7 +124,7 @@ local function initBackend(hook: DevToolsHook, agent: Agent, global: Object): ()
 	end)
 
 	return function()
-		for _, fn in ipairs(subs) do
+		for _, fn in subs do
 			fn()
 		end
 	end

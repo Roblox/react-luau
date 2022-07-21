@@ -809,7 +809,7 @@ local function setupContexts(contextMap: Map<ReactContext<any>, any>, fiber: Fib
 end
 
 local function restoreContexts(contextMap: Map<ReactContext<any>, any>)
-	for context, value in pairs(contextMap) do
+	for context, value in contextMap do
 		context._currentValue = value
 	end
 end
@@ -845,7 +845,7 @@ local function resolveDefaultProps(Component, baseProps)
 		-- ROBLOX FIXME Luau: Expected type table, got 'any & any & any & {  }' instead
 		local props = Object.assign({}, baseProps) :: typeof(baseProps)
 		local defaultProps = Component.defaultProps
-		for propName, _ in pairs(defaultProps) do
+		for propName, _ in defaultProps do
 			if props[propName] == nil then
 				props[propName] = defaultProps[propName]
 			end

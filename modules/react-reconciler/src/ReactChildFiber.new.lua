@@ -938,7 +938,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 		if _G.__DEV__ then
 			-- First, validate keys.
 			local knownKeys = nil
-			for i, child in ipairs(newChildren) do
+			for i, child in newChildren do
 				knownKeys = warnOnInvalidKey(child, knownKeys, returnFiber)
 			end
 		end
@@ -1104,7 +1104,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 		if shouldTrackSideEffects then
 			-- Any existing children that weren't consumed above were deleted. We need
 			-- to add them to the deletion list.
-			for _, child in pairs(existingChildren) do
+			for _, child in existingChildren do
 				deleteChild(returnFiber, child)
 			end
 		end
@@ -1323,7 +1323,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 		if shouldTrackSideEffects then
 			-- Any existing children that weren't consumed above were deleted. We need
 			-- to add them to the deletion list.
-			for _, child in pairs(existingChildren) do
+			for _, child in existingChildren do
 				deleteChild(returnFiber, child)
 			end
 		end

@@ -71,7 +71,7 @@ function toHaveBeenLastNotifiedOfWork(
 end
 
 function toMatchInteraction(self, actual, expected)
-  for _, attribute in pairs(expected) do
+  for _, attribute in expected do
     if actual[attribute] ~= expected[attribute] then
       return {
         message = function()
@@ -88,27 +88,13 @@ end
 
 function toMatchInteractions(self, actualSetOrArray, expectedSetOrArray)
   local actualArrayLength = 0
-  -- ROBLOX deviation: differentiate between a Lua array and a table with an ipairs method
-  if typeof(actualSetOrArray.ipairs) == "function" then
-    for _, __ in actualSetOrArray:ipairs() do
-      actualArrayLength += 1
-    end
-  else
-    for _, __ in ipairs(actualSetOrArray) do
-      actualArrayLength += 1
-    end
+  for _, __ in actualSetOrArray do
+    actualArrayLength += 1
   end
 
   local expectedArrayLength = 0
-  -- ROBLOX deviation: differentiate between a Lua array and a table with an ipairs method
-  if typeof(expectedSetOrArray.ipairs) == "function" then
-    for _, __ in expectedSetOrArray:ipairs() do
-      expectedArrayLength += 1
-    end
-  else
-    for _, __ in ipairs(expectedSetOrArray) do
-      expectedArrayLength += 1
-    end
+  for _, __ in expectedSetOrArray do
+    expectedArrayLength += 1
   end
 
   if actualArrayLength ~= expectedArrayLength then
@@ -122,7 +108,7 @@ function toMatchInteractions(self, actualSetOrArray, expectedSetOrArray)
     }
   end
 
-  for i, actualInteraction in actualSetOrArray:ipairs() do
+  for i, actualInteraction in actualSetOrArray do
     local expectedInteraction = expectedSetOrArray._array and expectedSetOrArray._array[i] or expectedSetOrArray[i]
     local result = toMatchInteraction(self, actualInteraction, expectedInteraction)
     if result.pass == false then

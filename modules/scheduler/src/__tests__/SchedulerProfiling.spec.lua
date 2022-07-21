@@ -166,7 +166,7 @@ return function()
 			local mainThreadLabelColumn = "!!! Main thread              "
 			local mainThreadTimelineColumn = ""
 			local isMainThreadBusy = true
-			for _, time_ in ipairs(mainThreadRuns) do
+			for _, time_ in mainThreadRuns do
 				local index = time_ / microsecondsPerChar
 				for i = 1, index - string.len(mainThreadTimelineColumn), 1 do
 					mainThreadTimelineColumn ..= (function()
@@ -180,13 +180,13 @@ return function()
 			end
 			result ..= mainThreadLabelColumn .. "│" .. mainThreadTimelineColumn .. "\n"
 			local tasksValues = {}
-			for _, tasksValue in pairs(tasks) do
+			for _, tasksValue in tasks do
 				table.insert(tasksValues, tasksValue)
 			end
 			table.sort(tasksValues, function(t1, t2)
 				return t2.priorityLevel > t1.priorityLevel
 			end)
-			for _, task_ in ipairs(tasksValues) do
+			for _, task_ in tasksValues do
 				local label = task_.label
 				if label == nil then
 					label = "Task"
@@ -207,7 +207,7 @@ return function()
 				end
 
 				local isRunning = false
-				for _, time_ in ipairs(task_.runs) do
+				for _, time_ in task_.runs do
 					local index = time_ / microsecondsPerChar
 					for i = 1, index - string.len(timelineColumn), 1 do
 						timelineColumn ..= (function()

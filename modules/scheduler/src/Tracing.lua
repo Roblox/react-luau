@@ -126,7 +126,7 @@ local function copySet(from)
 	if from == nil then
 		return to
 	end
-	for _, k in from:ipairs() do
+	for _, k in from do
 		to:add(k)
 	end
 
@@ -239,7 +239,7 @@ exports.unstable_wrap =
 
 		-- Update the pending async work count for the current interactions.
 		-- Update after calling subscribers in case of error.
-		for _, interaction in wrappedInteractions:ipairs() do
+		for _, interaction in wrappedInteractions do
 			interaction.__count += 1
 		end
 
@@ -294,7 +294,7 @@ exports.unstable_wrap =
 				-- Update pending async counts for all wrapped interactions.
 				-- If this was the last scheduled async work for any of them,
 				-- Mark them as completed.
-				for _, interaction in wrappedInteractions:ipairs() do
+				for _, interaction in wrappedInteractions do
 					interaction.__count -= 1
 
 					if subscriber ~= nil and interaction.__count == 0 then
@@ -322,7 +322,7 @@ exports.unstable_wrap =
 			-- Update pending async counts for all wrapped interactions.
 			-- If this was the last scheduled async work for any of them,
 			-- Mark them as completed.
-			for _, interaction in wrappedInteractions:ipairs() do
+			for _, interaction in wrappedInteractions do
 				interaction.__count -= 1
 
 				if subscriber and interaction.__count == 0 then

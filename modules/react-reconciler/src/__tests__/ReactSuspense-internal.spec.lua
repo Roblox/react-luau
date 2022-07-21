@@ -65,7 +65,7 @@ return function()
                                             )
                                             status = 'rejected'
                                             value = Error.new('Failed to load: ' .. text)
-                                            for _, listener in ipairs(listeners) do
+                                            for _, listener in listeners do
                                                 listener.reject(value)
                                             end
                                         else
@@ -74,7 +74,7 @@ return function()
                                             )
                                             status = 'resolved'
                                             value = text
-                                            for _, listener in ipairs(listeners) do
+                                            for _, listener in listeners do
                                                 listener.resolve(value)
                                             end
                                         end
@@ -257,7 +257,7 @@ return function()
                 didResolve = true
 
                 -- ROBLOX deviation: for loop in place of forEach
-                for _, l in pairs(listeners) do
+                for _, l in listeners do
                     l()
                 end
             end

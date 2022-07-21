@@ -64,7 +64,7 @@ return function()
 										value = LuauPolyfill.Error.new(
 											"Failed to load: " .. text
 										)
-										for _, listener in ipairs(listeners) do
+										for _, listener in listeners do
 											listener.reject(value)
 										end
 									else
@@ -73,7 +73,7 @@ return function()
 										)
 										status = "resolved"
 										value = text
-										for _, listener in ipairs(listeners) do
+										for _, listener in listeners do
 											listener.resolve(value)
 										end
 									end
@@ -366,7 +366,7 @@ return function()
 								if listeners == nil then
 									listeners = { resolve }
 									resolveThenable = function(v)
-										for _, listener in pairs(listeners) do
+										for _, listener in listeners do
 											listener(v)
 										end
 									end

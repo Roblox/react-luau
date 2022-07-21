@@ -21,8 +21,8 @@
 -- end
 
 -- local function restoreDevAndProd()
--- 	for originalObjectString, originalObject in pairs(originalObjects) do
--- 		for methodName, originalMethod in pairs(originalObjects[originalObjectString]) do
+-- 	for originalObjectString, originalObject in originalObjects do
+-- 		for methodName, originalMethod in originalObjects[originalObjectString] do
 -- 			originalObject[methodName] = originalMethod
 -- 		end
 -- 	end

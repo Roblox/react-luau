@@ -42,7 +42,7 @@ return function()
 
 	--   local function childrenByProp(children)
 	--     local byProp = {}
-	--     for _, instance in ipairs(children) do
+	--     for _, instance in children do
 	--       byProp[instance.prop] = instance
 	--     end
 	--     return byProp
@@ -81,7 +81,7 @@ return function()
 
 		local function childrenByProp(children)
 			local byProp = {}
-			for _, instance in ipairs(children) do
+			for _, instance in children do
 				byProp[instance.Text] = instance
 			end
 			return byProp
@@ -121,7 +121,7 @@ return function()
 
 		local function childrenByProp(children)
 			local byProp = {}
-			for _, instance in ipairs(children) do
+			for _, instance in children do
 				byProp[instance.Text] = instance
 			end
 			return byProp
@@ -197,7 +197,7 @@ return function()
 
 		local function childrenByProp(children)
 			local byProp = {}
-			for _, instance in ipairs(children) do
+			for _, instance in children do
 				byProp[instance.Text] = instance
 			end
 			return byProp
@@ -382,7 +382,7 @@ return function()
 
 		local function childrenByProp(children)
 			local byProp = {}
-			for _, instance in ipairs(children) do
+			for _, instance in children do
 				byProp[instance.Text] = instance
 			end
 			return byProp

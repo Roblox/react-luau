@@ -403,7 +403,7 @@ local function findAll(
 	end
 
 	-- ROBLOX deviation: use for loop instead of forEach
-	for _, child in ipairs(root.children) do
+	for _, child in root.children do
 		if typeof(child) == "string" then
 			continue
 		end
@@ -432,7 +432,7 @@ local function expectOne(all: Array<Object>, message: string): Object
 end
 
 local function propsMatch(props: Object, filter: Object): boolean
-	for key, _ in pairs(filter) do
+	for key, _ in filter do
 		if props[key] ~= filter[key] then
 			return false
 		end

@@ -53,7 +53,7 @@ if _G.__DEV__ then
 
   local setToSortedString = function(set): string
     local array = {}
-    for key, value in pairs(set) do
+    for key, value in set do
       table.insert(array, key)
     end
     table.sort(array)
@@ -130,7 +130,7 @@ if _G.__DEV__ then
     -- We do an initial pass to gather component names
     local componentWillMountUniqueNames = {}
     if #pendingComponentWillMountWarnings > 0 then
-      for i, fiber in ipairs(pendingComponentWillMountWarnings) do
+      for i, fiber in pendingComponentWillMountWarnings do
         componentWillMountUniqueNames[getComponentName(fiber.type) or 'Component'] = true
         didWarnAboutUnsafeLifecycles[fiber.type] = true
       end
@@ -139,7 +139,7 @@ if _G.__DEV__ then
 
     local UNSAFE_componentWillMountUniqueNames = {}
     if #pendingUNSAFE_ComponentWillMountWarnings > 0 then
-      for i, fiber in ipairs(pendingUNSAFE_ComponentWillMountWarnings) do
+      for i, fiber in pendingUNSAFE_ComponentWillMountWarnings do
         UNSAFE_componentWillMountUniqueNames[getComponentName(fiber.type) or 'Component'] = true
         didWarnAboutUnsafeLifecycles[fiber.type] = true
       end
@@ -148,7 +148,7 @@ if _G.__DEV__ then
 
     local componentWillReceivePropsUniqueNames = {}
     if #pendingComponentWillReceivePropsWarnings > 0 then
-      for i, fiber in ipairs(pendingComponentWillReceivePropsWarnings) do
+      for i, fiber in pendingComponentWillReceivePropsWarnings do
         componentWillReceivePropsUniqueNames[getComponentName(fiber.type) or 'Component'] = true
         didWarnAboutUnsafeLifecycles[fiber.type] = true
       end
@@ -158,7 +158,7 @@ if _G.__DEV__ then
 
     local UNSAFE_componentWillReceivePropsUniqueNames = {}
     if #pendingUNSAFE_ComponentWillReceivePropsWarnings > 0 then
-      for i, fiber in ipairs(pendingUNSAFE_ComponentWillReceivePropsWarnings) do
+      for i, fiber in pendingUNSAFE_ComponentWillReceivePropsWarnings do
         UNSAFE_componentWillReceivePropsUniqueNames[getComponentName(fiber.type) or 'Component'] = true
         didWarnAboutUnsafeLifecycles[fiber.type] = true
       end
@@ -168,7 +168,7 @@ if _G.__DEV__ then
 
     local componentWillUpdateUniqueNames = {}
     if #pendingComponentWillUpdateWarnings > 0 then
-      for i, fiber in ipairs(pendingComponentWillUpdateWarnings) do
+      for i, fiber in pendingComponentWillUpdateWarnings do
         componentWillUpdateUniqueNames[getComponentName(fiber.type) or 'Component'] = true
         didWarnAboutUnsafeLifecycles[fiber.type] = true
       end
@@ -178,7 +178,7 @@ if _G.__DEV__ then
 
     local UNSAFE_componentWillUpdateUniqueNames = {}
     if #pendingUNSAFE_ComponentWillUpdateWarnings > 0 then
-      for i, fiber in ipairs(pendingUNSAFE_ComponentWillUpdateWarnings) do
+      for i, fiber in pendingUNSAFE_ComponentWillUpdateWarnings do
         UNSAFE_componentWillUpdateUniqueNames[getComponentName(fiber.type) or 'Component'] = true
         didWarnAboutUnsafeLifecycles[fiber.type] = true
       end
@@ -337,14 +337,14 @@ if _G.__DEV__ then
   end
 
   ReactStrictModeWarnings.flushLegacyContextWarning = function()
-      for strictRoot, fiberArray in pairs(pendingLegacyContextWarning) do
+      for strictRoot, fiberArray in pendingLegacyContextWarning do
         if #fiberArray == 0 then
           return
         end
         local firstFiber = fiberArray[1]
 
         local uniqueNames = {}
-        for i, fiber in ipairs(fiberArray) do
+        for i, fiber in fiberArray do
           uniqueNames[getComponentName(fiber.type) or 'Component'] = true
           didWarnAboutLegacyContext[fiber.type] = true
         end

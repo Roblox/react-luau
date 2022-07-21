@@ -22,7 +22,7 @@ return function()
 	end)
 
 	it("has all interface members that old Roact exposes", function()
-		for k, v in pairs(Roact) do
+		for k, v in Roact do
 			if UNSUPPORTED[k] then
 				-- Skip any API members that are well and truly unsupported
 				continue

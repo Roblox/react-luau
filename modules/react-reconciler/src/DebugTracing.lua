@@ -56,7 +56,7 @@ local function formatLanes(laneOrLanes: Lane | Lanes): string
 end
 
 local function group(...): ()
-	for _, groupArg in ipairs({...}) do
+	for _, groupArg in {...} do
 		table.insert(pendingGroupArgs, groupArg)
 	end
 	if nativeConsoleLog == nil then

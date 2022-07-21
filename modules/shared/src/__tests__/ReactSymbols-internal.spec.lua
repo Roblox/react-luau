@@ -15,7 +15,7 @@ return function()
 
 	local function expectToBeUnique(keyValuePairs)
 		local map = {}
-		for key, value in pairs(keyValuePairs) do
+		for key, value in keyValuePairs do
 			if map[value] ~= nil then
 				-- ROBLOX TODO: workaround for Luau false positive nil-ability
 				error(

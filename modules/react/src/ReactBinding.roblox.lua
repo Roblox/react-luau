@@ -130,7 +130,7 @@ function BindingInternalApi.join<T>(upstreamBindings: { [string | number]: Bindi
 	if _G.__DEV__ then
 		assert(typeof(upstreamBindings) == "table", "Expected arg #1 to be of type table")
 
-		for key, value in pairs(upstreamBindings) do
+		for key, value in upstreamBindings do
 			if typeof(value) ~= "table" or value["$$typeof"] ~= ReactSymbols.REACT_BINDING_TYPE then
 				local message = (
 					"Expected arg #1 to contain only bindings, but key %q had a non-binding value"
@@ -147,6 +147,7 @@ function BindingInternalApi.join<T>(upstreamBindings: { [string | number]: Bindi
 	local function getValue()
 		local value = {}
 
+		-- ROBLOX FIXME Luau: needs CLI-56711 resolved to eliminate ipairs()
 		for key, upstream in pairs(upstreamBindings) do
 			value[key] = upstream:getValue()
 		end
@@ -158,7 +159,7 @@ function BindingInternalApi.join<T>(upstreamBindings: { [string | number]: Bindi
 		-- ROBLOX FIXME: type refinements
 		local disconnects: any = {}
 
-		for key, upstream in pairs(upstreamBindings) do
+		for key, upstream in upstreamBindings do
 			disconnects[key] = BindingInternalApi.subscribe(upstream, function(newValue)
 				callback(getValue())
 			end)
@@ -169,7 +170,7 @@ function BindingInternalApi.join<T>(upstreamBindings: { [string | number]: Bindi
 				return
 			end
 
-			for _, disconnect in pairs(disconnects) do
+			for _, disconnect in disconnects do
 				disconnect()
 			end
 

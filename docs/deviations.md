@@ -41,7 +41,7 @@ With table keys:
 -- Returns a fragment of items in an ordered list
 function NumberList(props)
 	local numbers = props.numbers
-	for i, number in ipairs(numbers) do
+	for i, number in numbers do
 		local key = tostring(i)
 		listItems[key] = React.createElement("TextLabel", {
 			Text = key,
@@ -57,7 +57,7 @@ Using the special "key" prop:
 -- Returns a fragment of items in an ordered list
 function NumberList(props)
 	local numbers = props.numbers
-	for i, number in ipairs(numbers) do
+	for i, number in numbers do
 		local key = tostring(i)
 		local element = React.createElement("TextLabel", {
 			key = key,

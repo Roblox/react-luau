@@ -31,13 +31,13 @@ local function shallowEqual(objA, objB)
 
 	-- deviation: `Object.keys` does not have an equivalent in Lua, so we
 	-- iterate through each table instead
-	for key, value in pairs(objA) do
+	for key, value in objA do
 		if not is(objB[key], value) then
 			return false
 		end
 	end
 
-	for key, value in pairs(objB) do
+	for key, value in objB do
 		if not is(objA[key], value) then
 			return false
 		end

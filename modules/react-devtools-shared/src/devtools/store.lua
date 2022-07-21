@@ -673,7 +673,7 @@ function Store:getOwnersListForElement(ownerID: number): Array<Element>
 			-- Perhaps the easiest way to do this is to walk up the tree until we reach either:
 			-- (1) another node that's already in the tree, or (2) the root (owner)
 			-- at which point, our depth is just the depth of that node plus one.
-			for _, id in ipairs(sortedIDs) do
+			for _, id in sortedIDs do
 				local innerElement: Element? = self._idToElement[id]
 
 				if innerElement ~= nil then
@@ -832,7 +832,7 @@ function Store:toggleIsCollapsed(id: number, isCollapsed: boolean): ()
 		-- Only re-calculate weights and emit an "update" event if the store was mutated.
 		if didMutate then
 			local weightAcrossRoots = 0
-			for _i, rootID in ipairs(self._roots) do
+			for _i, rootID in self._roots do
 				local elementById: Element? = self:getElementByID(rootID)
 				local weight = (elementById :: Element).weight
 				weightAcrossRoots = weightAcrossRoots + weight
@@ -1206,7 +1206,7 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 		self._hasOwnerMetadata = false
 		self._supportsProfiling = false
 
-		for _, capabilities in pairs(self._rootIDToCapabilities) do
+		for _, capabilities in self._rootIDToCapabilities do
 			local hasOwnerMetadata, supportsProfiling =
 				capabilities.hasOwnerMetadata, capabilities.supportsProfiling
 
