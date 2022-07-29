@@ -33,7 +33,7 @@ exports.printElement = function(element: Element, includeWeight: boolean?)
 	local key = ""
 
 	if element.key ~= nil and element.key ~= "" then
-		key = (' key="%s"'):format(tostring(element.key))
+		key = string.format(' key="%s"', tostring(element.key))
 	end
 
 	local hocDisplayNames = nil
@@ -42,14 +42,19 @@ exports.printElement = function(element: Element, includeWeight: boolean?)
 		hocDisplayNames = Object.assign({}, element.hocDisplayNames)
 	end
 
-	local hocs = hocDisplayNames and (" [%s]"):format(table.concat(hocDisplayNames, "]["))
+	local hocs = hocDisplayNames
+			and string.format(" [%s]", table.concat(hocDisplayNames, "]["))
 		or ""
 	local suffix = ""
 
 	if includeWeight then
-		suffix = (" (%s)"):format(element.isCollapsed and "1" or tostring(element.weight))
+		suffix = string.format(
+			" (%s)",
+			element.isCollapsed and "1" or tostring(element.weight)
+		)
 	end
-	return ("%s%s <%s%s>%s%s"):format(
+	return string.format(
+		"%s%s <%s%s>%s%s",
 		("  "):rep(element.depth + 1),
 		prefix,
 		element.displayName or "null",
@@ -80,13 +85,13 @@ exports.printStore = function(store: Store, includeWeight: boolean?)
 
 		table.insert(
 			snapshotLines,
-			"[root]" .. (includeWeight and (" (%d)"):format(weight) or "")
+			"[root]" .. (includeWeight and string.format(" (%d)", weight) or "")
 		)
 		for i = rootWeight, rootWeight + weight - 1 do
 			local element: Element? = store:getElementAtIndex(i)
 
 			if element == nil then
-				error(("Could not find element at index %d"):format(i))
+				error(string.format("Could not find element at index %d", i))
 			end
 
 			table.insert(
@@ -118,8 +123,12 @@ end
 -- so this method replaces e.g. 'foo' with "foo"
 exports.sanitizeForParse = function(value)
 	if typeof(value) == "string" then
-		if #value >= 2 and value:sub(1, 1) == "'" and value:sub(#value) == "'" then
-			return '"' .. value:sub(1, #value - 2) .. '"'
+		if
+			#value >= 2
+			and string.sub(value, 1, 1) == "'"
+			and string.sub(value, #value) == "'"
+		then
+			return '"' .. string.sub(value, 1, #value - 2) .. '"'
 		end
 	end
 	return value

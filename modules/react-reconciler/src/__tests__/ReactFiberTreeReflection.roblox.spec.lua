@@ -110,14 +110,14 @@ return function()
 
 			local function generateIsFiberMounted(expected)
 				local it = getfenv(2).it
-				it(('isFiberMounted() is %s'):format(tostring(expected)), function()
+				it(string.format('isFiberMounted() is %s', tostring(expected)), function()
 					jestExpect(ReactFiberTreeReflection.isFiberMounted(fiber)).toBe(expected)
 				end)
 			end
 
 			local function generateIsMounted(expected)
 				local it = getfenv(2).it
-				it(('isMounted() is %s'):format(tostring(expected)), function()
+				it(string.format('isMounted() is %s', tostring(expected)), function()
 					local component = {}
 					setInstance(component, fiber)
 					jestExpect(ReactFiberTreeReflection.isMounted(component)).toBe(expected)
@@ -231,7 +231,7 @@ return function()
 				}
 				-- ROBLOX FIXME Luau: need to fix CLI-56768 to remove any casts
 				for name, flag in fiberFlags  :: any do
-					describe(('one of the return node has the %s flag'):format(name), function()
+					describe(string.format('one of the return node has the %s flag', name), function()
 						local rootFiber
 
 						beforeEach(function()
@@ -258,7 +258,7 @@ return function()
 					end)
 
 					describe(
-						('the return node of the fiber where it has the %s '):format(name) ..
+						string.format('the return node of the fiber where it has the %s ', name) ..
 							'flag does not have the HostRoot tags',
 						function()
 							beforeEach(function()

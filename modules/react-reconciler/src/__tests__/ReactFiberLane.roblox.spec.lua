@@ -44,7 +44,7 @@ return function()
 		}
 		-- ROBLOX FIXME Luau: need to fix CLI-56768 to remove any casts
 		for priorityName, priority in expectedPriorities :: any do
-			it(("returns the expected priority (%d) for lane %s"):format(priority, priorityName), function()
+			it(string.format("returns the expected priority (%d) for lane %s", priority, priorityName), function()
 				local lane = ReactFiberLane[priorityName]
 				jestExpect(lane).toBeDefined()
 				jestExpect(ReactFiberLane.lanePriorityToSchedulerPriority(lane)).toBe(
@@ -57,7 +57,7 @@ return function()
 			jestExpect(function()
 				ReactFiberLane.lanePriorityToSchedulerPriority(INVALID_PRIORITY_LANE)
 			end).toThrow(
-				("Invalid update priority: %s. This is a bug in React"):format(tostring(INVALID_PRIORITY_LANE))
+				string.format("Invalid update priority: %s. This is a bug in React", tostring(INVALID_PRIORITY_LANE))
 			)
 		end)
 	end)
@@ -197,7 +197,7 @@ return function()
 		}
 
 		for _, laneName in nonIdleLaneNames do
-			it(("is true for %s"):format(laneName), function()
+			it(string.format("is true for %s", laneName), function()
 				local lane = ReactFiberLane[laneName]
 
 				jestExpect(lane).toBeDefined()
@@ -212,7 +212,7 @@ return function()
 		}
 
 		for _, laneName in idleLaneNames do
-			it(("is false for %s"):format(laneName), function()
+			it(string.format("is false for %s", laneName), function()
 				local lane = ReactFiberLane[laneName]
 
 				jestExpect(lane).toBeDefined()

@@ -1085,7 +1085,7 @@ return function()
 				"ErrorBoundary componentDidMount",
 			})
 			-- ROBLOX deviation: workaround for object '[object HTMLDivElement]'
-			jestExpect(tostring(errorMessageRef.current):find("table: ") ~= nil).toEqual(true)
+			jestExpect(string.find(tostring(errorMessageRef.current), "table: ") ~= nil).toEqual(true)
 			-- ROBLOX deviation: render nil to unmount
 			root.render(nil)
 			jestExpect(Scheduler).toHaveYielded({
@@ -2224,7 +2224,7 @@ return function()
 			root.render(React.createElement(Parent, { value = 1 }))
 			local ok, e = pcall(root.render, React.createElement(Parent, { value = 2 }))
 			if not ok then
-				if not (e.message:sub(-#"parent sad") == "parent sad") and not (e.message:sub(-#"child sad") == "child sad") then
+				if not (string.sub(e.message, -#"parent sad") == "parent sad") and not (string.sub(e.message, -#"child sad") == "child sad") then
 					error(e)
 				end
 				caughtError = e
@@ -2413,12 +2413,12 @@ return function()
 				local error_ = self.state.error
 
 				if error_ then
-					Scheduler.unstable_yieldValue(("%s render error"):format(id))
+					Scheduler.unstable_yieldValue(string.format("%s render error", id))
 
 					return React.createElement(Component, { id = fallbackID })
 				end
 
-				Scheduler.unstable_yieldValue(("%s render success"):format(id))
+				Scheduler.unstable_yieldValue(string.format("%s render success", id))
 
 				return children or nil
 			end
@@ -2506,12 +2506,12 @@ return function()
 				local error_ = self.state.error
 
 				if error_ then
-					Scheduler.unstable_yieldValue(("%s render error"):format(id))
+					Scheduler.unstable_yieldValue(string.format("%s render error", id))
 
 					return React.createElement(Component, { id = fallbackID })
 				end
 
-				Scheduler.unstable_yieldValue(("%s render success"):format(id))
+				Scheduler.unstable_yieldValue(string.format("%s render success", id))
 
 				return children or nil
 			end

@@ -99,7 +99,7 @@ end
 -- ROBLOX FIXME Luau: annotation shouldn't be necessary
 local function getSourceInfoErrorAddendum(source: Source | nil): string
 	if source ~= nil then
-		local fileName = source.fileName:gsub("^.*[\\/]", "")
+		local fileName = string.gsub(source.fileName, "^.*[\\/]", "")
 		local lineNumber = source.lineNumber
 		return "\n\nCheck your code at " .. fileName .. ":" .. lineNumber .. "."
 	end
@@ -140,7 +140,7 @@ local function getCurrentComponentErrorInfo(parentType: React_ComponentType<any>
 		end
 
 		if parentName then
-			info = ("\n\nCheck the top-level render call using <%s>."):format(parentName)
+			info = string.format("\n\nCheck the top-level render call using <%s>.", parentName)
 		end
 	end
 	return info
@@ -186,7 +186,7 @@ local function validateExplicitKey(element: ReactElement<any, any>, parentType, 
 		and element._owner ~= ReactCurrentOwner.current
 	then
 		-- // Give the component that originally created this child.
-		childOwner = (" It was passed a child from %s."):format(
+		childOwner = string.format(" It was passed a child from %s.",
 			tostring(getComponentName(element._owner.type))
 		)
 	end
@@ -389,7 +389,7 @@ local function jsxWithValidation<P, T>(
 		elseif Array.isArray(type) then
 			typeString = "array"
 		elseif typeof(type) == "table" and type["$$typeof"] == REACT_ELEMENT_TYPE then
-			typeString = ("<%s />"):format(getComponentName(type.type) or "Unknown")
+			typeString = string.format("<%s />", getComponentName(type.type) or "Unknown")
 			info ..= " Did you accidentally export a JSX literal or Element instead of a component?"
 		else
 			typeString = typeof(type)
@@ -524,7 +524,7 @@ local function createElementWithValidation<P, T>(
 		elseif Array.isArray(type_) then
 			typeString = "array"
 		elseif type_ ~= nil and typeof(type_) == "table" and type_["$$typeof"] == REACT_ELEMENT_TYPE then
-			typeString = ("<%s />"):format(getComponentName(type_.type) or "Unknown")
+			typeString = string.format("<%s />", getComponentName(type_.type) or "Unknown")
 			info ..= " Did you accidentally export a JSX literal or Element instead of a component?"
 		else
 			typeString = typeof(type_)

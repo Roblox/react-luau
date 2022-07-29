@@ -7,14 +7,14 @@ local function shouldIgnoreConsoleError(format, args)
 	-- we use the __DEV__ global
 	if _G.__DEV__ then
 		if typeof(format) == "string" then
-			if format:find("Error: Uncaught [") == 1 then
+			if string.find(format, "Error: Uncaught %[") == 1 then
 				-- // This looks like an uncaught error from invokeGuardedCallback() wrapper
 				-- // in development that is reported by jsdom. Ignore because it's noisy.
 				return true
 			end
 			-- ROBLOX FIXME: The "Warning: " prefix is applied before the string
 			-- reaches this function, which appears to not be the case upstream
-			if format:find("Warning: The above error occurred") == 1 then
+			if string.find(format, "Warning: The above error occurred") == 1 then
 				-- // This looks like an error addendum from ReactFiberErrorLogger.
 				-- // Ignore it too.
 				return true
@@ -32,7 +32,7 @@ local function shouldIgnoreConsoleError(format, args)
 			return true
 		end
 		if
-			format:find("act(...) is not supported in production builds of React") == 0
+			string.find(format, "act(...) is not supported in production builds of React") == 0
 		then
 			-- // We don't yet support act() for prod builds, and warn for it.
 			-- // But we'd like to use act() ourselves for prod builds.
@@ -51,7 +51,7 @@ local function normalizeCodeLocInfo(str)
 
 	-- // This special case exists only for the special source location in
 	-- // ReactElementValidator. That will go away if we remove source locations.
-	str = str:gsub("Check your code at .*:%d+", "Check your code at **")
+	str = string.gsub(str, "Check your code at .*:%d+", "Check your code at **")
 	-- // V8 format:
 	-- //  at Component (/path/filename.js:123:45)
 	-- // React format:
@@ -60,7 +60,7 @@ local function normalizeCodeLocInfo(str)
 	-- ROBLOX deviation: In roblox/luau, we're using the stack frame from luau,
 	-- which looks like:
 	--     in Component (at ModulePath.FileName.lua:123)
-	return (str:gsub("\n    in ([%w%-%._]+)[^\n]*", "\n    in %1 (at **)"))
+	return (string.gsub(str, "\n    in ([%w%-%._]+)[^\n]*", "\n    in %1 (at **)"))
 end
 
 return function(consoleMethod, matcherName)
@@ -80,10 +80,10 @@ return function(consoleMethod, matcherName)
 				expectedMessages = { expectedMessages }
 			elseif not Array.isArray(expectedMessages) then
 				error(
-					("%s() requires a parameter of type string or an array of strings "):format(
+					string.format("%s() requires a parameter of type string or an array of strings ",
 						matcherName
 					)
-						.. ("but was given %s."):format(typeof(expectedMessages))
+						.. string.format("but was given %s.", typeof(expectedMessages))
 				)
 			end
 			-- deviation: since an empty table will return true for
@@ -93,7 +93,7 @@ return function(consoleMethod, matcherName)
 				or (Array.isArray(options) and next(options) ~= nil)
 			then
 				error(
-					("%s() second argument, when present, should be an object. "):format(
+					string.format("%s() second argument, when present, should be an object. ",
 						matcherName
 					)
 						.. "Did you forget to wrap the messages into an array?"
@@ -101,7 +101,7 @@ return function(consoleMethod, matcherName)
 			end
 			if select("#", ...) > 0 then
 				error(
-					("%s() received more than two arguments. "):format(matcherName)
+					string.format("%s() received more than two arguments. ", matcherName)
 						.. "Did you forget to wrap the messages into an array?"
 				)
 			end
@@ -122,7 +122,7 @@ return function(consoleMethod, matcherName)
 			local caughtError
 
 			local function isLikelyAComponentStack(message)
-				return typeof(message) == "string" and message:match("\n    in ") ~= nil
+				return typeof(message) == "string" and string.match(message, "\n    in ") ~= nil
 			end
 
 			local function consoleSpy(format, ...)
@@ -152,7 +152,7 @@ return function(consoleMethod, matcherName)
 				-- // doesn't match the number of arguments.
 				-- // We'll fail the test if it happens.
 				local argIndex = 0
-				format:gsub("%%s", function()
+				string.gsub(format, "%%s", function()
 					argIndex = argIndex + 1
 					return argIndex - 1
 				end)
@@ -179,7 +179,7 @@ return function(consoleMethod, matcherName)
 					local expectedMessage = expectedMessages[index]
 					if
 						normalizedMessage == expectedMessage
-						or normalizedMessage:find(expectedMessage, 1, true)
+						or string.find(normalizedMessage, expectedMessage, 1, true)
 							~= nil
 					then
 						if isLikelyAComponentStack(normalizedMessage) then
@@ -246,7 +246,7 @@ return function(consoleMethod, matcherName)
 			if #expectedMessages > 0 then
 				return {
 					message = function()
-						return ("Expected warning was not recorded: %s\n  "):format(
+						return string.format("Expected warning was not recorded: %s\n  ",
 							expectedMessages[1]
 						)
 					end,
@@ -300,7 +300,7 @@ return function(consoleMethod, matcherName)
 								.. (
 									"  %s\nIf this warning intentionally omits the component stack, add "
 								):format(warningsWithoutComponentStack[1])
-								.. ("{withoutStack: true} to the %s call."):format(
+								.. string.format("{withoutStack: true} to the %s call.",
 									matcherName
 								)
 						end,
@@ -313,7 +313,7 @@ return function(consoleMethod, matcherName)
 						"The second argument for %s(), when specified, must be an object. It may have a "
 					):format(matcherName)
 						.. 'property called "withoutStack" whose value may be undefined, boolean, or a number. '
-						.. ("Instead received %s."):format(typeof(withoutStack))
+						.. string.format("Instead received %s.", typeof(withoutStack))
 				)
 			end
 

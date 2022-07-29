@@ -31,7 +31,7 @@ return function()
 					generateTest(expected, true, it)
 					generateTest(expected, false, it)
 				else
-					local testName = ("is %s if it %s invisible parent"):format(
+					local testName = string.format("is %s if it %s invisible parent",
 						tostring(expected),
 						hasInvisibleParent and "does not have" or "has"
 					)

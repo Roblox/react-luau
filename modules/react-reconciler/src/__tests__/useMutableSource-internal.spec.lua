@@ -164,9 +164,9 @@ return function()
         local function Component(props)
             local getSnapshot, label, mutableSource, subscribe = props.getSnapshot, props.label, props.mutableSource, props.subscribe
             local snapshot = useMutableSource(mutableSource, getSnapshot, subscribe)
-            Scheduler.unstable_yieldValue(("%s:%s"):format(label, snapshot))
+            Scheduler.unstable_yieldValue(string.format("%s:%s", label, snapshot))
 
-            return React.createElement("div", nil, ("%s:%s"):format(label, snapshot))
+            return React.createElement("div", nil, string.format("%s:%s", label, snapshot))
         end
 
         beforeEach(function()
@@ -1060,7 +1060,7 @@ return function()
                 end, {id})
                 local name = useMutableSource(mutableSource, getSnapshot, defaultSubscribe)
 
-                Scheduler.unstable_yieldValue(("%s:%s"):format(id, name))
+                Scheduler.unstable_yieldValue(string.format("%s:%s", id, name))
 
                 return React.createElement("li", nil, name)
             end
@@ -1367,7 +1367,7 @@ return function()
                 local getSnapshotFirst, getSnapshotSecond = props.getSnapshotFirst, props.getSnapshotSecond
                 local first = useMutableSource(mutableSource, getSnapshotFirst, defaultSubscribe)
                 local second = useMutableSource(mutableSource, getSnapshotSecond, defaultSubscribe)
-                local result = ("x: %s, y: %s"):format(first, second)
+                local result = string.format("x: %s, y: %s", first, second)
 
                 if getSnapshotFirst == getSnapshotSecond then
                     -- When both getSnapshot functions are equal,
@@ -1524,7 +1524,7 @@ return function()
                 local first = useMutableSource(mutableSource, getSnapshotFirst, defaultSubscribe)
                 local second = useMutableSource(mutableSource, getSnapshotSecond, defaultSubscribe)
 
-                return("first: %s, second: %s"):format(first, second)
+                return string.format("first: %s, second: %s", first, second)
             end
 
             local root = ReactNoop.createRoot()
@@ -1721,7 +1721,7 @@ return function()
 
                 Scheduler.unstable_yieldValue("Child: " .. childValue)
 
-                local result = ("%s, %s"):format(parentValue, childValue)
+                local result = string.format("%s, %s", parentValue, childValue)
 
                 if parentConfig == childConfig then
                     -- When both components read using the same config, the two values
@@ -1820,22 +1820,22 @@ return function()
             local function ComponentA()
                 local snapshot = useMutableSource(mutableSource, defaultGetSnapshot, defaultSubscribe)
 
-                Scheduler.unstable_yieldValue(("a:%s"):format(snapshot))
+                Scheduler.unstable_yieldValue(string.format("a:%s", snapshot))
                 React.useEffect(function()
                     committedA = snapshot
                 end, {snapshot})
 
-                return React.createElement("div", nil, ("a:%s"):format(snapshot))
+                return React.createElement("div", nil, string.format("a:%s", snapshot))
             end
             local function ComponentB()
                 local snapshot = useMutableSource(mutableSource, defaultGetSnapshot, defaultSubscribe)
 
-                Scheduler.unstable_yieldValue(("b:%s"):format(snapshot))
+                Scheduler.unstable_yieldValue(string.format("b:%s", snapshot))
                 React.useEffect(function()
                     committedB = snapshot
                 end, {snapshot})
 
-                return React.createElement("div", nil, ("b:%s"):format(snapshot))
+                return React.createElement("div", nil, string.format("b:%s", snapshot))
             end
 
             -- Mount ComponentA with data version 1

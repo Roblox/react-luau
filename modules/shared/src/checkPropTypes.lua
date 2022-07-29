@@ -84,12 +84,12 @@ local function checkPropTypes<P>(
 				if not success then
 					failureReason = failureReason
 						or "<Validator function did not supply a message>"
-					local message =
-						("validateProps failed on a %s type in %s: %s"):format(
-							location,
-							componentName or "<UNKNOWN Component>",
-							tostring(failureReason)
-						)
+					local message = string.format(
+						"validateProps failed on a %s type in %s: %s",
+						location,
+						componentName or "<UNKNOWN Component>",
+						tostring(failureReason)
+					)
 					-- ROBLOX deviation: In legacy Roact, prop validation
 					-- failures throw. We replicate that behavior, even though
 					-- it differs from propTypes (which only warns)

@@ -105,7 +105,7 @@ function Examples.makeExampleList()
 	listLayout.Parent = exampleList
 
 	for index, example in exampleData do
-		local label = ("%s\nexamples/%s"):format(example.label, example.name)
+		local label = string.format("%s\nexamples/%s", example.label, example.name)
 
 		local exampleCard = Instance.new("TextButton")
 		exampleCard.Name = "Example: " .. example.name

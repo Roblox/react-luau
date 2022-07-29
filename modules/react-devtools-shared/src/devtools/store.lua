@@ -379,7 +379,8 @@ function Store:assertMapSizeMatchesRootCount(map: Map<any, any>, mapName: string
 	local mapSize = #Object.keys(map)
 	if mapSize ~= expectedSize then
 		error(
-			("Expected %s to contain %s items, but it contains %s items\n\n%s"):format(
+			string.format(
+				"Expected %s to contain %s items, but it contains %s items\n\n%s",
 				mapName,
 				tostring(expectedSize),
 				tostring(mapSize),
@@ -512,7 +513,8 @@ end
 function Store:getElementAtIndex(index: number): Element?
 	if index < 0 or index >= self:getNumElements() then
 		console.warn(
-			("Invalid index %d specified; store contains %d items."):format(
+			string.format(
+				"Invalid index %d specified; store contains %d items.",
 				index,
 				self:getNumElements()
 			)
@@ -577,7 +579,7 @@ function Store:getElementByID(id: number): Element | nil
 	local element = self._idToElement[id]
 
 	if element == nil then
-		warn(('No element found with id "%s"'):format(tostring(id)))
+		warn(string.format('No element found with id "%s"', tostring(id)))
 
 		return nil
 	end
@@ -951,7 +953,7 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 
 			if type_ == ElementTypeRoot then
 				if __DEBUG__ then
-					debug_("Add", ("new root node %s"):format(tostring(id)))
+					debug_("Add", string.format("new root node %s", tostring(id)))
 				end
 
 				local supportsProfiling = operations[i] > 0
@@ -1002,7 +1004,8 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 				if __DEBUG__ then
 					debug_(
 						"Add",
-						("node %s (%s) as child of %s"):format(
+						string.format(
+							"node %s (%s) as child of %s",
 							tostring(id),
 							displayName or "null",
 							tostring(parentID)
@@ -1079,7 +1082,10 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 
 				if #children > 0 then
 					error(
-						("Node %s was removed before its children."):format(tostring(id))
+						string.format(
+							"Node %s was removed before its children.",
+							tostring(id)
+						)
 					)
 				end
 
@@ -1089,7 +1095,7 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 
 				if parentID == 0 then
 					if __DEBUG__ then
-						debug_("Remove", ("node %s root"):format(tostring(id)))
+						debug_("Remove", string.format("node %s root", tostring(id)))
 					end
 
 					self._roots = Array.filter(self._roots, function(rootID)
@@ -1104,7 +1110,8 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 					if __DEBUG__ then
 						debug_(
 							"Remove",
-							("node %s from parent %s"):format(
+							string.format(
+								"node %s from parent %s",
 								tostring(id),
 								tostring(parentID)
 							)
@@ -1182,7 +1189,8 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 			if _G.__DEBUG__ then
 				debug_(
 					"Re-order",
-					("Node %s children %s"):format(
+					string.format(
+						"Node %s children %s",
 						tostring(id),
 						Array.join(children, ",")
 					)

@@ -140,7 +140,8 @@ exports.printOperationsArray = function(operations: Array<number | string>)
 	local rendererID = operations[1] :: number
 	local rootID = operations[2] :: number
 	local logs = {
-		("operations for renderer:%s and root:%s"):format(
+		string.format(
+			"operations for renderer:%s and root:%s",
 			tostring(rendererID),
 			tostring(rootID)
 		),
@@ -183,7 +184,7 @@ exports.printOperationsArray = function(operations: Array<number | string>)
 			i += 3
 
 			if type_ == ElementTypeRoot then
-				table.insert(logs, ("Add new root node %d"):format(id))
+				table.insert(logs, string.format("Add new root node %d", id))
 
 				i += 1 -- supportsProfiling
 				i += 1 -- hasOwnerMetadata
@@ -201,7 +202,8 @@ exports.printOperationsArray = function(operations: Array<number | string>)
 
 				table.insert(
 					logs,
-					("Add node %d (%s) as child of %d"):format(
+					string.format(
+						"Add node %d (%s) as child of %d",
 						id,
 						displayName or "null",
 						parentID
@@ -216,7 +218,7 @@ exports.printOperationsArray = function(operations: Array<number | string>)
 				local id = operations[i] :: number
 				i += 1
 
-				table.insert(logs, ("Remove node %d"):format(id))
+				table.insert(logs, string.format("Remove node %d", id))
 			end
 		elseif operation == TREE_OPERATION_REORDER_CHILDREN then
 			local id = operations[i + 1] :: number
@@ -227,7 +229,11 @@ exports.printOperationsArray = function(operations: Array<number | string>)
 
 			table.insert(
 				logs,
-				("Re-order node %d children %s"):format(id, Array.join(children, ","))
+				string.format(
+					"Re-order node %d children %s",
+					id,
+					Array.join(children, ",")
+				)
 			)
 		elseif operation == TREE_OPERATION_UPDATE_TREE_BASE_DURATION then
 			-- Base duration updates are only sent while profiling is in progress.
@@ -235,7 +241,7 @@ exports.printOperationsArray = function(operations: Array<number | string>)
 			-- The profiler UI uses them lazily in order to generate the tree.
 			i += 3
 		else
-			error(("Unsupported Bridge operation %d"):format(operation))
+			error(string.format("Unsupported Bridge operation %d", operation))
 		end
 	end
 
@@ -323,9 +329,9 @@ exports.separateDisplayNameAndHOCs =
 			or type_ == ElementTypeMemo
 		then
 			-- ROBLOX deviation: use match instead of indexOf
-			if (displayName :: string):match("%(") then
+			if string.match(displayName :: string, "%(") then
 				-- ROBLOX deviation: use gmatch instead of /[^()]+/g
-				local matches = (displayName :: string):gmatch("[^()]+")
+				local matches = string.gmatch(displayName :: string, "[^()]+")
 				local nextMatch = matches()
 				if nextMatch then
 					displayName = nextMatch
@@ -590,7 +596,7 @@ local function truncateForDisplay(string_: string, length: number?)
 	length = length or MAX_PREVIEW_STRING_LENGTH
 
 	if string.len(string_) > (length :: number) then
-		return string_:sub(1, (length :: number) + 1) .. "…"
+		return string.sub(string_, 1, (length :: number) + 1) .. "…"
 	else
 		return string_
 	end
@@ -632,22 +638,26 @@ function exports.formatDataForPreview(data: Object, showFormattedValue: boolean)
 	local type_ = exports.getDataType(data)
 
 	if type_ == "html_element" then
-		return ("<%s />"):format(truncateForDisplay(data.tagName:lower()))
+		return string.format("<%s />", truncateForDisplay(string.lower(data.tagName)))
 	elseif type_ == "function" then
-		return truncateForDisplay(("ƒ %s() {}"):format((function()
-			if typeof(data.name) == "function" then
-				return ""
-			end
-			return data.name
-		end)()))
+		return truncateForDisplay(string.format(
+			"ƒ %s() {}",
+			(function()
+				if typeof(data.name) == "function" then
+					return ""
+				end
+				return data.name
+			end)()
+		))
 	elseif type_ == "string" then
-		return ('"%s"'):format(tostring(data))
+		return string.format('"%s"', tostring(data))
 		-- ROBLOX TODO? should we support our RegExp and Symbol polyfills here?
 		-- elseif type_ == 'bigint' then
 		-- elseif type_ == 'regexp' then
 		-- elseif type_ == 'symbol' then
 	elseif type_ == "react_element" then
-		return ("<%s />"):format(
+		return string.format(
+			"<%s />",
 			truncateForDisplay(exports.getDisplayNameForReactElement(data) or "Unknown")
 		)
 		-- elseif type_ == 'array_buffer' then
@@ -666,7 +676,7 @@ function exports.formatDataForPreview(data: Object, showFormattedValue: boolean)
 					break
 				end
 			end
-			return ("[%s]"):format(truncateForDisplay(formatted))
+			return string.format("[%s]", truncateForDisplay(formatted))
 		else
 			local length = (function()
 				if array[#meta] ~= nil then
@@ -674,7 +684,7 @@ function exports.formatDataForPreview(data: Object, showFormattedValue: boolean)
 				end
 				return #array
 			end)()
-			return ("Array(%s)"):format(length)
+			return string.format("Array(%s)", length)
 		end
 		-- ROBLOX deviation: don't implement web-specifics
 		-- elseif type_ == 'typed_array' then
@@ -694,7 +704,8 @@ function exports.formatDataForPreview(data: Object, showFormattedValue: boolean)
 					formatted = formatted .. ", "
 				end
 				formatted = formatted
-					.. ("%s: %s"):format(
+					.. string.format(
+						"%s: %s",
 						tostring(key),
 						exports.formatDataForPreview(data[key], false)
 					)
@@ -703,7 +714,7 @@ function exports.formatDataForPreview(data: Object, showFormattedValue: boolean)
 					break
 				end
 			end
-			return ("{%s}"):format(truncateForDisplay(formatted))
+			return string.format("{%s}", truncateForDisplay(formatted))
 		else
 			return "{…}"
 		end

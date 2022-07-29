@@ -7,6 +7,7 @@
 #
 #	Pass --output or -o to set an output dir, helpful for comparisons and organization (ex: -o bin/featureName-benchmarks)
 #	Pass --runs or -r to set how many time each benchmark is run (ex: -r 5)
+#	Pass --dev or -d to run tests in DEV and COMPAT_WARNINGS mode (ex: --dev)
 
 BENCHMARK_FILES = "bin/run-*-benchmark.lua"
 PROJECT_JSON = "tests.project.json"
@@ -46,6 +47,7 @@ class Node(svg.Node):
 parameters = {
 	"directory": "bin/benchmarks",
 	"runs": 3,
+	"dev": "",
 }
 
 # Parse command line arguments
@@ -70,6 +72,10 @@ while argNum < len(sys.argv):
 			exit(1)
 
 		argNum += 2
+	elif arg == "-d" or arg == "--dev":
+		parameters['dev'] = " --lua.globals=__DEV__=true --lua.globals=__COMPAT_WARNINGS__=true"
+
+		argNum += 1
 	elif arg[0:1] == "-":
 		print(f"Error: Unsupported flag {arg}")
 		exit(1)
@@ -99,7 +105,7 @@ for test in glob.iglob(BENCHMARK_FILES):
 	for i in range(1, parameters['runs']+1):
 		print(f"  Run {i}", flush=True)
 		runResults = subprocess.Popen(
-			f"robloxdev-cli run --load.model {PROJECT_JSON} --run {test} --headlessRenderer 1 --fastFlags.overrides \"EnableDelayedTaskMethods=true\" \"FIntScriptProfilerFrequency=1000000\" \"DebugScriptProfilerEnabled=true\" \"EnableLoadModule=true\" --fastFlags.allOnLuau",
+			f"robloxdev-cli run --load.model {PROJECT_JSON} --run {test} --headlessRenderer 1 --fastFlags.overrides \"EnableDelayedTaskMethods=true\" \"FIntScriptProfilerFrequency=1000000\" \"DebugScriptProfilerEnabled=true\" \"EnableLoadModule=true\" --fastFlags.allOnLuau" + parameters['dev'],
 			encoding="utf-8", stdout=logFile,
 		)
 		runResults.wait()

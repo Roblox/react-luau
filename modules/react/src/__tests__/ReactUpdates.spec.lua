@@ -1178,7 +1178,7 @@ return function()
 		--             end
 		--         end
 		--         function Foo:render()
-		--             table.insert(ops, ("a: %s, b: %s"):format(self.state.a, self.state.b))
+		--             table.insert(ops, string.format("a: %s, b: %s", self.state.a, self.state.b))
 		--             return nil
 		--         end
 		--         local container = document:createElement("div")
@@ -1209,7 +1209,7 @@ return function()
 		--             table.insert(ops, "Foo updated")
 		--         end
 		--         function Foo:render()
-		--             table.insert(ops, ("a: %s"):format(self.state.a))
+		--             table.insert(ops, string.format("a: %s", self.state.a))
 		--             return nil
 		--         end
 		--         local Bar = React.Component:extend("")
@@ -1221,7 +1221,7 @@ return function()
 		--             end
 		--         end
 		--         function Bar:render()
-		--             table.insert(ops, ("b: %s"):format(self.state.b))
+		--             table.insert(ops, string.format("b: %s", self.state.b))
 		--             return nil
 		--         end
 		--         local container = document:createElement("div")
@@ -1269,7 +1269,7 @@ return function()
 					local baseStep = baseState.step
 					table.insert(
 						ops,
-						("base: %s, memoized: %s"):format(baseStep, memoizedStep)
+						string.format("base: %s, memoized: %s", baseStep, memoizedStep)
 					)
 					return baseStep == 0 and { step = 1 } or nil
 				end)

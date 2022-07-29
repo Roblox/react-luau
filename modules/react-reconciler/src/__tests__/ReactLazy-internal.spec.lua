@@ -21,11 +21,11 @@ return function()
             return str
         end
 
-        str = str:gsub("Check your code at .*:%d+", "Check your code at **")
+        str = string.gsub(str, "Check your code at .*:%d+", "Check your code at **")
         -- ROBLOX deviation: In roblox/luau, we're using the stack frame from luau,
         -- which looks like:
         --     in Component (at ModulePath.FileName.lua:123)
-        return (str:gsub("\n    in ([%w%-%._]+)[^\n]*", "\n    in %1 (at **)"))
+        return (string.gsub(str, "\n    in ([%w%-%._]+)[^\n]*", "\n    in %1 (at **)"))
     end
 
     describe('ReactLazy', function()
@@ -191,7 +191,7 @@ return function()
             end
             function ErrorBoundary:render()
                     if self.state.message then
-                        return('Error: %s'):format(self.state.message)
+                        return string.format('Error: %s', self.state.message)
                     end
                     return self.props.children
             end
@@ -513,7 +513,7 @@ return function()
         --     local LazyImplMetatable = {__index = LazyImpl}
 
         --     function LazyImpl:render()
-        --         local text = ('%s: %s'):format(self.props.label, self.props.value)
+        --         local text = string.format('%s: %s', self.props.label, self.props.value)
 
         --         return React.createElement(Text, {text = text})
         --     end
@@ -567,7 +567,7 @@ return function()
         --         return
         --     end
         --     function LazyImpl:render()
-        --         local text = ('%s: %s'):format(self.props.label, self.props.value)
+        --         local text = string.format('%s: %s', self.props.label, self.props.value)
 
         --         return React.createElement(Text, {text = text})
         --     end
@@ -615,7 +615,7 @@ return function()
         --     local CMetatable = {__index = C}
 
         --     function C.getDerivedStateFromProps(props)
-        --         Scheduler.unstable_yieldValue(('getDerivedStateFromProps: %s'):format(props.text))
+        --         Scheduler.unstable_yieldValue(string.format('getDerivedStateFromProps: %s', props.text))
 
         --         return nil
         --     end
@@ -624,24 +624,24 @@ return function()
 
         --         self.state = {}
 
-        --         Scheduler.unstable_yieldValue(('constructor: %s'):format(self.props.text))
+        --         Scheduler.unstable_yieldValue(string.format('constructor: %s', self.props.text))
         --     end
         --     function C:componentDidMount()
-        --         Scheduler.unstable_yieldValue(('componentDidMount: %s'):format(self.props.text))
+        --         Scheduler.unstable_yieldValue(string.format('componentDidMount: %s', self.props.text))
         --     end
         --     function C:componentDidUpdate(prevProps)
-        --         Scheduler.unstable_yieldValue(('componentDidUpdate: %s -> %s'):format(prevProps.text, self.props.text))
+        --         Scheduler.unstable_yieldValue(string.format('componentDidUpdate: %s -> %s', prevProps.text, self.props.text))
         --     end
         --     function C:componentWillUnmount()
-        --         Scheduler.unstable_yieldValue(('componentWillUnmount: %s'):format(self.props.text))
+        --         Scheduler.unstable_yieldValue(string.format('componentWillUnmount: %s', self.props.text))
         --     end
         --     function C:shouldComponentUpdate(nextProps)
-        --         Scheduler.unstable_yieldValue(('shouldComponentUpdate: %s -> %s'):format(self.props.text, nextProps.text))
+        --         Scheduler.unstable_yieldValue(string.format('shouldComponentUpdate: %s -> %s', self.props.text, nextProps.text))
 
         --         return true
         --     end
         --     function C:getSnapshotBeforeUpdate(prevProps)
-        --         Scheduler.unstable_yieldValue(('getSnapshotBeforeUpdate: %s -> %s'):format(prevProps.text, self.props.text))
+        --         Scheduler.unstable_yieldValue(string.format('getSnapshotBeforeUpdate: %s -> %s', prevProps.text, self.props.text))
 
         --         return nil
         --     end
@@ -715,13 +715,13 @@ return function()
         --         return
         --     end
         --     function C:UNSAFE_componentWillMount()
-        --         Scheduler.unstable_yieldValue(('UNSAFE_componentWillMount: %s'):format(self.props.text))
+        --         Scheduler.unstable_yieldValue(string.format('UNSAFE_componentWillMount: %s', self.props.text))
         --     end
         --     function C:UNSAFE_componentWillUpdate(nextProps)
-        --         Scheduler.unstable_yieldValue(('UNSAFE_componentWillUpdate: %s -> %s'):format(self.props.text, nextProps.text))
+        --         Scheduler.unstable_yieldValue(string.format('UNSAFE_componentWillUpdate: %s -> %s', self.props.text, nextProps.text))
         --     end
         --     function C:UNSAFE_componentWillReceiveProps(nextProps)
-        --         Scheduler.unstable_yieldValue(('UNSAFE_componentWillReceiveProps: %s -> %s'):format(self.props.text, nextProps.text))
+        --         Scheduler.unstable_yieldValue(string.format('UNSAFE_componentWillReceiveProps: %s -> %s', self.props.text, nextProps.text))
         --     end
         --     function C:render()
         --         return React.createElement(Text, {

@@ -1190,7 +1190,7 @@ return function()
 			local Foo = React.PureComponent:extend("Foo")
 
 			function Foo:render()
-				local msg = ("A: %s, B: %s"):format(tostring(a), self.props.b)
+				local msg = string.format("A: %s, B: %s", tostring(a), self.props.b)
 
 				Scheduler.unstable_yieldValue(msg)
 				return msg
@@ -1995,7 +1995,7 @@ return function()
 				context.locale = context.locale or ""
 				context.route = context.route or ""
 
-				return ("%s in %s"):format(context.route, context.locale)
+				return string.format("%s in %s", context.route, context.locale)
 			end
 			-- ShowBoth.contextTypes = {
 			-- 	locale = PropTypes.string,

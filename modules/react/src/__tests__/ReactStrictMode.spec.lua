@@ -631,7 +631,7 @@ Please update the following components: Parent]],
                 }
             end
             function ChildComponent:render()
-                return('count:%s'):format(self.state.count)
+                return string.format('count:%s', self.state.count)
             end
 
             local function ParentComponent(props)
@@ -674,7 +674,7 @@ Please update the following components: Parent]],
                 }
             end
             function ChildComponent:render()
-                return('count:%s'):format(self.state.count)
+                return string.format('count:%s', self.state.count)
             end
 
             local function ParentComponent(props)
@@ -717,7 +717,7 @@ Please update the following components: Parent]],
                 }
             end
             function ChildComponent:render()
-                return('count:%s'):format(self.state.count)
+                return string.format('count:%s', self.state.count)
             end
 
             local function ParentComponent()

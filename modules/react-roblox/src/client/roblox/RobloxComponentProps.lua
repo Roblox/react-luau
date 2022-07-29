@@ -89,7 +89,7 @@ local function attachBinding(hostInstance, key, newBinding): ()
 
     if not success then
       local source = newBinding._source or "<enable DEV mode for stack>"
-      local fullMessage = updateBindingError:format(key, hostInstance.Name, hostInstance.ClassName, tostring(newValue), errorMessage, source)
+      local fullMessage = string.format(updateBindingError, key, hostInstance.Name, hostInstance.ClassName, tostring(newValue), errorMessage, source)
       console.error(fullMessage)
       -- FIXME: Until console.error can be instrumented to send telemetry, we
       -- need to keep the hard error here
@@ -214,7 +214,7 @@ local function setInitialProperties(
   -- were created the way that legacy Roact did, but DEV mode should include
   -- component stack traces as a separate warning
   if not success then
-    local fullMessage = applyPropsError:format(domElement.Name, domElement.ClassName, errorMessage)
+    local fullMessage = string.format(applyPropsError, domElement.Name, domElement.ClassName, errorMessage)
     console.error(fullMessage)
     -- FIXME: Until console.error can be instrumented to send telemetry, we need
     -- to keep the hard error here
@@ -267,7 +267,7 @@ local function updateProperties(
     -- ROBLOX deviation: Roblox renderer doesn't currently track where instances
     -- were created the way that legacy Roact did, but DEV mode should include
     -- component stack traces as a separate warning
-    local fullMessage = updatePropsError:format(domElement.Name, domElement.ClassName, errorMessage)
+    local fullMessage = string.format(updatePropsError, domElement.Name, domElement.ClassName, errorMessage)
     console.error(fullMessage)
     -- FIXME: Until console.error can be instrumented to send telemetry, we need
     -- to keep the hard error here

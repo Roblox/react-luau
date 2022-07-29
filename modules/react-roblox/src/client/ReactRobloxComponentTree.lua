@@ -54,7 +54,7 @@ local instanceToFiber: { [HostInstance | SuspenseInstance | ReactScopeInstance]:
 	{}
 local instanceToProps: { [HostInstance | SuspenseInstance]: Props } = {}
 
-local randomKey = tostring(math.random()):sub(3)
+local randomKey = string.sub(tostring(math.random()), 3)
 local internalInstanceKey = "__reactFiber$" .. randomKey
 local internalPropsKey = "__reactProps$" .. randomKey
 local internalContainerInstanceKey = "__reactContainer$" .. randomKey

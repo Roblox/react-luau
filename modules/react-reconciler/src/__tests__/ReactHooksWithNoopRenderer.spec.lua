@@ -478,7 +478,7 @@ return function()
 					setRow(newRow)
 				end
 
-				return React.createElement(Text, { text = ("Scrolling down: %s"):format(tostring(isScrollingDown)) })
+				return React.createElement(Text, { text = string.format("Scrolling down: %s", tostring(isScrollingDown)) })
 			end
 
 			ReactNoop.render(React.createElement(ScrollView, { row = 1 }))
@@ -1085,7 +1085,7 @@ return function()
 		it("simple mount and update", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Passive effect [%d]"):format(props.count))
+					Scheduler.unstable_yieldValue(string.format("Passive effect [%d]", props.count))
 				end)
 				return React.createElement(Text, {
 					text = "Count: " .. props.count,
@@ -1790,7 +1790,7 @@ return function()
 			local function Counter(props)
 				local count, updateCount = useState("(empty)")
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Schedule update {%d}"):format(props.count))
+					Scheduler.unstable_yieldValue(string.format("Schedule update {%d}", props.count))
 					updateCount(tostring(props.count))
 				end, {
 					props.count,
@@ -1827,7 +1827,7 @@ return function()
 			local function Counter(props)
 				local count, updateCount = useState("(empty)")
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Schedule update {%d}"):format(props.count))
+					Scheduler.unstable_yieldValue(string.format("Schedule update {%d}", props.count))
 					updateCount(tostring(props.count))
 				end, {
 					props.count,
@@ -2029,7 +2029,7 @@ return function()
 				local count, updateCount = useState("(empty)")
 
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Schedule update [%d]"):format(props.count))
+					Scheduler.unstable_yieldValue(string.format("Schedule update [%d]", props.count))
 					ReactNoop.flushSync(function()
 						updateCount(tostring(props.count))
 					end)
@@ -2123,9 +2123,9 @@ return function()
 		it("unmounts on deletion after skipped effect", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Did create [%d]"):format(props.count))
+					Scheduler.unstable_yieldValue(string.format("Did create [%d]", props.count))
 					return function()
-						Scheduler.unstable_yieldValue(("Did destroy [%d]"):format(props.count))
+						Scheduler.unstable_yieldValue(string.format("Did destroy [%d]", props.count))
 					end
 				end, {})
 				return React.createElement(Text, { text = "Count: " .. props.count })
@@ -2332,15 +2332,15 @@ return function()
 				local count, label = props.count, props.label
 
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Mount %s [%d]"):format(label, count))
+					Scheduler.unstable_yieldValue(string.format("Mount %s [%d]", label, count))
 
 					return function()
-						Scheduler.unstable_yieldValue(("Unmount %s [%d]"):format(label, count))
+						Scheduler.unstable_yieldValue(string.format("Unmount %s [%d]", label, count))
 					end
 				end)
 
 				return React.createElement(Text, {
-					text = ("%s %d"):format(label, count),
+					text = string.format("%s %d", label, count),
 				})
 			end
 
@@ -2448,19 +2448,19 @@ return function()
 		it("handles errors in create on mount", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Mount A [%d]"):format(props.count))
+					Scheduler.unstable_yieldValue(string.format("Mount A [%d]", props.count))
 
 					return function()
-						Scheduler.unstable_yieldValue(("Unmount A [%d]"):format(props.count))
+						Scheduler.unstable_yieldValue(string.format("Unmount A [%d]", props.count))
 					end
 				end)
 				useEffect(function()
 					Scheduler.unstable_yieldValue("Oops!")
 					error("Oops!")
 					-- deviation: upstream notes that following code is unreachable.
-					-- Scheduler.unstable_yieldValue(('Mount B [%s]'):format(props.count))
+					-- Scheduler.unstable_yieldValue(string.format('Mount B [%s]', props.count))
 					-- return function()
-					--     Scheduler.unstable_yieldValue(('Unmount B [%s]'):format(props.count))
+					--     Scheduler.unstable_yieldValue(string.format('Unmount B [%s]', props.count))
 					-- end
 				end)
 
@@ -2494,10 +2494,10 @@ return function()
 		it("handles errors in create on update", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Mount A [%d]"):format(props.count))
+					Scheduler.unstable_yieldValue(string.format("Mount A [%d]", props.count))
 
 					return function()
-						Scheduler.unstable_yieldValue(("Unmount A [%d]"):format(props.count))
+						Scheduler.unstable_yieldValue(string.format("Unmount A [%d]", props.count))
 					end
 				end)
 				useEffect(function()
@@ -2506,10 +2506,10 @@ return function()
 						error("Oops!")
 					end
 
-					Scheduler.unstable_yieldValue(("Mount B [%d]"):format(props.count))
+					Scheduler.unstable_yieldValue(string.format("Mount B [%d]", props.count))
 
 					return function()
-						Scheduler.unstable_yieldValue(("Unmount B [%d]"):format(props.count))
+						Scheduler.unstable_yieldValue(string.format("Unmount B [%d]", props.count))
 					end
 				end)
 
@@ -2565,7 +2565,7 @@ return function()
 		it("handles errors in destroy on update", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Mount A [%d]"):format(props.count))
+					Scheduler.unstable_yieldValue(string.format("Mount A [%d]", props.count))
 
 					return function()
 						Scheduler.unstable_yieldValue("Oops!")
@@ -2576,10 +2576,10 @@ return function()
 					end
 				end)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(("Mount B [%d]"):format(props.count))
+					Scheduler.unstable_yieldValue(string.format("Mount B [%d]", props.count))
 
 					return function()
-						Scheduler.unstable_yieldValue(("Unmount B [%d]"):format(props.count))
+						Scheduler.unstable_yieldValue(string.format("Unmount B [%d]", props.count))
 					end
 				end)
 
@@ -3474,7 +3474,7 @@ return function()
 				local text: string = props.text
 				local capitalizedText = useMemo(function()
 					Scheduler.unstable_yieldValue("Capitalize '" .. text .. "'")
-					return text:upper()
+					return string.upper(text)
 				end, {
 					text,
 				})
@@ -4058,7 +4058,7 @@ return function()
 				end
 
 				return React.createElement(Text, {
-					text = ("A: %s, B: %s, C: %s"):format(tostring(A), tostring(B), tostring(C)),
+					text = string.format("A: %s, B: %s, C: %s", tostring(A), tostring(B), tostring(C)),
 				})
 			end
 
@@ -4117,7 +4117,7 @@ return function()
 				end
 
 				return React.createElement(Text, {
-					text = ("A: %s, B: %s, C: %s"):format(tostring(A), tostring(B), tostring(C)),
+					text = string.format("A: %s, B: %s, C: %s", tostring(A), tostring(B), tostring(C)),
 				})
 			end
 
@@ -4363,7 +4363,7 @@ return function()
 			local c, setC = useState(false)
 			updateA = setA
 			updateC = setC
-			return ("%s%s%s"):format(a and "A" or "a", b and "B" or "b", c and "C" or "c")
+			return string.format("%s%s%s", a and "A" or "a", b and "B" or "b", c and "C" or "c")
 		end
 
 		act(function()

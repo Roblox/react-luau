@@ -608,7 +608,7 @@ local function createFiberFromTypeAndProps(
 				elseif Array.isArray(type_) then
 					typeString = "array"
 				elseif typeof(type_) == "table" and type_["$$typeof"] == REACT_ELEMENT_TYPE then
-					typeString = ("<%s />"):format(getComponentName(type_.type) or "Unknown")
+					typeString = string.format("<%s />", getComponentName(type_.type) or "Unknown")
 					info = " Did you accidentally export a JSX literal or Element instead of a component?"
 				else
 					typeString = typeof(type_)

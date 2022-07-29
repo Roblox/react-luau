@@ -12,14 +12,14 @@ local DIVIDER = "\n------ Error caught by React ------\n"
 --[[
 	React does a lot of catching, retrying, and rethrowing errors that would
 	typically result in loss of meaningful stack information.
-	
+
 	We use xpcall combined with this error function to capture and rethrow in a
 	way that retains some stack information.
 ]]
 local function describeError(e: string | Error): Error
 	if typeof(e) == "string" then
-		local _, endOfStackFrame = e:find(":[%d]+: ")
-		local message = if endOfStackFrame then e:sub(endOfStackFrame + 1) else e
+		local _, endOfStackFrame = string.find(e, ":[%d]+: ")
+		local message = if endOfStackFrame then string.sub(e, endOfStackFrame + 1) else e
 
 		local err = LuauPolyfill.Error.new(message)
 		err.stack = debug.traceback(nil, 2)

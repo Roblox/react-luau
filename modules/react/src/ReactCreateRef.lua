@@ -59,7 +59,7 @@ exports.createRef = function(): RefObject
       binding[key] = value
     end,
     __tostring = function(self)
-      return ("Ref(%s)"):format(tostring(binding:getValue()))
+      return string.format("Ref(%s)", tostring(binding:getValue()))
     end,
   })
 

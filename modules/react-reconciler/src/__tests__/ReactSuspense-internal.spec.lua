@@ -61,7 +61,7 @@ return function()
                                     setTimeout(function()
                                         if textResourceShouldFail then
                                             Scheduler.unstable_yieldValue(
-                                                ('Promise rejected [%s]'):format(text)
+                                                string.format('Promise rejected [%s]', text)
                                             )
                                             status = 'rejected'
                                             value = Error.new('Failed to load: ' .. text)
@@ -70,7 +70,7 @@ return function()
                                             end
                                         else
                                             Scheduler.unstable_yieldValue(
-                                                ('Promise resolved [%s]'):format(text)
+                                                string.format('Promise resolved [%s]', text)
                                             )
                                             status = 'resolved'
                                             value = text
@@ -112,9 +112,9 @@ return function()
             if not ok then
                 local promise = result
                 if typeof(promise.andThen) == 'function' then
-                  Scheduler.unstable_yieldValue(("Suspend! [%s]"):format(text))
+                  Scheduler.unstable_yieldValue(string.format("Suspend! [%s]", text))
                 else
-                  Scheduler.unstable_yieldValue(('Error! [%s]'):format(text))
+                  Scheduler.unstable_yieldValue(string.format('Error! [%s]', text))
                 end
                 error(promise)
             end
@@ -387,7 +387,7 @@ return function()
         --         local shouldSuspend, step = props.shouldSuspend, props.step
 
         --         return React.createElement(React.Fragment, nil, React.createElement(Text, {
-        --             text = ('A%s'):format(step),
+        --             text = string.format('A%s', step),
         --         }), React.createElement(Suspense, {
         --             fallback = React.createElement(Text, {
         --                 text = 'Loading...',
@@ -402,9 +402,9 @@ return function()
 
         --             return nil
         --         end)()), React.createElement(Text, {
-        --             text = ('B%s'):format(step),
+        --             text = string.format('B%s', step),
         --         }), React.createElement(Text, {
-        --             text = ('C%s'):format(step),
+        --             text = string.format('C%s', step),
         --         }))
         --     end
 
@@ -589,7 +589,7 @@ return function()
                 local shouldSuspend, step = props.shouldSuspend, props.step
 
                 return React.createElement(React.Fragment, nil, {
-                    React.createElement(Text, {text = ('A%s'):format(step)}),
+                    React.createElement(Text, {text = string.format('A%s', step)}),
                     React.createElement(Suspense, {
                         fallback = React.createElement(Text, {
                             text = 'Loading...',
@@ -604,8 +604,8 @@ return function()
 
                             return nil
                         end)()),
-                    React.createElement(Text, {text = ('B%s'):format(step)}),
-                    React.createElement(Text, {text = ('C%s'):format(step)})
+                    React.createElement(Text, {text = string.format('B%s', step)}),
+                    React.createElement(Text, {text = string.format('C%s', step)})
                 })
             end
 
@@ -971,13 +971,13 @@ return function()
             --     local TextWithLifecycle = React.Component:extend("TextWithLifecycle")
 
             --     function TextWithLifecycle:componentDidMount()
-            --         Scheduler.unstable_yieldValue(('Mount [%s]'):format(self.props.text))
+            --         Scheduler.unstable_yieldValue(string.format('Mount [%s]', self.props.text))
             --     end
             --     function TextWithLifecycle:componentDidUpdate()
-            --         Scheduler.unstable_yieldValue(('Update [%s]'):format(self.props.text))
+            --         Scheduler.unstable_yieldValue(string.format('Update [%s]', self.props.text))
             --     end
             --     function TextWithLifecycle:componentWillUnmount()
-            --         Scheduler.unstable_yieldValue(('Unmount [%s]'):format(self.props.text))
+            --         Scheduler.unstable_yieldValue(string.format('Unmount [%s]', self.props.text))
             --     end
             --     function TextWithLifecycle:render()
             --         return React.createElement(Text, self.props)
@@ -992,18 +992,18 @@ return function()
             --         }
             --     end
             --     function AsyncTextWithLifecycle:componentDidMount()
-            --         Scheduler.unstable_yieldValue(('Mount [%s:%s]'):format(self.props.text, self.state.step))
+            --         Scheduler.unstable_yieldValue(string.format('Mount [%s:%s]', self.props.text, self.state.step))
             --     end
             --     function AsyncTextWithLifecycle:componentDidUpdate()
-            --         Scheduler.unstable_yieldValue(('Update [%s:%s]'):format(self.props.text, self.state.step))
+            --         Scheduler.unstable_yieldValue(string.format('Update [%s:%s]', self.props.text, self.state.step))
             --     end
             --     function AsyncTextWithLifecycle:componentWillUnmount()
-            --         Scheduler.unstable_yieldValue(('Unmount [%s:%s]'):format(self.props.text, self.state.step))
+            --         Scheduler.unstable_yieldValue(string.format('Unmount [%s:%s]', self.props.text, self.state.step))
             --     end
             --     function AsyncTextWithLifecycle:render()
             --         instance = self
 
-            --         local text = ('%s:%s'):format(self.props.text, self.state.step)
+            --         local text = string.format('%s:%s', self.props.text, self.state.step)
             --         local ms = self.props.ms
 
             --         local ok, result = pcall(function()
@@ -1095,7 +1095,7 @@ return function()
         --             instance = self
 
         --             return React.createElement(Text, {
-        --                 text = ('Stateful: %s'):format(self.state.step),
+        --                 text = string.format('Stateful: %s', self.state.step),
         --             })
         --         end
 
@@ -1165,7 +1165,7 @@ return function()
                         instance = self
 
                     return React.createElement(Text, {
-                        text = ('Stateful: %s'):format(self.state.step),
+                        text = string.format('Stateful: %s', self.state.step),
                     })
                 end
 
@@ -1240,9 +1240,9 @@ return function()
                     if not ok then
                         local promise = result
                         if typeof(promise.andThen) == 'function' then
-                          Scheduler.unstable_yieldValue(("Suspend! [%s]"):format(text))
+                          Scheduler.unstable_yieldValue(string.format("Suspend! [%s]", text))
                         else
-                          Scheduler.unstable_yieldValue(('Error! [%s]'):format(text))
+                          Scheduler.unstable_yieldValue(string.format('Error! [%s]', text))
                         end
                         error(promise)
                     end
@@ -1297,9 +1297,9 @@ return function()
                     if not ok then
                         local promise = result
                         if typeof(promise.andThen) == 'function' then
-                          Scheduler.unstable_yieldValue(("Suspend! [%s]"):format(text))
+                          Scheduler.unstable_yieldValue(string.format("Suspend! [%s]", text))
                         else
-                          Scheduler.unstable_yieldValue(('Error! [%s]'):format(text))
+                          Scheduler.unstable_yieldValue(string.format('Error! [%s]', text))
                         end
                         error(promise)
                     end
@@ -1349,7 +1349,7 @@ return function()
 
                     return React.createElement(AsyncText, {
                         ms = 1000,
-                        text = ('Step: %s'):format(self.state.step),
+                        text = string.format('Step: %s', self.state.step),
                     })
                 end
 
@@ -1601,7 +1601,7 @@ return function()
 
         --             setStep = _setStep
 
-        --             local fullText = ('%s:%s'):format(text, step)
+        --             local fullText = string.format('%s:%s', text, step)
         --         end
 
         --         root.update(React.createElement(Suspense, {

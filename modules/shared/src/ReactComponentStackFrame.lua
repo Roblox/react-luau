@@ -182,8 +182,8 @@ local function describeNativeComponentFrame(
 	if sample and control and typeof(sample.stack) == "string" then
 		-- // This extracts the first frame from the sample that isn't also in the control.
 		-- // Skipping one frame that we assume is the frame that calls the two.
-		local sampleLines = sample.stack:split("\n")
-		local controlLines = control.stack:split("\n")
+		local sampleLines = string.split(sample.stack, "\n")
+		local controlLines = string.split(control.stack, "\n")
 		-- deviation: remove one because our array of lines contains an empty string
 		-- at the end
 		local sampleIndex = #sampleLines - 1
@@ -294,18 +294,18 @@ function describeComponentFrame(
 
 	if _G.__DEV__ and source then
 		local path = source.fileName
-		local fileName = path:gsub(BEFORE_SLASH_PATTERN, "")
+		local fileName = string.gsub(path, BEFORE_SLASH_PATTERN, "")
 
 		-- // In DEV, include code for a common special case:
 		-- // prefer "folder/index.js" instead of just "index.js".
 		-- ROBLOX deviation: instead of having a special case for 'index.',
 		-- we use 'init.'
-		if fileName:match("^init%.") then
+		if string.match(fileName, "^init%.") then
 			-- deviation: finding matching strings works differently in Lua
-			local pathBeforeSlash = path:match(BEFORE_SLASH_PATTERN)
+			local pathBeforeSlash = string.match(path, BEFORE_SLASH_PATTERN)
 
-			if pathBeforeSlash and pathBeforeSlash:len() ~= 0 then
-				local folderName = pathBeforeSlash:gsub(BEFORE_SLASH_PATTERN, "")
+			if pathBeforeSlash and #pathBeforeSlash ~= 0 then
+				local folderName = string.gsub(pathBeforeSlash, BEFORE_SLASH_PATTERN, "")
 				fileName = folderName .. "/" .. fileName
 			end
 		end

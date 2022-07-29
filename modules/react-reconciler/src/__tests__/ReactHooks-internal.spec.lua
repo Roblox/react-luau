@@ -70,10 +70,10 @@ return function()
 				setCounter1 = _setCounter1
 				local counter2, _setCounter2 = useState(0)
 				setCounter2 = _setCounter2
-				local text = ("%s, %s"):format(tostring(counter1), tostring(counter2))
-				Scheduler.unstable_yieldValue(("Parent: %s"):format(text))
+				local text = string.format("%s, %s", tostring(counter1), tostring(counter2))
+				Scheduler.unstable_yieldValue(string.format("Parent: %s", text))
 				useLayoutEffect(function()
-					Scheduler.unstable_yieldValue(("Effect: %s"):format(text))
+					Scheduler.unstable_yieldValue(string.format("Effect: %s", text))
 				end)
 				return React.createElement(Child, { text = text })
 			end
@@ -162,12 +162,12 @@ return function()
 					setCounter1 = _setCounter1
 					local counter2, _setCounter2 = useState(0)
 					setCounter2 = _setCounter2
-					local text = ("%s, %s (%s)"):format(
+					local text = string.format("%s, %s (%s)",
 						tostring(counter1),
 						tostring(counter2),
 						theme
 					)
-					Scheduler.unstable_yieldValue(("Parent: %s"):format(text))
+					Scheduler.unstable_yieldValue(string.format("Parent: %s", text))
 					return React.createElement(Child, { text = text })
 				end
 				-- ROBLOX TODO: contribute this rename upstream, it makes the code and types sane
@@ -225,7 +225,7 @@ return function()
 			local function Counter()
 				local counter, _setCounter = useState(0)
 				setCounter = _setCounter
-				Scheduler.unstable_yieldValue(("Count: %s"):format(tostring(counter)))
+				Scheduler.unstable_yieldValue(string.format("Count: %s", tostring(counter)))
 				return counter
 			end
 			local root = ReactTestRenderer.create(nil, { unstable_isConcurrent = true })
@@ -258,7 +258,7 @@ return function()
 					return a
 				end, 0)
 				dispatch = _dispatch
-				Scheduler.unstable_yieldValue(("Count: %s"):format(counter))
+				Scheduler.unstable_yieldValue(string.format("Count: %s", counter))
 				return counter
 			end
 			local root = ReactTestRenderer.create(nil, { unstable_isConcurrent = true })
@@ -308,10 +308,10 @@ return function()
 				local counter, _setCounter = useState(0)
 				setCounter = _setCounter
 				local theme = useContext(ThemeContext)
-				local text = ("%d (%s)"):format(counter, theme)
-				Scheduler.unstable_yieldValue(("Parent: %s"):format(text))
+				local text = string.format("%d (%s)", counter, theme)
+				Scheduler.unstable_yieldValue(string.format("Parent: %s", text))
 				useLayoutEffect(function()
-					Scheduler.unstable_yieldValue(("Effect: %s"):format(text))
+					Scheduler.unstable_yieldValue(string.format("Effect: %s", text))
 				end)
 				return React.createElement(Child, { text = text })
 			end
@@ -467,7 +467,7 @@ return function()
 			local function update(value)
 				setCounter(function(previous)
 					Scheduler.unstable_yieldValue(
-						("Compute state (%s -> %s)"):format(
+						string.format("Compute state (%s -> %s)",
 							tostring(previous),
 							tostring(value)
 						)
@@ -519,7 +519,7 @@ return function()
 				setCounter(function(previous)
 					local value = compute(previous)
 					Scheduler.unstable_yieldValue(
-						("Compute state (%s -> %s)"):format(
+						string.format("Compute state (%s -> %s)",
 							tostring(previous),
 							tostring(value)
 						)
@@ -1423,12 +1423,12 @@ return function()
 				-- table.insert(hooksInList, useDeferredValueHelper)
 			end
 			local function formatHookNamesToMatchErrorMessage(hookNameA, hookNameB)
-				return ("use%s%s%s"):format(
+				return string.format("use%s%s%s",
 					hookNameA,
 					string.rep(" ", 24 - string.len(hookNameA)),
 					(function()
 						if hookNameB then
-							return ("use%s"):format(hookNameB)
+							return string.format("use%s", hookNameB)
 						else
 							return ""
 						end
@@ -1494,7 +1494,7 @@ return function()
 								.. "read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks\n\n"
 								.. "   Previous render            Next render\n"
 								.. "   ------------------------------------------------------\n"
-								.. ("1. %s\n"):format(
+								.. string.format("1. %s\n",
 									formatHookNamesToMatchErrorMessage(
 										hookNameA,
 										hookNameB
@@ -1511,7 +1511,7 @@ return function()
 					end
 				)
 				it(
-					("warns when more hooks (%s, %s) are used during update than mount"):format(
+					string.format("warns when more hooks (%s, %s) are used during update than mount",
 						hookNameA,
 						hookNameB
 					),
@@ -1545,7 +1545,7 @@ return function()
 								.. "read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks\n\n"
 								.. "   Previous render            Next render\n"
 								.. "   ------------------------------------------------------\n"
-								.. ("1. %s\n"):format(
+								.. string.format("1. %s\n",
 									formatHookNamesToMatchErrorMessage(
 										hookNameA,
 										hookNameA
@@ -1584,7 +1584,7 @@ return function()
 					:gsub("Helper", "")
 				-- ROBLOX FIXME: it is throwing the error, but toThrowError isn't unpacking the Error object?
 				xit(
-					("warns when fewer hooks (%s, %s) are used during update than mount"):format(
+					string.format("warns when fewer hooks (%s, %s) are used during update than mount",
 						hookNameA,
 						hookNameB
 					),
@@ -1642,7 +1642,7 @@ return function()
 							.. "read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks\n\n"
 							.. "   Previous render            Next render\n"
 							.. "   ------------------------------------------------------\n"
-							.. ("1. %s\n"):format(
+							.. string.format("1. %s\n",
 								formatHookNamesToMatchErrorMessage(
 									"ImperativeHandle",
 									"Memo"

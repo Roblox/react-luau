@@ -11,8 +11,8 @@ return function()
 
 	local function assertStringContains(testString: string, subString)
 		assert(
-			testString:find(subString, 1, true),
-			("could not find %q in %q"):format(subString, testString)
+			string.find(testString, subString, 1, true),
+			string.format("could not find %q in %q", subString, testString)
 		)
 	end
 
@@ -129,7 +129,7 @@ return function()
 			for fileName, expectedFileName in fileNames :: any do
 				lineNumber = lineNumber + 1
 
-				it(("converts the file name %q"):format(fileName), function()
+				it(string.format("converts the file name %q", fileName), function()
 					local owner = nil
 					local componentName = "SomeComponent"
 					local frame = ReactComponentStackFrame.describeBuiltInComponentFrame(
@@ -144,7 +144,8 @@ return function()
 					if _G.__DEV__ then
 						assertStringContains(
 							frame,
-							("%s (at %s:%d)"):format(
+							string.format(
+								"%s (at %s:%d)",
 								componentName,
 								expectedFileName,
 								lineNumber

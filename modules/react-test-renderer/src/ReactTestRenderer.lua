@@ -425,7 +425,7 @@ local function expectOne(all: Array<Object>, message: string): Object
 	if #all == 0 then
 		prefix = "No instances found "
 	else
-		prefix = ("Expected 1 but found %s instances "):format(tostring(#all))
+		prefix = string.format("Expected 1 but found %s instances ", tostring(#all))
 	end
 
 	error(prefix .. message)
@@ -509,19 +509,19 @@ end
 function ReactTestInstance:find(predicate: Predicate): Object
 	return expectOne(
 		self:findAll(predicate, { deep = false }),
-		("matching custom predicate: %s"):format(tostring(predicate))
+		string.format("matching custom predicate: %s", tostring(predicate))
 	)
 end
 function ReactTestInstance:findByType(type_: any): Object
 	return expectOne(
 		self:findAllByType(type_, { deep = false }),
-		('with node type: "%s"'):format(getComponentName(type_) or "Unknown")
+		string.format('with node type: "%s"', getComponentName(type_) or "Unknown")
 	)
 end
 function ReactTestInstance:findByProps(props: Object): Object
 	return expectOne(
 		self:findAllByProps(props, { deep = false }),
-		("with props: %s"):format(JSON:JSONEncode(props))
+		string.format("with props: %s", JSON:JSONEncode(props))
 	)
 end
 function ReactTestInstance:findAll(

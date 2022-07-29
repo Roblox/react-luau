@@ -30,7 +30,7 @@ return function()
 		return React.createElement("TextLabel", {
 			LayoutOrder = layoutOrder,
 			Size = UDim2.new(1, 0, 0.5, 0),
-			Text = "Reversed: " .. inputText:reverse(),
+			Text = "Reversed: " .. string.reverse(inputText),
 		})
 	end
 
