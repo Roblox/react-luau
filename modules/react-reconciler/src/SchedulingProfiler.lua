@@ -70,7 +70,7 @@ end
 local wakeableIDs: WeakMap<Wakeable, number> = {}
 local wakeableID: number = 0
 function getWakeableID(wakeable: Wakeable): number
-  if not wakeableIDs[wakeable] ~= nil then
+  if not wakeableIDs[wakeable] then
     wakeableIDs[wakeable] = wakeableID
     wakeableID += 1
   end
