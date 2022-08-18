@@ -19,6 +19,7 @@ local RobloxJest = require(RotrieverWorkspace.React.Dev.RobloxJest)
 -- ROBLOX deviation: upstream mocks both of these via
 -- scripts/setupHostConfigs.js, but this testing entry-point is the closest
 -- equivalent we have
+_G.__ROACT_17_MOCK_SCHEDULER__ = true
 RobloxJest.mock(RotrieverWorkspace.Scheduler.Scheduler, function()
 	return require(RotrieverWorkspace.Scheduler.Scheduler.unstable_mock)
 end)

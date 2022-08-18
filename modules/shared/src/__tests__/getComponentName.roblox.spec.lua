@@ -1,11 +1,17 @@
 return function()
 	local Packages = script.Parent.Parent.Parent
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
-	local React = require(Packages.Dev.React)
+	local React
 
-	local getComponentName = require(Packages.Shared).getComponentName
+	local getComponentName
 	local function MyComponent() end
 	local anonymous = function() end
+
+	beforeEach(function()
+		React = require(Packages.Dev.React)
+
+		getComponentName = require(Packages.Shared).getComponentName
+	end)
 
 	describe("function components", function()
 		it("gets name from non-anonymous function", function()

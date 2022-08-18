@@ -7,7 +7,6 @@
 ]]
 
 local Packages = script.Parent.Parent.Parent
-local Promise = require(Packages.Dev.Promise)
 local RobloxJest = require(Packages.Dev.RobloxJest)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jest = JestGlobals.jest
@@ -30,24 +29,25 @@ local Types = require(script.Parent.Parent.types)
 type ElementType = Types.ElementType
 
 exports.act = function(callback: Function): ()
-	local actTestRenderer = require(Packages.Dev.ReactTestRenderer).act
-	-- ROBLOX deviation: ReactRoblox.act not implemented
-	-- local actDOM = require(Packages.ReactRoblox).act
-	local actDOM = function(fn)
-		fn()
-	end
+	-- ROBLOX deviation: TestRenderer and RobloxRenderer do not play nice with
+	-- one another right now. All of the ported tests in this package are
+	-- using only the ReactRoblox renderer, so we only wrap with it directly
+
+	-- local actTestRenderer = require(Packages.Dev.ReactTestRenderer).act
+
+	local actDOM = require(Packages.ReactRoblox).act
 
 	actDOM(function()
-		actTestRenderer(function()
-			callback()
-		end)
+		-- actTestRenderer(function()
+		callback()
+		-- end)
 	end)
 
 	while RobloxJest.getTimerCount() > 0 do
 		actDOM(function()
-			actTestRenderer(function()
-				RobloxJest.runAllTimers()
-			end)
+			-- actTestRenderer(function()
+			RobloxJest.runAllTimers()
+			-- end)
 		end)
 	end
 end
@@ -57,29 +57,28 @@ exports.actAsync = function(cb: () -> any, recursivelyFlush: boolean?)
 		recursivelyFlush = true
 	end
 
-	local actTestRenderer = require(Packages.Dev.ReactTestRenderer).act
+	-- ROBLOX deviation: TestRenderer and RobloxRenderer do not play nice with
+	-- one another right now. All of the ported tests in this package are
+	-- using only the ReactRoblox renderer, so we only wrap with it directly
+	-- local actTestRenderer = require(Packages.Dev.ReactTestRenderer).act
 
-	-- ROBLOX deviation: ReactRoblox.act not implemented
-	-- local actDOM = require(Packages.ReactRoblox).act
-	local actDOM = function(fn)
-		return Promise.new(fn)
-	end
+	local actDOM = require(Packages.ReactRoblox).act
 
 	if recursivelyFlush then
 		while jest.getTimerCount() > 0 do
 			-- $FlowFixMe Flow doesn't know about "await act()" yet
 			actDOM(function()
-				return actTestRenderer(function()
-					jest.runAllTimers()
-				end):await()
+				-- return actTestRenderer(function()
+				jest.runAllTimers()
+				-- end):await()
 			end):await()
 		end
 	else
 		-- $FlowFixMe Flow doesn't know about "await act()" yet
 		actDOM(function()
-			return actTestRenderer(function()
-				jest.runOnlyPendingTimers()
-			end):await()
+			-- return actTestRenderer(function()
+			jest.runOnlyPendingTimers()
+			-- end):await()
 		end):await()
 	end
 end

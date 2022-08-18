@@ -669,6 +669,8 @@ exports.removeChild = function(
   -- ROBLOX deviation: Roblox's DOM is based on child->parent references
   child.Parent = nil
   -- parentInstance.removeChild(child)
+  -- ROBLOX deviation: Guard against misuse by locking parent and forcing external cleanup via Destroy
+  child:Destroy()
 end
 
 exports.removeChildFromContainer = function(

@@ -59,7 +59,7 @@ return function()
 
 		it("should not allow a root node to be collapsed", function()
 			local function Component()
-				return React.createElement("div", nil, "Hi")
+				return React.createElement("TextLabel", { Text = "Hi" })
 			end
 
 			-- ROBLOX deviation: use root:render to render instead of ReactDOM.render
@@ -95,7 +95,7 @@ return function()
 [root]
     <Root>]])
 			act(function()
-				root:render(React.createElement("div"))
+				root:render(React.createElement("Frame"))
 			end)
 			jestExpect(devtoolsUtils.printStore(store)).toBe("[root]")
 		end)
@@ -106,7 +106,7 @@ return function()
 			it("should support mount and update operations", function()
 				constants.__DEBUG__ = true
 				local function Child()
-					return React.createElement("div", nil, "Hi!")
+					return React.createElement("TextLabel", { Text = "Hi!" })
 				end
 				local function Parent(props)
 					local count = props.count
@@ -152,40 +152,36 @@ return function()
     ▾ <Parent key="2">
         <Child key="1">
         <Child key="2">]])
-				-- ROBLOX FIXME: unmountComponentAtNode not implemented in react-roblox renderer
-				-- act(function()
-				-- 	return root:unmountComponentAtNode()
-				-- end)
-				-- jestExpect(devtoolsUtils.printStore(store)).toBe("")
+				act(function()
+					return root:render(nil)
+				end)
+				jestExpect(devtoolsUtils.printStore(store)).toBe("")
 			end)
-			-- ROBLOX FIXME: currently doesn't print the rootA contents, only rootB contents
-			xit(
-				"should support mount and update operations for multiple roots",
-				function()
-					local function Child()
-						return React.createElement("div", nil, "Hi!")
-					end
-					local function Parent(props)
-						local count = props.count
-						return Array.map(fill(count, true), function(_, index)
-							return React.createElement(Child, { key = index })
-						end)
-					end
-
-					local rootA = ReactRoblox.createBlockingRoot(Instance.new("Frame"))
-					local rootB = ReactRoblox.createBlockingRoot(Instance.new("Frame"))
-
-					act(function()
-						rootA:render(React.createElement(Parent, {
-							key = "A",
-							count = 3,
-						}))
-						rootB:render(React.createElement(Parent, {
-							key = "B",
-							count = 2,
-						}))
+			it("should support mount and update operations for multiple roots", function()
+				local function Child()
+					return React.createElement("TextLabel", { Text = "Hi!" })
+				end
+				local function Parent(props)
+					local count = props.count
+					return Array.map(fill(count, true), function(_, index)
+						return React.createElement(Child, { key = index })
 					end)
-					jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
+				end
+
+				local rootA = ReactRoblox.createBlockingRoot(Instance.new("Frame"))
+				local rootB = ReactRoblox.createBlockingRoot(Instance.new("Frame"))
+
+				act(function()
+					rootA:render(React.createElement(Parent, {
+						key = "A",
+						count = 3,
+					}))
+					rootB:render(React.createElement(Parent, {
+						key = "B",
+						count = 2,
+					}))
+				end)
+				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
   ▾ <Parent key="A">
       <Child key="1">
       <Child key="2">
@@ -194,17 +190,17 @@ return function()
   ▾ <Parent key="B">
       <Child key="1">
       <Child key="2">]])
-					act(function()
-						rootA:render(React.createElement(Parent, {
-							key = "A",
-							count = 4,
-						}))
-						rootB:render(React.createElement(Parent, {
-							key = "B",
-							count = 1,
-						}))
-					end)
-					jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
+				act(function()
+					rootA:render(React.createElement(Parent, {
+						key = "A",
+						count = 4,
+					}))
+					rootB:render(React.createElement(Parent, {
+						key = "B",
+						count = 1,
+					}))
+				end)
+				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
   ▾ <Parent key="A">
       <Child key="1">
       <Child key="2">
@@ -213,35 +209,32 @@ return function()
 [root]
   ▾ <Parent key="B">
       <Child key="1">]])
-					-- ROBLOX deviation: unmountComponentAtNode not implemented
-					-- act(function()
-					-- 	return ReactRoblox.unmountComponentAtNode(containerB)
-					-- end)
-					--[==[jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
+				act(function()
+					return rootB:render(nil)
+				end)
+				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
   ▾ <Parent key="A">
       <Child key="1">
       <Child key="2">
       <Child key="3">
       <Child key="4">]])
-]==]
-					-- act(function()
-					-- 	return ReactRoblox.unmountComponentAtNode(containerA)
-					-- end)
-					-- jestExpect(devtoolsUtils.printStore(store)).toBe("")
-				end
-			)
+				act(function()
+					return rootA:render(nil)
+				end)
+				jestExpect(devtoolsUtils.printStore(store)).toBe("")
+			end)
 			it("should filter DOM nodes from the store tree", function()
 				local function Child()
-					return React.createElement("div", nil, "Hi!")
+					return React.createElement("TextLabel", { Text = "Hi!" })
 				end
 				local function Parent()
-					return React.createElement("div", nil, React.createElement(Child))
+					return React.createElement("Frame", nil, React.createElement(Child))
 				end
 				local function Grandparent()
 					return React.createElement(
-						"div",
+						"Frame",
 						nil,
-						React.createElement("div", nil, React.createElement(Parent)),
+						React.createElement("Frame", nil, React.createElement(Parent)),
 						React.createElement(Parent)
 					)
 				end
@@ -265,13 +258,13 @@ return function()
 			-- ROBLOX FIXME: Unskip when unhideInstance is implemented in react-roblox renderer
 			xit("should display Suspense nodes properly in various states", function()
 				local function Loading()
-					return React.createElement("div", nil, "Loading...")
+					return React.createElement("TextLabel", { Text = "Loading..." })
 				end
 				local function SuspendingComponent()
 					error(Promise.new(function() end))
 				end
 				local function Component()
-					return React.createElement("div", nil, "Hello")
+					return React.createElement("TextLabel", { Text = "Hello" })
 				end
 				local function Wrapper(props)
 					local shouldSuspense = props.shouldSuspense
@@ -327,7 +320,7 @@ return function()
 					return nil
 				end
 				local function Loading()
-					return React.createElement("div", nil, "Loading...")
+					return React.createElement("TextLabel", { Text = "Loading..." })
 				end
 				local Never = function()
 					error(Promise.new(function() end))
@@ -641,13 +634,13 @@ return function()
 			-- ROBLOX TODO: re-enable when unstable_SuspenseList is implemented
 			xit("should display a partially rendered SuspenseList", function()
 				local function Loading()
-					return React.createElement("div", nil, "Loading...")
+					return React.createElement("TextLabel", { Text = "Loading..." })
 				end
 				local function SuspendingComponent()
 					error(Promise.new(function() end))
 				end
 				local function Component()
-					return React.createElement("div", nil, "Hello")
+					return React.createElement("TextLabel", { Text = "Hello" })
 				end
 				local function Wrapper(_ref7)
 					local shouldSuspense = _ref7.shouldSuspense
@@ -701,7 +694,7 @@ return function()
 			it("should support collapsing parts of the tree", function()
 				-- ROBLOX deviation: switched ordering for variable definition order
 				local function Child()
-					return React.createElement("div", nil, "Hi!")
+					return React.createElement("TextLabel", { Text = "Hi!" })
 				end
 				local function Parent(props)
 					local count = props.count
@@ -858,7 +851,7 @@ return function()
 			end)
 			it("should support mount and update operations", function()
 				local function Child()
-					return React.createElement("div", nil, "Hi!")
+					return React.createElement("TextLabel", { Text = "Hi!" })
 				end
 				local function Parent(props)
 					local count = props.count
@@ -896,12 +889,10 @@ return function()
 				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
   ▸ <Parent key="1">
   ▸ <Parent key="2">]])
-				-- ROBLOX deviation: unmountComponentAtNode not implemented
-				-- act(function()
-				-- return ReactRoblox.unmountComponentAtNode(container)
-				-- end)
-				-- jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
-				--   ▸ <Root>]])
+				act(function()
+					return root:render(nil)
+				end)
+				jestExpect(devtoolsUtils.printStore(store)).toBe("")
 			end)
 			-- ROBLOX TODO: Tests using multiple roots don't currently work, because rootA and rootB
 			-- do not use the SyncLane which is checked in ReactFiberWorkLoop:680 upstream which proceeds
@@ -909,85 +900,82 @@ return function()
 			--  The upstream tests use a blocking root, which has a different path through the React
 			-- codebase. Using concurrent roots, rootB is placed in lane 512 (rather than 1)
 			-- Using blocking roots, rootB is placed in lane 2 (rather than 1) so is not registered.
-			xit(
-				"should support mount and update operations for multiple roots",
-				function()
-					-- ROBLOX deviation: switched ordering for variable definition order
-					local function Child()
-						return React.createElement("div", nil, "Hi!")
-					end
-					local function Parent(props)
-						local count = props.count
-						return Array.map(fill(count, true), function(_, index)
-							return React.createElement(Child, { key = index })
-						end)
-					end
-					local rootA = ReactRoblox.createRoot(Instance.new("Frame"))
-					local rootB = ReactRoblox.createRoot(Instance.new("Frame"))
-
-					act(function()
-						rootA:render(
-							React.createElement(Parent, {
-								key = "A",
-								count = 3,
-							}),
-							rootA
-						)
-						rootB:render(
-							React.createElement(Parent, {
-								key = "B",
-								count = 2,
-							}),
-							rootB
-						)
-					end)
-					jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
-  ▸ <Parent key="A">
-[root]
-  ▸ <Parent key="B">]])
-					act(function()
-						rootA:render(
-							React.createElement(Parent, {
-								key = "A",
-								count = 4,
-							}),
-							rootA
-						)
-						rootB:render(
-							React.createElement(Parent, {
-								key = "B",
-								count = 1,
-							}),
-							rootB
-						)
-					end)
-					jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
-  ▸ <Parent key="A">
-[root]
-  ▸ <Parent key="B">]])
-					act(function()
-						return ReactRoblox.unmountComponentAtNode(rootB)
-					end)
-					jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
-  ▸ <Parent key="A">]])
-					act(function()
-						return ReactRoblox.unmountComponentAtNode(rootA)
-					end)
-					jestExpect(devtoolsUtils.printStore(store)).toBe("")
+			it("should support mount and update operations for multiple roots", function()
+				-- ROBLOX deviation: switched ordering for variable definition order
+				local function Child()
+					return React.createElement("TextLabel", { Text = "Hi!" })
 				end
-			)
+				local function Parent(props)
+					local count = props.count
+					return Array.map(fill(count, true), function(_, index)
+						return React.createElement(Child, { key = index })
+					end)
+				end
+				local rootA = ReactRoblox.createRoot(Instance.new("Frame"))
+				local rootB = ReactRoblox.createRoot(Instance.new("Frame"))
+
+				act(function()
+					rootA:render(
+						React.createElement(Parent, {
+							key = "A",
+							count = 3,
+						}),
+						rootA
+					)
+					rootB:render(
+						React.createElement(Parent, {
+							key = "B",
+							count = 2,
+						}),
+						rootB
+					)
+				end)
+				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
+  ▸ <Parent key="A">
+[root]
+  ▸ <Parent key="B">]])
+				act(function()
+					rootA:render(
+						React.createElement(Parent, {
+							key = "A",
+							count = 4,
+						}),
+						rootA
+					)
+					rootB:render(
+						React.createElement(Parent, {
+							key = "B",
+							count = 1,
+						}),
+						rootB
+					)
+				end)
+				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
+  ▸ <Parent key="A">
+[root]
+  ▸ <Parent key="B">]])
+				act(function()
+					return rootB:render(nil)
+				end)
+				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
+  ▸ <Parent key="A">]])
+				act(function()
+					return rootA:render(nil)
+				end)
+				jestExpect(devtoolsUtils.printStore(store)).toBe("")
+			end)
 			it("should filter DOM nodes from the store tree", function()
 				local function Child()
-					return React.createElement("div", nil, "Hi!")
+					return React.createElement("TextLabel", { Text = "Hi!" })
 				end
 				local function Parent()
-					return React.createElement("div", nil, React.createElement(Child))
+					return React.createElement("Frame", nil, React.createElement(Child))
 				end
 				local function Grandparent()
 					return React.createElement(
-						"div",
+						"Frame",
 						nil,
-						React.createElement("div", nil, React.createElement(Parent)),
+						React.createElement("Frame", nil, React.createElement(Parent)),
 						React.createElement(Parent)
 					)
 				end
@@ -1019,16 +1007,16 @@ return function()
         <Child>
     ▸ <Parent key="2">]])
 			end)
-			-- ROBLOX FIXME: incorrect value in the store
+			-- ROBLOX FIXME: unhideInstance is unimplemented
 			xit("should display Suspense nodes properly in various states", function()
 				local function Loading()
-					return React.createElement("div", nil, "Loading...")
+					return React.createElement("TextLabel", { Text = "Loading..." })
 				end
 				local function SuspendingComponent()
 					error(Promise.new(function() end))
 				end
 				local function Component()
-					return React.createElement("div", nil, "Hello")
+					return React.createElement("TextLabel", { Text = "Hello" })
 				end
 				local function Wrapper(props)
 					local shouldSuspense = props.shouldSuspense
@@ -1063,25 +1051,31 @@ return function()
 						React.createElement(Wrapper, { shouldSuspense = true })
 					)
 				end)
-				-- ROBLOX FIXME: this results in incorrect string "[root]"
-				jestExpect(devtoolsUtils.printStore(store)).toBe("1: loading")
+				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
+  ▸ <Wrapper>]])
 				act(function()
 					return store:toggleIsCollapsed(store:getElementIDAtIndex(0), false)
 				end)
 				act(function()
 					return store:toggleIsCollapsed(store:getElementIDAtIndex(2), false)
 				end)
-				jestExpect(devtoolsUtils.printStore(store)).toBe(
-					"2: expand Wrapper and Suspense"
-				)
+				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
+  ▾ <Wrapper>
+      <Component key="Outside">
+    ▾ <Suspense key="2">
+        <Loading>]])
 				act(function()
 					root:render(React.createElement(Wrapper, { shouldSuspense = false }))
 				end)
-				jestExpect(devtoolsUtils.printStore(store)).toBe("2: resolved")
+				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
+  ▾ <Wrapper>
+      <Component key="Outside">
+    ▾ <Suspense key="2">
+        <Component key="Inside">]])
 			end)
 			it("should support expanding parts of the tree", function()
 				local function Child()
-					return React.createElement("div", nil, "Hi!")
+					return React.createElement("TextLabel", { Text = "Hi!" })
 				end
 				local function Parent(props)
 					local count = props.count
@@ -1181,7 +1175,7 @@ return function()
 							})
 						end
 
-						return React.createElement("div", { ref = forwardedRef })
+						return React.createElement("Frame", { ref = forwardedRef })
 					end)()
 				end
 				local function Wrapper(props)
@@ -1387,7 +1381,7 @@ return function()
 		end)
 		describe("getIndexOfElementID", function()
 			beforeEach(function()
-				store.collapseNodesByDefault = false
+				store:setCollapseNodesByDefault(false)
 			end)
 			it("should support a single root with a single child", function()
 				-- ROBLOX deviation: switched ordering for variable definition order
@@ -1555,7 +1549,7 @@ return function()
 			jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
     <Child key="123">]])
 		end)
-		-- ROBLOX FIXME: this test only passes when focused
+		-- ROBLOX FIXME: displayName can't be assigned to a function component in lua
 		xit("should show the right display names for special component types", function()
 			local fakeImport = function(result)
 				return Promise.resolve({ default = result })
@@ -1638,18 +1632,18 @@ return function()
 			jestExpect(devtoolsUtils.printStore(store)).toBe([==[[root]
   ▾ <App>
       <MyComponent>
-      <Anonymous> [ForwardRef]
+      <MyComponent> [ForwardRef]
     ▾ <Anonymous> [ForwardRef]
         <MyComponent2>
       <Custom> [ForwardRef]
       <MyComponent4> [Memo]
-    ▾ <Anonymous> [Memo]
-        <Anonymous> [ForwardRef]
+    ▾ <MyComponent> [Memo]
+        <MyComponent> [ForwardRef]
     ▾ <Suspense>
         <MyComponent5>
-      <FakeHigherOrderComponent>
-      <FakeHigherOrderComponent> [Memo]
-      <Anonymous> [ForwardRef]]==])
+      <Baz> [withFoo][withBar]
+      <Baz> [Memo][withFoo][withBar]
+      <Baz> [ForwardRef][withFoo][withBar]]==])
 		end)
 	end)
 end

@@ -16,16 +16,12 @@ return function()
 	type Array<T> = LuauPolyfill.Array<T>
 	type Object = LuauPolyfill.Object
 
-	local React = require(script.Parent.Parent)
+	local React
 	local ReactTestUtils
+	local ReactRoblox
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 	local jest = require(Packages.Dev.JestGlobals).jest
 	local expect = require(Packages.Dev.JestGlobals).expect
-	local ReactRoblox = require(Packages.Dev.ReactRoblox)
-	type React_Node = React.React_Node
-	type React_Element<ElementType> = React.React_Element<ElementType>
-	type React_ElementProps<C> = React.ElementProps<C>
-	type ReactElement<P = Object, T = any> = React.ReactElement<P, T>
 
 	describe("ReactChildren", function()
 		beforeEach(function()
@@ -59,7 +55,7 @@ return function()
 				instance.props.children,
 				callback,
 				context
-			) :: Array<React_Node>
+			)
 			expect(callback).toHaveBeenCalledWith(simpleKid, 1)
 			expect(mappedChildren[1]).toEqual(
 				React.createElement("span", { key = ".$simple" })
@@ -84,7 +80,7 @@ return function()
 				parentInstance.props.children,
 				callback,
 				context
-			) :: Array<React_Node>
+			)
 			expect(callback).toHaveBeenCalledWith(reactPortal, 1)
 			expect(mappedChildren[1]).toEqual(reactPortal)
 		end)
@@ -104,7 +100,7 @@ return function()
 				instance.props.children,
 				callback,
 				context
-			) :: Array<React_Node>
+			)
 			expect(callback).toHaveBeenCalledWith(simpleKid, 1)
 			expect(mappedChildren[1]).toEqual(React.createElement("span", { key = ".1" }))
 		end)
@@ -124,7 +120,7 @@ return function()
 				instance.props.children,
 				callback,
 				context
-			) :: Array<React_Node>
+			)
 			expect(callback).toHaveBeenCalledWith(simpleKid, 1)
 			expect(mappedChildren[1]).toEqual(
 				React.createElement("span", { key = ".$simple" })
@@ -159,7 +155,7 @@ return function()
 				instance.props.children,
 				callback,
 				context
-			) :: Array<React_Node>
+			)
 			assertCalls()
 			expect(mappedChildren).toEqual({
 				React.createElement("div", { key = ".$keyZero" }),
@@ -210,7 +206,7 @@ return function()
 				instance.props.children,
 				callback,
 				context
-			) :: Array<React_Node>
+			)
 			assertCalls()
 			expect(mappedChildren).toEqual({
 				React.createElement("div", { key = ".$divNode" }),
@@ -254,7 +250,7 @@ return function()
 				instance.props.children,
 				callback,
 				context
-			) :: Array<React_Node>
+			)
 			assertCalls()
 			expect(mappedChildren).toEqual({
 				React.createElement("div", { key = ".1:$keyZero" }),
@@ -284,7 +280,7 @@ return function()
 				forcedKeys.props.children,
 				callback,
 				context
-			) :: Array<React_Node>
+			)
 			assertCalls()
 			expect(mappedChildren).toEqual({
 				React.createElement("div", { key = ".$keyZero" }),
@@ -343,7 +339,7 @@ return function()
 				instance.props.children,
 				callback,
 				context
-			) :: Array<React_Node>
+			)
 			assertCalls()
 			expect(mappedChildren).toEqual({
 				React.createElement("div", { key = ".0" }),
@@ -409,7 +405,7 @@ return function()
 				instance.props.children,
 				callback,
 				context
-			) :: Array<React_Node>
+			)
 			assertCalls()
 			expect(mappedChildren).toEqual({
 				React.createElement("div", { key = ".$#1" }),
@@ -486,9 +482,9 @@ return function()
 				instance.props.children,
 				callback,
 				context
-			) :: Array<React_Node>
+			)
 			assertCalls()
-			expect(mappedChildren).toEqual({ "a", 13 } :: Array<React_Node>)
+			expect(mappedChildren).toEqual({ "a", 13 })
 			-- String.prototype.key = nil
 			-- Number.prototype.key = nil
 		end)
@@ -500,15 +496,15 @@ return function()
 			local simpleKid = React.createElement("span", { key = "simple" })
 			local instance = React.createElement("div", nil, simpleKid)
 			local mappedChildren =
-				React.Children.map(instance.props.children, mapFn) :: Array<React_Node>
+				React.Children.map(instance.props.children, mapFn)
 			expect(React.Children.count(mappedChildren)).toBe(1)
 			expect(mappedChildren[1]).never.toBe(simpleKid)
 			expect(
 				(
-					(mappedChildren[1] :: React_Element<any>).props :: React_ElementProps<any>
+					(mappedChildren[1]).props
 				).children
 			).toBe(simpleKid)
-			expect((mappedChildren[1] :: React_Element<any>).key).toBe(".$simple")
+			expect((mappedChildren[1]).key).toBe(".$simple")
 		end)
 
 		-- ROBLOX DEVIATION: no "this" in luau, ignore context passed to callback
@@ -562,7 +558,7 @@ return function()
 				React.Children.map(
 					instance.props.children,
 					callback
-				) :: Array<React_Element<any>>
+				)
 			expect(callback).toHaveBeenCalledTimes(5)
 			expect(React.Children.count(mappedChildren)).toBe(4) -- Keys default to indices.
 			expect({
@@ -646,7 +642,7 @@ return function()
 				React.Children.map(
 					instance.props.children,
 					callback
-				) :: Array<React_Element<any>>
+				)
 			expect(callback).toHaveBeenCalledTimes(6)
 			expect(callback).toHaveBeenCalledWith(zero, 1)
 			-- ROBLOX DEVIATION: React.None gets treated as nil for callback
@@ -700,7 +696,7 @@ return function()
 			local mappedChildrenForcedKeys = React.Children.map(
 				forcedKeys.props.children,
 				mapFn
-			) :: Array<React_Node>
+			)
 			local mappedForcedKeys = Array.map(mappedChildrenForcedKeys, function(c)
 				return c.key
 			end)
@@ -712,7 +708,7 @@ return function()
 			local remappedChildrenForcedKeys = React.Children.map(
 				mappedChildrenForcedKeys,
 				mapFn
-			) :: Array<React_Node>
+			)
 			expect(Array.map(remappedChildrenForcedKeys, function(c)
 				return c.key
 			end)).toEqual(expectedRemappedForcedKeys)
@@ -738,13 +734,13 @@ return function()
 			)
 			local mapped = React.Children.map(instance.props.children, function(element)
 				return element
-			end) :: Array<React_Element<any>>
+			end)
 			local mappedWithClone = React.Children.map(
 				instance.props.children,
 				function(element)
-					return React.cloneElement(element :: ReactElement<Object, any>)
+					return React.cloneElement(element)
 				end
-			) :: Array<React_Element<any>>
+			)
 			expect(mapped[1].key).toBe(mappedWithClone[1].key)
 		end)
 
@@ -756,16 +752,16 @@ return function()
 			)
 			local mapped = React.Children.map(instance.props.children, function(element)
 				return element
-			end) :: Array<React_Element<any>>
+			end)
 			local mappedWithClone = React.Children.map(
 				instance.props.children,
 				function(element)
 					return React.cloneElement(
-						element :: ReactElement<Object, any>,
+						element,
 						{ key = "unique" }
 					)
 				end
-			) :: Array<React_Element<any>>
+			)
 			expect(mapped[1].key).toBe(mappedWithClone[1].key)
 		end)
 
@@ -819,18 +815,18 @@ return function()
 			-- ROBLOX DEVIATION: React.None is omitted
 			expect(React.Children.toArray(React.None)).toEqual({})
 			expect(
-				#(React.Children.toArray(React.createElement("div", nil)) :: Array<React_Element<any>>)
+				#(React.Children.toArray(React.createElement("div", nil)))
 			).toBe(1)
 			expect(
-				#(React.Children.toArray({ React.createElement("div", nil) }) :: Array<React_Element<any>>)
+				#(React.Children.toArray({ React.createElement("div", nil) }))
 			).toBe(1)
 			expect(
 				(
-					React.Children.toArray(React.createElement("div", nil)) :: Array<React_Element<any>>
+					React.Children.toArray(React.createElement("div", nil))
 				)[1].key
 			).toBe(
 				(
-					React.Children.toArray({ React.createElement("div", nil) }) :: Array<React_Element<any>>
+					React.Children.toArray({ React.createElement("div", nil) })
 				)[1].key
 			)
 			local flattened = React.Children.toArray({
@@ -844,7 +840,7 @@ return function()
 					React.createElement("div", { key = "camel" }),
 					React.createElement("div", { key = "deli" }),
 				},
-			}) :: Array<React_Element<any>>
+			})
 			expect(#flattened).toBe(6)
 			expect(flattened[2].key).toContain("banana")
 			expect(flattened[4].key).toContain("banana")
@@ -860,7 +856,7 @@ return function()
 					React.createElement("div", { key = "camel" }),
 					React.createElement("div", { key = "banana" }),
 				},
-			}) :: Array<React_Element<any>>
+			})
 			expect(flattened[1].key).toBe(reversed[3].key)
 			expect(flattened[2].key).toBe(reversed[2].key)
 			expect(flattened[3].key).toBe(reversed[1].key)
@@ -870,11 +866,11 @@ return function()
 			-- null/undefined/bool are all omitted
 			-- ROBLOX DEVIATION: React.None is omitted
 			expect(
-				React.Children.toArray({ 1, "two", nil, React.None, true } :: Array<React_Node>)
+				React.Children.toArray({ 1, "two", nil, React.None, true })
 			).toEqual({
 				1,
 				"two",
-			} :: Array<React_Node>)
+			})
 		end)
 
 		it("should escape keys", function()
@@ -886,7 +882,7 @@ return function()
 				function(kid)
 					return kid
 				end
-			) :: Array<React_Node>
+			)
 			expect(mappedChildren).toEqual({
 				React.createElement("div", { key = ".$1" }),
 				React.createElement("div", { key = ".$1=0=2=2=02" }),
@@ -914,14 +910,14 @@ return function()
 						kid or React.None,
 						if kid and kid ~= React.None
 							then React.cloneElement(
-								kid :: ReactElement<Object, any>,
+								kid,
 								{ key = "z" }
 							)
 							else React.None,
 						React.createElement("hr", nil),
-					} :: Array<React_Node>
+					}
 				end
-			) :: Array<React_Element<any>>
+			)
 			expect(#mappedChildren).toBe(18)
 			-- <div key="a">
 			expect(mappedChildren[1].type).toBe("span")
@@ -1087,7 +1083,7 @@ return function()
 					instance.props.children,
 					callback,
 					{}
-				) :: Array<React_Node>
+				)
 				local function assertCalls()
 					expect(callback).toHaveBeenCalledTimes(3)
 					expect(#mappedChildren).toEqual(3)

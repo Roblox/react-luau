@@ -15,4 +15,4 @@ authors = [
 Promise = "github.com/roblox/roblox-lua-promise@3.2.0"
 Cryo = "github.com/roblox/cryo@1.0"
 JestGlobals = "github.com/roblox/jest-roblox@2.4.1"
-LuauPolyfill = "github.com/roblox/luau-polyfill@0.4.0"
+LuauPolyfill = "github.com/roblox/luau-polyfill@0.4.2"

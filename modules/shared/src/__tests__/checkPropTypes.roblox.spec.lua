@@ -1,7 +1,7 @@
 return function()
 	local Packages = script.Parent.Parent.Parent
 	local RobloxJest = require(Packages.Dev.RobloxJest)
-	local React = require(Packages.Dev.React)
+	local React
 
 	local ReactNoop
 	local Scheduler

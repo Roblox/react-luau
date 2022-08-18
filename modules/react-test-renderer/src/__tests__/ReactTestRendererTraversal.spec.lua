@@ -16,120 +16,122 @@ local RobloxJest = require(Packages.Dev.RobloxJest)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 
-local React = require(Packages.React)
+local React
 local ReactTestRenderer
 local Context
 local RCTView = "RCTView"
-local View = function(props)
-	return React.createElement(RCTView, props)
-end
+local View
 
 return function()
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
 	describe("ReactTestRendererTraversal", function()
-		beforeEach(function()
-			RobloxJest.resetModules()
-
-			React = require(Packages.React)
-			ReactTestRenderer = require(Packages.ReactTestRenderer)
-			Context = React.createContext(nil)
-		end)
-
-		-- ROBLOX deviation: predeclare to avoid changing upstream declaration order
 		local ExampleFn
 		local ExampleNull
-		local ExampleSpread = React.Component:extend("ExampleSpread")
+		local ExampleSpread
 		local ExampleForwardRef
 
-		local Example = React.Component:extend("Example")
-		function Example:render()
-			return React.createElement(
-				View,
-				nil,
-				React.createElement(
+		local Example
+
+		beforeEach(function()
+			RobloxJest.resetModules()
+			React = require(Packages.React)
+			View = function(props)
+				return React.createElement(RCTView, props)
+			end
+			ReactTestRenderer = require(Packages.ReactTestRenderer)
+			ExampleSpread = React.Component:extend("ExampleSpread")
+			Context = React.createContext(nil)
+
+			Example = React.Component:extend("Example")
+			function Example:render()
+				return React.createElement(
 					View,
-					{
-						foo = "foo",
-					},
-					React.createElement(View, {
-						bar = "bar",
-					}),
-					React.createElement(View, {
-						bar = "bar",
-						baz = "baz",
-						itself = "itself",
-					}),
-					React.createElement(View),
-					React.createElement(ExampleSpread, {
-						bar = "bar",
-					}),
-					React.createElement(ExampleFn, {
-						bar = "bar",
-						bing = "bing",
-					}),
-					React.createElement(ExampleNull, {
-						bar = "bar",
-					}),
+					nil,
 					React.createElement(
-						ExampleNull,
+						View,
 						{
-							null = "null",
+							foo = "foo",
 						},
 						React.createElement(View, {
-							void = "void",
+							bar = "bar",
 						}),
 						React.createElement(View, {
-							void = "void",
-						})
-					),
-					React.createElement(
-						React.Profiler,
-						{
-							id = "test",
-							onRender = function()
-								return
-							end,
-						},
-						React.createElement(ExampleForwardRef, {
-							qux = "qux",
-						})
-					),
-					React.createElement(
-						React.Fragment,
-						nil,
+							bar = "bar",
+							baz = "baz",
+							itself = "itself",
+						}),
+						React.createElement(View),
+						React.createElement(ExampleSpread, {
+							bar = "bar",
+						}),
+						React.createElement(ExampleFn, {
+							bar = "bar",
+							bing = "bing",
+						}),
+						React.createElement(ExampleNull, {
+							bar = "bar",
+						}),
+						React.createElement(
+							ExampleNull,
+							{
+								null = "null",
+							},
+							React.createElement(View, {
+								void = "void",
+							}),
+							React.createElement(View, {
+								void = "void",
+							})
+						),
+						React.createElement(
+							React.Profiler,
+							{
+								id = "test",
+								onRender = function()
+									return
+								end,
+							},
+							React.createElement(ExampleForwardRef, {
+								qux = "qux",
+							})
+						),
 						React.createElement(
 							React.Fragment,
 							nil,
 							React.createElement(
-								Context.Provider,
-								{ value = Object.None },
-								React.createElement(Context.Consumer, nil, function()
-									return React.createElement(View, { nested = true })
-								end)
-							)
-						),
-						React.createElement(View, { nested = true }),
-						React.createElement(View, { nested = true })
+								React.Fragment,
+								nil,
+								React.createElement(
+									Context.Provider,
+									{ value = Object.None },
+									React.createElement(Context.Consumer, nil, function()
+										return React.createElement(View, { nested = true })
+									end)
+								)
+							),
+							React.createElement(View, { nested = true }),
+							React.createElement(View, { nested = true })
+						)
 					)
 				)
-			)
-		end
-
-		function ExampleSpread:render()
-			return React.createElement(View, self.props)
-		end
-
-		ExampleFn = function(props)
-			return React.createElement(View, {
-				baz = "baz",
-			})
-		end
-		ExampleNull = function(props)
-			return nil
-		end
-		ExampleForwardRef = React.forwardRef(function(props, ref)
-			-- ROBLOX deviation: no easy spread operator, and tests don't demand a generic solution
-			return React.createElement(View, { qux = props.qux, ref = ref })
+			end
+	
+			function ExampleSpread:render()
+				return React.createElement(View, self.props)
+			end
+	
+			ExampleFn = function(props)
+				return React.createElement(View, {
+					baz = "baz",
+				})
+			end
+			ExampleNull = function(props)
+				return nil
+			end
+			ExampleForwardRef = React.forwardRef(function(props, ref)
+				-- ROBLOX deviation: no easy spread operator, and tests don't demand a generic solution
+				return React.createElement(View, { qux = props.qux, ref = ref })
+			end)
 		end)
 
 		it("initializes", function()

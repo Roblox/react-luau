@@ -15,12 +15,18 @@ return function()
 	local LuauPolyfill = require(Packages.LuauPolyfill)
 	local Array = LuauPolyfill.Array
 	local Error = LuauPolyfill.Error
-	local UninitializedState = require(Packages.Shared).UninitializedState
+	local UninitializedState
 	-- local PropTypes = require(Dependencies.PropTypes)
-	local React = require(Packages.React)
-	local ReactShallowRenderer = require(script.Parent.Parent)
+	local React
+	local ReactShallowRenderer
+	local createRenderer
 
-	local createRenderer = ReactShallowRenderer.createRenderer
+	beforeEach(function()
+		UninitializedState = require(Packages.Shared).UninitializedState
+		React = require(Packages.React)
+		ReactShallowRenderer = require(script.Parent.Parent)
+		createRenderer = ReactShallowRenderer.createRenderer
+	end)
 
 	local function validateElement(element)
 		if _G.__DEV__ then

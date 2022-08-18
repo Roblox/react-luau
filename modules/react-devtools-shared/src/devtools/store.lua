@@ -10,12 +10,14 @@ local Packages = script.Parent.Parent.Parent
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
-local inspect = LuauPolyfill.util.inspect
+local Set = LuauPolyfill.Set
 local Object = LuauPolyfill.Object
+local inspect = LuauPolyfill.util.inspect
+
 type Array<T> = LuauPolyfill.Array<T>
 type Map<K, V> = { [K]: V }
 type Object = LuauPolyfill.Object
-type Set<K> = { [K]: boolean }
+type Set<K> = LuauPolyfill.Set<K>
 local console = require(Packages.Shared).console
 
 local EventEmitter = require(script.Parent.Parent.events)
@@ -664,8 +666,8 @@ function Store:getOwnersListForElement(ownerID: number): Array<Element>
 			local sortedIDs = Array.sort(
 				Array.from(unsortedIDsDefined),
 				function(idA: number, idB: number)
-					return (self:getIndexOfElementID(idA) :: number)
-						- (self:getIndexOfElementID(idB) :: number)
+					return (self:getIndexOfElementID(idA) or 0)
+						- (self:getIndexOfElementID(idB) or 0)
 				end
 			)
 
@@ -788,28 +790,24 @@ function Store:toggleIsCollapsed(id: number, isCollapsed: boolean): ()
 			local currentElement: Element? = element
 
 			while currentElement ~= nil do
-				local oldWeight = (function()
-					if (currentElement :: Element).isCollapsed then
-						return 1
-					end
-
-					return (currentElement :: Element).weight
-				end)()
+				local oldWeight = if (currentElement :: Element).isCollapsed
+					then 1
+					else (currentElement :: Element).weight
 
 				if (currentElement :: Element).isCollapsed then
 					didMutate = true;
 					(currentElement :: Element).isCollapsed = false
 
-					local newWeight = (currentElement :: Element).isCollapsed and 1
-						or (currentElement :: Element).weight
+					local newWeight = if (currentElement :: Element).isCollapsed
+						then 1
+						else (currentElement :: Element).weight
 					local weightDelta = newWeight - oldWeight
 					local parentElement: Element? = self._idToElement[(
 						currentElement :: Element
 					).parentID]
 
 					while parentElement ~= nil do
-						(parentElement :: Element).weight = (parentElement :: Element).weight
-							+ weightDelta
+						(parentElement :: Element).weight += weightDelta
 
 						if (parentElement :: Element).isCollapsed then
 							-- It's important to break on a collapsed parent when expanding nodes.
@@ -822,12 +820,9 @@ function Store:toggleIsCollapsed(id: number, isCollapsed: boolean): ()
 					end
 				end
 
-				currentElement = (function()
-					if (currentElement :: Element).parentID ~= 0 then
-						return self:getElementByID((currentElement :: Element).parentID)
-					end
-					return nil
-				end)()
+				currentElement = if (currentElement :: Element).parentID ~= 0
+					then self:getElementByID((currentElement :: Element).parentID)
+					else nil
 			end
 		end
 
@@ -1052,11 +1047,11 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 					local set: Set<number>? = self._ownersMap[ownerID]
 
 					if set == nil then
-						set = {}
+						set = Set.new()
 						self._ownersMap[ownerID] = set
 					end
 
-					(set :: Set<number>)[id] = true
+					(set :: Set<number>):add(id)
 				end
 			end
 		elseif operation == TREE_OPERATION_REMOVE then

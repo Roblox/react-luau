@@ -27,10 +27,8 @@ return function()
 		registerRenderer = function(...) end,
 	}
 
-	-- ROBLOX deviation: require these as relative paths
-	local React = require(Packages.React)
-	-- ROBLOX deviation: use ReactRoblox instead of ReactDOM
-	local ReactRoblox = require(Packages.ReactRoblox)
+	local React
+	local ReactRoblox
 	local utils = require(script.Parent.utils)
 
 	describe("console", function()
@@ -78,6 +76,9 @@ return function()
 
 				Console.registerRenderer(internals)
 			end
+
+			React = require(Packages.React)
+			ReactRoblox = require(Packages.ReactRoblox)
 
 			act = utils.act
 		end)

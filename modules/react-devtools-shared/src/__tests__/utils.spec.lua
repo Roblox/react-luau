@@ -17,11 +17,16 @@ return function()
 	local utils = require(script.Parent.Parent.utils)
 	local getDisplayName = utils.getDisplayName
 	local getDisplayNameForReactElement = utils.getDisplayNameForReactElement
-	local ReactSymbols = require(Packages.Shared).ReactSymbols
-	local SuspenseList = ReactSymbols.REACT_SUSPENSE_LIST_TYPE
-	local StrictMode = ReactSymbols.REACT_STRICT_MODE_TYPE
-	local React = require(Packages.React)
-	local createElement = React.createElement
+	local SuspenseList, StrictMode
+	local createElement
+
+	beforeEach(function()
+		local ReactSymbols = require(Packages.Shared).ReactSymbols
+		SuspenseList = ReactSymbols.REACT_SUSPENSE_LIST_TYPE
+		StrictMode = ReactSymbols.REACT_STRICT_MODE_TYPE
+		local React = require(Packages.React)
+		createElement = React.createElement
+	end)
 
 	describe("utils", function()
 		describe("getDisplayName", function()

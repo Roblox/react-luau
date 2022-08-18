@@ -10,10 +10,16 @@
 return function()
 	local Packages = script.Parent.Parent.Parent
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
-	local React = require(Packages.React)
-	local ReactShallowRenderer = require(script.Parent.Parent)
+	local React
+	local ReactShallowRenderer
 
-	local createRenderer = ReactShallowRenderer.createRenderer
+	local createRenderer
+
+	beforeEach(function()
+		React = require(Packages.React)
+		ReactShallowRenderer = require(script.Parent.Parent)
+		createRenderer = ReactShallowRenderer.createRenderer
+	end)
 
 	local function validateElement(element)
 		if _G.__DEV__ then

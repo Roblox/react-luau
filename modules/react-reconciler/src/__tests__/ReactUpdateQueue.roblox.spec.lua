@@ -8,7 +8,7 @@ return function()
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
 
 	local RobloxJest = require(Packages.Dev.RobloxJest)
-	local React = require(Packages.React)
+	local React
 
 	local ReactUpdateQueue, Fiber, FiberLane
 	local fundamentalFiber, component, update, lane, setStateCallbackWasCalled, workInProgress
@@ -20,6 +20,7 @@ return function()
 	beforeEach(function()
 		RobloxJest.resetModules()
 
+		React = require(Packages.React)
 		ReactUpdateQueue = require(script.Parent.Parent["ReactUpdateQueue.new"])
 		Fiber = require(script.Parent.Parent["ReactFiber.new"])
 		FiberLane = require(script.Parent.Parent.ReactFiberLane)
