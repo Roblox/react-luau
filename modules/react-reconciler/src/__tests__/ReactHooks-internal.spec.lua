@@ -18,7 +18,7 @@ local act
 return function()
 	describe("ReactHooks", function()
 		local Packages = script.Parent.Parent.Parent
-		local jest = require(Packages.Dev.RobloxJest)
+		local jestModules = require(Packages.Dev.RobloxJest)
 		local jestExpect = require(Packages.Dev.JestGlobals).expect
 		local Promise = require(Packages.Promise)
 		local LuauPolyfill = require(Packages.LuauPolyfill)
@@ -28,7 +28,7 @@ return function()
 		local Error = LuauPolyfill.Error
 
 		beforeEach(function()
-			jest.resetModules()
+			jestModules.resetModules()
 			ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 			React = require(Packages.React)
 			ReactTestRenderer = require(Packages.Dev.ReactTestRenderer)
@@ -551,7 +551,11 @@ return function()
 			})
 			jestExpect(root).toMatchRenderedOutput("105")
 		end)
-		it("warns about variable number of dependencies", function()
+		-- ROBLOX deviation START: Skip this test, as the warning has been
+		-- silenced to accomodate nils in dependency arrays. We'd like to
+		-- address this possible misuse with a lint instead
+		-- https://jira.rbx.com/browse/LUAFDN-1175
+		xit("warns about variable number of dependencies", function()
 			local useLayoutEffect = React.useLayoutEffect
 			local function App(props)
 				useLayoutEffect(function()
@@ -575,6 +579,7 @@ return function()
 					.. 'Incoming: ["A", "B"]\n',
 			})
 		end)
+		-- ROBLOX deviation END
 		it("warns if switching from dependencies to no dependencies", function()
 			local useMemo = React.useMemo
 			local function App(props)

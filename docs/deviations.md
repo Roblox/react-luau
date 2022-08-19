@@ -28,6 +28,58 @@ However, it _does_ support multiple return values, so we can support a very simi
 local value, setValue = React.useState(0)
 ```
 
+## Hook Dependency Arrays
+
+### Dependency Arrays
+
+In React JS, some hooks [accept an array of dependency values](https://reactjs.org/docs/hooks-effect.html#tip-optimizing-performance-by-skipping-effects) that determine when they need to be re-invoked:
+```js
+useEffect(() => {
+  document.title = `You clicked ${count} times`;
+}, [count]); // Only re-run the effect if count changes
+```
+
+The dependency array should always be specified inline rather than composed dynamically to ensure that it accurately reflects all values relevant to the hook, whatever their state may be during a given render.
+
+React JS provides warnings in DEV mode when a dependency array changes length between renders, an indication that the feature isn't being used correctly. It additionally provides a linter plugin that can help enforce these rules and prevent mistakes during development: https://www.npmjs.com/package/eslint-plugin-react-hooks
+
+### Deviations for Luau
+
+Hooks in Roact 17+ aim to treat dependency arrays exactly like React JS. However, arrays in luau that contain nil-able values might be indistinguishable from similar arrays that simply have different lengths.
+
+For example:
+```lua
+print(#{"A", "B", nil} == #{ "A", "B" }) -- prints: true
+```
+
+This means that, if we align behavior directly with React JS, we introduce a possible scenario in which a correctly-specified dependency array triggers warnings about differences in length:
+```lua
+local root = ReactRoblox.createRoot(someContainer)
+local function Component(props: { A: number, B: number? })
+	React.useEffect(function()
+		-- Trigger some effect
+	end, { props.A, props.B })
+
+	return nil
+end
+
+-- does not warn:
+root:render(React.createElement(Component, { A = 1, B = 2 }))
+-- subsequent render warns about different length arrays:
+root:render(React.createElement(Component, { A = 1 }))
+```
+
+To address this and support the same API as React JS, Roact 17 introduces two minor deviations:
+
+* If a dependency array changes in length, **a re-render will always be triggered** (in React JS, the comparison is short-circuited in production with the assumption that warnings had been ignored or addressed)
+* If a dependency array changes in length, we assume the developer provided an array ending with one or more nil-able values, and we **suppress the warning**
+
+Hooks affected:
+* `useEffect`
+* `useLayoutEffect`
+* `useMemo`
+* `useCallback`
+
 ## Stable Keys
 
 In React JS, the reserved "key" prop is used to provide stable identities to DOM elements. This improves performance when list-like data is reordered by helping React understand which elements are which, instead of simply modifying the element at each position to line up with the new ordering (more info in the [React documentation](https://reactjs.org/docs/lists-and-keys.html)).

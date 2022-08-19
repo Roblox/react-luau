@@ -2255,6 +2255,97 @@ return function()
 			})
 		end)
 
+		-- ROBLOX deviation START: Test that deps can include nil values
+		it("skips or reruns effects correctly when deps have nil values", function()
+			local function Counter(props)
+				local deps = {}
+				-- Create a list of deps for each non-'.' character, like:
+				-- { "A", nil, nil, nil, nil } or { nil, nil, nil, nil, "E" }
+				for i, char in string.split(props.deps, "") do
+					deps[i] = if char ~= "." then char else nil 
+				end
+				useEffect(function()
+					Scheduler.unstable_yieldValue("Did create [" .. props.deps .. "]")
+					return function()
+						Scheduler.unstable_yieldValue("Did destroy [" .. props.deps .. "]")
+					end
+				end, deps)
+				return React.createElement(Text, { text = props.deps })
+			end
+			jestExpect(function()
+				act(function()
+					ReactNoop.render(React.createElement(Counter, { deps = "A...." }), function()
+						Scheduler.unstable_yieldValue("Sync effect")
+					end)
+					jestExpect(Scheduler).toFlushAndYieldThrough({ "A....", "Sync effect" })
+				end)
+			end).toErrorDev({--[[no errors]]})
+
+			jestExpect(Scheduler).toHaveYielded({ "Did create [A....]" })
+			jestExpect(ReactNoop.getChildren()).toEqual({ span("A....") })
+
+			jestExpect(function()
+				act(function()
+					ReactNoop.render(React.createElement(Counter, { deps = "A...E" }), function()
+						Scheduler.unstable_yieldValue("Sync effect")
+					end)
+					jestExpect(Scheduler).toFlushAndYieldThrough({ "A...E", "Sync effect" })
+					jestExpect(ReactNoop.getChildren()).toEqual({ span("A...E") })
+				end)
+			end).toErrorDev({--[[no errors]]})
+			
+			jestExpect(Scheduler).toHaveYielded({
+				"Did destroy [A....]",
+				"Did create [A...E]",
+			})
+
+			jestExpect(function()
+				act(function()
+					ReactNoop.render(React.createElement(Counter, { deps = "ABCDE" }), function()
+						Scheduler.unstable_yieldValue("Sync effect")
+					end)
+					jestExpect(Scheduler).toFlushAndYieldThrough({ "ABCDE", "Sync effect" })
+					jestExpect(ReactNoop.getChildren()).toEqual({ span("ABCDE") })
+				end)
+			end).toErrorDev({--[[no errors]]})
+			
+			jestExpect(Scheduler).toHaveYielded({
+				"Did destroy [A...E]",
+				"Did create [ABCDE]",
+			})
+
+			jestExpect(function()
+				act(function()
+					ReactNoop.render(React.createElement(Counter, { deps = "....E" }), function()
+						Scheduler.unstable_yieldValue("Sync effect")
+					end)
+					jestExpect(Scheduler).toFlushAndYieldThrough({ "....E", "Sync effect" })
+					jestExpect(ReactNoop.getChildren()).toEqual({ span("....E") })
+				end)
+			end).toErrorDev({--[[no errors]]})
+
+			jestExpect(Scheduler).toHaveYielded({
+				"Did destroy [ABCDE]",
+				"Did create [....E]",
+			})
+
+			jestExpect(function()
+				act(function()
+					ReactNoop.render(React.createElement(Counter, { deps = "..C.." }), function()
+						Scheduler.unstable_yieldValue("Sync effect")
+					end)
+					jestExpect(Scheduler).toFlushAndYieldThrough({ "..C..", "Sync effect" })
+					jestExpect(ReactNoop.getChildren()).toEqual({ span("..C..") })
+				end)
+			end).toErrorDev({--[[no errors]]})
+
+			jestExpect(Scheduler).toHaveYielded({
+				"Did destroy [....E]",
+				"Did create [..C..]",
+			})
+		end)
+		-- ROBLOX deviation END
+
 		it("multiple effects", function()
 			local function Counter(props)
 				useEffect(function()
@@ -3465,6 +3556,93 @@ return function()
 				span("Count: 11"),
 			})
 		end)
+
+		it("correctly interprets input changes with nil values", function()
+			local incrementCallback
+			local IncrementButton = React.PureComponent:extend("IncrementButton")
+			function IncrementButton:render()
+				incrementCallback = self.props.increment
+				return React.createElement(Text, { text = "Increment" })
+			end
+
+			local function Counter(props)
+				local deps = {}
+				-- Create a list of deps for each non-'.' character, like:
+				-- { "A", nil, nil, nil, nil } or { nil, nil, nil, nil, "E" }
+				for i, char in string.split(props.input, "") do
+					deps[i] = if char ~= "." then char else nil 
+				end
+				local count, updateCount = useState(0)
+				local increment = useCallback(function()
+					return updateCount(function(c)
+						-- normally, we'd make `incrementBy` a dependency in the
+						-- array, but this test uses contrived logic
+						return c + props.incrementBy
+					end)
+				end, deps)
+				return React.createElement(React.Fragment, {},
+					React.createElement(IncrementButton, { increment = increment }),
+					React.createElement(Text, { text = "Count: " .. count })
+				)
+			end
+
+			ReactNoop.render(React.createElement(Counter, { input = "A....", incrementBy = 1 }))
+			jestExpect(Scheduler).toFlushAndYield({ "Increment", "Count: 0" })
+			jestExpect(ReactNoop.getChildren()).toEqual({
+				span("Increment"),
+				span("Count: 0"),
+			})
+
+			act(incrementCallback)
+			jestExpect(Scheduler).toHaveYielded({
+				-- Button should not re-render, because its props haven't changed
+				-- 'Increment',
+				"Count: 1",
+			})
+			jestExpect(ReactNoop.getChildren()).toEqual({
+				span("Increment"),
+				span("Count: 1"),
+			})
+
+			-- Increase the increment amount
+			ReactNoop.render(React.createElement(Counter, { input = "A....", incrementBy = 10 }))
+			jestExpect(Scheduler).toFlushAndYield({
+				-- Button should not re-render, because we haven't changed input
+				-- "Increment",
+				"Count: 1",
+			})
+			jestExpect(ReactNoop.getChildren()).toEqual({
+				span("Increment"),
+				span("Count: 1"),
+			})
+
+			-- Callback should not have updated since the input did not
+			act(incrementCallback)
+			jestExpect(Scheduler).toHaveYielded({ "Count: 2" })
+			jestExpect(ReactNoop.getChildren()).toEqual({
+				span("Increment"),
+				span("Count: 2"),
+			})
+
+			-- Increase the increment amount
+			ReactNoop.render(React.createElement(Counter, { input = "A...E", incrementBy = 10 }))
+			jestExpect(Scheduler).toFlushAndYield({
+				-- Inputs did change this time
+				"Increment",
+				"Count: 2",
+			})
+			jestExpect(ReactNoop.getChildren()).toEqual({
+				span("Increment"),
+				span("Count: 2"),
+			})
+
+			act(incrementCallback)
+			jestExpect(Scheduler).toHaveYielded({ "Count: 12" })
+			jestExpect(ReactNoop.getChildren()).toEqual({
+				span("Increment"),
+				span("Count: 12"),
+			})
+		end)
 	end)
 
 	describe("useMemo", function()
@@ -3498,6 +3676,7 @@ return function()
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("GOODBYE") })
 		end)
 
+		-- ROBLOX deviation START: multi-return is a luau language feature
 		it("returns multiple input values", function()
 			local function Doubler(props: { x: number, y: number })
 				local x = props.x
@@ -3529,6 +3708,7 @@ return function()
 			jestExpect(Scheduler).toFlushAndYield({ "x - y = 6, x + y = 10", "610" })
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("610") })
 		end)
+		-- ROBLOX deviation END
 
 		it("always re-computes if no inputs are provided", function()
 			local function LazyCompute(props)
@@ -3585,6 +3765,43 @@ return function()
 			ReactNoop.render(React.createElement(LazyCompute, { compute = compute, input = "B" }))
 			jestExpect(Scheduler).toFlushAndYield({ "compute B", "B" })
 		end)
+
+		-- ROBLOX deviation START: Test that deps can include nil values
+		it("correctly interprets input changes with nil values", function()
+			local function LazyCompute(props)
+				local deps = {}
+				-- Create a list of deps for each non-'.' character, like:
+				-- { "A", nil, nil, nil, nil } or { nil, nil, nil, nil, "E" }
+				for i, char in string.split(props.input, "") do
+					deps[i] = if char ~= "." then char else nil 
+				end
+				local computed = useMemo(function()
+					return props.compute(props.input)
+				end, deps)
+				return React.createElement(Text, { text = computed })
+			end
+
+			local function compute(val)
+				Scheduler.unstable_yieldValue("compute " .. val)
+				return val
+			end
+
+			ReactNoop.render(React.createElement(LazyCompute, { compute = compute, input = "A...." }))
+			jestExpect(Scheduler).toFlushAndYield({ "compute A....", "A...." })
+
+			ReactNoop.render(React.createElement(LazyCompute, { compute = compute, input = "A...E" }))
+			jestExpect(Scheduler).toFlushAndYield({ "compute A...E", "A...E" })
+
+			ReactNoop.render(React.createElement(LazyCompute, { compute = compute, input = "ABCDE" }))
+			jestExpect(Scheduler).toFlushAndYield({ "compute ABCDE", "ABCDE" })
+
+			ReactNoop.render(React.createElement(LazyCompute, { compute = compute, input = "....E" }))
+			jestExpect(Scheduler).toFlushAndYield({ "compute ....E", "....E" })
+
+			ReactNoop.render(React.createElement(LazyCompute, { compute = compute, input = "..C.." }))
+			jestExpect(Scheduler).toFlushAndYield({ "compute ..C..", "..C.." })
+		end)
+		-- ROBLOX deviation END
 	end)
 
 	describe("useRef", function()
