@@ -97,7 +97,7 @@ exports.beforeEachProfiling = function(): ()
 	)
 end
 
-exports.createDisplayNameFilter = function(source: string, isEnabled: boolean)
+exports.createDisplayNameFilter = function(source: string, isEnabled: boolean?)
 	if isEnabled == nil then
 		isEnabled = true
 	end
@@ -112,7 +112,7 @@ exports.createDisplayNameFilter = function(source: string, isEnabled: boolean)
 	}
 end
 
-exports.createHOCFilter = function(isEnabled: boolean)
+exports.createHOCFilter = function(isEnabled: boolean?)
 	if isEnabled == nil then
 		isEnabled = true
 	end
@@ -124,7 +124,7 @@ exports.createHOCFilter = function(isEnabled: boolean)
 	}
 end
 
-exports.createElementTypeFilter = function(elementType: ElementType, isEnabled: boolean)
+exports.createElementTypeFilter = function(elementType: ElementType, isEnabled: boolean?)
 	if isEnabled == nil then
 		isEnabled = true
 	end
@@ -136,7 +136,7 @@ exports.createElementTypeFilter = function(elementType: ElementType, isEnabled: 
 	}
 end
 
-exports.createLocationFilter = function(source: string, isEnabled: boolean)
+exports.createLocationFilter = function(source: string, isEnabled: boolean?)
 	if isEnabled == nil then
 		isEnabled = true
 	end

@@ -315,11 +315,14 @@ function Bridge:_flush(): ()
 		self._timeoutID = nil
 	end
 	if #self._messageQueue > 0 then
-		for i = 1, #self._messageQueue, 2 do
+		-- ROBLOX deviation: Use a while loop instead of for loop to handle new insertions during the loop
+		local i = 1
+		while i < #self._messageQueue do
 			self._wall.send(
 				self._messageQueue[i],
 				table.unpack(self._messageQueue[i + 1])
 			)
+			i += 2
 		end
 		table.clear(self._messageQueue)
 

@@ -103,8 +103,10 @@ exports.getDisplayName = function(type_: any, fallbackName: string?): string
 	-- The displayName property is not guaranteed to be a string.
 	-- It's only safe to use for our purposes if it's a string.
 	-- github.com/facebook/react-devtools/issues/803
-	if typeof(type_) == "table" and typeof(type_.displayName) == "string" then
-		displayName = type_.displayName
+	-- ROBLOX deviation START: Luau datatypes don't have a displayName property, so we use .__componentName
+	if typeof(type_) == "table" and typeof(type_.__componentName) == "string" then
+		displayName = type_.__componentName
+		-- ROBLOX deviation END
 	elseif
 		typeof(type_) == "table"
 		and typeof(type_.name) == "string"
@@ -328,21 +330,22 @@ exports.separateDisplayNameAndHOCs =
 			or type_ == ElementTypeFunction
 			or type_ == ElementTypeMemo
 		then
-			-- ROBLOX deviation: use match instead of indexOf
-			if string.match(displayName :: string, "%(") then
-				-- ROBLOX deviation: use gmatch instead of /[^()]+/g
-				local matches = string.gmatch(displayName :: string, "[^()]+")
-				local nextMatch = matches()
-				if nextMatch then
-					displayName = nextMatch
-					-- ROBLOX deviation: loop through matches to populate array
-					hocDisplayNames = {}
-					while (nextMatch :: any) ~= nil do
-						nextMatch = matches()
-						table.insert(hocDisplayNames :: Array<string>, nextMatch)
-					end
+			-- ROBLOX deviation START: use find instead of indexOf and gmatch instead of /[^()]+/g
+			if string.find(displayName :: string, "(", 1, true) then
+				local hocTable: Array<string> = {}
+				for match in string.gmatch(displayName :: string, "[^()]+") do
+					table.insert(hocTable, match)
 				end
+
+				-- ROBLOX note: Pull the last one out as the displayName
+				local count = #hocTable
+				local lastMatch = hocTable[count]
+				hocTable[count] = nil
+
+				displayName = lastMatch
+				hocDisplayNames = hocTable
 			end
+			-- ROBLOX Deviation END
 		end
 
 		if type_ == ElementTypeMemo then

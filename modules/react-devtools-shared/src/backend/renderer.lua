@@ -1258,7 +1258,7 @@ exports.attach = function(
 			-- children of already pushed "real" IDs. If they were, we wouldn't be able
 			-- to discover them during the traversal, as they would have been deleted.
 			for j = 1, #pendingSimulatedUnmountedIDs do
-				operations[i + j] = pendingSimulatedUnmountedIDs[j] :: number
+				operations[i + j - 1] = pendingSimulatedUnmountedIDs[j] :: number
 			end
 
 			i = i + #pendingSimulatedUnmountedIDs

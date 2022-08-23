@@ -411,7 +411,8 @@ function Store:getComponentFilters(): Array<ComponentFilter>
 end
 
 function Store:setComponentFilters(value: Array<ComponentFilter>): ()
-	if self._profilerStore.isProfiling then
+	-- ROBLOX TODO: Profiler is not implemented so store will error when attempting to check self._profilerStore.isProfiling if we don't check for existence first
+	if self._profilerStore and self._profilerStore.isProfiling then
 		-- Re-mounting a tree while profiling is in progress might break a lot of assumptions.
 		-- If necessary, we could support this- but it doesn't seem like a necessary use case.
 		error("Cannot modify filter preferences while profiling")

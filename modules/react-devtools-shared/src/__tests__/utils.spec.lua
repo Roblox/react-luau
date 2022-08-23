@@ -39,7 +39,7 @@ return function()
 			it("should return a displayName name if specified", function()
 				local FauxComponent = {}
 
-				FauxComponent.displayName = "OverrideDisplayName"
+				FauxComponent.__componentName = "OverrideDisplayName"
 
 				jestExpect(getDisplayName(FauxComponent)).toEqual("OverrideDisplayName")
 			end)
