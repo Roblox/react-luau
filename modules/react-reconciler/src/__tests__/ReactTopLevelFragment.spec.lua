@@ -34,13 +34,17 @@ return function()
   it("should render a simple fragment at the top of a component", function()
     local function Fragment()
       return {
-        a = React.createElement("TextLabel", {
+        React.createElement("TextLabel", {
+          key = "a",
           Text = "Hello",
         }),
-        b = React.createElement("TextLabel", {
+        React.createElement("TextLabel", {
+          key = "b",
           Text = "World"
         }),
-      }
+        -- ROBLOX FIXME luau: this isn't seen as iterable for some reason unless
+        -- we cast it
+      } :: Array<any>
     end
     ReactNoop.render(React.createElement(Fragment))
     jestExpect(Scheduler).toFlushWithoutYielding()

@@ -28,6 +28,8 @@ return function()
         return (string.gsub(str, "\n    in ([%w%-%._]+)[^\n]*", "\n    in %1 (at **)"))
     end
 
+    -- ROBLOX Test Noise: in upstream, jest setup config makes these tests hide
+    -- the error boundary warnings they trigger (scripts/jest/setupTests.js:72)
     describe('ReactLazy', function()
         beforeEach(function()
             RobloxJest.resetModules()

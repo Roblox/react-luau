@@ -79,7 +79,7 @@ return function()
 
 			it("should add tags to several children", function()
 				local textLabelRef, textBoxRef = React.createRef(), React.createRef()
-				root:render(React.createElement("Frame", nil, {
+				root:render(React.createElement("Frame", nil,
 					React.createElement("TextLabel", {
 						ref = textLabelRef,
 						[Tag] = "tag1",
@@ -87,8 +87,8 @@ return function()
 					React.createElement("TextBox", {
 						ref = textBoxRef,
 						[Tag] = "tag1",
-					}),
-				}))
+					})
+				))
 				Scheduler.unstable_flushAllWithoutAsserting()
 
 				jestExpect(tag1AddedMock).toHaveBeenCalledWith(textLabelRef.current)

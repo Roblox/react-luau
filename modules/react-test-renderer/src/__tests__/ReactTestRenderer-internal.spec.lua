@@ -674,6 +674,8 @@ return function()
 				self:setState({ error = true })
 			end
 
+			-- ROBLOX Test Noise: jest setup config makes this hide error
+			-- boundary warnings in upstream (scripts/jest/setupTests.js:72)
 			local renderer = ReactTestRenderer.create(React.createElement(Boundary))
 
 			jestExpect(renderer.toJSON()).toEqual({

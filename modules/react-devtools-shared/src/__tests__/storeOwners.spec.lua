@@ -143,6 +143,8 @@ return function()
 				)
 			end)
 
+			-- ROBLOX Test Noise: This test alone prints numerous 'No element
+			-- found with id' errors that upstream does not
 			it(
 				"should show the proper owners list order and contents after insertions and deletions",
 				function()

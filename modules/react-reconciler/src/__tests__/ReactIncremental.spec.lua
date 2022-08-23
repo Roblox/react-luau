@@ -17,10 +17,31 @@ local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 local React
 local ReactNoop
 local Scheduler
-local PropTypes = nil
+local PropTypes
 local HttpService = game:GetService("HttpService")
 return function()
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
+
+	-- ROBLOX deviation START: inline simplified PropTypes logic
+	-- ROBLOX FIXME luau: if not annotated, gets 'Failed ot unify type packs'
+	local function propTypes(value, expectedType): any
+		if value == nil then
+			return nil
+		end
+		if type(value) ~= expectedType then
+			return Error("expected " .. expectedType)
+		end
+		return nil
+	end
+	PropTypes = {
+		number = function(props, typeSpecName)
+			return propTypes(props[typeSpecName], "number")
+		end,
+		string = function(props, typeSpecName)
+			return propTypes(props[typeSpecName], "string")
+		end,
+	}
+	-- ROBLOX deviation END
 
 	describe("ReactIncremental", function()
 		local RobloxJest = require(Packages.Dev.RobloxJest)
@@ -1542,6 +1563,9 @@ return function()
 			local instance
 			local LifeCycle = React.Component:extend("LifeCycle")
 
+			function LifeCycle:init()
+				self:setState({})
+			end
 			function LifeCycle.getDerivedStateFromProps(props, prevState)
 				Scheduler.unstable_yieldValue("getDerivedStateFromProps")
 
@@ -1891,6 +1915,9 @@ return function()
 				return React.createElement("div")
 			end
 
+			-- ROBLOX Test Noise: in upstream, jest setup config makes these
+			-- tests hide the error boundary warnings they trigger
+			-- (scripts/jest/setupTests.js:72)
 			ReactNoop.render(React.createElement(Foo))
 			jestExpect(Scheduler).toFlushWithoutYielding()
 
@@ -2139,12 +2166,11 @@ return function()
 				return React.createElement(Recurse)
 			end
 
-			-- ROBLOX deviation: placeholder 0 instead of using PropTypes.number
 			Recurse.contextTypes = {
-				n = 0,
+				n = PropTypes.number,
 			}
 			Recurse.childContextTypes = {
-				n = 0,
+				n = PropTypes.number,
 			}
 
 			ReactNoop.render(React.createElement(Recurse))
@@ -2226,8 +2252,7 @@ return function()
 			end
 
 			Intl.childContextTypes = {
-				-- deviation: PropTypes workaround
-				locale = "",
+				locale = PropTypes.string,
 			}
 
 			local ShowLocale = React.Component:extend("ShowLocale")
@@ -2239,8 +2264,7 @@ return function()
 			end
 
 			ShowLocale.contextTypes = {
-				-- deviation: PropTypes workaround
-				locale = "",
+				locale = PropTypes.string,
 			}
 
 			ReactNoop.render(React.createElement(

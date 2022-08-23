@@ -54,7 +54,7 @@ return function()
 
 	beforeEach(function()
 		RobloxJest.resetModules()
- 		RobloxJest.useFakeTimers()
+		RobloxJest.useFakeTimers()
 		Promise = require(Packages.Promise)
 
 		LuauPolyfill = require(Packages.LuauPolyfill)
@@ -174,6 +174,8 @@ return function()
 	--   return Promise.resolve().then(function()})
 	-- end
 
+	-- ROBLOX Test Noise: jest setup config makes this hide error
+	-- boundary warnings in upstream (scripts/jest/setupTests.js:72)
 	it("resumes after an interruption", function()
 		local function Counter(props: { label: string }, ref)
 			local count, updateCount = useState(0)
@@ -1877,13 +1879,13 @@ return function()
 
 			-- we explicitly wait for missing act() warnings here since
 			-- it's a lot harder to simulate this condition inside an act scope
-			-- jestExpect(function()
-			ReactNoop.render(React.createElement(Counter, { count = 0 }), function()
-				Scheduler.unstable_yieldValue("Sync effect")
-			end)
-			jestExpect(Scheduler).toFlushAndYieldThrough({ "Count: 0", "Sync effect" })
-			jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 0") })
-			-- end).toErrorDev({'An update to Counter ran an effect'})
+			jestExpect(function()
+				ReactNoop.render(React.createElement(Counter, { count = 0 }), function()
+					Scheduler.unstable_yieldValue("Sync effect")
+				end)
+				jestExpect(Scheduler).toFlushAndYieldThrough({ "Count: 0", "Sync effect" })
+				jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 0") })
+			end).toErrorDev({"An update to Counter ran an effect"})
 
 			-- A flush sync doesn't cause the passive effects to fire.
 			-- So we haven't added the other update yet.

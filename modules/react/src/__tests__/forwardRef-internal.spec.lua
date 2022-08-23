@@ -185,6 +185,8 @@ return function()
         React.createElement(RefForwardingComponent, {ref=ref})
       )
     )
+    -- ROBLOX Test Noise: jest setup config makes this hide error
+    -- boundary warnings in upstream (scripts/jest/setupTests.js:72)
     jestExpect(Scheduler).toFlushAndYield({
       "ErrorBoundary.render: try",
       "Wrapper",

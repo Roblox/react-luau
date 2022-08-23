@@ -44,6 +44,8 @@ return function()
 					React.useDebugValue("abc")
 					return nil
 				end
+				-- ROBLOX Test Noise: jest setup config makes this hide error
+				-- boundary warnings in upstream (scripts/jest/setupTests.js:72)
 				jestExpect(function()
 					ReactTestRenderer.create(React.createElement(Example))
 				end).toThrow(
@@ -973,6 +975,8 @@ return function()
 				end)
 				return nil
 			end
+			-- ROBLOX Test Noise: jest setup config makes this hide error
+			-- boundary warnings in upstream (scripts/jest/setupTests.js:72)
 			jestExpect(function()
 				return ReactTestRenderer.create(React.createElement(App))
 			end).toThrow("Context can only be read while React is rendering")
@@ -1096,6 +1100,9 @@ return function()
 			end
 			type Boundary = { state: any, render: any } --[[ ROBLOX TODO: replace 'any' type/ add missing ]]
 			local Boundary = React.Component:extend("Boundary")
+			function Boundary:init()
+				self:setState({})
+			end
 			function Boundary.getDerivedStateFromError(error_)
 				return { err = true }
 			end
@@ -1884,6 +1891,9 @@ return function()
 					return children
 				end
 				local ErrorBoundary = React.Component:extend("ErrorBoundary")
+				function ErrorBoundary:init()
+					self:setState({})
+				end
 				function ErrorBoundary.getDerivedStateFromError()
 					return { hasError = true }
 				end

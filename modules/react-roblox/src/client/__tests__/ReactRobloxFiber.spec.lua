@@ -544,12 +544,15 @@ return function()
     jestExpect(#parent:GetChildren()[1]:GetChildren()).toBe(0)
 
     reactRobloxRoot:render(
-      React.createElement("Frame", {}, {
+      React.createElement("Frame", {},
         ReactRoblox.createPortal({
-          React.createElement("TextLabel", {Text = "Hi"}),
-          React.createElement("TextLabel", {Text = "Bye"}),
+          -- ROBLOX deviation START: upstream uses text children, which are
+          -- exempt from key warnings, but we get them if we don't provide keys
+          React.createElement("TextLabel", {key = "1", Text = "Hi"}),
+          React.createElement("TextLabel", {key = "2", Text = "Bye"}),
+          -- ROBLOX deviation END
         }, portalContainer)
-      })
+      )
     )
 
     Scheduler.unstable_flushAllWithoutAsserting()
@@ -560,12 +563,15 @@ return function()
     jestExpect(#parent:GetChildren()[1]:GetChildren()).toBe(0)
 
     reactRobloxRoot:render(
-      React.createElement("Frame", {}, {
+      React.createElement("Frame", {},
         ReactRoblox.createPortal({
-          React.createElement("TextLabel", {Text = "Bye"}),
-          React.createElement("TextLabel", {Text = "Hi"}),
+          -- ROBLOX deviation START: upstream uses text children, which are
+          -- exempt from key warnings, but we get them if we don't provide keys
+          React.createElement("TextLabel", {key = "1", Text = "Bye"}),
+          React.createElement("TextLabel", {key = "2", Text = "Hi"}),
+          -- ROBLOX deviation END
         }, portalContainer)
-      })
+      )
     )
 
     Scheduler.unstable_flushAllWithoutAsserting()
@@ -576,9 +582,9 @@ return function()
     jestExpect(#parent:GetChildren()[1]:GetChildren()).toBe(0)
 
     reactRobloxRoot:render(
-      React.createElement("Frame", {}, {
+      React.createElement("Frame", {},
         ReactRoblox.createPortal(nil, portalContainer)
-      })
+      )
     )
 
     Scheduler.unstable_flushAllWithoutAsserting()
@@ -606,13 +612,13 @@ return function()
         self:setState(...)
       end
 
-      return React.createElement("Frame", {}, {
-        self.state.show and React.createElement(React.Fragment, nil, {
+      return React.createElement("Frame", {},
+        self.state.show and React.createElement(React.Fragment, nil,
           ReactRoblox.createPortal(nil, portalContainer),
-          React.createElement("TextLabel", {Text = "child"}),
-        }),
-        React.createElement("TextLabel", {Text = "parent"}),
-      })
+          React.createElement("TextLabel", {Text = "child"})
+        ),
+        React.createElement("TextLabel", {Text = "parent"})
+      )
     end
 
     reactRobloxRoot:render(React.createElement(Wrapper))

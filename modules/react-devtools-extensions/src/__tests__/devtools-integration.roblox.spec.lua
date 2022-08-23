@@ -35,6 +35,7 @@ return function()
 			itSkipIfNonDEV = xit
 		end
 
+		-- ROBLOX FIXME: This test doesn't seem to work when focused
 		itSkipIfNonDEV(
 			"can connect to a Roact tree and inspect its children and child branch nodes",
 			function()

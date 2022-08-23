@@ -53,6 +53,8 @@ return function()
 			end
 			ReactNoop.render(React.createElement(Component))
 			local expectedName = _G.__DEV__ and "Component" or "<enable __DEV__ mode for component names>"
+			-- ROBLOX Test Noise: jest setup config makes this hide error
+			-- boundary warnings in upstream (scripts/jest/setupTests.js:72)
 			-- ROBLOX deviation: we removed string ref support ahead of upstream schedule
 			jestExpect(function()
 				return jestExpect(Scheduler).toFlushWithoutYielding()
@@ -102,6 +104,8 @@ return function()
 
 			-- ROBLOX deviation: we removed string ref support ahead of upstream schedule
 			local expectedName = _G.__DEV__ and "Component" or "<enable __DEV__ mode for component names>"
+			-- ROBLOX Test Noise: jest setup config makes this hide error
+			-- boundary warnings in upstream (scripts/jest/setupTests.js:72)
 			jestExpect(function()
 				return jestExpect(Scheduler).toFlushWithoutYielding()
 			end).toThrow(

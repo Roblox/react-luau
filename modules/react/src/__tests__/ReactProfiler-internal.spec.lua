@@ -144,6 +144,8 @@ return function()
 		end
 	end
 
+	-- ROBLOX Test Noise: in upstream, jest setup config makes these tests hide
+	-- the error boundary warnings they trigger (scripts/jest/setupTests.js:72)
 	describe("Profiler", function()
 		-- ROBLOX deviation: use faketimers instead
 		-- local advanceTimeBy

@@ -6,6 +6,17 @@ return function()
 	local Roact
 	local RoactCompat
 
+	local prevCompatWarnings
+	beforeEach(function()
+		prevCompatWarnings = _G.__COMPAT_WARNINGS__
+		-- Silence warnings; we're intersted in functionality in these tests
+		_G.__COMPAT_WARNINGS__ = false
+	end)
+
+	afterEach(function()
+		_G.__COMPAT_WARNINGS__ = prevCompatWarnings
+	end)
+
 	describe("Concurrent root (default behavior)", function()
 		local prevInlineAct, prevMockScheduler
 		beforeEach(function()

@@ -676,9 +676,10 @@ return function()
 			end
 
 			local element = ReactRoblox.createPortal({
-				React.createElement("Folder", {Name = "folderOne"}),
-				React.createElement("Folder", {Name = "folderTwo"}),
+				React.createElement("Folder", {key = "1", Name = "folderOne"}),
+				React.createElement("Folder", {key = "2", Name = "folderTwo"}),
 				React.createElement(FunctionComponent, {
+					key = "3",
 					value = 42,
 				}),
 			}, target)

@@ -136,18 +136,17 @@ return function()
                     fallback = React.createElement(Text, {
                         text = 'Loading...',
                     }),
-                }, (function()
+                },
                     if renderBar then
-                        return React.createElement(Bar, nil, {React.createElement(AsyncText, {
+                        React.createElement(Bar, nil, React.createElement(AsyncText, {
                             text = 'A',
                             ms = 100,
                         }), React.createElement(Text, {
                             text = 'B',
-                        })})
+                        }))
                     else
-                        return nil
-                    end
-                end)())
+                        nil
+                )
             end
 
             -- Render an empty shell
@@ -742,6 +741,9 @@ return function()
                 text = 'Hi',
                 ms = 1000,
             })), {unstable_isConcurrent = true})
+            -- ROBLOX Test Noise: in upstream, jest setup config makes these
+            -- tests hide the error boundary warnings they trigger
+            -- (scripts/jest/setupTests.js:72)
             jestExpect(Scheduler).toFlushAndThrow('AsyncText suspended while rendering, but no fallback UI was specified.')
             jestExpect(Scheduler).toHaveYielded({
                 'Suspend! [Hi]',

@@ -44,6 +44,26 @@ return function()
 		return list
 	end
 
+	-- ROBLOX deviation START: inline simplified PropTypes logic
+	local function propTypes(value, expectedType, isRequired)
+		if not isRequired and value == nil then
+			return nil
+		end
+		if type(value) ~= expectedType then
+			return Error("expected " .. expectedType)
+		end
+		return nil
+	end
+	local PropTypes = {
+		string = function(props, typeSpecName)
+			return propTypes(props[typeSpecName], "string")
+		end,
+		string_isRequired = function(props, typeSpecName)
+			return propTypes(props[typeSpecName], "string", true)
+		end
+	}
+	-- ROBLOX deviation END
+
 	it("should call all of the legacy lifecycle hooks", function()
 		local logs = {}
 		local logger = function(message)
@@ -543,11 +563,11 @@ return function()
 
 		local Fragment = React.Component:extend("Fragment")
 		function Fragment:render()
-			return React.createElement(React.Fragment, nil, {
+			return React.createElement(React.Fragment, nil,
 				React.createElement("Text"),
 				React.createElement("Frame"),
-				React.createElement(SomeComponent),
-			})
+				React.createElement(SomeComponent)
+			)
 		end
 		local shallowRenderer = createRenderer()
 		local result = shallowRenderer:render(React.createElement(Fragment))
@@ -560,11 +580,11 @@ return function()
 		jestExpect(result.props.children[2]).toEqual(
 			validateElement(React.createElement("Frame"))
 		)
-		React.createElement(React.Fragment, nil, {
+		React.createElement(React.Fragment, nil,
 			React.createElement("Text"),
 			React.createElement("Frame"),
-			React.createElement(SomeComponent),
-		})
+			React.createElement(SomeComponent)
+		)
 	end)
 
 	it("should throw for invalid elements", function()
@@ -660,10 +680,10 @@ return function()
 					className = className,
 				})
 			else
-				return React.createElement("TextLabel", nil, {
+				return React.createElement("TextLabel", nil,
 					React.createElement("Frame", { className = "child1" }),
-					React.createElement("Frame", { className = "child2" }),
-				})
+					React.createElement("Frame", { className = "child2" })
+				)
 			end
 		end
 
@@ -705,7 +725,7 @@ return function()
 	it("can shallowly render components with contextTypes", function()
 		local SimpleComponent = React.Component:extend("SimpleComponent")
 		SimpleComponent.contextTypes = {
-			name = "string", -- ROBLOX TODO: missing PropTypes.string
+			name = PropTypes.string,
 		}
 
 		function SimpleComponent:render()
@@ -713,6 +733,8 @@ return function()
 		end
 
 		local shallowRenderer = createRenderer()
+		-- ROBLOX Test Noise: jest setup config makes this hide error
+		-- boundary warnings in upstream (scripts/jest/setupTests.js:72)
 		local result = shallowRenderer:render(React.createElement(SimpleComponent))
 		jestExpect(result).toEqual(React.createElement("TextLabel"))
 	end)
@@ -737,7 +759,7 @@ return function()
 		end
 
 		SimpleComponent.contextTypes = {
-			context = "PropTypes.string",
+			context = PropTypes.string,
 		}
 
 		function SimpleComponent:componentDidUpdate(...)
@@ -773,6 +795,8 @@ return function()
 		jestExpect(shouldComponentUpdateParams).toEqual({})
 
 		-- Lifecycle hooks should be invoked with the correct prev/next params on update.
+		-- ROBLOX Test Noise: jest setup config makes this hide error
+		-- boundary warnings in upstream (scripts/jest/setupTests.js:72)
 		shallowRenderer:render(
 			React.createElement(SimpleComponent, updatedProp),
 			updatedContext
@@ -810,7 +834,7 @@ return function()
 		end
 
 		SimpleComponent.contextTypes = {
-			context = "PropTypes.string",
+			context = PropTypes.string,
 		}
 
 		function SimpleComponent:componentDidUpdate(...)
@@ -1330,7 +1354,7 @@ return function()
 	it("can pass context when shallowly rendering", function()
 		local SimpleComponent = React.Component:extend("SimpleComponent")
 		SimpleComponent.contextTypes = {
-			name = "string",
+			name = PropTypes.string,
 		}
 
 		function SimpleComponent:render()
@@ -1338,6 +1362,8 @@ return function()
 		end
 
 		local shallowRenderer = createRenderer()
+		-- ROBLOX Test Noise: jest setup config makes this hide error
+		-- boundary warnings in upstream (scripts/jest/setupTests.js:72)
 		local result = shallowRenderer:render(React.createElement(SimpleComponent), {
 			name = "foo",
 		})
@@ -1347,7 +1373,7 @@ return function()
 	it("should track context across updates", function()
 		local SimpleComponent = React.Component:extend("SimpleComponent")
 		SimpleComponent.contextTypes = {
-			foo = "string",
+			foo = PropTypes.string,
 		}
 
 		function SimpleComponent:init()
@@ -1380,7 +1406,7 @@ return function()
 	it("should filter context by contextTypes", function()
 		local SimpleComponent = React.Component:extend("SimpleComponent")
 		SimpleComponent.contextTypes = {
-			foo = "string",
+			foo = PropTypes.string,
 		}
 		function SimpleComponent:render()
 			return React.createElement(
@@ -1402,7 +1428,8 @@ return function()
 	itSKIP("can fail context when shallowly rendering", function()
 		local SimpleComponent = React.Component:extend("SimpleComponent")
 		SimpleComponent.contextTypes = {
-			name = "PropTypes.string.isRequired",
+			-- ROBLOX deviation: using simplified inline PropTypes
+			name = PropTypes.string_isRequired,
 		}
 
 		function SimpleComponent:render()
@@ -1427,7 +1454,8 @@ return function()
 		end
 
 		SimpleComponent.propTypes = {
-			name = "PropTypes.string.isRequired",
+			-- ROBLOX deviation: using simplified inline PropTypes
+			name = PropTypes.string_isRequired,
 		}
 
 		local shallowRenderer = createRenderer()
@@ -1574,15 +1602,14 @@ return function()
 
 		local renderAndVerifyWarningAndError = function(Component, typeString)
 			jestExpect(function()
-				-- jestExpect(function()
-				shallowRenderer:render(React.createElement(Component))
-				-- end)
-				-- ROBLOX TODO: port toErrorDev matcher to jest
-				-- .toErrorDev(
-				--   'React.createElement: type is invalid -- expected a string ' ..
-				--     '(for built-in components) or a class/function (for composite components) ' ..
-				--     'but got: ' .. typeString .. '.'
-				-- )
+				jestExpect(function()
+					shallowRenderer:render(React.createElement(Component))
+				end)
+				.toErrorDev(
+					"React.createElement: type is invalid -- expected a string " ..
+						"(for built-in components) or a class/function (for composite components) " ..
+						"but got: " .. typeString .. "."
+				)
 			end).toThrow(
 				"ReactShallowRenderer render(): Shallow rendering works only with custom "
 					.. "components, but the provided element type was `"
@@ -1772,10 +1799,10 @@ return function()
 		local testRef = React.createRef()
 		local SomeComponent = React.forwardRef(function(props, ref)
 			jestExpect(ref).toEqual(testRef)
-			return React.createElement("Frame", nil, {
+			return React.createElement("Frame", nil,
 				React.createElement("Text", { className = "child1" }),
-				React.createElement("Text", { className = "child2" }),
-			})
+				React.createElement("Text", { className = "child2" })
+			)
 		end)
 
 		local SomeMemoComponent = React.memo(SomeComponent)
@@ -1799,16 +1826,15 @@ return function()
 		end)
 		local shallowRenderer = createRenderer()
 		jestExpect(function()
-			-- jestExpect(function()
-			local SomeComponent = React.forwardRef(SomeMemoComponent)
-			shallowRenderer:render(React.createElement(SomeComponent, { ref = testRef }))
-			-- ROBLOX TODO: port toErrorDev to jest-roblox matchers
-			-- end).toErrorDev(
-			--   'Warning: forwardRef requires a render function but received ' +
-			--     'a `memo` component. Instead of forwardRef(memo(...)), use ' +
-			--     'memo(forwardRef(...))',
-			--   {withoutStack = true}
-			-- )
+			jestExpect(function()
+				local SomeComponent = React.forwardRef(SomeMemoComponent)
+				shallowRenderer:render(React.createElement(SomeComponent, { ref = testRef }))
+			end).toErrorDev(
+				"Warning: forwardRef requires a render function but received " ..
+					"a `memo` component. Instead of forwardRef(memo(...)), use " ..
+					"memo(forwardRef(...))",
+				{ withoutStack = true }
+			)
 		end).toThrow(
 			-- ROBLOX deviaton: we say table instead of object due to typeof
 			"forwardRef requires a render function but was given table."

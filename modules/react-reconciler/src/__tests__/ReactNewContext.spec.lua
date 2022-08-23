@@ -306,7 +306,7 @@ return function()
 					return nil
 				end
 
-				ReactNoop.render({
+				ReactNoop.render(React.Fragment, nil,
 					React.createElement(
 						BarContext.Provider,
 						{ value = { value = "bar-updated" } },
@@ -326,8 +326,8 @@ return function()
 					end),
 					React.createElement(BarConsumer, nil, function(value)
 						return React.createElement(Verify, { actual = value, expected = "bar-initial" })
-					end),
-				})
+					end)
+				)
 				jestExpect(Scheduler).toFlushWithoutYielding()
 			end)
 
@@ -720,7 +720,7 @@ return function()
 				end
 				function App:renderList()
 					local list = Array.map({ 1, 2 }, function(id)
-						return self.renderItem(id)
+						return self:renderItem(id)
 					end)
 					if self.props.reverse then
 						Array.reverse(list)
@@ -835,8 +835,12 @@ return function()
 					)
 				end
 
-				ReactNoop.render(React.createElement(App, { value = 2 }))
-				jestExpect(Scheduler).toFlushWithoutYielding()
+				jestExpect(function()
+					ReactNoop.render(React.createElement(App, { value = 2 }))
+					jestExpect(Scheduler).toFlushWithoutYielding()
+				end).toWarnDev({
+					"Your Context.Consumer component is using legacy Roact syntax"
+				})
 				jestExpect(ReactNoop.getChildren()).toEqual({ span("Result: 2") })
 
 				-- Update
@@ -885,14 +889,18 @@ return function()
 					)
 				end
 
-				ReactNoop.render(React.createElement(App, { value = 2 }))
-				jestExpect(Scheduler).toFlushAndYield({
-					"App",
-					"Provider",
-					"Indirection",
-					"Indirection",
-					"Consumer",
-					"Consumer render prop",
+				jestExpect(function()
+					ReactNoop.render(React.createElement(App, { value = 2 }))
+					jestExpect(Scheduler).toFlushAndYield({
+						"App",
+						"Provider",
+						"Indirection",
+						"Indirection",
+						"Consumer",
+						"Consumer render prop",
+					})
+				end).toWarnDev({
+					"Your Context.Consumer component is using legacy Roact syntax"
 				})
 				jestExpect(ReactNoop.getChildren()).toEqual({ span("Result: 2") })
 
@@ -1055,7 +1063,7 @@ return function()
 			local LegacyProvider = React.Component:extend("LegacyProvider")
 			LegacyProvider.childContextTypes = {
 				legacyValue = function()
-					return {}
+					return nil
 				end,
 			}
 			function LegacyProvider:init()
@@ -1121,11 +1129,12 @@ return function()
 			-- spyOnDev(console, 'error')
 			local Context = React.createContext(0)
 			ReactNoop.render(React.createElement(Context.Consumer))
-			-- deviation: This line is relying on a default JS error message
-			-- containing "is not a function"; for us, the relevant error message is
-			-- "attempt to call a nil value"
+			-- ROBLOX deviation: This line is relying on a default JS error
+			-- message containing "is not a function"; for us, the relevant
+			-- error message is "attempt to call a nil value"
 			jestExpect(Scheduler).toFlushAndThrow("attempt to call a nil value")
-			-- ROBLOX TODO: Warning is logged (verified in debugger), but toErrorDev doesn't match
+			-- ROBLOX Test Noise: Warning is logged (verified in debugger), but
+			-- toErrorDev doesn't match; use `spyOnDev` when available
 			-- if _G.__DEV__ then
 			-- 	jestExpect(console.error.calls.argsFor(0)({ 0 })).toContain(
 			-- 		"A context consumer was rendered with multiple children, or a child " .. "that isn't a function"

@@ -29,6 +29,9 @@ return function()
 	local JestGlobals = require(Packages.Dev.JestGlobals)
 	local jestExpect = JestGlobals.expect
 	local RobloxJest = require(Packages.Dev.RobloxJest)
+
+	-- ROBLOX Test Noise: in upstream, jest setup config makes these tests hide
+	-- the error boundary warnings they trigger (scripts/jest/setupTests.js:72)
 	describe("ReactCache", function()
 		beforeEach(function()
 			RobloxJest.resetModules()
@@ -150,6 +153,8 @@ return function()
 			jestExpect(Scheduler).toFlushAndYield({ "Hi" })
 		end)
 
+		-- ROBLOX Test Noise: in upstream, jest setup config makes these tests hide
+		-- the error boundary warnings they trigger (scripts/jest/setupTests.js:72)
 		it("throws an error on the subsequent read if the promise is rejected", function()
 			local function App()
 				return (
@@ -209,7 +214,7 @@ return function()
 					React.createElement(
 						Suspense,
 						{ fallback = React.createElement(Text, { text = "Loading..." }) },
-						{ React.createElement(App) }
+						React.createElement(App)
 					),
 					{ unstable_isConcurrent = true }
 				)
@@ -239,11 +244,9 @@ return function()
 				React.createElement(
 					Suspense,
 					{ fallback = React.createElement(Text, { text = "Loading..." }) },
-					{
-						React.createElement(AsyncText, { ms = 100, text = 1 }),
-						React.createElement(AsyncText, { ms = 100, text = 2 }),
-						React.createElement(AsyncText, { ms = 100, text = 3 }),
-					}
+					React.createElement(AsyncText, { ms = 100, text = 1 }),
+					React.createElement(AsyncText, { ms = 100, text = 2 }),
+					React.createElement(AsyncText, { ms = 100, text = 3 })
 				),
 				{ unstable_isConcurrent = true }
 			)
@@ -267,11 +270,9 @@ return function()
 				React.createElement(
 					Suspense,
 					{ fallback = React.createElement(Text, { text = "Loading..." }) },
-					{
-						React.createElement(AsyncText, { ms = 100, text = 1 }),
-						React.createElement(AsyncText, { ms = 100, text = 4 }),
-						React.createElement(AsyncText, { ms = 100, text = 5 }),
-					}
+					React.createElement(AsyncText, { ms = 100, text = 1 }),
+					React.createElement(AsyncText, { ms = 100, text = 4 }),
+					React.createElement(AsyncText, { ms = 100, text = 5 })
 				)
 			)
 
@@ -296,11 +297,9 @@ return function()
 				React.createElement(
 					Suspense,
 					{ fallback = React.createElement(Text, { text = "Loading..." }) },
-					{
-						React.createElement(AsyncText, { ms = 100, text = 1 }),
-						React.createElement(AsyncText, { ms = 100, text = 2 }),
-						React.createElement(AsyncText, { ms = 100, text = 3 }),
-					}
+					React.createElement(AsyncText, { ms = 100, text = 1 }),
+					React.createElement(AsyncText, { ms = 100, text = 2 }),
+					React.createElement(AsyncText, { ms = 100, text = 3 })
 				)
 			)
 
@@ -333,7 +332,7 @@ return function()
 				React.createElement(
 					Suspense,
 					{ fallback = React.createElement(Text, { text = "Loading..." }) },
-					{ React.createElement(App) }
+					React.createElement(App)
 				),
 				{ unstable_isConcurrent = true }
 			)
@@ -407,7 +406,7 @@ return function()
 					React.createElement(
 						Suspense,
 						{ fallback = React.createElement(Text, { text = "Loading..." }) },
-						{ React.createElement(BadAsyncText, { text = "Hi" }) }
+						React.createElement(BadAsyncText, { text = "Hi" })
 					),
 					{
 						unstable_isConcurrent = true,
@@ -425,7 +424,7 @@ return function()
 					React.createElement(
 						Suspense,
 						{ fallback = React.createElement(Text, { text = "Loading..." }) },
-						{ React.createElement(BadAsyncText, { text = "Hi" }) }
+						React.createElement(BadAsyncText, { text = "Hi" })
 					),
 					{
 						unstable_isConcurrent = true,

@@ -23,7 +23,7 @@ local REACT_FUNDAMENTAL_TYPE = ReactSymbols.REACT_FUNDAMENTAL_TYPE
 -- local REACT_SCOPE_TYPE = ReactSymbols.REACT_SCOPE_TYPE
 local REACT_BLOCK_TYPE = ReactSymbols.REACT_BLOCK_TYPE
 local REACT_SERVER_BLOCK_TYPE = ReactSymbols.REACT_SERVER_BLOCK_TYPE
--- local REACT_LEGACY_HIDDEN_TYPE = ReactSymbols.REACT_LEGACY_HIDDEN_TYPE
+local REACT_LEGACY_HIDDEN_TYPE = ReactSymbols.REACT_LEGACY_HIDDEN_TYPE
 
 -- local ReactFeatureFlags = require(script.Parent.ReactFeatureFlags)
 -- local enableScopeAPI = ReactFeatureFlags.enableScopeAPI
@@ -41,9 +41,9 @@ return function(type)
 		or type == REACT_DEBUG_TRACING_MODE_TYPE
 		or type == REACT_STRICT_MODE_TYPE
 		or type == REACT_SUSPENSE_TYPE
+		or type == REACT_LEGACY_HIDDEN_TYPE
 		-- ROBLOX performance: eliminate compares that will only be true in React 18
 		-- or type == REACT_SUSPENSE_LIST_TYPE
-		-- or type == REACT_LEGACY_HIDDEN_TYPE
 		-- or (enableScopeAPI and type == REACT_SCOPE_TYPE)
 	then
 		return true

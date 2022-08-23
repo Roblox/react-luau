@@ -20,6 +20,7 @@ local Scheduler
 return function()
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
+
 	describe("ReactTopLevelText", function()
 		beforeEach(function()
 			RobloxJest.resetModules()

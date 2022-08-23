@@ -64,11 +64,11 @@ return function()
 					updateName("Dan")
 				end
 
-				return React.createElement("Frame", nil, {
+				return React.createElement("Frame", nil,
 					React.createElement("TextLabel", {
 						Text = "Your name is: " .. name,
-					}),
-				})
+					})
+				)
 			end
 
 			local shallowRenderer = createRenderer()
@@ -76,11 +76,11 @@ return function()
 				React.createElement(SomeComponent, { defaultName = "Dominic" })
 			)
 
-			jestExpect(result).toEqual(React.createElement("Frame", nil, {
+			jestExpect(result).toEqual(React.createElement("Frame", nil,
 				React.createElement("TextLabel", {
 					Text = "Your name is: " .. "Dan",
-				}),
-			}))
+				})
+			))
 		end)
 
 		it("should work with updating a derived value from useState", function()
@@ -98,11 +98,11 @@ return function()
 					updateLetter(string.sub(name, 1, 1))
 				end
 
-				return React.createElement("Frame", nil, {
+				return React.createElement("Frame", nil,
 					React.createElement("TextLabel", {
 						Text = "Your name is: " .. name .. " (" .. tostring(letter) .. ")",
-					}),
-				})
+					})
+				)
 			end
 
 			local shallowRenderer = createRenderer()
@@ -110,28 +110,28 @@ return function()
 				React.createElement(SomeComponent, { defaultName = "Sophie" })
 			)
 
-			jestExpect(result).toEqual(React.createElement("Frame", nil, {
+			jestExpect(result).toEqual(React.createElement("Frame", nil,
 				React.createElement("TextLabel", {
 					Text = "Your name is: " .. "Sophie (S)",
-				}),
-			}))
+				})
+			))
 
 			result = shallowRenderer:render(
 				React.createElement(SomeComponent, { defaultName = "Dan" })
 			)
-			jestExpect(result).toEqual(React.createElement("Frame", nil, {
+			jestExpect(result).toEqual(React.createElement("Frame", nil,
 				React.createElement("TextLabel", {
 					Text = "Your name is: " .. "Sophie (S)",
-				}),
-			}))
+				})
+			))
 
 			_updateName("Dan")
 			jestExpect(shallowRenderer:getRenderOutput()).toEqual(
-				React.createElement("Frame", nil, {
+				React.createElement("Frame", nil,
 					React.createElement("TextLabel", {
 						Text = "Your name is: " .. "Dan (D)",
-					}),
-				})
+					})
+				)
 			)
 		end)
 
@@ -153,32 +153,32 @@ return function()
 					}
 				end)
 
-				return React.createElement("Frame", nil, {
+				return React.createElement("Frame", nil,
 					React.createElement("TextLabel", {
 						"The counter is at: " .. tostring(state.count),
-					}),
-				})
+					})
+				)
 			end
 
 			local shallowRenderer = createRenderer()
 			local result = shallowRenderer:render(
 				React.createElement(SomeComponent, { initialCount = 0 })
 			)
-			jestExpect(result).toEqual(React.createElement("Frame", nil, {
+			jestExpect(result).toEqual(React.createElement("Frame", nil,
 				React.createElement("TextLabel", {
 					"The counter is at: 0",
-				}),
-			}))
+				})
+			))
 
 			result = shallowRenderer:render(
 				React.createElement(SomeComponent, { initialCount = 10 })
 			)
 
-			jestExpect(result).toEqual(React.createElement("Frame", nil, {
+			jestExpect(result).toEqual(React.createElement("Frame", nil,
 				React.createElement("TextLabel", {
 					"The counter is at: 0",
-				}),
-			}))
+				})
+			))
 		end)
 
 		it("should work with a dispatched state change for a useReducer", function()
@@ -202,11 +202,11 @@ return function()
 				if state.count == 0 then
 					dispatch({ type = "increment" })
 				end
-				return React.createElement("Frame", nil, {
+				return React.createElement("Frame", nil,
 					React.createElement("TextLabel", {
 						"The counter is at: " .. tostring(state.count),
-					}),
-				})
+					})
+				)
 			end
 
 			local shallowRenderer = createRenderer()
@@ -214,11 +214,11 @@ return function()
 				React.createElement(SomeComponent, { initialCount = 0 })
 			)
 
-			jestExpect(result).toEqual(React.createElement("Frame", nil, {
+			jestExpect(result).toEqual(React.createElement("Frame", nil,
 				React.createElement("TextLabel", {
 					"The counter is at: 1",
-				}),
-			}))
+				})
+			))
 		end)
 
 		it("should not trigger effects", function()

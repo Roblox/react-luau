@@ -42,7 +42,7 @@ return function()
 			local DeepTree = RoactCompat.createElement(
 				"Frame",
 				nil,
-				{ RoactCompat.createElement(constructDeepTree(500)) }
+				RoactCompat.createElement(constructDeepTree(500))
 			)
 
 			local instance = Instance.new("Folder")

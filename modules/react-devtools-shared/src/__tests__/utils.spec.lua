@@ -93,7 +93,11 @@ return function()
 			it(
 				"should return correct display name for an element with a type of SuspenseList",
 				function()
-					local element = createElement(SuspenseList)
+					local element
+					-- ROBLOX Test Noise: This warning shouldn't be triggered
+					jestExpect(function()
+						element = createElement(SuspenseList)
+					end).toErrorDev("type is invalid", { withoutStack = true })
 
 					jestExpect(getDisplayNameForReactElement(element)).toEqual(
 						"SuspenseList"
@@ -104,7 +108,12 @@ return function()
 			it(
 				"should return NotImplementedInDevtools for an element with invalid symbol type",
 				function()
-					local element = createElement(Symbol("foo"))
+					local element
+					-- ROBLOX Test Noise: This warning isn't captured in
+					-- upstream, so it may rely on test setup to suppress it
+					jestExpect(function()
+						element = createElement(Symbol("foo"))
+					end).toErrorDev("type is invalid", { withoutStack = true })
 
 					jestExpect(getDisplayNameForReactElement(element)).toEqual(
 						"NotImplementedInDevtools"
@@ -115,7 +124,12 @@ return function()
 			it(
 				"should return NotImplementedInDevtools for an element with invalid type",
 				function()
-					local element = createElement(true)
+					local element
+					-- ROBLOX Test Noise: This warning isn't captured in
+					-- upstream, so it may rely on test setup to suppress it
+					jestExpect(function()
+						element = createElement(true)
+					end).toErrorDev("type is invalid", { withoutStack = true })
 
 					jestExpect(getDisplayNameForReactElement(element)).toEqual(
 						"NotImplementedInDevtools"
@@ -124,7 +138,12 @@ return function()
 			)
 
 			it("should return Element for null type", function()
-				local element = createElement()
+				local element
+				-- ROBLOX Test Noise: This warning isn't captured in
+				-- upstream, so it may rely on test setup to suppress it
+				jestExpect(function()
+					element = createElement()
+				end).toErrorDev("type is invalid", { withoutStack = true })
 
 				jestExpect(getDisplayNameForReactElement(element)).toEqual("Element")
 			end)

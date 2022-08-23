@@ -219,9 +219,13 @@ return function()
 
     local instance = React.createElement(StatefulComponent)
     jestExpect(function()
-      ReactNoop.act(function()
-        instance = ReactNoop.render(instance)
-      end)
+      jestExpect(function()
+        ReactNoop.act(function()
+          instance = ReactNoop.render(instance)
+        end)
+      end).toErrorDev({
+        "Using UNSAFE_componentWillMount in strict mode is not recommended",
+      }, { withoutStack = true })
     end).never.toThrow()
   end)
 
@@ -680,9 +684,22 @@ xit('should not throw when updating an auxiliary component', function()
     end
 
     log = {}
-    ReactNoop.act(function()
-      ReactNoop.render(React.createElement(Outer, {x = 1}))
-    end)
+    -- ROBLOX deviation START: Wrap to catch warnings (see deviation below)
+    jestExpect(function()
+    -- ROBLOX deviation END
+      ReactNoop.act(function()
+        ReactNoop.render(React.createElement(Outer, {x = 1}))
+      end)
+    -- ROBLOX deviation START: The upstream equivalents of these tests run with react-dom
+    -- using the legacy root, so they don't throw warnings related to strict
+    -- mode; we compromise by keeping it in concurrent mode to better match
+    -- production, but anticipating the warnings
+    end).toErrorDev({
+      "Using UNSAFE_componentWillMount in strict mode is not recommended",
+      "Using UNSAFE_componentWillReceiveProps in strict mode is not recommended",
+      "Using UNSAFE_componentWillUpdate in strict mode is not recommended",
+    }, { withoutStack = true })
+    -- ROBLOX deviation END
     jestExpect(log).toEqual({
       "outer componentWillMount",
       "inner componentWillMount",
@@ -1325,17 +1342,23 @@ xit('should not throw when updating an auxiliary component', function()
     end
 
     jestExpect(function()
-      ReactNoop.act(function()
-        ReactNoop.render(React.createElement(MyComponent, {foo = "bar"}))
-      end)
-    end).toWarnDev(
-      {
-        "componentWillMount has been renamed",
-        "componentWillReceiveProps has been renamed",
-        "componentWillUpdate has been renamed",
-      },
-      {withoutStack = true}
-    )
+      jestExpect(function()
+        ReactNoop.act(function()
+          ReactNoop.render(React.createElement(MyComponent, {foo = "bar"}))
+        end)
+      end).toWarnDev(
+        {
+          "componentWillMount has been renamed",
+          "componentWillReceiveProps has been renamed",
+          "componentWillUpdate has been renamed",
+        },
+        {withoutStack = true}
+      )
+    end).toErrorDev({
+      "Using UNSAFE_componentWillMount in strict mode is not recommended",
+      "Using UNSAFE_componentWillReceiveProps in strict mode is not recommended",
+      "Using UNSAFE_componentWillUpdate in strict mode is not recommended",
+    }, { withoutStack = true })
     jestExpect(log).toEqual({"componentWillMount", "UNSAFE_componentWillMount"})
 
     log = {}
@@ -1614,11 +1637,11 @@ xit('should not throw when updating an auxiliary component', function()
     jestExpect(function()
       ReactNoop.act(function()
         ReactNoop.render(React.createElement(MyComponent))
-      end).toErrorDev(
-        "MyComponent: getSnapshotBeforeUpdate() should be used with componentDidUpdate(). " ..
-          "This component defines getSnapshotBeforeUpdate() only."
-      )
-    end)
+      end)
+    end).toErrorDev(
+      "MyComponent: getSnapshotBeforeUpdate() should be used with componentDidUpdate(). " ..
+        "This component defines getSnapshotBeforeUpdate() only."
+    )
 
     -- De-duped
     ReactNoop.act(function()

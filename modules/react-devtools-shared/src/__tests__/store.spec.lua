@@ -117,10 +117,12 @@ return function()
 				-- ROBLOX deviation: switched ordering for variable definition order
 				local function Grandparent(props)
 					local count = props.count
-					return React.createElement(React.Fragment, nil, {
+					return React.createElement(
+						React.Fragment,
+						nil,
 						React.createElement(Parent, { count = count }),
-						React.createElement(Parent, { count = count }),
-					})
+						React.createElement(Parent, { count = count })
+					)
 				end
 
 				-- ROBLOX deviation: Use Frame instance rather than DOM element

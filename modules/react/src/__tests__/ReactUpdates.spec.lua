@@ -26,6 +26,8 @@ local jest = require(Packages.Dev.RobloxJest)
 return function()
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
 
+	-- ROBLOX Test Noise: in upstream, jest setup config makes these tests hide
+	-- the error boundary warnings they trigger (scripts/jest/setupTests.js:72)
 	describe("ReactUpdates", function()
 		beforeEach(function()
 			jest.resetModules()

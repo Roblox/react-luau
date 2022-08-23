@@ -37,6 +37,7 @@ return function()
 	local console = require(Packages.Shared).console
 	local Promise = require(Packages.Promise)
 
+	-- ROBLOX Test Noise: jest capabilities needed to spy on console
 	describe("DebugTracing", function()
 		local React
 		local ReactTestRenderer

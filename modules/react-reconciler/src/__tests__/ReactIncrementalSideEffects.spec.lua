@@ -18,7 +18,7 @@ local Scheduler
 return function()
     local RobloxJest = require(Packages.Dev.RobloxJest)
     local jestExpect = require(Packages.Dev.JestGlobals).expect
-    
+
     describe('ReactIncrementalSideEffects', function()
         beforeEach(function()
             RobloxJest.resetModules()
@@ -310,9 +310,9 @@ return function()
             end
 
             ReactNoop.render(
-                React.createElement("div", {}, {
+                React.createElement("div", {},
                     React.createElement(Foo, { show = true })
-                })
+                )
             )
             jestExpect(Scheduler).toFlushWithoutYielding()
             jestExpect(ReactNoop.getChildren()).toEqual({div()})
@@ -323,18 +323,18 @@ return function()
             })
 
             ReactNoop.render(
-                React.createElement("div", {}, {
+                React.createElement("div", {},
                     React.createElement(Foo, { show = false })
-                })
+                )
             )
             jestExpect(Scheduler).toFlushWithoutYielding()
             jestExpect(ReactNoop.getChildren()).toEqual({div()})
             jestExpect(ReactNoop.getChildren('portalContainer')).toEqual({})
 
             ReactNoop.render(
-                React.createElement("div", {}, {
+                React.createElement("div", {},
                     React.createElement(Foo, { show = true })
-                })
+                )
             )
             jestExpect(Scheduler).toFlushWithoutYielding()
             jestExpect(ReactNoop.getChildren()).toEqual({div()})
@@ -388,9 +388,9 @@ return function()
             end
 
             ReactNoop.render(
-                React.createElement("div", {}, {
+                React.createElement("div", {},
                     React.createElement(Foo)
-                })
+                )
             )
             jestExpect(Scheduler).toFlushWithoutYielding()
             jestExpect(ReactNoop.getChildren()).toEqual({div()})

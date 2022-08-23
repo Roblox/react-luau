@@ -92,11 +92,11 @@ return function()
 
 			local ref = React.createRef()
 
-			ReactNoop.render(React.createElement("div", nil, {
+			ReactNoop.render(React.createElement("div", nil,
 				React.createElement("div"),
 				React.createElement(RefForwardingComponent, { ref = ref }),
-				React.createElement("div"),
-			}))
+				React.createElement("div")
+			))
 			jestExpect(Scheduler).toFlushWithoutYielding()
 			jestExpect(ref.current).toBe(nil)
 		end)

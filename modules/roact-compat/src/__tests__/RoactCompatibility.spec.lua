@@ -14,7 +14,6 @@ return function()
 		reconcile = true,
 		teardown = true,
 	}
-
 	beforeEach(function()
 		RobloxJest.resetModules()
 		Roact = require(Packages.Dev.Roact)
@@ -51,7 +50,7 @@ return function()
 	describe("warns about deprecated Roact API features", function()
 		it("warns about createFragment", function()
 			jestExpect(function()
-				RoactCompat.createFragment({ RoactCompat.createElement("div") })
+				RoactCompat.createFragment({ div = RoactCompat.createElement("div") })
 			end).toWarnDev(
 				"Warning: The legacy Roact API 'createFragment' is deprecated",
 				{ withoutStack = true }
@@ -91,9 +90,7 @@ return function()
 			local function withPortal(_props)
 				return RoactCompat.createElement(RoactCompat.Portal, {
 					target = target,
-				}, {
-					RoactCompat.createElement("Frame"),
-				})
+				}, RoactCompat.createElement("Frame"))
 			end
 			jestExpect(function()
 				local root = ReactRoblox.createLegacyRoot(Instance.new("ScreenGui"))
@@ -110,27 +107,33 @@ return function()
 				)
 			end).toWarnDev({
 				"Warning: The legacy Roact API 'mount' is deprecated",
-			}, {
-				withoutStack = true,
-			})
+			}, { withoutStack = true })
 		end)
 
 		it("warns about mount with invalid instance", function()
 			jestExpect(function()
-				RoactCompat.mount(
-					RoactCompat.createElement("TextLabel", { Text = "Foo" }),
-					"I'm not an instance!"
-				)
+				jestExpect(function()
+					RoactCompat.mount(
+						RoactCompat.createElement("TextLabel", { Text = "Foo" }),
+						"I'm not an instance!"
+					)
+				end).toWarnDev({
+					"Warning: The legacy Roact API 'mount' is deprecated",
+				}, { withoutStack = true })
 			end).toThrow(
 				"Cannot mount element (`TextLabel`) into a parent that is not a Roblox Instance (got type `string`)",
 				{ withoutStack = true }
 			)
 
 			jestExpect(function()
-				RoactCompat.mount(
-					RoactCompat.createElement("Frame"),
-					{ bogusParent = true }
-				)
+				jestExpect(function()
+					RoactCompat.mount(
+						RoactCompat.createElement("Frame"),
+						{ bogusParent = true }
+					)
+				end).toWarnDev({
+					"Warning: The legacy Roact API 'mount' is deprecated",
+				}, { withoutStack = true })
 			end).toThrow(
 				"Cannot mount element (`Frame`) into a parent that is not a Roblox Instance (got type `table`) \n{ bogusParent",
 				{ withoutStack = true }
@@ -138,8 +141,14 @@ return function()
 		end)
 
 		it("warns about update", function()
-			local tree = RoactCompat.mount(
-				RoactCompat.createElement("TextLabel", { Text = "Foo" })
+			local tree
+			jestExpect(function()
+				tree = RoactCompat.mount(
+					RoactCompat.createElement("TextLabel", { Text = "Foo" })
+				)
+			end).toWarnDev(
+				"Warning: The legacy Roact API 'mount' is deprecated",
+				{ withoutStack = true }
 			)
 
 			jestExpect(function()
@@ -154,8 +163,14 @@ return function()
 		end)
 
 		it("warns about unmount", function()
-			local tree = RoactCompat.mount(
-				RoactCompat.createElement("TextLabel", { Text = "Foo" })
+			local tree
+			jestExpect(function()
+				tree = RoactCompat.mount(
+					RoactCompat.createElement("TextLabel", { Text = "Foo" })
+				)
+			end).toWarnDev(
+				"Warning: The legacy Roact API 'mount' is deprecated",
+				{ withoutStack = true }
 			)
 
 			jestExpect(function()
@@ -218,7 +233,7 @@ return function()
 	end)
 
 	describe("ChildArray Keys", function()
-		it("Should assign keys to children in an array", function()
+		it("Shozuld assign keys to children in an array", function()
 			local ReactRoblox = require(Packages.ReactRoblox)
 			local parent = Instance.new("Folder")
 			local Scheduler = require(Packages.Dev.Scheduler)
@@ -236,8 +251,14 @@ return function()
 
 			local root = ReactRoblox.createRoot(parent)
 
-			root:render(componentInstance)
-			Scheduler.unstable_flushAllWithoutAsserting()
+			-- We expect this to warn us about the implicit keys even though
+			-- it's assigning them to maintain ordering
+			jestExpect(function()
+				root:render(componentInstance)
+				Scheduler.unstable_flushAllWithoutAsserting()
+			end).toErrorDev(
+				'Warning: Each child in a list should have a unique "key" prop.'
+			)
 
 			local firstChild = parent:FindFirstChild(1, true)
 			jestExpect(firstChild).toBeDefined()

@@ -9,7 +9,6 @@ return function()
 	local React
 	local ReactRoblox
 	local reactRobloxRoot
-	local Scheduler
 	local parent
 
 	beforeEach(function()
@@ -22,7 +21,6 @@ return function()
 		ReactRoblox = require(Packages.ReactRoblox)
 		parent = Instance.new("Folder")
 		reactRobloxRoot = ReactRoblox.createRoot(parent)
-		Scheduler = require(Packages.Scheduler)
 	end)
 
 	it("should update a value without re-rendering", function()
@@ -36,8 +34,9 @@ return function()
 			})
 		end
 
-		reactRobloxRoot:render(React.createElement(Component))
-		Scheduler.unstable_flushAllWithoutAsserting()
+		ReactRoblox.act(function()
+			reactRobloxRoot:render(React.createElement(Component))
+		end)
 
 		jestExpect(renderCount).toBe(1)
 		jestExpect(parent.Label.Text).toBe("hello")
@@ -65,8 +64,9 @@ return function()
 			})
 		end
 
-		reactRobloxRoot:render(React.createElement(Component))
-		Scheduler.unstable_flushAllWithoutAsserting()
+		ReactRoblox.act(function()
+			reactRobloxRoot:render(React.createElement(Component))
+		end)
 
 		jestExpect(leftButtonRef.current).never.toBeNil()
 		jestExpect(rightButtonRef.current).never.toBeNil()
@@ -102,16 +102,18 @@ return function()
 					Text = binding,
 				})
 			end
-	
-			reactRobloxRoot:render(React.createElement(Component))
-			Scheduler.unstable_flushAllWithoutAsserting()
+
+			ReactRoblox.act(function()
+				reactRobloxRoot:render(React.createElement(Component))
+			end)
 	
 			jestExpect(captureBinding).toHaveBeenCalledTimes(1)
 			jestExpect(parent.Label.Text).toBe("hello")
 			jestExpect(parent.Label.LayoutOrder).toBe(1)
 
-			updateComponent()
-			Scheduler.unstable_flushAllWithoutAsserting()
+			ReactRoblox.act(function()
+				updateComponent()
+			end)
 
 			jestExpect(captureBinding).toHaveBeenCalledTimes(2)
 			local capturedBindings = captureBinding.mock.calls
@@ -133,14 +135,14 @@ return function()
 				})
 			end
 	
-			reactRobloxRoot:render(React.createElement(Component))
-			Scheduler.unstable_flushAllWithoutAsserting()
+			ReactRoblox.act(function()
+				reactRobloxRoot:render(React.createElement(Component))
+			end)
 	
 			jestExpect(renderCount).toBe(1)
 			jestExpect(parent.Label.Text).toBe("hello")
 
 			updateBinding("world")
-			Scheduler.unstable_flushAllWithoutAsserting()
 
 			jestExpect(renderCount).toBe(1)
 			jestExpect(parent.Label.Text).toBe("world")
@@ -160,15 +162,15 @@ return function()
 					end),
 				})
 			end
-	
-			reactRobloxRoot:render(React.createElement(Component))
-			Scheduler.unstable_flushAllWithoutAsserting()
-	
+
+			ReactRoblox.act(function()
+				reactRobloxRoot:render(React.createElement(Component))
+			end)
+
 			jestExpect(renderCount).toBe(1)
 			jestExpect(parent.Label.Text).toBe("olleh")
 
 			updateBinding("world")
-			Scheduler.unstable_flushAllWithoutAsserting()
 
 			jestExpect(renderCount).toBe(1)
 			jestExpect(parent.Label.Text).toBe("dlrow")
@@ -202,16 +204,16 @@ return function()
 					})
 				)
 			end
-	
-			reactRobloxRoot:render(React.createElement(Component))
-			Scheduler.unstable_flushAllWithoutAsserting()
-	
+
+			ReactRoblox.act(function()
+				reactRobloxRoot:render(React.createElement(Component))
+			end)
+
 			jestExpect(renderCount).toBe(1)
 			jestExpect(parent.Label.Text).toBe("olleh")
 			jestExpect(parent.LabelLength.Text).toBe("Length: 5")
 
 			updateBinding("friends")
-			Scheduler.unstable_flushAllWithoutAsserting()
 
 			jestExpect(renderCount).toBe(1)
 			jestExpect(parent.Label.Text).toBe("sdneirf")
@@ -236,21 +238,20 @@ return function()
 					end),
 				})
 			end
-	
-			reactRobloxRoot:render(React.createElement(Component))
-			Scheduler.unstable_flushAllWithoutAsserting()
-	
+
+			ReactRoblox.act(function()
+				reactRobloxRoot:render(React.createElement(Component))
+			end)
+
 			jestExpect(renderCount).toBe(1)
 			jestExpect(parent.Label.Text).toBe("Greeting: hello")
 
 			updatePrefix("Salutation:")
-			Scheduler.unstable_flushAllWithoutAsserting()
 
 			jestExpect(renderCount).toBe(1)
 			jestExpect(parent.Label.Text).toBe("Salutation: hello")
 
 			updateText("sup")
-			Scheduler.unstable_flushAllWithoutAsserting()
 
 			jestExpect(renderCount).toBe(1)
 			jestExpect(parent.Label.Text).toBe("Salutation: sup")

@@ -581,7 +581,7 @@ function Store:getElementByID(id: number): Element | nil
 	local element = self._idToElement[id]
 
 	if element == nil then
-		warn(string.format('No element found with id "%s"', tostring(id)))
+		console.warn(string.format('No element found with id "%s"', tostring(id)))
 
 		return nil
 	end

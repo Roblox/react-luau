@@ -60,6 +60,8 @@ return function()
 
 			root:render(React.createElement(component))
 
+			-- ROBLOX Test Noise: jest setup config hides "act not enabled in
+			-- prod" warnings (scripts/jest/setupTests.js:72)
 			Scheduler.unstable_flushAll()
 
 			jestExpect(refNumber).toBeDefined()

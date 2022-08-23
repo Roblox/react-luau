@@ -153,7 +153,7 @@ return function()
 		local function Component(props)
 			local children = {}
 			for i = 1, props.count do
-				children[i] = React.createElement("TextLabel", { Text = tostring(i) })
+				children[tostring(i)] = React.createElement("TextLabel", { Text = tostring(i) })
 			end
 
 			if props.count == 0 then
@@ -203,8 +203,13 @@ return function()
 			return byProp
 		end
 
-		reactRobloxRoot:render(React.createElement(Component))
-		Scheduler.unstable_flushAllWithoutAsserting()
+		jestExpect(function()
+			reactRobloxRoot:render(React.createElement(Component))
+			Scheduler.unstable_flushAllWithoutAsserting()
+		end).toErrorDev({
+			-- We expect to see warnings caused by using both kinds of key
+			'Please provide only one key definition. When both are present, the "key" prop will take precedence.'
+		})
 
 		local origChildren = childrenByProp(ref.current:GetChildren())
 

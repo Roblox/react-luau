@@ -49,19 +49,23 @@ return function()
 			local parent = Instance.new("Folder")
 			local tree
 			jestExpect(function()
-				RoactCompat.act(function()
-					tree = RoactCompat.mount(
-						RoactCompat.createElement("TextLabel"),
-						parent
-					)
-				end)
+				jestExpect(function()
+					RoactCompat.act(function()
+						tree = RoactCompat.mount(
+							RoactCompat.createElement("TextLabel"),
+							parent
+						)
+					end)
+				end).toWarnDev("'mount' is deprecated", { withoutStack = true })
 			end).never.toThrow()
 
 			jestExpect(parent:FindFirstChildWhichIsA("TextLabel")).toBeDefined()
 			jestExpect(function()
-				RoactCompat.act(function()
-					RoactCompat.unmount(tree)
-				end)
+				jestExpect(function()
+					RoactCompat.act(function()
+						RoactCompat.unmount(tree)
+					end)
+				end).toWarnDev("'unmount' is deprecated", { withoutStack = true })
 			end).never.toThrow()
 
 			jestExpect(parent:FindFirstChildWhichIsA("TextLabel")).toBeNil()

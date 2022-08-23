@@ -1376,8 +1376,12 @@ function imperativeHandleEffect<T>(
     local refObject = ref
     -- ROBLOX deviation: can't check for key presence because nil is a legitimate value.
     if _G.__DEV__ then
-      -- ROBLOX FIXME: upstream uses hasOwnProperty, is this an OK translation?
-      if rawget(refObject, 'current') == nil then
+      -- ROBLOX FIXME: This is a clumsy approximation, since we don't have any
+      -- explicit way to know that something is a ref object; instead, we check
+      -- that it's an empty object with a metatable, which is what Roact refs
+      -- look like since they indirect to bindings via their metatable
+      local isRefObject = getmetatable(refObject :: any) ~= nil and #Object.keys(refObject) == 0
+      if not isRefObject then
         console.error(
           'Expected useImperativeHandle() first argument to either be a ' ..
             'ref callback or React.createRef() object. Instead received: %s.',

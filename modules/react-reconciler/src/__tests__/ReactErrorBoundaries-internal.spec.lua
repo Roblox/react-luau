@@ -22,6 +22,8 @@ return function()
 	local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
 
+	-- ROBLOX Test Noise: in upstream, jest setup config makes these tests hide
+	-- the error boundary warnings they trigger (scripts/jest/setupTests.js:72)
 	-- ROBLOX deviation: using textContent helper in place of upstream .textContent()
 	local function textContent(node)
 		local res

@@ -56,7 +56,7 @@ return function()
 				React.createElement("TextLabel", {key = "e", Text = "portal1[1]"}),
 			}, portalContainer1),
 			React.createElement("TextLabel", {key = "f", Text = "normal[1]"}),
-		  })
+		})
 
 		Scheduler.unstable_flushAllWithoutAsserting()
 
