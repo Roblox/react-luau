@@ -7,9 +7,9 @@ A comprehensive, but not exhaustive, translation of upstream ReactJS 17.x into R
 ## TL;DR
 
 * In a new project, you can consume this library by adding this line to your rotriever.toml
-  * `React = "github.com/roblox/roact-alignment@17.0.1-rc.14"`
+  * `React = "github.com/roblox/roact-alignment@17.0.1-rc.15"`
 * If you have legacy Roact code, use the roact-compat library instead
-  * `RoactCompat = "github.com/roblox/roact-alignment@17.0.1-rc.14"`
+  * `RoactCompat = "github.com/roblox/roact-alignment@17.0.1-rc.15"`
 * Make sure you are using the latest [rotriever](https://github.com/Roblox/rotriever/releases) 0.5 (or later) release
   * you can download the release binary, or add it to your `foreman.toml`: ```rotrieve = { source = "roblox/rotriever", version = "0.5.0-rc.4" }```
 * For unit testing components and trees of components, you'll want to use the [`act()`](https://github.com/threepointone/react-act-examples/blob/master/sync.md) API exported from the react-roblox package.
