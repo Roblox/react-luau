@@ -50,9 +50,10 @@ In production, `ReactRoblox.act` will not be available. Set the global value `_G
 ## ReactRoblox.Event
 *Roact-only*
 
-A special key that can be used to interact with events available on Roblox Instance objects. This behavior matches [the equivalent behavior in legacy Roact](https://roblox.github.io/roact/guide/events/).
+Re-exports [`React.Event`](react.md#reactevent). This is only exposed for backwards compatibility; please prefer to use `React.Event`.
 
 ## ReactRoblox.Change
 *Roact-only*
 
-A special key that can be used to interact with the `GetPropertyChangedSignal` functionality available on Roblox Instance objects. This behavior matches [the equivalent behavior in legacy Roact](https://roblox.github.io/roact/guide/events/).
+Re-exports [`React.Change`](react.md#reactchange). This is only exposed for backwards compatibility; please prefer to use `React.Change`.
+

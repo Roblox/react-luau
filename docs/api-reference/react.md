@@ -175,6 +175,33 @@ A placeholder value that can be used to remove fields from a table (by changing 
 
     Additionally, `React.None` is not intended to be used as a prop value, and may be reverted to nil by internal React logic in some cases if it's provided as one.
 
+## React.Event
+*Roact-only*
+
+A special key that can be used to interact with events available on Roblox Instance objects. This behavior matches [the equivalent behavior in legacy Roact](https://roblox.github.io/roact/guide/events/).
+
+## React.Change
+*Roact-only*
+
+A special key that can be used to interact with the `GetPropertyChangedSignal` functionality available on Roblox Instance objects. This behavior matches [the equivalent behavior in legacy Roact](https://roblox.github.io/roact/guide/events/).
+
+## React.Tag
+*Roact-only*
+
+```lua
+local button = Roact.createElement("TextButton", {
+    [React.Tag] = "confirm-button"
+    Text = "Confirm",
+    -- ...
+})
+```
+
+A special key that can be used to apply [`CollectionService`](https://developer.roblox.com/en-us/api-reference/class/CollectionService) tags to a host component. Multiple tags can be provided as a single space-delimited string. For example:
+```lua
+[React.Tag] = "some-tag some-other-tag"
+```
+will apply "some-tag" and "some-other-tag" as `CollectionService` tags to the underlying Roblox Instance when the component mounts it.
+
 ## React.createBinding
 *This API is unique to Roact and does not have an equivalent in React JS.*
 

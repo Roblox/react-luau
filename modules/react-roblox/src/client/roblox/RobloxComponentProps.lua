@@ -108,8 +108,6 @@ end
 
 local function applyTags(hostInstance: Instance, oldTags: string?, newTags: string?)
     if _G.__DEV__ then
-      -- TODO: Even after we move the tags feature out of dev, we still want
-      -- these checks in dev mode
       if newTags ~= nil and typeof(newTags) ~= "string" then
         console.error(
           "Type provided for ReactRoblox.Tag is invalid - tags should be "
@@ -178,10 +176,7 @@ local function applyProp(hostInstance: Instance, key, newValue, oldValue): ()
   if newIsBinding then
     attachBinding(hostInstance, key, newValue)
   elseif key == Tag then
-    -- ROBLOX TODO: Promote tags to non-dev mode
-    if _G.__DEV__ then
-      applyTags(hostInstance, oldValue, newValue)
-    end
+    applyTags(hostInstance, oldValue, newValue)
   else
     setRobloxInstanceProperty(hostInstance, key, newValue)
   end
@@ -296,10 +291,7 @@ local function cleanupHostComponent(domElement: HostInstance)
     return
   end
 
-  -- ROBLOX TODO: Promote tags to non-dev mode
-  if _G.__DEV__ then
-    removeAllTags(domElement)
-  end
+  removeAllTags(domElement)
   for _, descElement in domElement:GetDescendants() do
     if instanceToEventManager[descElement] ~= nil then
       instanceToEventManager[descElement] = nil
@@ -307,10 +299,7 @@ local function cleanupHostComponent(domElement: HostInstance)
     if instanceToBindings[descElement] ~= nil then
       instanceToBindings[descElement] = nil
     end
-    -- ROBLOX TODO: Promote tags to non-dev mode
-    if _G.__DEV__ then
-      removeAllTags(domElement)
-    end
+    removeAllTags(domElement)
   end
 end
 
