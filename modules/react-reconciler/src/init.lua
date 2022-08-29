@@ -1,3 +1,13 @@
+-- ROBLOX upstream: https://github.com/facebook/react/blob/43363e2795393a00fd77312a16d6b80e626c29de/packages/react-reconciler/src/index.js
+--[[*
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
+ ]]
+
 --!strict
 local ReactInternalTypes = require(script.ReactInternalTypes)
 local ReactRootTags = require(script.ReactRootTags)

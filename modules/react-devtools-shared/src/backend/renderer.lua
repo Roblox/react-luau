@@ -589,12 +589,10 @@ exports.attach = function(
 			-- ROBLOX deviation: Use string nil rather than null as it is Roblox convenion
 			local displayName = getDisplayNameForFiber(fiber) or "nil"
 			local id = getFiberID(fiber)
-			local parentDisplayName = parentFiber ~= nil
-					and getDisplayNameForFiber(
-						parentFiber :: Fiber
-					)
-				or "nil"
-			local parentID = parentFiber and getFiberID(parentFiber :: Fiber) or ""
+			local parentDisplayName = if parentFiber ~= nil
+				then getDisplayNameForFiber(parentFiber :: Fiber)
+				else "nil"
+			local parentID = if parentFiber then getFiberID(parentFiber :: Fiber) else ""
 			-- NOTE: calling getFiberID or getPrimaryFiber is unsafe here
 			-- because it will put them in the map. For now, we'll omit them.
 			-- TODO: better debugging story for this.
@@ -605,13 +603,13 @@ exports.attach = function(
 					name,
 					displayName,
 					id,
-					parentFiber
-							and string.format(
-								"%s (%s)",
-								tostring(parentDisplayName),
-								tostring(parentID)
-							)
-						or ""
+					if parentFiber
+						then string.format(
+							"%s (%s)",
+							tostring(parentDisplayName),
+							tostring(parentID)
+						)
+						else ""
 				)
 			)
 		end
@@ -1183,7 +1181,7 @@ exports.attach = function(
 
 		local numUnmountIDs = #pendingRealUnmountedIDs
 			+ #pendingSimulatedUnmountedIDs
-			+ (pendingUnmountedRootID == nil and 0 or 1)
+			+ (if pendingUnmountedRootID == nil then 0 else 1)
 		local operations: Array<string | number> = Array.new(
 			-- ROBLOX deviation: don't create an array of specified length
 			-- Identify which renderer this update is coming from.
@@ -1338,8 +1336,8 @@ exports.attach = function(
 			pushOperation(TREE_OPERATION_ADD)
 			pushOperation(id)
 			pushOperation(ElementTypeRoot)
-			pushOperation(isProfilingSupported and 1 or 0)
-			pushOperation(hasOwnerMetadata and 1 or 0)
+			pushOperation(if isProfilingSupported then 1 else 0)
+			pushOperation(if hasOwnerMetadata then 1 else 0)
 
 			if isProfiling then
 				if displayNamesByRootID ~= nil then
@@ -2034,7 +2032,7 @@ exports.attach = function(
 					-- The frontend may request this information after profiling has stopped.
 					currentCommitProfilingMetadata = {
 						-- ROBLOX deviation: use bare table instead of Map type
-						changeDescriptions = recordChangeDescriptions and {} or nil,
+						changeDescriptions = if recordChangeDescriptions then {} else nil,
 						durations = {},
 						commitTime = getCurrentTime() - profilingStartTime,
 						-- ROBLOX TODO: Work out how to deviate this assignment, it's messy
@@ -2110,7 +2108,7 @@ exports.attach = function(
 			-- The frontend may request this information after profiling has stopped.
 			currentCommitProfilingMetadata = {
 				-- ROBLOX deviation: use bare table instead of Map type
-				changeDescriptions = recordChangeDescriptions and {} or nil,
+				changeDescriptions = if recordChangeDescriptions then {} else nil,
 				durations = {},
 				commitTime = getCurrentTime() - profilingStartTime,
 				interactions = Array.map(

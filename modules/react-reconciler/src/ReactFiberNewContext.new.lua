@@ -430,7 +430,7 @@ exports.readContext = function<T>(
       lastContextDependency = contextItem
     end
   end
-  return isPrimaryRenderer and context._currentValue or context._currentValue2
+  return if isPrimaryRenderer then context._currentValue else context._currentValue2
 end
 
 return exports

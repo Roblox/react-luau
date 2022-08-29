@@ -1,6 +1,11 @@
---[[
-    Roblox upstream: https://github.com/facebook/react/blob/e0f89aa056de95afc4c23909fce3d91fefb7dec7/packages/jest-react/src/JestReact.js
-]]
+-- ROBLOX upstream: https://github.com/facebook/react/blob/e0f89aa056de95afc4c23909fce3d91fefb7dec7/packages/jest-react/src/JestReact.js
+--[[*
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *]]
+
 local Packages = script.Parent.Parent
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 local REACT_ELEMENT_TYPE = ReactSymbols.REACT_ELEMENT_TYPE

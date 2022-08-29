@@ -168,7 +168,7 @@ exports.getRendererID = function(): number
 	end
 
 	-- ROBLOX FIXME: create Number.parseInt() in luau-polyfill
-	return id and tonumber(id) or Number.NaN
+	return if id then tonumber(id) else Number.NaN
 end
 exports.requireTestRenderer = function()
 	local hook

@@ -122,6 +122,7 @@ function ReactRobloxRoot:unmount()
   end)
 end
 
+-- ROBLOX TODO: add Options type
 -- createRootImpl = function(
 --   container: Container,
 --   tag: RootTag,
@@ -134,8 +135,7 @@ createRootImpl = function(
 )
   -- Tag is either LegacyRoot or Concurrent Root
   local hydrate = options ~= nil and options.hydrate == true
-  local hydrationCallbacks =
-    (options ~= nil and options.hydrationOptions) or nil
+  local hydrationCallbacks = if options ~= nil then options.hydrationOptions else nil
   local mutableSources =
     (options ~= nil and
       options.hydrationOptions ~= nil and

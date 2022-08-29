@@ -37,7 +37,7 @@ local function setCurrentlyValidatingElement(element: any?)
 			local stack = describeUnknownElementTypeFrameInDEV(
 				element.type,
 				element._source,
-				owner ~= nil and owner.type or nil
+				if owner ~= nil then owner.type else nil
 			);
 			-- ROBLOX FIXME Luau: Cannot call non-function ((string?) -> ()) | ((string?) -> ())
 			(ReactDebugCurrentFrame.setExtraStackFrame :: any)(stack)

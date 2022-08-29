@@ -148,11 +148,12 @@ return function(consoleMethod, matcherName)
 				end
 				local normalizedMessage = normalizeCodeLocInfo(message)
 
-				-- // Remember if the number of %s interpolations
-				-- // doesn't match the number of arguments.
-				-- // We'll fail the test if it happens.
+				-- Remember if the number of %s interpolations
+				-- doesn't match the number of arguments.
+				-- We'll fail the test if it happens.
 				local argIndex = 0
-				string.gsub(format, "%%s", function()
+				-- ROBLOX FIXME selene: remove _ assignment when bug in selene is fixed https://github.com/Kampfkarren/selene/issues/406
+				local _ = string.gsub(format, "%%s", function()
 					argIndex = argIndex + 1
 					return argIndex - 1
 				end)

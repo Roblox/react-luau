@@ -1094,14 +1094,15 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			local function logFiber(fiber: Fiber, depth: number)
 				log(
 					string.rep("  ", depth)
-							.. "- "
-							-- need to explicitly coerce Symbol to a string
-							.. fiber.type and (fiber.type.name or tostring(fiber.type))
-						or "[root]",
+						.. "- "
+						-- need to explicitly coerce Symbol to a string
+						.. if fiber.type
+							then (fiber.type.name or tostring(fiber.type))
+							else "[root]",
 					"["
 						-- ROBLOX TODO: this field is bogus even in upstream, will always be nil
 						.. tostring((fiber :: any).childExpirationTime)
-						.. (fiber.pendingProps and "*" or "")
+						.. (if fiber.pendingProps then "*" else "")
 						.. "]"
 				)
 				if fiber.updateQueue then

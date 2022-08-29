@@ -98,14 +98,14 @@ exports.getSuspenseInstanceFromFiber = function(fiber: Fiber): SuspenseInstance?
 end
 
 exports.getContainerFromFiber = function(fiber: Fiber): Container?
-	return fiber.tag == HostRoot and fiber.stateNode.containerInfo or nil
+	return if fiber.tag == HostRoot then fiber.stateNode.containerInfo else nil
 end
 
 exports.isFiberMounted = function(fiber: Fiber): boolean
 	return getNearestMountedFiber(fiber) == fiber
 end
 
--- deviation: Missing React$ internal flow types
+-- ROBLOX TODO: Missing React$ internal flow types
 -- exports.isMounted = function(component: React$Component<any, any>): boolean
 exports.isMounted = function(component): boolean
 	if _G.__DEV__ then

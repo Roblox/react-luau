@@ -580,7 +580,7 @@ exports.getDisplayNameForReactElement = function(element): string | nil
 	elseif elementType == SuspenseList then
 		return "SuspenseList"
 	else
-		local type_ = element and element.type or nil
+		local type_ = if element then element.type else nil
 		if typeof(type_) == "string" then
 			return type_
 		elseif typeof(type_) == "function" then
@@ -732,7 +732,7 @@ function exports.formatDataForPreview(data: Object, showFormattedValue: boolean)
 		return tostring(data)
 	else
 		local ok, result = pcall(truncateForDisplay, "" .. tostring(data))
-		return ok and result or "unserializable"
+		return if ok then result else "unserializable"
 	end
 end
 

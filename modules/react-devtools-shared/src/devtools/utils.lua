@@ -1,3 +1,4 @@
+--!strict
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react-devtools-shared/src/devtools/utils.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -11,7 +12,6 @@ local Packages = script.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 type Array<T> = LuauPolyfill.Array<T>
-local Object = LuauPolyfill.Object
 -- ROBLOX deviation: Use HttpService for JSON
 local JSON = game:GetService("HttpService")
 
@@ -27,7 +27,7 @@ exports.printElement = function(element: Element, includeWeight: boolean?)
 	local prefix = " "
 
 	if #element.children > 0 then
-		prefix = element.isCollapsed and "▸" or "▾"
+		prefix = if element.isCollapsed then "▸" else "▾"
 	end
 
 	local key = ""
@@ -39,18 +39,18 @@ exports.printElement = function(element: Element, includeWeight: boolean?)
 	local hocDisplayNames = nil
 
 	if element.hocDisplayNames ~= nil then
-		hocDisplayNames = Object.assign({}, element.hocDisplayNames)
+		hocDisplayNames = table.clone(element.hocDisplayNames)
 	end
 
-	local hocs = hocDisplayNames
-			and string.format(" [%s]", table.concat(hocDisplayNames, "]["))
-		or ""
+	local hocs = if hocDisplayNames
+		then string.format(" [%s]", table.concat(hocDisplayNames, "]["))
+		else ""
 	local suffix = ""
 
 	if includeWeight then
 		suffix = string.format(
 			" (%s)",
-			element.isCollapsed and "1" or tostring(element.weight)
+			if element.isCollapsed then "1" else tostring(element.weight)
 		)
 	end
 	return string.format(
@@ -85,7 +85,7 @@ exports.printStore = function(store: Store, includeWeight: boolean?)
 
 		table.insert(
 			snapshotLines,
-			"[root]" .. (includeWeight and string.format(" (%d)", weight) or "")
+			"[root]" .. (if includeWeight then string.format(" (%d)", weight) else "")
 		)
 		for i = rootWeight, rootWeight + weight - 1 do
 			local element: Element? = store:getElementAtIndex(i)

@@ -127,7 +127,7 @@ local function diffProperties(
     -- }
   end
   for propKey, nextProp in nextProps do
-    local lastProp = lastProps ~= nil and lastProps[propKey] or nil
+    local lastProp = if lastProps ~= nil then lastProps[propKey] else nil
     if nextProp == lastProp then
       continue
     end

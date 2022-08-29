@@ -109,7 +109,7 @@ function toMatchInteractions(self, actualSetOrArray, expectedSetOrArray)
   end
 
   for i, actualInteraction in actualSetOrArray do
-    local expectedInteraction = expectedSetOrArray._array and expectedSetOrArray._array[i] or expectedSetOrArray[i]
+    local expectedInteraction = if expectedSetOrArray._array then expectedSetOrArray._array[i] else expectedSetOrArray[i]
     local result = toMatchInteraction(self, actualInteraction, expectedInteraction)
     if result.pass == false then
       return result

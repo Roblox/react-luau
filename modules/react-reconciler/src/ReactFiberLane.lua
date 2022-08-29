@@ -12,20 +12,6 @@ local Packages = script.Parent.Parent
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type FiberRoot = ReactInternalTypes.FiberRoot;
 type ReactPriorityLevel = ReactInternalTypes.ReactPriorityLevel;
--- ROBLOX performance: see if inlining clz32 into the same module helps with folding/constprop
--- local clz32 = LuauPolyfill.Math.clz32
-local rshift = bit32.rshift
-local log = math.log
-local floor = math.floor
-local LN2 = math.log(2)
-local function clz32(x: number): number
-	-- convert to 32 bit integer
-	local as32bit = rshift(x, 0)
-	if as32bit == 0 then
-		return 32
-	end
-	return 31 - floor(log(as32bit) / LN2)
-end
 local console = require(Packages.Shared).console
 
 local ReactFiberSchedulerPriorities = require(script.Parent["ReactFiberSchedulerPriorities.roblox"])
@@ -636,7 +622,7 @@ end
 
 function getLowestPriorityLane(lanes: Lanes): Lane
 	-- // This finds the most significant non-zero bit.
-	local index = 31 - clz32(lanes)
+	local index = 31 - bit32.countlz(lanes)
 	if index < 0 then
 		return NoLanes
 	else
@@ -658,7 +644,7 @@ end
 exports.pickArbitraryLane = pickArbitraryLane
 
 function pickArbitraryLaneIndex(lanes: Lanes)
-	return 31 - clz32(lanes)
+	return 31 - bit32.countlz(lanes)
 end
 
 -- ROBLOX performance: all uses have been inlined
@@ -793,7 +779,7 @@ local function markRootUpdated(
 	local eventTimes = root.eventTimes
 	-- ROBLOX performance: inline laneToIndex in hot path
 	-- local index = laneToIndex(updateLane)
-	local index =  31 - clz32(updateLane)
+	local index =  31 - bit32.countlz(updateLane)
 	-- // We can always overwrite an existing timestamp because we prefer the most
 	-- // recent event, and we assume time is monotonically increasing.
 	eventTimes[index] = eventTime

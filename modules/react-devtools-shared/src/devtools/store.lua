@@ -402,7 +402,7 @@ function Store:setCollapseNodesByDefault(value: boolean)
 
 	localStorageSetItem(
 		LOCAL_STORAGE_COLLAPSE_ROOTS_BY_DEFAULT_KEY,
-		value and "true" or "false"
+		if value then "true" else "false"
 	)
 	self:emit("collapseNodesByDefault")
 end
@@ -479,7 +479,7 @@ function Store:setRecordChangeDescriptions(value: boolean): ()
 
 	localStorageSetItem(
 		LOCAL_STORAGE_RECORD_CHANGE_DESCRIPTIONS_KEY,
-		value and "true" or "false"
+		if value then "true" else "false"
 	)
 	self:emit("recordChangeDescriptions")
 end
@@ -555,7 +555,7 @@ function Store:getElementAtIndex(index: number): Element?
 		for i = 1, numChildren do
 			local childID = currentElement.children[i]
 			local child = self._idToElement[childID]
-			local childWeight = child.isCollapsed and 1 or child.weight
+			local childWeight = if child.isCollapsed then 1 else child.weight
 			if index <= currentWeight + childWeight then
 				currentWeight += 1
 				currentElement = child
@@ -616,7 +616,7 @@ function Store:getIndexOfElementID(id: number): number | nil
 			end
 
 			local child = self._idToElement[childID]
-			index += child.isCollapsed and 1 or child.weight
+			index += if child.isCollapsed then 1 else child.weight
 		end
 
 		-- We found the root; stop crawling.

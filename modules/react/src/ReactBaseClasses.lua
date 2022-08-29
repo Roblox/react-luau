@@ -118,7 +118,7 @@ local Component = setmetatable({__componentName = "Component"}, componentClassMe
 ]]
 
 -- ROBLOX performance: pool size tuned for benchmarks
-local InstancePoolSize = not _G.__TESTEZ_RUNNING_TEST__ and 900 or 0
+local InstancePoolSize = if not _G.__TESTEZ_RUNNING_TEST__ then 900 else 0
 local InstancePoolIndex = 1
 local InstancePool = table.create(InstancePoolSize)
 for i=1, InstancePoolSize do

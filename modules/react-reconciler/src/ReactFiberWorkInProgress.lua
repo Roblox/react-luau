@@ -2,6 +2,16 @@
 -- ROBLOX deviation: this is an extraction of a single state field
 -- (and associated mutation/getters) from ReactFiberWorkLooop.new
 -- which allows us to break dependency cycles involving that module
+-- ROBLOX upstream: https://github.com/facebook/react/blob/56e9feead0f91075ba0a4f725c9e4e343bca1c67/packages/react-reconciler/src/ReactFiberWorkLoop.new.js
+--[[*
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
+]]
+
 local ReactFiberLane = require(script.Parent.ReactFiberLane)
 local _workInProgressRootSkippedLanes: Lanes = ReactFiberLane.NoLanes
 local mergeLanes = ReactFiberLane.mergeLanes

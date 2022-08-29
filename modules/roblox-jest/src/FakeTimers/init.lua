@@ -7,8 +7,7 @@ type Timer = {
 
 local realDelay = delay
 local realTick = tick
--- ROBLOX TODO: Remove fallback when delay is fully released
-local realTaskDelay = (task :: any) ~= nil and (task :: any).delay or function() end
+local realTaskDelay = task.delay
 
 local timers: { [number]: Timer } = {}
 local now = 0

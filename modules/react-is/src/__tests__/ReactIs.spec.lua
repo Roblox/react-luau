@@ -1,5 +1,13 @@
 --!strict
 -- upstream: https://github.com/facebook/react/blob/c57fe4a2c1402acdbf31ac48cfc6a6bf336c4067/react-is/src/__tests__/ReactIs-test.js
+--[[*
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails react-core
+ *]]
 
 return function()
 	local Packages = script.Parent.Parent.Parent

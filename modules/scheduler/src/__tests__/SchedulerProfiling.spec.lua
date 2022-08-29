@@ -1,5 +1,13 @@
 -- ROBLOX upstream: https://github.com/facebook/react/blob/8af27aeedbc6b00bc2ef49729fc84f116c70a27c/packages/scheduler/src/__tests__/SchedulerProfiling-test.js
-return function()
+--[[**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ *
+ * LICENSE file in the root directory of this source tree.
+ * @flow
+ *]]
+ return function()
 	local Packages = script.Parent.Parent.Parent
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 	local JestGlobals = require(Packages.Dev.JestGlobals)

@@ -1,4 +1,14 @@
 --!strict
+-- ROBLOX upstream: https://github.com/facebook/react/blob/56e9feead0f91075ba0a4f725c9e4e343bca1c67/packages/react/src/index.js
+--[[*
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
+ *]]
+
 -- ROBLOX deviation: simulates `index.js` and exports React's public interface
 local Packages = script.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)

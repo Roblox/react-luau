@@ -1,3 +1,4 @@
+-- ROBLOX upstream: https://github.com/facebook/react/blob/702fad4b1b48ac8f626ed3f35e8f86f5ea728084/packages/react-test-renderer/src/ReactTestHostConfig.js
 --!strict
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -8,9 +9,6 @@
  * @flow
 ]]
 
--- ROBLOX TODO remove this when CLI-38793 lands
---!nolint LocalShadow
-
 local Packages = script.Parent.Parent
 
 local Cryo = require(Packages.Cryo)
@@ -18,6 +16,7 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 
 local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
+type Object = LuauPolyfill.Object
 local setTimeout = LuauPolyfill.setTimeout
 local clearTimeout = LuauPolyfill.clearTimeout
 
@@ -34,7 +33,6 @@ local REACT_OPAQUE_ID_TYPE = ReactSymbols.REACT_OPAQUE_ID_TYPE
 local RobloxComponentProps = require(script.Parent.roblox.RobloxComponentProps)
 
 type Array<T> = { [number]: T }
-type Object = { [string]: any }
 type Function = (any) -> any
 
 export type Type = string
@@ -51,7 +49,7 @@ export type Instance = {
 	children: Array<Instance | TextInstance>,
 	internalInstanceHandle: Object,
 	rootContainerInstance: Container,
-	tag: string,
+	tag: "INSTANCE",
 }
 export type TextInstance = {
 	text: string,
@@ -88,7 +86,7 @@ local exports = Cryo.Dictionary.join(
 
 local NO_CONTEXT = {}
 local UPDATE_SIGNAL = {}
-local nodeToInstanceMap = {}
+local nodeToInstanceMap: { [Object]: Instance? } = {}
 
 if _G.__DEV__ then
 	Object.freeze(NO_CONTEXT)
@@ -96,16 +94,15 @@ if _G.__DEV__ then
 end
 
 exports.getPublicInstance = function(inst: Instance | TextInstance)
+	-- ROBLOX FIXME Luau: Luau should narrow to Instance based on singleton type comparison
 	if inst.tag == "INSTANCE" then
-		-- ROBLOX deviation: Luau won't let us narrow type to Instance, just widen it
-		local inst: any = inst
-		local createNodeMock = inst.rootContainerInstance.createNodeMock
+		local createNodeMock = (inst :: Instance).rootContainerInstance.createNodeMock
 		local mockNode = createNodeMock({
-			type = inst.type,
-			props = inst.props,
+			type = (inst :: Instance).type,
+			props = (inst :: Instance).props,
 		})
 		if typeof(mockNode) == "table" then
-			nodeToInstanceMap[mockNode] = inst
+			nodeToInstanceMap[mockNode] = inst :: Instance
 		end
 		return mockNode
 	else
@@ -361,10 +358,10 @@ exports.unmountFundamentalComponent =
 		end
 	end
 
-exports.getInstanceFromNode = function(mockNode: Object)
+exports.getInstanceFromNode = function(mockNode: Object): Object?
 	local instance = nodeToInstanceMap[mockNode]
 	if instance ~= nil then
-		return instance.internalInstanceHandle
+		return (instance :: Instance).internalInstanceHandle
 	end
 	return nil
 end

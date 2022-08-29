@@ -1,12 +1,23 @@
+--!strict
 --[[
-	Roblox upstream: https://github.com/facebook/react/blob/69060e1da6061af845162dcf6854a5d9af28350a/scripts/jest/matchers/reactTestMatchers.js
+	ROBLOX upstream: https://github.com/facebook/react/blob/69060e1da6061af845162dcf6854a5d9af28350a/scripts/jest/matchers/reactTestMatchers.js
 
 	Note: this file is partially redundant with modules/scheduler/src/getJestMatchers.roblox.lua
 	That is also happening upstream: https://github.com/facebook/react/blob/47ff31a77add22bef54aaed9d4fb62d5aa693afd/scripts/jest/matchers/schedulerTestMatchers.js
 ]]
+
+--[[**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *]]
+
 local JestReact = require(script.Parent.JestReact)
 
-local function captureAssertion(fn)
+local function captureAssertion(
+	fn
+): { pass: false, message: () -> string } | { pass: true }
 	-- Trick to use a TestEZ expectation matcher inside another Jest
 	-- matcher. `fn` contains an assertion; if it throws, we capture the
 	-- error and return it, so the stack trace presented to the user points

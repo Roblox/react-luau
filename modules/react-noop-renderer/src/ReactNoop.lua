@@ -1,5 +1,5 @@
 --!strict
--- upstream: https://github.com/facebook/react/blob/faa697f4f9afe9f1c98e315b2a9e70f5a74a7a74/packages/react-noop-renderer/src/ReactNoop.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/faa697f4f9afe9f1c98e315b2a9e70f5a74a7a74/packages/react-noop-renderer/src/ReactNoop.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
