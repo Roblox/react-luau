@@ -55,7 +55,7 @@ eval set -- "$PARAMS"
 
 if [[ $SNAPSHOT ]]; then
 	echo "Generating snapshots..."
-	roblox-cli run --load.model tests.project.json --run bin/spec.lua --fastFlags.overrides EnableLoadModule=true --fastFlags.allOnLuau --lua.globals=__DEV__=true --lua.globals=__COMPAT_WARNINGS__=true --lua.globals=UPDATESNAPSHOT="all" --load.asRobloxScript --fs.readwrite="$(pwd)"
+	roblox-cli run --load.model tests.project.json --run bin/spec.lua --fastFlags.overrides EnableLoadModule=true DebugDisableOptimizedBytecode=true --fastFlags.allOnLuau --lua.globals=__DEV__=true --lua.globals=__COMPAT_WARNINGS__=true --lua.globals=UPDATESNAPSHOT="all" --load.asRobloxScript --fs.readwrite="$(pwd)"
 	exit 0
 fi
 
@@ -67,7 +67,7 @@ fi
 
 if [[ $PROFILE  ]]; then
 	echo "Generating profiled benchmark '$PROFILE'..."
-	robloxdev-cli run --load.model tests.project.json --run $PROFILE --headlessRenderer 1 --fastFlags.overrides "EnableDelayedTaskMethods=true" "FIntScriptProfilerFrequency=1000000" "DebugScriptProfilerEnabled=true" "EnableLoadModule=true" --fastFlags.allOnLuau
+	robloxdev-cli run --load.model tests.project.json --run $PROFILE --headlessRenderer 1 --fastFlags.overrides "EnableDelayedTaskMethods=true" "FIntScriptProfilerFrequency=1000000" "DebugScriptProfilerEnabled=true" "EnableLoadModule=true" "DebugDisableOptimizedBytecode=true" --fastFlags.allOnLuau
 	python ../game-engine/Client/Luau/tools/perfgraph.py profile.out > $PROFILE-profile.svg
 	rm profile.out
 	start $PROFILE-profile.svg
@@ -76,4 +76,4 @@ if [[ $PROFILE  ]]; then
 fi
 
 echo "Running tests..."
-roblox-cli run --load.model tests.project.json --run bin/spec.lua --fastFlags.overrides EnableLoadModule=true --fastFlags.allOnLuau --lua.globals=__DEV__=true --lua.globals=__COMPAT_WARNINGS__=true
+roblox-cli run --load.model tests.project.json --run bin/spec.lua --fastFlags.overrides EnableLoadModule=true DebugDisableOptimizedBytecode=true --fastFlags.allOnLuau --lua.globals=__DEV__=true --lua.globals=__COMPAT_WARNINGS__=true
