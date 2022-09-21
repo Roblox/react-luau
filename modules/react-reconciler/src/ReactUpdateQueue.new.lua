@@ -86,6 +86,9 @@
 -- regardless of priority. Intermediate state may vary according to system
 -- resources, but the final state is always the same.
 
+local __DEV__ = _G.__DEV__
+local __YOLO__ = _G.__YOLO__
+
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
@@ -167,7 +170,7 @@ local hasForceUpdate = false
 local didWarnUpdateInsideUpdate
 local currentlyProcessingQueue
 -- export local resetCurrentlyProcessingQueue
-if _G.__DEV__ then
+if __DEV__ then
 	didWarnUpdateInsideUpdate = false
 	currentlyProcessingQueue = nil
 	exports.resetCurrentlyProcessingQueue = function()
@@ -244,7 +247,7 @@ local function createUpdate(eventTime: number, lane: Lane): Update<any>
 	-- warning once we've done some tuning and thought more about what messaging
 	-- we want to convey to Roact users
 
-	-- if _G.__DEV__ then
+	-- if __DEV__ then
 	-- 	poolAdditionalSize += 1
 	-- 	console.warn(
 	-- 		"ReactUpdateQueue createUpdate's object pool exhausted, allocating fresh table."
@@ -285,7 +288,7 @@ local function enqueueUpdate<State>(fiber: Fiber, update: Update<State>)
 	end
 	sharedQueue.pending = update
 
-	if _G.__DEV__ then
+	if __DEV__ then
 		if
 			currentlyProcessingQueue == sharedQueue and
 			not didWarnUpdateInsideUpdate
@@ -398,14 +401,14 @@ local function getStateFromUpdate<State>(
 		local payload = update.payload
 		if typeof(payload) == "function" then
 			-- Updater function
-			if _G.__DEV__ then
+			if __DEV__ then
 				enterDisallowedContextReadInDEV()
 			end
 			-- ROBLOX deviation: Upstream binds this callback to the instance;
 			-- in order for us to get the same behavior, we'd need to change the
 			-- signature of the updater, which doesn't make sense for our case
 			local nextState = payload(prevState, nextProps)
-			if _G.__DEV__ then
+			if __DEV__ then
 				if
 					debugRenderPhaseSideEffectsForStrictMode and
 					bit32.band(workInProgress.mode, StrictMode) ~= 0
@@ -413,7 +416,7 @@ local function getStateFromUpdate<State>(
 					disableLogs()
 					-- ROBLOX deviation: YOLO flag for disabling pcall
 					local ok, result
-					if not _G.__YOLO__ then
+					if not __YOLO__ then
 						ok, result = xpcall(payload, describeError, prevState, nextProps)
 					else
 						ok = true
@@ -442,14 +445,14 @@ local function getStateFromUpdate<State>(
 		local partialState
 		if typeof(payload) == "function" then
 			-- Updater function
-			if _G.__DEV__ then
+			if __DEV__ then
 				enterDisallowedContextReadInDEV()
 			end
 			-- ROBLOX deviation: Upstream binds this callback to the instance;
 			-- in order for us to get the same behavior, we'd need to change the
 			-- signature of the updater, which doesn't make sense for our case
 			partialState = payload(prevState, nextProps)
-			if _G.__DEV__ then
+			if __DEV__ then
 				if
 					debugRenderPhaseSideEffectsForStrictMode and
 					bit32.band(workInProgress.mode, StrictMode) ~= 0
@@ -457,7 +460,7 @@ local function getStateFromUpdate<State>(
 					disableLogs()
 					-- ROBLOX deviation: YOLO flag for disabling pcall
 					local ok, result
-					if not _G.__YOLO__ then
+					if not __YOLO__ then
 						ok, result = xpcall(payload, describeError, prevState, nextProps)
 					else
 						ok = true
@@ -501,7 +504,7 @@ local function processUpdateQueue<State>(
 
 	hasForceUpdate = false
 
-	if _G.__DEV__ then
+	if __DEV__ then
 		currentlyProcessingQueue = queue.shared
 	end
 
@@ -675,7 +678,7 @@ local function processUpdateQueue<State>(
 		workInProgress.memoizedState = newState
 	end
 
-	if _G.__DEV__ then
+	if __DEV__ then
 		currentlyProcessingQueue = nil
 	end
 end

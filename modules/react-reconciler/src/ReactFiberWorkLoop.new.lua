@@ -8,6 +8,8 @@
  *
  * @flow
 ]]
+local __DEV__ = _G.__DEV__
+local __YOLO__ = _G.__YOLO__
 
 local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from shared
@@ -64,8 +66,8 @@ local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 -- local warnAboutUnmockedScheduler = ReactFeatureFlags.warnAboutUnmockedScheduler
 -- local deferRenderPhaseUpdateToNextBatch = ReactFeatureFlags.ReactFeatureFlags.deferRenderPhaseUpdateToNextBatch
 -- local decoupleUpdatePriorityFromScheduler = ReactFeatureFlags.ReactFeatureFlags.decoupleUpdatePriorityFromScheduler
--- local enableDebugTracing = ReactFeatureFlags.enableDebugTracing
--- local enableSchedulingProfiler = ReactFeatureFlags.enableSchedulingProfiler
+local enableDebugTracing = ReactFeatureFlags.enableDebugTracing
+local enableSchedulingProfiler = ReactFeatureFlags.enableSchedulingProfiler
 local skipUnmountedBoundaries = ReactFeatureFlags.skipUnmountedBoundaries
 local enableDoubleInvokingEffects = ReactFeatureFlags.enableDoubleInvokingEffects
 local ReactShared = require(Packages.Shared)
@@ -574,7 +576,7 @@ exports.requestUpdateLane = function(fiber: Fiber): Lane
         schedulerLanePriority ~= currentUpdateLanePriority and
         currentUpdateLanePriority ~= ReactFiberLane.NoLanePriority
       then
-        if _G.__DEV__ then
+        if __DEV__ then
           console.error(
             "Expected current scheduler lane priority %s to match current update lane priority %s",
             tostring(schedulerLanePriority),
@@ -732,7 +734,7 @@ mod.markUpdateLaneFromFiberToRoot = function(
   if alternate ~= nil then
     alternate.lanes = mergeLanes(alternate.lanes, lane)
   end
-  if _G.__DEV__ then
+  if __DEV__ then
     if
       alternate == nil and
       bit32.band(sourceFiber.flags, bit32.bor(ReactFiberFlags.Placement, ReactFiberFlags.Hydrating)) ~= ReactFiberFlags.NoFlags
@@ -749,7 +751,7 @@ mod.markUpdateLaneFromFiberToRoot = function(
     if alternate ~= nil then
       alternate.childLanes = mergeLanes(alternate.childLanes, lane)
     else
-      if _G.__DEV__ then
+      if __DEV__ then
         if bit32.band(parent.flags, bit32.bor(ReactFiberFlags.Placement, ReactFiberFlags.Hydrating)) ~= ReactFiberFlags.NoFlags then
           mod.warnAboutUpdateOnNotYetMountedFiberInDEV(sourceFiber)
         end
@@ -961,7 +963,7 @@ local didWarnAboutUsingActInProd = false
 
 function shouldForceFlushFallbacksInDEV()
   -- Never force flush in production. This function should get stripped out.
-  return _G.__DEV__ and actingUpdatesScopeDepth > 0
+  return __DEV__ and actingUpdatesScopeDepth > 0
 end
 
 mod.finishConcurrentRender = function(root, exitStatus, lanes)
@@ -1180,7 +1182,7 @@ exports.flushDiscreteUpdates = function()
     bit32.band(executionContext, bit32.bor(BatchedContext, RenderContext, CommitContext)) ~=
     NoContext
   then
-    if _G.__DEV__ then
+    if __DEV__ then
       if bit32.band(executionContext, RenderContext) ~= NoContext then
         console.error(
           "unstable_flushDiscreteUpdates: Cannot flush updates when React is " ..
@@ -1204,7 +1206,7 @@ exports.deferredUpdates = function<A>(fn: () -> A): A
     local previousLanePriority = getCurrentUpdateLanePriority()
     -- ROBLOX deviation: YOLO flag for disabling pcall
     local ok, result
-    if not _G.__YOLO__ then
+    if not __YOLO__ then
       -- ROBLOX performance: hoist non-throwable out of try{} to eliminate anon function
       setCurrentUpdateLanePriority(ReactFiberLane.DefaultLanePriority)
       ok, result = xpcall(runWithPriority, describeError, NormalSchedulerPriority, fn)
@@ -1250,7 +1252,7 @@ exports.batchedUpdates = function<A, R>(fn: (A) -> R, a: A): R
 
   -- ROBLOX deviation: YOLO flag for disabling pcall
   local ok, result
-  if not _G.__YOLO__ then
+  if not __YOLO__ then
     ok, result = xpcall(fn, describeError, a)
   else
     ok = true
@@ -1278,7 +1280,7 @@ exports.batchedEventUpdates = function<A, R>(fn: (A) -> R, a: A): R
 
   -- ROBLOX deviation: YOLO flag for disabling pcall
   local ok, result
-  if not _G.__YOLO__ then
+  if not __YOLO__ then
     ok, result = xpcall(fn, describeError, a)
   else
     ok = true
@@ -1362,7 +1364,7 @@ exports.unbatchedUpdates = function<A, R>(fn: (A) -> R, a: A): R
   executionContext = bit32.bor(executionContext, LegacyUnbatchedContext)
   -- ROBLOX deviation: YOLO flag for disabling pcall
   local ok, result
-  if not _G.__YOLO__ then
+  if not __YOLO__ then
     ok, result = xpcall(fn, describeError, a)
   else
     ok = true
@@ -1387,7 +1389,7 @@ end
 exports.flushSync = function<A, R>(fn: (A) -> R, a: A): R
   local prevExecutionContext = executionContext
   if (bit32.band(prevExecutionContext, bit32.bor(RenderContext, CommitContext))) ~= NoContext then
-    if _G.__DEV__ then
+    if __DEV__ then
       console.error(
         'flushSync was called from inside a lifecycle method. React cannot ' ..
           'flush when React is already rendering. Consider moving this call to ' ..
@@ -1405,7 +1407,7 @@ exports.flushSync = function<A, R>(fn: (A) -> R, a: A): R
     setCurrentUpdateLanePriority(ReactFiberLane.SyncLanePriority)
     -- ROBLOX deviation: YOLO flag for disabling pcall
     local ok, result
-    if not _G.__YOLO__ then
+    if not __YOLO__ then
       if fn then
         ok, result = xpcall(runWithPriority,
           describeError,
@@ -1447,7 +1449,7 @@ exports.flushSync = function<A, R>(fn: (A) -> R, a: A): R
   else
     -- ROBLOX deviation: YOLO flag for disabling pcall
     local ok, result
-    if not _G.__YOLO__ then
+    if not __YOLO__ then
       if fn then
         ok, result = xpcall(runWithPriority,
           describeError,
@@ -1572,7 +1574,7 @@ mod.prepareFreshStack = function(root: FiberRoot, lanes: Lanes)
     spawnedWorkDuringRender = nil
   end
 
-  if _G.__DEV__ then
+  if __DEV__ then
     ReactStrictModeWarnings.discardPendingWarnings()
   end
 end
@@ -1750,20 +1752,20 @@ mod.renderRootSync = function(root: FiberRoot, lanes: Lanes)
 
   local prevInteractions = mod.pushInteractions(root)
 
-  if _G.__DEV__ then
-    if ReactFeatureFlags.enableDebugTracing then
+  if __DEV__ then
+    if enableDebugTracing then
       DebugTracing.logRenderStarted(lanes)
     end
   end
 
-  if ReactFeatureFlags.enableSchedulingProfiler then
+  if enableSchedulingProfiler then
     SchedulingProfiler.markRenderStarted(lanes)
   end
 
   while true do
     -- ROBLOX deviation: YOLO flag for disabling pcall
     local ok, thrownValue
-    if not _G.__YOLO__ then
+    if not __YOLO__ then
       ok, thrownValue = xpcall(mod.workLoopSync, describeError)
     else
       ok = true
@@ -1793,13 +1795,13 @@ mod.renderRootSync = function(root: FiberRoot, lanes: Lanes)
     )
   end
 
-  if _G.__DEV__ then
-    if ReactFeatureFlags.enableDebugTracing then
+  if __DEV__ then
+    if enableDebugTracing then
       DebugTracing.logRenderStopped()
     end
   end
 
-  if ReactFeatureFlags.enableSchedulingProfiler then
+  if enableSchedulingProfiler then
     SchedulingProfiler.markRenderStopped()
   end
 
@@ -1834,20 +1836,20 @@ mod.renderRootConcurrent = function(root: FiberRoot, lanes: Lanes)
 
   local prevInteractions = mod.pushInteractions(root)
 
-  if _G.__DEV__ then
-    if ReactFeatureFlags.enableDebugTracing then
+  if __DEV__ then
+    if enableDebugTracing then
       DebugTracing.logRenderStarted(lanes)
     end
   end
 
-  if ReactFeatureFlags.enableSchedulingProfiler then
+  if enableSchedulingProfiler then
     SchedulingProfiler.markRenderStarted(lanes)
   end
 
   while true do
     -- ROBLOX deviation: YOLO flag for disabling pcall
     local ok, thrownValue
-    if not _G.__YOLO__ then
+    if not __YOLO__ then
       -- ROBLOX deviation: when converting `try` to `pcall`, we can't use break inside it
       ok, thrownValue = xpcall(mod.workLoopConcurrent, describeError)
       if ok then
@@ -1874,8 +1876,8 @@ mod.renderRootConcurrent = function(root: FiberRoot, lanes: Lanes)
   mod.popDispatcher(prevDispatcher)
   executionContext = prevExecutionContext
 
-  if _G.__DEV__ then
-    if ReactFeatureFlags.enableDebugTracing then
+  if __DEV__ then
+    if enableDebugTracing then
       DebugTracing.logRenderStopped()
     end
   end
@@ -1883,13 +1885,13 @@ mod.renderRootConcurrent = function(root: FiberRoot, lanes: Lanes)
   -- Check if the tree has completed.
   if workInProgress ~= nil then
     -- Still work remaining.
-    if ReactFeatureFlags.enableSchedulingProfiler then
+    if enableSchedulingProfiler then
       SchedulingProfiler.markRenderYielded()
     end
     return RootExitStatus.Incomplete
   else
     -- Completed the tree.
-    if ReactFeatureFlags.enableSchedulingProfiler then
+    if enableSchedulingProfiler then
       SchedulingProfiler.markRenderStopped()
     end
 
@@ -2067,24 +2069,24 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
   local finishedWork = root.finishedWork :: Fiber
   local lanes = root.finishedLanes
 
-  if _G.__DEV__ then
-    if ReactFeatureFlags.enableDebugTracing then
+  if __DEV__ then
+    if enableDebugTracing then
       DebugTracing.logCommitStarted(lanes)
     end
   end
 
-  if ReactFeatureFlags.enableSchedulingProfiler then
+  if enableSchedulingProfiler then
     SchedulingProfiler.markCommitStarted(lanes)
   end
 
   if finishedWork == nil then
-    if _G.__DEV__ then
-      if ReactFeatureFlags.enableDebugTracing then
+    if __DEV__ then
+      if enableDebugTracing then
         DebugTracing.logCommitStopped()
       end
     end
 
-    if ReactFeatureFlags.enableSchedulingProfiler then
+    if enableSchedulingProfiler then
       SchedulingProfiler.markCommitStopped()
     end
 
@@ -2205,16 +2207,16 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
     -- The next phase is the layout phase, where we call effects that read
     -- the host tree after it's been mutated. The idiomatic use case for this is
     -- layout, but class component lifecycles also fire here for legacy reasons.
-    if _G.__DEV__ then
-      if ReactFeatureFlags.enableDebugTracing then
+    if __DEV__ then
+      if enableDebugTracing then
         DebugTracing.logLayoutEffectsStarted(lanes)
       end
     end
-    if ReactFeatureFlags.enableSchedulingProfiler then
+    if enableSchedulingProfiler then
       SchedulingProfiler.markLayoutEffectsStarted(lanes)
     end
 
-    if _G.__DEV__ then
+    if __DEV__ then
       setCurrentDebugFiberInDEV(finishedWork)
       invokeGuardedCallback(
         nil,
@@ -2234,7 +2236,7 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
     else
       -- ROBLOX deviation: YOLO flag for disabling pcall
       local ok, result
-      if not _G.__YOLO__ then
+      if not __YOLO__ then
           -- ROBLOX deviation: pass in captureCommitPhaseError and schedulePassiveEffectCallback to avoid dependency cycle
           ok, result = xpcall(recursivelyCommitLayoutEffects, describeError, finishedWork, root, exports.captureCommitPhaseError, exports.schedulePassiveEffectCallback)
       else
@@ -2247,12 +2249,12 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
       end
     end
 
-    if _G.__DEV__ then
-      if ReactFeatureFlags.enableDebugTracing then
+    if __DEV__ then
+      if enableDebugTracing then
         DebugTracing.logLayoutEffectsStopped()
       end
     end
-    if ReactFeatureFlags.enableSchedulingProfiler then
+    if enableSchedulingProfiler then
       SchedulingProfiler.markLayoutEffectsStopped()
     end
 
@@ -2330,7 +2332,7 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
     legacyErrorBoundariesThatAlreadyFailed = nil
   end
 
-  if _G.__DEV__ and enableDoubleInvokingEffects then
+  if __DEV__ and enableDoubleInvokingEffects then
     if not rootDidHavePassiveEffects then
       commitDoubleInvokeEffectsInDEV(root.current, false)
     end
@@ -2361,7 +2363,7 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
 
   onCommitRootDevTools(finishedWork.stateNode, renderPriorityLevel)
 
-  if _G.__DEV__ then
+  if __DEV__ then
     onCommitRootTestSelector()
   end
 
@@ -2378,13 +2380,13 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
   end
 
   if bit32.band(executionContext, LegacyUnbatchedContext) ~= NoContext then
-    if _G.__DEV__ then
-      if ReactFeatureFlags.enableDebugTracing then
+    if __DEV__ then
+      if enableDebugTracing then
         DebugTracing.logCommitStopped()
       end
     end
 
-    if ReactFeatureFlags.enableSchedulingProfiler then
+    if enableSchedulingProfiler then
       SchedulingProfiler.markCommitStopped()
     end
 
@@ -2398,13 +2400,13 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
   -- If layout work was scheduled, flush it now.
   flushSyncCallbackQueue()
 
-  if _G.__DEV__ then
-    if ReactFeatureFlags.enableDebugTracing then
+  if __DEV__ then
+    if enableDebugTracing then
       DebugTracing.logCommitStopped()
     end
   end
 
-  if ReactFeatureFlags.enableSchedulingProfiler then
+  if enableSchedulingProfiler then
     SchedulingProfiler.markCommitStopped()
   end
 
@@ -2425,7 +2427,7 @@ mod.commitBeforeMutationEffects = function(firstChild: Fiber)
       end
     end
 
-    if _G.__DEV__ then
+    if __DEV__ then
       setCurrentDebugFiberInDEV(fiber)
       invokeGuardedCallback(nil, mod.commitBeforeMutationEffectsImpl, nil, fiber)
       if hasCaughtError() then
@@ -2436,7 +2438,7 @@ mod.commitBeforeMutationEffects = function(firstChild: Fiber)
     else
       -- ROBLOX deviation: YOLO flag for disabling pcall
       local ok, error_
-      if not _G.__YOLO__ then
+      if not __YOLO__ then
         ok, error_ = xpcall(mod.commitBeforeMutationEffectsImpl, describeError, fiber)
       else
         ok = true
@@ -2535,7 +2537,7 @@ mod.commitMutationEffects = function(
       end
     end
 
-    if _G.__DEV__ then
+    if __DEV__ then
       setCurrentDebugFiberInDEV(fiber)
       invokeGuardedCallback(
         nil,
@@ -2553,7 +2555,7 @@ mod.commitMutationEffects = function(
     else
       -- ROBLOX deviation: YOLO flag for disabling pcall
       local ok, result
-      if not _G.__YOLO__ then
+      if not __YOLO__ then
         ok, result = xpcall(mod.commitMutationEffectsImpl, describeError, fiber, root, renderPriorityLevel)
       else
         ok = true
@@ -2684,7 +2686,7 @@ exports.flushPassiveEffects = function(): boolean
       )
       -- ROBLOX deviation: YOLO flag for disabling pcall
       local ok, result
-      if not _G.__YOLO__ then
+      if not __YOLO__ then
         ok, result = xpcall(runWithPriority, describeError, priorityLevel, flushPassiveEffectsImpl)
       else
         ok = true
@@ -2726,7 +2728,7 @@ flushPassiveMountEffects = function(root, firstChild: Fiber): ()
     end
 
     if bit32.band(fiber.flags, ReactFiberFlags.Passive) ~= ReactFiberFlags.NoFlags then
-      if _G.__DEV__ then
+      if __DEV__ then
         setCurrentDebugFiberInDEV(fiber)
         invokeGuardedCallback(
           nil,
@@ -2743,7 +2745,7 @@ flushPassiveMountEffects = function(root, firstChild: Fiber): ()
       else
         -- ROBLOX deviation: YOLO flag for disabling pcall
         local ok, error_
-        if not _G.__YOLO__ then
+        if not __YOLO__ then
           ok, error_ = xpcall(commitPassiveMountOnFiber, describeError, root, fiber)
         else
           ok = true
@@ -2857,13 +2859,13 @@ flushPassiveEffectsImpl = function()
     "Cannot flush passive effects while already rendering."
   )
 
-  if _G.__DEV__ then
-    if ReactFeatureFlags.enableDebugTracing then
+  if __DEV__ then
+    if enableDebugTracing then
       DebugTracing.logPassiveEffectsStarted(lanes)
     end
   end
 
-  if ReactFeatureFlags.enableSchedulingProfiler then
+  if enableSchedulingProfiler then
     SchedulingProfiler.markPassiveEffectsStarted(lanes)
   end
 
@@ -2880,17 +2882,17 @@ flushPassiveEffectsImpl = function()
   flushPassiveUnmountEffects(root.current)
   flushPassiveMountEffects(root, root.current)
 
-  if _G.__DEV__ then
-    if ReactFeatureFlags.enableDebugTracing then
+  if __DEV__ then
+    if enableDebugTracing then
       DebugTracing.logPassiveEffectsStopped()
     end
   end
 
-  if ReactFeatureFlags.enableSchedulingProfiler then
+  if enableSchedulingProfiler then
     SchedulingProfiler.markPassiveEffectsStopped()
   end
 
-  if _G.__DEV__ and enableDoubleInvokingEffects then
+  if __DEV__ and enableDoubleInvokingEffects then
     commitDoubleInvokeEffectsInDEV(root.current, true)
   end
 
@@ -3165,7 +3167,7 @@ mod.checkForNestedUpdates = function()
     )
   end
 
-  if _G.__DEV__ then
+  if __DEV__ then
     if nestedPassiveUpdateCount > NESTED_PASSIVE_UPDATE_LIMIT then
       nestedPassiveUpdateCount = 0
       console.error(
@@ -3179,7 +3181,7 @@ mod.checkForNestedUpdates = function()
 end
 
 function flushRenderPhaseStrictModeWarningsInDEV()
-  if _G.__DEV__ then
+  if __DEV__ then
     ReactStrictModeWarnings.flushLegacyContextWarning()
 
     if ReactFeatureFlags.warnAboutDeprecatedLifecycles then
@@ -3192,7 +3194,7 @@ function commitDoubleInvokeEffectsInDEV(
   fiber: Fiber,
   hasPassiveEffects: boolean
 )
-  if _G.__DEV__ and enableDoubleInvokingEffects then
+  if __DEV__ and enableDoubleInvokingEffects then
     setCurrentDebugFiberInDEV(fiber)
     invokeEffectsInDev(fiber, ReactFiberFlags.MountLayoutDev, invokeLayoutEffectUnmountInDEV)
     if hasPassiveEffects then
@@ -3216,7 +3218,7 @@ function invokeEffectsInDev(
   fiberFlags: Flags,
   invokeEffectFn: (fiber: Fiber) -> ()
 ): ()
-  if _G.__DEV__ and enableDoubleInvokingEffects then
+  if __DEV__ and enableDoubleInvokingEffects then
     local fiber = firstChild
     while fiber ~= nil do
       if fiber.child ~= nil then
@@ -3238,7 +3240,7 @@ end
 -- deviation: FIXME restore type Set<string>?, has trouble with narrowing
 local didWarnStateUpdateForNotYetMountedComponent: any = nil
 mod.warnAboutUpdateOnNotYetMountedFiberInDEV = function(fiber)
-  if _G.__DEV__ then
+  if __DEV__ then
     if bit32.band(executionContext, RenderContext) ~= NoContext then
       -- We local the other warning about render phase updates deal with this one.
       return
@@ -3302,7 +3304,7 @@ end
 
 
 -- deviation: Declared on the mod table instead of as a local
-if _G.__DEV__ and ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback then
+if __DEV__ and ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback then
   local dummyFiber = nil
   mod.beginWork = function(current, unitOfWork, lanes)
     -- If a component throws an error, we replay it again in a synchronously
@@ -3376,12 +3378,12 @@ end
 
 local didWarnAboutUpdateInRender = false
 local didWarnAboutUpdateInRenderForAnotherComponent
-if _G.__DEV__ then
+if __DEV__ then
   didWarnAboutUpdateInRenderForAnotherComponent = {}
 end
 
 mod.warnAboutRenderPhaseUpdatesInDEV = function(fiber: Fiber): ()
-  if _G.__DEV__ then
+  if __DEV__ then
     if
       ReactCurrentFiber.isRendering and
       bit32.band(executionContext, RenderContext) ~= NoContext and
@@ -3431,7 +3433,7 @@ end
 exports.IsThisRendererActing = { current = false }
 
 exports.warnIfNotScopedWithMatchingAct = function(fiber: Fiber)
-  if _G.__DEV__ then
+  if __DEV__ then
     if
       ReactFiberHostConfig.warnsIfNotActing == true and
       IsSomeRendererActing.current == true and
@@ -3475,7 +3477,7 @@ end
 
 
 exports.warnIfNotCurrentlyActingEffectsInDEV = function(fiber: Fiber): ()
-  if _G.__DEV__ then
+  if __DEV__ then
     if
       ReactFiberHostConfig.warnsIfNotActing == true and
       bit32.band(fiber.mode, ReactTypeOfMode.StrictMode) ~= ReactTypeOfMode.NoMode and
@@ -3501,7 +3503,7 @@ exports.warnIfNotCurrentlyActingEffectsInDEV = function(fiber: Fiber): ()
 end
 
 exports.warnIfNotCurrentlyActingUpdatesInDEV = function (fiber: Fiber): ()
-  if _G.__DEV__ then
+  if __DEV__ then
     if
       ReactFiberHostConfig.warnsIfNotActing == true and
       executionContext == NoContext and
@@ -3551,7 +3553,7 @@ local didWarnAboutUnmockedScheduler = false
 -- to get their tests right.
 
 exports.warnIfUnmockedScheduler = function(fiber: Fiber)
-  if _G.__DEV__ then
+  if __DEV__ then
     if
       didWarnAboutUnmockedScheduler == false and
       Scheduler.unstable_flushAllWithoutAsserting == nil
@@ -3853,7 +3855,7 @@ exports.act = function(callback: () -> Thenable<any>): Thenable<any>
   -- Since there are numerous testing scenarios in which we call `require` on
   -- the Roact library _before_ we bootstrap tests, we expose a global to toggle
   -- this explicilty
-  if not (_G.__DEV__ or _G.__ROACT_17_MOCK_SCHEDULER__) then
+  if not (__DEV__ or _G.__ROACT_17_MOCK_SCHEDULER__) then
     if didWarnAboutUsingActInProd == false then
       didWarnAboutUsingActInProd = true
       -- eslint-disable-next-line react-internal/no-production-logging
@@ -3878,7 +3880,7 @@ exports.act = function(callback: () -> Thenable<any>): Thenable<any>
     IsSomeRendererActing.current = previousIsSomeRendererActing
     exports.IsThisRendererActing.current = previousIsThisRendererActing
     isInsideThisAct = previousIsInsideThisAct
-    if _G.__DEV__ then
+    if __DEV__ then
       if actingUpdatesScopeDepth > previousActingUpdatesScopeDepth then
         -- if it's _less than_ previousActingUpdatesScopeDepth, then we can assume the 'other' one has warned
         console.error(
@@ -3903,7 +3905,7 @@ exports.act = function(callback: () -> Thenable<any>): Thenable<any>
     -- setup a boolean that gets set to true only
     -- once this act() call is await-ed
     local called = false
-    if _G.__DEV__ then
+    if __DEV__ then
       if typeof(Promise) ~= nil then
         --eslint-disable-next-line no-undef
         Promise.resolve()
@@ -3959,7 +3961,7 @@ exports.act = function(callback: () -> Thenable<any>): Thenable<any>
       end,
     }
   else
-    if _G.__DEV__ then
+    if __DEV__ then
       if result ~= nil then
         -- ROBLOX deviation: use Lua syntax
         console.error(
@@ -3992,7 +3994,7 @@ exports.act = function(callback: () -> Thenable<any>): Thenable<any>
     return {
       -- ROBLOX FIXME Luau: have to explicitly annotate the unused generic arg: CLI-49996
       andThen = function <U>(self, resolve, reject_)
-        if _G.__DEV__ then
+        if __DEV__ then
           console.error(
             "Do not await the result of calling act(...) with sync logic, it is not a Promise."
           )
@@ -4016,7 +4018,7 @@ mod.detachFiberAfterEffects = function(fiber: Fiber)
   fiber.stateNode = nil
   fiber.updateQueue = nil
 
-  if _G.__DEV__ then
+  if __DEV__ then
     fiber._debugOwner = nil
   end
 end

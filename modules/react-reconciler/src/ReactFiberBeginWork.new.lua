@@ -18,6 +18,10 @@ local function unimplemented(message: string)
   error("FIXME (roblox): " .. message .. " is unimplemented", 2)
 end
 
+local __DEV__ = _G.__DEV__
+local __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ = _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__
+local __COMPAT_WARNINGS__ = _G.__COMPAT_WARNINGS__
+
 local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from Shared
 local Shared = require(Packages.Shared)
@@ -275,7 +279,7 @@ local DidWarn = {
 -- local didWarnAboutTailOptions
 local updateSimpleMemoComponent
 
-if _G.__DEV__ then
+if __DEV__ then
   DidWarn.didWarnAboutBadClass = {}
   DidWarn.didWarnAboutModulePatternComponent = {}
   DidWarn.didWarnAboutContextTypeOnFunctionComponent = {}
@@ -363,7 +367,7 @@ local function updateForwardRef(
   -- hasn't yet mounted. This happens after the first render suspends.
   -- We'll need to figure out if this is fine or can cause issues.
 
-  if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
+  if __DEV__ or __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
 
     if workInProgress.type ~= workInProgress.elementType then
       -- Lazy component props can't be validated in createElement
@@ -389,7 +393,7 @@ local function updateForwardRef(
   -- The rest is a fork of updateFunctionComponent
   local nextChildren
   prepareToReadContext(workInProgress, renderLanes, exports.markWorkInProgressReceivedUpdate)
-  if _G.__DEV__ then
+  if __DEV__ then
     ReactCurrentOwner.current = workInProgress
     setIsRendering(true)
     nextChildren = renderWithHooks(
@@ -464,7 +468,7 @@ local function updateMemoComponent(
       Component.defaultProps == nil
     then
       local resolvedType = type
-      if  _G.__DEV__ then
+      if  __DEV__ then
         resolvedType = resolveFunctionForHotReloading(type)
       end
       -- If this is a plain function component without default props,
@@ -472,7 +476,7 @@ local function updateMemoComponent(
       -- to a SimpleMemoComponent to allow fast path updates.
       workInProgress.tag = SimpleMemoComponent
       workInProgress.type = resolvedType
-      if  _G.__DEV__ then
+      if  __DEV__ then
         validateFunctionComponentInDev(workInProgress, type)
       end
       return updateSimpleMemoComponent(
@@ -484,7 +488,7 @@ local function updateMemoComponent(
         renderLanes
       )
     end
-    if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
+    if __DEV__ or __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
       -- ROBLOX deviation: adds support for legacy Roact's validateProps()
       local innerPropTypes
       local validateProps
@@ -522,7 +526,7 @@ local function updateMemoComponent(
   -- ROBLOX TODO Deviation: remove redefinition + typecast when this lands: CLI-38793
   -- ROBLOX the if clause above returns early if current is nil
   local current = (current :: Fiber)
-  if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
+  if __DEV__ or __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
     local type = Component.type
     -- ROBLOX deviation: adds support for legacy Roact's validateProps()
     local innerPropTypes
@@ -580,7 +584,7 @@ function updateSimpleMemoComponent(
   -- hasn't yet mounted. This happens when the inner render suspends.
   -- We'll need to figure out if this is fine or can cause issues.
 
-  if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
+  if __DEV__ or __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
     if workInProgress.type ~= workInProgress.elementType then
       -- Lazy component props can't be validated in createElement
       -- because they're only guaranteed to be resolved here.
@@ -628,7 +632,7 @@ function updateSimpleMemoComponent(
     local prevProps = current.memoizedProps
     -- ROBLOX Deviation: replacing ternary operator
     local preventBailout = true
-    if _G.__DEV__ then
+    if __DEV__ then
       preventBailout = workInProgress.type == current.type
     end
     if
@@ -827,7 +831,7 @@ function updateFunctionComponent(
   nextProps: any,
   renderLanes
 )
-  if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
+  if __DEV__ or __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
     -- ROBLOX deviation: function components can't have props in Lua
     if typeof(Component) ~= 'function' and (workInProgress.type ~= workInProgress.elementType) then
       -- Lazy component props can't be validated in createElement
@@ -861,7 +865,7 @@ function updateFunctionComponent(
 
   local nextChildren
   prepareToReadContext(workInProgress, renderLanes, exports.markWorkInProgressReceivedUpdate)
-  if _G.__DEV__ then
+  if __DEV__ then
     ReactCurrentOwner.current = workInProgress
     setIsRendering(true)
     nextChildren = renderWithHooks(
@@ -934,7 +938,7 @@ end
 --   -- The rest is a fork of updateFunctionComponent
 --   local nextChildren
 --   prepareToReadContext(workInProgress, renderLanes, exports.markWorkInProgressReceivedUpdate)
---   if  _G.__DEV__ then
+--   if  __DEV__ then
 --     ReactCurrentOwner.current = workInProgress
 --     setIsRendering(true)
 --     nextChildren = renderWithHooks(
@@ -998,7 +1002,7 @@ local function updateClassComponent(
   nextProps: any,
   renderLanes: Lanes
 )
-  if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
+  if __DEV__ or __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
     if workInProgress.type ~= workInProgress.elementType then
       -- Lazy component props can't be validated in createElement
       -- because they're only guaranteed to be resolved here.
@@ -1072,7 +1076,7 @@ local function updateClassComponent(
     hasContext,
     renderLanes
   )
-  if _G.__DEV__ then
+  if __DEV__ then
     local inst = workInProgress.stateNode
     if shouldUpdate and inst.props ~= nextProps then
       if not exports.didWarnAboutReassigningProps then
@@ -1130,7 +1134,7 @@ function finishClassComponent(
       stopProfilerTimerIfRunning(workInProgress)
     end
   else
-    if _G.__DEV__ then
+    if __DEV__ then
       setIsRendering(true)
       -- deviation: Call with ':' instead of '.' so that render can access self
       nextChildren = instance:render()
@@ -1361,7 +1365,7 @@ local function mountLazyComponent(
   local resolvedProps = resolveDefaultProps(Component, props)
   local child
   if resolvedTag == FunctionComponent then
-    if  _G.__DEV__ then
+    if  __DEV__ then
       validateFunctionComponentInDev(workInProgress, Component)
       Component = resolveFunctionForHotReloading(
         Component
@@ -1377,7 +1381,7 @@ local function mountLazyComponent(
     )
     return child
   elseif resolvedTag == ClassComponent then
-    if  _G.__DEV__ then
+    if  __DEV__ then
       Component = resolveClassForHotReloading(
         Component
       )
@@ -1392,7 +1396,7 @@ local function mountLazyComponent(
     )
     return child
   elseif resolvedTag == ForwardRef then
-    if  _G.__DEV__ then
+    if  __DEV__ then
       Component = resolveForwardRefForHotReloading(
         Component
       )
@@ -1407,7 +1411,7 @@ local function mountLazyComponent(
     )
     return child
   elseif resolvedTag == MemoComponent then
-    if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
+    if __DEV__ or __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
       if workInProgress.type ~= workInProgress.elementType then
         -- ROBLOX deviation: adds support for legacy Roact's validateProps()
         local outerPropTypes = Component.propTypes
@@ -1448,7 +1452,7 @@ local function mountLazyComponent(
   --   -- ROBLOX deviation: break
   end
   local hint = ''
-  if _G.__DEV__ then
+  if __DEV__ then
     if
       Component ~= nil and
       typeof(Component) == 'table' and
@@ -1554,7 +1558,7 @@ local function mountIndeterminateComponent(
   prepareToReadContext(workInProgress, renderLanes, exports.markWorkInProgressReceivedUpdate)
   local value
 
-  if _G.__DEV__ then
+  if __DEV__ then
     if
       -- deviation: Instead of checking for the prototype, see if Component is a
       -- table with a render function
@@ -1602,7 +1606,7 @@ local function mountIndeterminateComponent(
   -- React DevTools reads this flag.
   workInProgress.flags = bit32.bor(workInProgress.flags, PerformedWork)
 
-  if _G.__DEV__ then
+  if __DEV__ then
     -- Support for module components is deprecated and is removed behind a flag.
     -- Whether or not it would crash later, we want to show a good message in DEV first.
     if
@@ -1637,7 +1641,7 @@ local function mountIndeterminateComponent(
     typeof(value.render) == "function" and
     value["$$typeof"] == nil
   then
-    if _G.__DEV__ then
+    if __DEV__ then
       local componentName = getComponentName(Component) or "Unknown"
       if not DidWarn.didWarnAboutModulePatternComponent[componentName] then
         console.error(
@@ -1705,7 +1709,7 @@ local function mountIndeterminateComponent(
   else
     -- Proceed under the assumption that this is a function component
     workInProgress.tag = FunctionComponent
-    if _G.__DEV__ then
+    if __DEV__ then
       if disableLegacyContext and Component.contextTypes then
         console.error(
           "%s uses the legacy contextTypes API which is no longer supported. " ..
@@ -1738,7 +1742,7 @@ local function mountIndeterminateComponent(
       end
     end
     reconcileChildren(nil, workInProgress, value, renderLanes)
-    if _G.__DEV__ then
+    if __DEV__ then
       validateFunctionComponentInDev(workInProgress, Component)
     end
     return workInProgress.child
@@ -1746,7 +1750,7 @@ local function mountIndeterminateComponent(
 end
 
 function validateFunctionComponentInDev(workInProgress: Fiber, Component: any)
-  if  _G.__DEV__ then
+  if  __DEV__ then
     -- ROBLOX deviation: Lua doesn't allow fields on functions, so this never happens
     -- if Component then
     --   if Component.childContextTypes then
@@ -1893,7 +1897,7 @@ local function updateSuspenseComponent(current, workInProgress, renderLanes)
   local nextProps = workInProgress.pendingProps
 
   -- This is used by DevTools to force a boundary to suspend.
-  if  _G.__DEV__ then
+  if  __DEV__ then
     if shouldSuspend(workInProgress) then
       workInProgress.flags = bit32.bor(workInProgress.flags, DidCapture)
     end
@@ -2473,7 +2477,7 @@ function mountDehydratedSuspenseComponent(
   -- During the first pass, we'll bail out and not drill into the children.
   -- Instead, we'll leave the content in place and try to hydrate it later.
   if bit32.band(workInProgress.mode, BlockingMode) == NoMode then
-    if _G.__DEV__ then
+    if __DEV__ then
       console.error(
         'Cannot hydrate Suspense in legacy mode. Switch from' ..
           'ReactDOM.hydrate(element, container) to ' ..
@@ -2719,7 +2723,7 @@ end
 -- type SuspenseListRevealOrder = 'forwards' | 'backwards' | 'together' | void
 
 -- function validateRevealOrder(revealOrder: SuspenseListRevealOrder)
---   if  _G.__DEV__ then
+--   if  __DEV__ then
 --     if
 --       revealOrder ~= undefined and
 --       revealOrder ~= 'forwards' and
@@ -2774,7 +2778,7 @@ end
 --   tailMode: SuspenseListTailMode,
 --   revealOrder: SuspenseListRevealOrder,
 -- )
---   if  _G.__DEV__ then
+--   if  __DEV__ then
 --     if tailMode ~= undefined and !didWarnAboutTailOptions[tailMode])
 --       if tailMode ~= 'collapsed' and tailMode ~= 'hidden')
 --         didWarnAboutTailOptions[tailMode] = true
@@ -2797,7 +2801,7 @@ end
 -- end
 
 -- function validateSuspenseListNestedChild(childSlot: mixed, index: number)
---   if  _G.__DEV__ then
+--   if  __DEV__ then
 --     local isArray = Array.isArray(childSlot)
 --     local isIterable =
 --       !isArray and typeof getIteratorFn(childSlot) == 'function'
@@ -2823,7 +2827,7 @@ end
 --   children: mixed,
 --   revealOrder: SuspenseListRevealOrder,
 -- )
---   if  _G.__DEV__ then
+--   if  __DEV__ then
 --     if
 --       (revealOrder == 'forwards' or revealOrder == 'backwards') and
 --       children ~= undefined and
@@ -3064,7 +3068,7 @@ local function updateContextProvider(
 
   local newValue = newProps.value
 
-  if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
+  if __DEV__ or __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
     if Array.indexOf(Object.keys(newProps), "value") < 1 then
       if not hasWarnedAboutUsingNoValuePropOnContextProvider then
         hasWarnedAboutUsingNoValuePropOnContextProvider = true
@@ -3130,7 +3134,7 @@ function updateContextConsumer(
   -- reduce size and overhead. The separate object references context via
   -- a property called "_context", which also gives us the ability to check
   -- in DEV mode if this property exists or not and warn if it does not.
-  if  _G.__DEV__ then
+  if  __DEV__ then
     if (context :: any)._context == nil then
       -- This may be because it's a Context (rather than a Consumer).
       -- Or it may be because it's older React where they're the same thing.
@@ -3153,7 +3157,7 @@ function updateContextConsumer(
   -- ROBLOX deviation: compatibility for old Roact's context consumer API
   local render
   if newProps.render then
-    if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
+    if __DEV__ and __COMPAT_WARNINGS__ then
       if not hasWarnedAbout.usingLegacyConsumer then
         hasWarnedAbout.usingLegacyConsumer = true
         console.warn("Your Context.Consumer component is using legacy Roact syntax, which won't be supported in future versions of Roact. \n" ..
@@ -3170,7 +3174,7 @@ function updateContextConsumer(
     render = newProps.children
   end
 
-  if  _G.__DEV__ then
+  if  __DEV__ then
     if typeof(render) ~= 'function' then
       console.error(
         'A context consumer was rendered with multiple children, or a child ' ..
@@ -3184,7 +3188,7 @@ function updateContextConsumer(
   prepareToReadContext(workInProgress, renderLanes, exports.markWorkInProgressReceivedUpdate)
   local newValue = readContext(context, newProps.unstable_observedBits)
   local newChildren
-  if _G.__DEV__ then
+  if __DEV__ then
     ReactCurrentOwner.current = workInProgress
     setIsRendering(true)
     newChildren = render(newValue)
@@ -3261,7 +3265,7 @@ function remountFiber(
   oldWorkInProgress: Fiber,
   newWorkInProgress: Fiber
 ): Fiber | nil
-  if  _G.__DEV__ then
+  if  __DEV__ then
     local returnFiber = oldWorkInProgress.return_
     if returnFiber == nil then
       error('Cannot swap the root fiber.')
@@ -3332,7 +3336,7 @@ local function beginWork(
 ): Fiber?
   local updateLanes = workInProgress.lanes
 
-  if _G.__DEV__ then
+  if __DEV__ then
     if workInProgress._debugNeedsRemount and current ~= nil then
       -- This will restart the begin phase with a new fiber.
       return remountFiber(
@@ -3359,7 +3363,7 @@ local function beginWork(
       oldProps ~= newProps or
       hasLegacyContextChanged() or
       -- Force a re-render if the implementation changed due to hot reload:
-      if _G.__DEV__ then workInProgress.type ~= current.type else false
+      if __DEV__ then workInProgress.type ~= current.type else false
     then
       -- If props or context changed, mark the fiber as having performed work.
       -- This may be unset if the props are determined to be equal later (memo).
@@ -3627,7 +3631,7 @@ local function beginWork(
     local unresolvedProps = workInProgress.pendingProps
     -- Resolve outer props first, then resolve inner props.
     local resolvedProps = resolveDefaultProps(type, unresolvedProps)
-    if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
+    if __DEV__ or __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
       if workInProgress.type ~= workInProgress.elementType then
         -- ROBLOX deviation: adds support for legacy Roact's validateProps()
         local outerPropTypes

@@ -17,6 +17,8 @@ local function unimplemented(message: string)
   error("FIXME (roblox): " .. message .. " is unimplemented", 2)
 end
 
+local __DEV__ = _G.__DEV__
+local __YOLO__ = _G.__YOLO__
 -- ROBLOX DEVIATION: keep track of the pcall run depth and stop wrapping pcalls after we hit MAX_RUN_DEPTH.
 -- ROBLOX note: if this number is raised to 195, the test in RoactRecursiveLayoutPcallDepth will fail
 local runDepth = 0
@@ -244,7 +246,7 @@ local nearestProfilerOnStack: Fiber | nil = nil
 
 -- deviation: Not possible to return `undefined` in lua
 -- local didWarnAboutUndefinedSnapshotBeforeUpdate: Set<any>? = nil
--- if _G.__DEV__ then
+-- if __DEV__ then
 --   didWarnAboutUndefinedSnapshotBeforeUpdate = {}
 -- end
 
@@ -338,7 +340,7 @@ local function commitBeforeMutationLifeCycles(
         -- We could update instance props and state here,
         -- but instead we rely on them being set during last render.
         -- TODO: revisit this when we implement resuming.
-        if _G.__DEV__ then
+        if __DEV__ then
           if
             finishedWork.type == finishedWork.elementType and
             not didWarnAboutReassigningProps
@@ -372,7 +374,7 @@ local function commitBeforeMutationLifeCycles(
             or resolveDefaultProps(finishedWork.type, prevProps),
           prevState
         )
-        if _G.__DEV__ then
+        if __DEV__ then
           -- ROBLOX deviation: not possible to return `undefined` in Lua
           -- local didWarnSet = ((didWarnAboutUndefinedSnapshotBeforeUpdate: any): Set<mixed>)
           -- if snapshot == nil and not didWarnSet[finishedWork.type] then
@@ -452,7 +454,7 @@ local function commitHookEffectListMount(flags: HookFlags, finishedWork: Fiber)
         local create = effect.create
         effect.destroy = create()
 
-        if _G.__DEV__ then
+        if __DEV__ then
           local destroy = effect.destroy
           if destroy ~= nil and typeof(destroy) ~= 'function' then
             local addendum
@@ -562,7 +564,7 @@ local function recursivelyCommitLayoutEffects(
     while child ~= nil do
       local primarySubtreeFlags = bit32.band(finishedWork.subtreeFlags, LayoutMask)
       if primarySubtreeFlags ~= NoFlags then
-        if _G.__DEV__ then
+        if __DEV__ then
           local prevCurrentFiberInDEV = currentDebugFiberInDEV
           setCurrentDebugFiberInDEV(child)
           invokeGuardedCallback(
@@ -605,7 +607,7 @@ local function recursivelyCommitLayoutEffects(
     local primaryFlags = bit32.band(flags, bit32.bor(Update, Callback))
     if primaryFlags ~= NoFlags then
       if enableProfilerTimer then
-        if _G.__DEV__ then
+        if __DEV__ then
           local prevCurrentFiberInDEV = currentDebugFiberInDEV
           setCurrentDebugFiberInDEV(finishedWork)
           invokeGuardedCallback(
@@ -651,7 +653,7 @@ local function recursivelyCommitLayoutEffects(
     while child ~= nil do
       local primarySubtreeFlags = bit32.band(finishedWork.subtreeFlags, LayoutMask)
       if primarySubtreeFlags ~= NoFlags then
-        if _G.__DEV__ then
+        if __DEV__ then
           local prevCurrentFiberInDEV = ReactCurrentFiber.current
           setCurrentDebugFiberInDEV(child)
           --[[
@@ -687,7 +689,7 @@ local function recursivelyCommitLayoutEffects(
         else
           -- ROBLOX deviation: YOLO flag for disabling pcall
           local ok, error_
-          if not _G.__YOLO__ and runDepth < MAX_RUN_DEPTH then
+          if not __YOLO__ and runDepth < MAX_RUN_DEPTH then
             --[[
               ROBLOX DEVIATION: After MAX_RUN_DEPTH pcalls, do not wrap recursive calls in pcall. Otherwise, we hit the
               stack limit and get a stack overflow error.
@@ -889,7 +891,7 @@ function commitLayoutEffectsForClassComponent(finishedWork: Fiber)
       -- We could update instance props and state here,
       -- but instead we rely on them being set during last render.
       -- TODO: revisit this when we implement resuming.
-      if _G.__DEV__ then
+      if __DEV__ then
         if
           finishedWork.type == finishedWork.elementType and
           not didWarnAboutReassigningProps
@@ -944,7 +946,7 @@ function commitLayoutEffectsForClassComponent(finishedWork: Fiber)
       -- We could update instance props and state here,
       -- but instead we rely on them being set during last render.
       -- TODO: revisit this when we implement resuming.
-      if _G.__DEV__ then
+      if __DEV__ then
         if
           finishedWork.type == finishedWork.elementType and
           not didWarnAboutReassigningProps
@@ -1005,7 +1007,7 @@ function commitLayoutEffectsForClassComponent(finishedWork: Fiber)
   -- commit phase. Consider removing the type check.
   local updateQueue: UpdateQueue<any> | nil = finishedWork.updateQueue
   if updateQueue ~= nil then
-    if _G.__DEV__ then
+    if __DEV__ then
       if
         finishedWork.type == finishedWork.elementType and
         not didWarnAboutReassigningProps
@@ -1142,7 +1144,7 @@ function commitAttachRef(finishedWork: Fiber)
     if typeof(ref) == 'function' then
       ref(instanceToUse)
     else
-      if _G.__DEV__ then
+      if __DEV__ then
         -- ROBLOX FIXME: We won't be able to recognize a ref object by checking
         -- for the existence of the `current` key, since it won't be initialized
         -- at this point. We might consider using a symbol to uniquely identify
@@ -2041,7 +2043,7 @@ function commitSuspenseComponent(finishedWork: Fiber)
       if wakeables ~= nil then
         suspenseCallback(Object.assign({}, wakeables))
       end
-    elseif _G.__DEV__ then
+    elseif __DEV__ then
       if suspenseCallback ~= nil then
         console.error('Unexpected type for suspenseCallback: %s', tostring(suspenseCallback))
       end
@@ -2236,7 +2238,7 @@ local function commitPassiveMount(
 end
 
 function invokeLayoutEffectMountInDEV(fiber: Fiber): ()
-  if _G.__DEV__ and enableDoubleInvokingEffects then
+  if __DEV__ and enableDoubleInvokingEffects then
     if fiber.tag == FunctionComponent or
       fiber.tag == ForwardRef or
       fiber.tag == SimpleMemoComponent or
@@ -2267,7 +2269,7 @@ end
 
 
 function invokePassiveEffectMountInDEV(fiber: Fiber): ()
-  if _G.__DEV__ and enableDoubleInvokingEffects then
+  if __DEV__ and enableDoubleInvokingEffects then
     if fiber.tag == FunctionComponent or
       fiber.tag == ForwardRef or
       fiber.tag == SimpleMemoComponent or
@@ -2290,7 +2292,7 @@ end
 
 
 function invokeLayoutEffectUnmountInDEV(fiber: Fiber): ()
-  if _G.__DEV__ and enableDoubleInvokingEffects then
+  if __DEV__ and enableDoubleInvokingEffects then
     if fiber.tag == FunctionComponent or
       fiber.tag == ForwardRef or
       fiber.tag == SimpleMemoComponent or
@@ -2319,7 +2321,7 @@ function invokeLayoutEffectUnmountInDEV(fiber: Fiber): ()
 end
 
 function invokePassiveEffectUnmountInDEV(fiber: Fiber): ()
-  if _G.__DEV__ and enableDoubleInvokingEffects then
+  if __DEV__ and enableDoubleInvokingEffects then
     if fiber.tag == FunctionComponent or
       fiber.tag == ForwardRef or
       fiber.tag == SimpleMemoComponent or
