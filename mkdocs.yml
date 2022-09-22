@@ -49,5 +49,6 @@ markdown_extensions:
   - toc:
       permalink: true
   - pymdownx.superfences
-  - pymdownx.tabbed:
-      alternate_style: true
+  # FIXME: Add this back when the tabbed extension is supported by docs-deploy
+  # - pymdownx.tabbed:
+  #     alternate_style: false

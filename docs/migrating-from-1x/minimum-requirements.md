@@ -27,57 +27,57 @@ The `OptionButton` component is using a prop called `key` to pass through to its
 
 To fix this, we replace the use of the `key` prop with a prop with a different name.
 
-=== "Legacy"
-	```lua
-	local function OptionButton(props)
-		return Roact.createElement("TextButton", {
-			LayoutOrder = props.key,
-			Text = props.text,
-			[Roact.Event.Activated] = props.onClick,
-		})
-	end
+#### Legacy
+```lua
+local function OptionButton(props)
+	return Roact.createElement("TextButton", {
+		LayoutOrder = props.key,
+		Text = props.text,
+		[Roact.Event.Activated] = props.onClick,
+	})
+end
 
-	local function ButtonGroup(props)
-		return Roact.createFragment({
-			CancelButton = Roact.createElement(OptionButton, {
-				key = 1,
-				text = "Cancel",
-				onClick = props.cancelCallback,
-			})
-			ConfirmButton = Roact.createElement(OptionButton, {
-				key = 2,
-				text = "Confirm",
-				onClick = props.confirmCallback,
-			})
+local function ButtonGroup(props)
+	return Roact.createFragment({
+		CancelButton = Roact.createElement(OptionButton, {
+			key = 1,
+			text = "Cancel",
+			onClick = props.cancelCallback,
 		})
-	end
-	```
+		ConfirmButton = Roact.createElement(OptionButton, {
+			key = 2,
+			text = "Confirm",
+			onClick = props.confirmCallback,
+		})
+	})
+end
+```
 
-=== "Roact 17 Compatible"
-	```lua hl_lines="3 12 17"
-	local function OptionButton(props)
-		return Roact.createElement("TextButton", {
-			LayoutOrder = props.order,
-			Text = props.text,
-			[Roact.Event.Activated] = props.onClick,
-		})
-	end
+#### Roact 17 Compatible
+```lua hl_lines="3 12 17"
+local function OptionButton(props)
+	return Roact.createElement("TextButton", {
+		LayoutOrder = props.order,
+		Text = props.text,
+		[Roact.Event.Activated] = props.onClick,
+	})
+end
 
-	local function ButtonGroup(props)
-		return Roact.createFragment({
-			CancelButton = Roact.createElement(OptionButton, {
-				order = 1,
-				text = "Cancel",
-				onClick = props.cancelCallback,
-			})
-			ConfirmButton = Roact.createElement(OptionButton, {
-				order = 2,
-				text = "Confirm",
-				onClick = props.confirmCallback,
-			})
+local function ButtonGroup(props)
+	return Roact.createFragment({
+		CancelButton = Roact.createElement(OptionButton, {
+			order = 1,
+			text = "Cancel",
+			onClick = props.cancelCallback,
 		})
-	end
-	```
+		ConfirmButton = Roact.createElement(OptionButton, {
+			order = 2,
+			text = "Confirm",
+			onClick = props.confirmCallback,
+		})
+	})
+end
+```
 
 You can see a full example of a migration away from reserved keys in [this UIBlox PR](https://github.com/Roblox/uiblox/pull/368).
 
@@ -102,77 +102,77 @@ Generally, you'll take the following steps:
 
 Suppose we have a `style` object that must be provided to all children of our app. We define it in our top-level `App` component and read from it in our `Label` component.
 
-=== "Legacy"
-	```lua
-	local AppStyle = require(script.Parent.AppStyle)
+#### Legacy
+```lua
+local AppStyle = require(script.Parent.AppStyle)
 
-	local Label = Roact.Component:extend("Label")
+local Label = Roact.Component:extend("Label")
 
-	function Label:init()
-		-- reading style from context
-		self.style = self._context.style
-	end
+function Label:init()
+	-- reading style from context
+	self.style = self._context.style
+end
 
-	function Label:render()
-		return Roact.createElement("TextLabel", {
-			BackgroundColor3 = self.style.LabelColor,
-			Text = props.text,
+function Label:render()
+	return Roact.createElement("TextLabel", {
+		BackgroundColor3 = self.style.LabelColor,
+		Text = props.text,
+	})
+end
+
+local App = Roact.Component:extend("App")
+
+function App:init()
+	-- defining style in context
+	self._context.style = AppStyle
+end
+
+function App:render()
+	return Roact.createElement("Frame", {
+		Size = UDim2.fromScale(1, 1)
+	}, {
+		Start = Roact.createElement(Button, {
+			text = "Hello World",
 		})
-	end
+	})
+end
+```
 
-	local App = Roact.Component:extend("App")
+#### Roact 17 Compatible
+```lua hl_lines="3 8-9 11 14-15 21-24 31"
+local AppStyle = require(script.Parent.AppStyle)
 
-	function App:init()
-		-- defining style in context
-		self._context.style = AppStyle
-	end
+local StyleContext = Roact.createContext(nil)
 
-	function App:render()
-		return Roact.createElement("Frame", {
+local Label = Roact.Component:extend("Label")
+
+function Label:render()
+	return Roact.createElement(StyleContext.Consumer, {
+		render = function(style)
+			return Roact.createElement("TextLabel", {
+				BackgroundColor3 = style.LabelColor,
+				Text = props.text,
+			})
+		end
+	})
+end
+
+local App = Roact.Component:extend("App")
+
+function App:render()
+	return Roact.createElement(StyleContext.Provider, {
+		value = AppStyle,
+	}, {
+		App = Roact.createElement("Frame", {
 			Size = UDim2.fromScale(1, 1)
 		}, {
 			Start = Roact.createElement(Button, {
 				text = "Hello World",
 			})
 		})
-	end
-	```
-
-=== "Roact 17 Compatible"
-	```lua hl_lines="3 8-9 11 14-15 21-24 31"
-	local AppStyle = require(script.Parent.AppStyle)
-
-	local StyleContext = Roact.createContext(nil)
-
-	local Label = Roact.Component:extend("Label")
-
-	function Label:render()
-		return Roact.createElement(StyleContext.Consumer, {
-			render = function(style)
-				return Roact.createElement("TextLabel", {
-					BackgroundColor3 = style.LabelColor,
-					Text = props.text,
-				})
-			end
-		})
-	end
-
-	local App = Roact.Component:extend("App")
-
-	function App:render()
-		return Roact.createElement(StyleContext.Provider, {
-			value = AppStyle,
-		}, {
-			App = Roact.createElement("Frame", {
-				Size = UDim2.fromScale(1, 1)
-			}, {
-				Start = Roact.createElement(Button, {
-					text = "Hello World",
-				})
-			})
-		})
-	end
-	```
+	})
+end
+```
 
 You can see a full example of a migration to the `createContext` API in [this Lua Apps PR](https://github.com/Roblox/lua-apps/pull/3612).
 
@@ -195,31 +195,31 @@ Fortunately, this can be easily fixed with the [`forwardRef` function](https://r
 
 Suppose we have a `FancyTextBox` component that accepts a ref, and passes it on to an underlying `TextBox`. Rather than accepting the `[Roact.Ref]` prop, we should use the `Roact.forwardRef` wrapper to explicitly accept a ref and assign it to the `TextBox`.
 
-=== "Legacy"
-	```lua
-	local function FancyButton(props)
-		return Roact.createElement("TextBox", {
-			PlaceholderText = "Enter your text here",
-			PlaceholderColor3 = Color3.new(0.4, 0.4, 0.4),
-			[Roact.Change.Text] = props.onTextChange,
-			-- Implicitly forwarding a ref via the `Roact.Ref` prop
-			[Roact.Ref] = props[Roact.Ref],
-		})
-	end
-	```
+#### Legacy
+```lua
+local function FancyButton(props)
+	return Roact.createElement("TextBox", {
+		PlaceholderText = "Enter your text here",
+		PlaceholderColor3 = Color3.new(0.4, 0.4, 0.4),
+		[Roact.Change.Text] = props.onTextChange,
+		-- Implicitly forwarding a ref via the `Roact.Ref` prop
+		[Roact.Ref] = props[Roact.Ref],
+	})
+end
+```
 
-=== "Roact 17 Compatible"
-	```lua hl_lines="1 6-7"
-	local FancyButton = Roact.forwardRef(function(props, ref)
-		return Roact.createElement("TextBox", {
-			PlaceholderText = "Enter your text here",
-			PlaceholderColor3 = Color3.new(0.4, 0.4, 0.4),
-			[Roact.Change.Text] = props.onTextChange,
-			-- Explicitly forwarding a ref passed in via `forwardRef`
-			[Roact.Ref] = ref,
-		})
-	end)
-	```
+#### Roact 17 Compatible
+```lua hl_lines="1 6-7"
+local FancyButton = Roact.forwardRef(function(props, ref)
+	return Roact.createElement("TextBox", {
+		PlaceholderText = "Enter your text here",
+		PlaceholderColor3 = Color3.new(0.4, 0.4, 0.4),
+		[Roact.Change.Text] = props.onTextChange,
+		-- Explicitly forwarding a ref passed in via `forwardRef`
+		[Roact.Ref] = ref,
+	})
+end)
+```
 
 You can see a full example of `forwardRef` migration in [this UIBlox PR](https://github.com/Roblox/uiblox/pull/275).
 
