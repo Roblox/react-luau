@@ -8,7 +8,7 @@ If you want **to find out if a React feature is present in Roact (and if there a
 
 If you're familiar with React and want **to learn where Roact differs**, start with the [Deviations page](deviations.md).
 
-And if you want **to migrate an existing project from Roact 1.x to Roact 17+**, check out the guide on [Migrating From Roact 1.x](migrating-from-roact-1x.md).
+And if you want **to migrate an existing project from Roact 1.x to Roact 17+**, check out the guide on [Migrating From Roact 1.x](migrating-from-1x/minimum-requirements.md).
 
 ### Which Part is "Roact"?
 

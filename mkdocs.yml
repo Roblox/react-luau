@@ -25,9 +25,13 @@ plugins:
 
 nav:
   - Home: index.md
-  - Migrating From 1.x: migrating-from-roact-1x.md
   - Deviations: deviations.md
   - Configuration: configuration.md
+  - Migrating From 1.x:
+    - Minimum Requirements: migrating-from-1x/minimum-requirements.md
+    - Add Roact 17 Dependency: migrating-from-1x/upgrading-to-roact-17.md
+    - Adopt New Features: migrating-from-1x/adopt-new-features.md
+    - Convert Legacy Conventions: migrating-from-1x/convert-legacy-conventions.md
   - API Reference:
     - React: api-reference/react.md
     - ReactRoblox: api-reference/react-roblox.md
@@ -45,3 +49,5 @@ markdown_extensions:
   - toc:
       permalink: true
   - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true

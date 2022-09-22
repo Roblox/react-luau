@@ -5,7 +5,7 @@ While Roact has been architected to align with React JS's APIs and idioms, a sma
 * Supporting features from legacy Roact that are not in React JS
 * Easier adoption of Roact 17+ by users of legacy Roact
 
-The following list attempts to comprehensively describe all of the differences between Roact 17+ and its equivalent upstream version in React JS. It is intended to be a companion to the [Roact 17 adoption guide](migrating-from-roact-1x.md), which focuses more on the differences between legacy Roact and Roact 17+.
+The following list attempts to comprehensively describe all of the differences between Roact 17+ and its equivalent upstream version in React JS. It is intended to be a companion to the [Roact 17 adoption guide](migrating-from-1x/adopt-new-features.md), which focuses more on the differences between legacy Roact and Roact 17+.
 
 ## JSX
 
@@ -75,6 +75,7 @@ To address this and support the same API as React JS, Roact 17 introduces two mi
 * If a dependency array changes in length, we assume the developer provided an array ending with one or more nil-able values, and we **suppress the warning**
 
 Hooks affected:
+
 * `useEffect`
 * `useLayoutEffect`
 * `useMemo`
