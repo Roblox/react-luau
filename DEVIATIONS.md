@@ -4,7 +4,7 @@ Upstream naming and logic has some deviations and incompatibilities with existin
 
 #### Table of Contents
 * [Naming](#naming)
-  * [Component Lifecycle](#component-lifecycle) ✔️
+  * [Component Lifecycle](#component-lifecycle) c
   * [Reserved Prop Keys: "ref"](#reserved-prop-keys-ref) ✔️
   * [Reserved Prop Keys: "key"](#reserved-prop-keys-key) ✔️
   * [Reserved Prop Keys: "children"](#reserved-prop-keys-children) ✔️
@@ -15,15 +15,15 @@ Upstream naming and logic has some deviations and incompatibilities with existin
   * [Ref Forwarding](#ref-forwarding)
   * [Stable Keys](#stable-keys) ✔️
   * [Use of setState](#use-of-setstate) ✔️
-  * [Functional setState](#functional-setstate)
+  * [Functional setState](#functional-setstate) ✔️
   * [Roact.Portal](#roactportal) ✔️
-  * [State Initialization](#state-initialization)
+  * [State Initialization](#state-initialization) ✔️
   * [Functional setState Signature](#functional-setstate-signature) ✔️
 
 ## Naming
 
 ### Component Lifecycle
-**Status:** ✔️ Resolved
+**Status:** ✔️ Resolved (backwards compatible with deprecation warnings)
 <details>
   <summary>Details</summary>
 
@@ -124,7 +124,7 @@ However, we may instead consider providing a `Roact.Key` symbol key that can be 
 For any approach to stable key assignment, we should additionally support Roact's approach. This alignment effort should be considered in tandem with that of [stable keys](#stable-keys)
 
 ### Reserved Prop Keys: "children"
-**Status:** ✔️ Resolved
+**Status:** ✔️ Resolved (consumers updated to comply)
 <details>
 Upstream React [reserves the prop key "children"](https://reactjs.org/docs/glossary.html#propschildren). In Roact the "children" key is replaced by a Symbol exported as part of the API and applied as a prop with the key `[Roact.Children]`. This means that there's no need to reserve a key, because the key is already unique and has a special meaning.
 
@@ -201,7 +201,7 @@ We'll likely have to modernize all existing uses of `_context` to instead use th
 This is likely the biggest refactor effort that the Lua Apps adoption is contingent on. It also incurs some knock-on efforts on projects that the App depends upon, like [roact-rodux](https://github.com/roblox/roact-rodux/issues/26), which has some work completed, [but with unaddressed backwards compatibility problems](https://github.com/Roblox/roact-rodux/pull/38#issuecomment-644902307).
 
 ### Context.Consumer Interface
-**Status:** ✔️ Resolved
+**Status:** ✔️ Resolved (backwards compatible with deprecation warnings)
 <details>
   <summary>Details</summary>
 
@@ -214,14 +214,14 @@ We've provided support for both interfaces. Resolution and more info at https://
 </details>
 
 ### validateProps
-**Status:** ✔️ Resolved
+**Status:** ✔️ Resolved (backwards compatible)
 <details>
 #### Implemented Alignment
 Roact 17 supports both validateProps. `checkPropTypes` method was expanded to include logic for validateProps. For full details, see [#131](https://github.com/Roblox/roact-alignment/pull/131).
 </details>
 
 ### createFragment
-**Status:** ✔️ Resolved
+**Status:** ✔️ Resolved (backwards compatible with deprecation warnings)
 <details>
   <summary>Details</summary>
 
@@ -498,7 +498,7 @@ root.render(Roact.createElement(Foo, nil,
 </details>
 
 ### Use of setState
-**Status:** ✔️ Resolved
+**Status:** ✔️ Resolved (aligned to legacy Roact)
 <details>
   <summary>Details</summary>
 
@@ -588,8 +588,13 @@ Alternatively, we might consider:
 * Align all existing usages, modifying them to accept `self` as their first argument. While this seems reasonable on the surface, there are serious caveats. Since lua and js have different mechanisms of defining and calling methods with `self`, the exact _behavior_ will be more similar to upstream, but the _API_ will deviate and need to be called out in documentation. We'd likely also want to add additional warnings to detect expected misuses.
 * Perform some trickery with `setfenv` to allow the arguments to be in the same place, but `self` to be accessible. This is ugly, because it won't be understood by linting and I don't actually know how it will interact with shadowing/closures. As far as I'm concerned, this is a non-option, but it's worth calling out for thoroughness.
 
+#### Implemented Alignment Strategy
+We opted to align to legacy roact in our code to reduce impact on adoption. There remains no known use case for explicit injection of `self`, especially when closing over `self` is trivial.
+
+This strategy was implemented in https://github.com/Roblox/roact-alignment/pull/160
+
 ### Roact.Portal
-**Status:** ✔️ Resolved (backwards compatible)
+**Status:** ✔️ Resolved (backwards compatible with deprecation warnings)
 <details>
   <summary>Details</summary>
 
@@ -636,7 +641,7 @@ We should create a special component called `Portal`, expose it via our compatib
 </details>
 
 ### State Initialization
-**Status:** ❔ Alignment Strategy TBD
+**Status:**  Alignment Strategy TBD
 
 In Roact, ["stateful" components](https://roblox.github.io/roact/guide/state-and-lifecycle/) (equivalent of React's "class" components) will automatically initialize their state value to an empty table if it is not assigned via `init` or `getDerivedStateFromProps`.
 
@@ -680,8 +685,10 @@ end
 #### In Production Code
 It's difficult to find where this is relied upon in production!
 
-#### Proposed Alignment Strategy
-We should adopt Roact's behavior to provide less likelihood of runtime surprises.
+#### Alignment Strategy
+Accessing uninitialized state may not be strictly wrong, but it is still a code smell. To encourage proper state initialization, we introduced a compoatibility layer: a singleton `UninitializedState` sentinel object that provides a useful error when accessed in dev mode, and should work just like an empty table in non-dev. 
+
+The solution was implemented here: https://github.com/Roblox/roact-alignment/pull/155
 
 ### Functional setState Signature
 **Status:** ✔️ Resolved (minor deviation from upstream)
