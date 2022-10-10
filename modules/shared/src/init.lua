@@ -72,8 +72,8 @@ export type React_AbstractComponent<Config, Instance> = flowtypes.React_Abstract
 	Config,
 	Instance
 >
-export type React_ComponentType<Config> = flowtypes.React_AbstractComponent<Config, any>
-export type React_PureComponent<Props, State = nil> = flowtypes.React_Component<
+export type React_ComponentType<Config> = flowtypes.React_ComponentType<Config>
+export type React_PureComponent<Props, State = nil> = flowtypes.React_PureComponent<
 	Props,
 	State
 >

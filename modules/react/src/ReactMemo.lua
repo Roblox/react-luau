@@ -69,7 +69,7 @@ exports.memo = function<Props, T>(
 				and (type_)["$$typeof"] == REACT_ELEMENT_TYPE
 			then
 				typeString = string.format("<%s />",
-					getComponentName((type_).type) or "UNKNOWN"
+					getComponentName((type_ :: any).type) or "UNKNOWN"
 				)
 				info =
 					" Did you accidentally export a JSX literal or Element instead of a component?"

@@ -68,7 +68,8 @@ return function()
 					return { default = Component }
 				end)
 			end)
-			local MemoComponent = React.memo(Component)
+			-- ROBLOX FIXME: Should memo accept a LazyComponent?
+			local MemoComponent = React.memo(Component :: any)
 			local Context = React.createContext(false)
 
 			jestExpect(ReactIs.isValidElementType("div")).toEqual(true)

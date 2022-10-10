@@ -14,6 +14,7 @@ local Array = LuauPolyfill.Array
 type Array<T> = LuauPolyfill.Array<T>
 local Boolean = LuauPolyfill.Boolean
 local Object = LuauPolyfill.Object
+type Object = LuauPolyfill.Object
 local console = require(Packages.Shared).console
 local inspect = LuauPolyfill.util.inspect
 type Function = (...any) -> ...any
@@ -22,6 +23,7 @@ type Function = (...any) -> ...any
 local ReactTypes = require(Packages.Shared)
 type React_StatelessFunctionalComponent<P> = ReactTypes.React_StatelessFunctionalComponent<P>
 type React_ComponentType<P> = ReactTypes.React_ComponentType<P>
+type React_Element<ElementType> = ReactTypes.React_Element<ElementType>
 type React_ElementProps<ElementType> = ReactTypes.React_ElementProps<ElementType>
 type ReactElement<P, T> = ReactTypes.ReactElement<P, T>
 type React_Node = ReactTypes.React_Node
@@ -159,7 +161,7 @@ end
 --  * @param {*} tableKey ROBLOX deviation: key provided by the children table
 --  */
 -- ROBLOX deviation START: add explicit optional table key parameter, move key check to after we mark it validated, since we may not have an explicit key (and will use tableKey to validate)
-local function validateExplicitKey(element: ReactElement<any, any>, parentType, tableKey: any?)
+local function validateExplicitKey<P>(element: ReactElement<P, any>, parentType, tableKey: any?)
 	if element._store == nil or element._store.validated then
 		return
 	end
@@ -241,7 +243,7 @@ local function validateChildKeys(node, parentType)
 		for i = 1, #node do
 			local child = node[i]
 			if isValidElement(child) then
-				validateExplicitKey(child, parentType)
+				validateExplicitKey(child :: ReactElement<any, any>, parentType)
 			end
 		end
 	elseif isValidElement(node) then
@@ -275,7 +277,7 @@ end
 --  *
 --  * @param {ReactElement} element
 --  */
-local function validatePropTypes(element)
+local function validatePropTypes<P>(element: ReactElement<P, any>)
 	if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
 		local type = element.type
 		if type == nil or typeof(type) == "string" then
@@ -325,7 +327,7 @@ end
 --  * Given a fragment, validate that it can only be provided with fragment props
 --  * @param {ReactElement} fragment
 --  */
-local function validateFragmentProps(fragment)
+local function validateFragmentProps<P>(fragment: ReactElement<P & Object, any>)
 	if _G.__DEV__ then
 		local keys = Object.keys(fragment.props)
 		for i = 1, #keys do
@@ -524,7 +526,7 @@ local function createElementWithValidation<P, T>(
 		elseif Array.isArray(type_) then
 			typeString = "array"
 		elseif type_ ~= nil and typeof(type_) == "table" and type_["$$typeof"] == REACT_ELEMENT_TYPE then
-			typeString = string.format("<%s />", getComponentName(type_.type) or "Unknown")
+			typeString = string.format("<%s />", getComponentName((type_ :: any).type) or "Unknown")
 			info ..= " Did you accidentally export a JSX literal or Element instead of a component?"
 		else
 			typeString = typeof(type_)

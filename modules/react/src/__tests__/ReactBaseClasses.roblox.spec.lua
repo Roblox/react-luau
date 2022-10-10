@@ -12,7 +12,7 @@ return function()
             component = Component:extend("Sheev")
 
             jestExpect(function()
-                component:extend("Frank")
+                (component :: any):extend("Frank")
             end).toThrow()
         end)
 
@@ -31,7 +31,7 @@ return function()
             component = PureComponent:extend("Sheev")
 
             jestExpect(function()
-                component:extend("Frank")
+                (component :: any):extend("Frank")
             end).toThrow()
         end)
 

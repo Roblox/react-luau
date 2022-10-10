@@ -445,6 +445,7 @@ return function()
 			end
 			function NoopErrorBoundary.getDerivedStateFromError()
 				Scheduler.unstable_yieldValue("NoopErrorBoundary static getDerivedStateFromError")
+				return nil
 			end
 
 			Normal = React.Component:extend("Normal")
@@ -2381,7 +2382,7 @@ return function()
 			})
 
 			local function Wrapper()
-				return React.createElement(Throws)
+				return React.createElement(Throws :: any)
 			end
 
 			root.render(React.createElement(ErrorBoundary, nil, React.createElement(Wrapper)))

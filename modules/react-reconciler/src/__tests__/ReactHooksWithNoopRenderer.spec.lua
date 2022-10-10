@@ -2264,7 +2264,7 @@ return function()
 				-- Create a list of deps for each non-'.' character, like:
 				-- { "A", nil, nil, nil, nil } or { nil, nil, nil, nil, "E" }
 				for i, char in string.split(props.deps, "") do
-					deps[i] = if char ~= "." then char else nil 
+					deps[i] = if char ~= "." then char else nil
 				end
 				useEffect(function()
 					Scheduler.unstable_yieldValue("Did create [" .. props.deps .. "]")
@@ -2295,7 +2295,7 @@ return function()
 					jestExpect(ReactNoop.getChildren()).toEqual({ span("A...E") })
 				end)
 			end).toErrorDev({--[[no errors]]})
-			
+
 			jestExpect(Scheduler).toHaveYielded({
 				"Did destroy [A....]",
 				"Did create [A...E]",
@@ -2310,7 +2310,7 @@ return function()
 					jestExpect(ReactNoop.getChildren()).toEqual({ span("ABCDE") })
 				end)
 			end).toErrorDev({--[[no errors]]})
-			
+
 			jestExpect(Scheduler).toHaveYielded({
 				"Did destroy [A...E]",
 				"Did create [ABCDE]",
@@ -3401,7 +3401,7 @@ return function()
 
 			function ErrorBoundary.getDerivedStateFromError(errorMsg)
 				Scheduler.unstable_yieldValue("ErrorBoundary static getDerivedStateFromError")
-				return { errorMsg }
+				return { error = errorMsg }
 			end
 
 			-- deviation: raised to be above where its used
@@ -3572,7 +3572,7 @@ return function()
 				-- Create a list of deps for each non-'.' character, like:
 				-- { "A", nil, nil, nil, nil } or { nil, nil, nil, nil, "E" }
 				for i, char in string.split(props.input, "") do
-					deps[i] = if char ~= "." then char else nil 
+					deps[i] = if char ~= "." then char else nil
 				end
 				local count, updateCount = useState(0)
 				local increment = useCallback(function()
@@ -3775,7 +3775,7 @@ return function()
 				-- Create a list of deps for each non-'.' character, like:
 				-- { "A", nil, nil, nil, nil } or { nil, nil, nil, nil, "E" }
 				for i, char in string.split(props.input, "") do
-					deps[i] = if char ~= "." then char else nil 
+					deps[i] = if char ~= "." then char else nil
 				end
 				local computed = useMemo(function()
 					return props.compute(props.input)

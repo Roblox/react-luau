@@ -331,6 +331,7 @@ return function()
 					shouldUpdateCount += 1
 					return result
 				end)()
+				return false
 			end
 			function Component:componentDidUpdate()
 				(function()
@@ -886,7 +887,7 @@ return function()
 
 			jestExpect(function()
 				jestExpect(function()
-					component:setState({}, "no")
+					component:setState({}, "no" :: any)
 				end).toErrorDev(
 					"setState(...): Expected the last optional `callback` argument to be "
 						.. "a function. Instead received: no.",
@@ -902,7 +903,7 @@ return function()
 
 			jestExpect(function()
 				jestExpect(function()
-					component:setState({}, invalidCallback)
+					component:setState({}, invalidCallback :: any)
 				end).toErrorDev(
 					"setState(...): Expected the last optional `callback` argument to be "
 						.. "a function. Instead received: table."
@@ -915,7 +916,7 @@ return function()
 			-- Make sure the warning is deduplicated and doesn't fire again
 			ReactTestRenderer.create(React.createElement(A))
 			jestExpect(function()
-				component:setState({}, invalidCallback)
+				component:setState({}, invalidCallback :: any)
 			end).toThrowError(
 				"Invalid argument passed as callback. Expected a function. Instead "
 					.. "received: table"
@@ -941,7 +942,7 @@ return function()
 
 			jestExpect(function()
 				jestExpect(function()
-					component:forceUpdate("no")
+					component:forceUpdate("no" :: any)
 				end).toErrorDev(
 					"forceUpdate(...): Expected the last optional `callback` argument to be "
 						.. "a function. Instead received: no.",
@@ -957,7 +958,7 @@ return function()
 
 			jestExpect(function()
 				jestExpect(function()
-					component:forceUpdate(invalidCallback)
+					component:forceUpdate(invalidCallback :: any)
 				end).toErrorDev(
 					"forceUpdate(...): Expected the last optional `callback` argument to be "
 						.. "a function. Instead received: table."
@@ -970,7 +971,7 @@ return function()
 			-- Make sure the warning is deduplicated and doesn't fire again
 			ReactTestRenderer.create(React.createElement(A))
 			jestExpect(function()
-				component:forceUpdate(invalidCallback)
+				component:forceUpdate(invalidCallback :: any)
 			end).toThrowError(
 				"Invalid argument passed as callback. Expected a function. Instead "
 					.. "received: table"

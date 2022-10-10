@@ -1123,8 +1123,8 @@ return function()
 					num = state.num * props.multiplier,
 				}
 			end
-			local function callback(self)
-				self:setState({ called = true })
+			local function callback()
+				instance:setState({ called = true })
 			end
 
 			ReactNoop.render(React.createElement(Foo, { multiplier = 2 }))
@@ -1627,7 +1627,9 @@ return function()
 			function Parent.getDerivedStateFromProps(props, prevState)
 				Scheduler.unstable_yieldValue("getDerivedStateFromProps")
 
-				return prevState.parentRenders .. 1
+				return {
+					parentRenders = prevState.parentRenders .. 1
+				}
 			end
 			function Parent:render()
 				Scheduler.unstable_yieldValue("Parent")
@@ -2654,7 +2656,7 @@ return function()
 			local MyComponent = React.Component:extend("MyComponent")
 			MyComponent.contextTypes = {}
 
-			function MyComponent:componentDidMount(prevProps, prevState)
+			function MyComponent:componentDidMount()
 				Scheduler.unstable_yieldValue("componentDidMount")
 				self:setState({ setStateInCDU = true })
 			end

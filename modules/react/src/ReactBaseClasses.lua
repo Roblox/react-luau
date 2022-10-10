@@ -107,8 +107,12 @@ local componentClassMetatable = {
   end,
 }
 
--- ROBLOX FIXME Luau: TypeError: Type '{ @metatable componentClassMetatable, Component }' could not be converted into 't1 where t1 = { @metatable {|  |}, t1 }'
-local Component = setmetatable({__componentName = "Component"}, componentClassMetatable) :: any
+-- ROBLOX deviation: Extend needs to be a table field for our top-level interface
+type React_BaseComponent = React_Component<any, any> & {
+  extend: (self: React_BaseComponent, name: string) -> React_Component<any, any>,
+}
+
+local Component = (setmetatable({__componentName = "Component"}, componentClassMetatable) :: any) :: React_BaseComponent
 
 -- ROBLOX deviation: Lua doesn't expose inheritance in a class-syntax way
 --[[
@@ -257,7 +261,7 @@ function Component:extend(name): React_Component<any, any>
   end
 
 
-  setmetatable(class, getmetatable(self))
+  setmetatable(class, getmetatable((self :: any)))
 
   return (class :: any) :: React_Component<any, any>
 end
@@ -329,7 +333,7 @@ if _G.__DEV__ then
   } :: any
 
   local defineDeprecationWarning = function (methodName, info)
-    Component[methodName] =
+    (Component :: any)[methodName] =
       function()
         console.warn('%s(...) is deprecated in plain JavaScript React classes. %s', info[1], info[2])
         return nil
@@ -350,13 +354,13 @@ end
 -- class inheritance
 
 -- ROBLOX FIXME Luau: this is so we get *some* type checking despite the FIXME Luau above
-local PureComponent = Component:extend("PureComponent") :: React_Component<any, any>
+local PureComponent = Component:extend("PureComponent") :: React_BaseComponent
 
 -- When extend()ing a component, you don't get an extend method.
 -- This is to promote composition over inheritance.
 -- PureComponent is an exception to this rule.
 -- ROBLOX FIXME Luau: this is so we get *some* type checking despite the FIXME Luau above
-(PureComponent :: any).extend = Component.extend :: (string) -> React_Component<any, any>
+(PureComponent :: any).extend = Component.extend
 
 -- ROBLOX note: We copy members directly from the Component prototype above; we
 -- don't need to redefine the constructor or do dummy function trickery to apply

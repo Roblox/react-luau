@@ -73,28 +73,32 @@ export type React_Component<Props, State = nil> = {
 	setState: (
 		self: React_Component<Props, State>,
 		partialState: State | ((State, Props) -> State?),
-		callback: (() -> any)?
+		callback: (() -> ())?
 	) -> (),
 
-	forceUpdate: (callback: ((() -> ())?)) -> (),
+	forceUpdate: (self: React_Component<Props, State>, callback: (() -> ())?) -> (),
 
 	-- lifecycle methods
 
-	init: ((props: Props?, context: any?) -> ())?,
+	init: ((
+		self: React_Component<Props, State>,
+		props: Props,
+		context: any?
+	) -> ())?,
 	render: (self: React_Component<Props, State>) -> React_Node,
-	componentWillMount: ((self: React_Component<Props, State>) -> any)?,
-	UNSAFE_componentWillMount: ((self: React_Component<Props, State>) -> any)?,
-	componentDidMount: ((self: React_Component<Props, State>) -> any)?,
+	componentWillMount: ((self: React_Component<Props, State>) -> ())?,
+	UNSAFE_componentWillMount: ((self: React_Component<Props, State>) -> ())?,
+	componentDidMount: ((self: React_Component<Props, State>) -> ())?,
 	componentWillReceiveProps: ((
 		self: React_Component<Props, State>,
 		nextProps: Props,
 		nextContext: any
-	) -> any)?,
+	) -> ())?,
 	UNSAFE_componentWillReceiveProps: ((
 		self: React_Component<Props, State>,
 		nextProps: Props,
 		nextContext: any
-	) -> any)?,
+	) -> ())?,
 	shouldComponentUpdate: ((
 		self: React_Component<Props, State>,
 		nextProps: Props,
@@ -106,45 +110,53 @@ export type React_Component<Props, State = nil> = {
 		nextProps: Props,
 		nextState: State,
 		nextContext: any
-	) -> any)?,
+	) -> ())?,
 	UNSAFE_componentWillUpdate: ((
 		self: React_Component<Props, State>,
 		nextProps: Props,
 		nextState: State,
 		nextContext: any
-	) -> any)?,
+	) -> ())?,
 	componentDidUpdate: ((
 		self: React_Component<Props, State>,
 		prevProps: Props,
 		prevState: State,
 		prevContext: any
-	) -> any)?,
-	componentWillUnmount: ((self: React_Component<Props, State>) -> any)?,
+	) -> ())?,
+	componentWillUnmount: ((self: React_Component<Props, State>) -> ())?,
 	componentDidCatch: ((
 		self: React_Component<Props, State>,
 		error: Error,
 		info: {
 			componentStack: string,
 		}
-	) -> any)?,
-	getDerivedStateFromProps: ((props: Props, state: State) -> any)?,
-	getDerivedStateFromError: ((error: Error) -> any)?,
+	) -> ())?,
+	getDerivedStateFromProps: ((props: Props, state: State) -> State?)?,
+	getDerivedStateFromError: ((error: Error) -> State?)?,
+	getSnapshotBeforeUpdate: ((props: Props, state: State) -> any)?,
 
 	-- long tail of other stuff not modeled very well
 
+	-- ROBLOX deviation START: these fields are mostly used internally including in ReactBaseClasses
+	__refs: Object,
+	__updater: any,
+	-- ROBLOX deviation END
+
 	-- ROBLOX deviation: this field is only used in relation to string refs, which we do not support
 	-- refs: any,
-	-- context: any,
+	context: any,
 	getChildContext: (self: React_Component<Props, State>) -> any,
 	-- statics
 	__componentName: string,
 	displayName: string?,
+	-- ROBLOX deviation: not in React flowtype, but is in definitelytyped and is used in ReactElement
+	name: string?,
 	childContextTypes: any?,
 	contextTypes: any?,
 	propTypes: any?,
 
 	-- ROBLOX FIXME: this is a legacy Roact field and should be removed in React 18 Lua
-	validateProps: (Props) -> (boolean, string?)?,
+	validateProps: ((Props) -> (boolean, string?))?,
 
 	-- We don't add a type for `defaultProps` so that its type may be entirely
 	-- inferred when we diff the type for `defaultProps` with `Props`. Otherwise
@@ -161,9 +173,9 @@ export type React_StatelessFunctionalComponent<Props> = (
 	props: Props,
 	context: any
 ) -> React_Node
-export type React_ComponentType<Config> = React_AbstractComponent<Config, any>
+export type React_ComponentType<Config> = React_Component<Config, any>
 
-export type React_ElementType = string | React_AbstractComponent<any, any>
+export type React_ElementType = string | React_Component<any, any>
 
 -- This was reverse engineered from usage, no specific flowtype or TS artifact
 export type React_ElementProps<ElementType> = {

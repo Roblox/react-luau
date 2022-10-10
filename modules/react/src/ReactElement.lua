@@ -16,6 +16,7 @@ local console = require(Packages.Shared).console
 local ReactTypes = require(Packages.Shared)
 type React_StatelessFunctionalComponent<P> = ReactTypes.React_StatelessFunctionalComponent<P>
 type React_ComponentType<P> = ReactTypes.React_ComponentType<P>
+type React_AbstractComponent<P, T> = ReactTypes.React_AbstractComponent<P, T>
 type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
 type React_ElementProps<ElementType> = ReactTypes.React_ElementProps<ElementType>
 type React_Node = ReactTypes.React_Node
@@ -391,7 +392,7 @@ end
 -- 	props?: Attributes & P | null,
 -- 	...children: ReactNode[]): ReactElement<P>;
 local function createElement<P, T>(
-	type_: React_StatelessFunctionalComponent<P> | React_ComponentType<P> | ReactContext<any> | LazyComponent<T, P> | ReactProviderType<any> | string,
+	type_: React_StatelessFunctionalComponent<P> | React_ComponentType<P> | React_AbstractComponent<P, T> | ReactContext<any> | LazyComponent<T, P> | ReactProviderType<any> | string,
 	config: P?,
 	...: React_Node | (...any) -> React_Node
 ): ReactElement<P, T>
@@ -597,7 +598,7 @@ exports.cloneElement = function<P, T>(
 
 	-- ROBLOX deviation: make sure type is a table (and not a function component)
 	-- if element.type and element.type.defaultProps then
-	if typeof((element :: any).type) == "table" and (element.type :: T & React_ComponentType<P>).defaultProps then
+	if typeof((element :: any).type) == "table" and ((element.type :: any) :: T & React_ComponentType<P>).defaultProps then
 		-- ROBLOX FIXME Luau: coercing to `T & React_ComponentType<P>` gives
 		-- (E001) TypeError: Type 'P?' could not be converted into 'P'
 		defaultProps = (element.type :: any).defaultProps

@@ -50,7 +50,7 @@ return function()
 					return Binding.create(...)
 				end
 				local binding, _ = createBinding(1)
-				jestExpect(binding._source).toContain(script.name)
+				jestExpect(binding._source).toContain(script.Name)
 				jestExpect(binding._source).toContain("Binding created")
 			end)
 		end
@@ -182,7 +182,7 @@ return function()
 				local mappedBinding = binding:map(function(value)
 					return value
 				end) :: Binding<number>
-				jestExpect(mappedBinding._source).toContain(script.name)
+				jestExpect(mappedBinding._source).toContain(script.Name)
 				jestExpect(mappedBinding._source).toContain("Mapped binding created")
 			end)
 		end
@@ -324,7 +324,7 @@ return function()
 				local binding1, _ = Binding.create(1)
 				local binding2, _ = Binding.create(2)
 				local joinedBinding = Binding.join({binding1, binding2})
-				jestExpect(joinedBinding._source).toContain(script.name)
+				jestExpect(joinedBinding._source).toContain(script.Name)
 				jestExpect(joinedBinding._source).toContain("Joined binding created")
 			end)
 		end
@@ -345,7 +345,7 @@ return function()
 		if _G.__DEV__ then
 			it("should include a stack in DEV mode", function()
 				local ref = (ReactCreateRef.createRef() :: any) :: { _source: string }
-				jestExpect(ref._source).toContain(script.name)
+				jestExpect(ref._source).toContain(script.Name)
 				jestExpect(ref._source).toContain("Ref created")
 			end)
 		end
