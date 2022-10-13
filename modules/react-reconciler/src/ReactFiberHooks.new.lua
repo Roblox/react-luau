@@ -15,13 +15,12 @@ local function unimplemented(message: string)
   print("UNIMPLEMENTED ERROR: " .. message)
   error("FIXME (roblox): " .. message .. " is unimplemented")
 end
-
+local __DEV__ = _G.__DEV__ :: boolean
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Error = LuauPolyfill.Error
 local Object = LuauPolyfill.Object
-local Cryo = require(Packages.Cryo)
 
 -- ROBLOX: use Bindings to implement useRef
 local createRef = require(Packages.React).createRef
@@ -159,7 +158,7 @@ type UpdateQueue<S, A> = {
 
 local didWarnAboutMismatchedHooksForComponent
 local _didWarnAboutUseOpaqueIdentifier
-if _G.__DEV__ then
+if __DEV__ then
   _didWarnAboutUseOpaqueIdentifier = {}
   didWarnAboutMismatchedHooksForComponent = {}
 end
@@ -255,7 +254,7 @@ local function getHighestIndex(array: Array<any>)
 end
 
 local function mountHookTypesDev()
-  if _G.__DEV__ then
+  if __DEV__ then
     local hookName = (currentHookNameInDev :: any) :: HookType
 
     if hookTypesDev == nil then
@@ -268,7 +267,7 @@ local function mountHookTypesDev()
 end
 
 function updateHookTypesDev()
-  if _G.__DEV__ then
+  if __DEV__ then
     -- ROBLOX FIXME Luau: needs normalization (I think) to avoid duplicate type declaration
     local hookName: HookType = (currentHookNameInDev :: any) :: HookType
 
@@ -282,7 +281,7 @@ function updateHookTypesDev()
 end
 
 local function checkDepsAreArrayDev(deps: any)
-  if _G.__DEV__ then
+  if __DEV__ then
     if deps ~= nil and not Array.isArray(deps) then
       -- Verify deps, but only on mount to avoid extra checks.
       -- It's unlikely their type would change as usually you define them inline.
@@ -290,14 +289,14 @@ local function checkDepsAreArrayDev(deps: any)
         "%s received a final argument that is not an array (instead, received `%s`). When " ..
           "specified, the final argument must be an array.",
         currentHookNameInDev,
-        typeof(deps)
+        type(deps)
       )
     end
   end
 end
 
 function warnOnHookMismatchInDev(currentHookName: HookType)
-  if _G.__DEV__ then
+  if __DEV__ then
     -- ROBLOX deviation: getComponentName will return nil in most Hook cases, use same fallback as elsewhere
     local componentName = getComponentName(currentlyRenderingFiber.type) or "Component"
     if not didWarnAboutMismatchedHooksForComponent[componentName] then
@@ -364,7 +363,7 @@ local function areHookInputsEqual(
   nextDeps: Array<any>,
   prevDeps: Array<any>
 )
-  if _G.__DEV__ then
+  if __DEV__ then
     if ignorePreviousDependencies then
       -- Only true when this component is being hot reloaded.
       return false
@@ -372,7 +371,7 @@ local function areHookInputsEqual(
   end
 
   if prevDeps == nil then
-    if _G.__DEV__ then
+    if __DEV__ then
       -- ROBLOX TODO: no unit tests in upstream for this, we should add some
       console.error(
         "%s received a final argument during this render, but not during " ..
@@ -399,7 +398,7 @@ local function areHookInputsEqual(
     -- necessary, and would help justify our exclusion of the warning.
 
     -- https://jira.rbx.com/browse/LUAFDN-1175
-    -- if _G.__DEV__ then
+    -- if __DEV__ then
     --   console.error(
     --     "The final argument passed to %s changed size between renders. The " ..
     --       "order and size of this array must remain constant.\n\n" ..
@@ -434,7 +433,7 @@ exports.bailoutHooks = function(
 )
   -- ROBLOX performance TODO: return non-nil updateQueue object to the ReactUpdateQUeue pool
   workInProgress.updateQueue = current.updateQueue
-  if _G.__DEV__ and enableDoubleInvokingEffects then
+  if __DEV__ and enableDoubleInvokingEffects then
     workInProgress.flags = bit32.band(
       workInProgress.flags,
       bit32.bnot(bit32.bor(
@@ -487,7 +486,7 @@ exports.resetHooksAfterThrow = function(): ()
   currentHook = nil
   workInProgressHook = nil
 
-  if _G.__DEV__ then
+  if __DEV__ then
     hookTypesDev = nil
     hookTypesUpdateIndexDev = 0
 
@@ -599,7 +598,7 @@ end
 
 function basicStateReducer<S>(state: S, action: BasicStateAction<S>): S
   -- $FlowFixMe: Flow doesn't like mixed types
-  if typeof(action) == 'function' then
+  if type(action) == 'function' then
     return action(state)
   else
     return action
@@ -673,7 +672,7 @@ function updateReducer<S, I, A>(
       pendingQueue.next = baseFirst
     end
     -- ROBLOX performance: elimiante cmp in hot path
-    -- if _G.__DEV__ then
+    -- if __DEV__ then
     --   if current.baseQueue ~= baseQueue then
     --     -- Internal invariant that should never happen, but feasibly could in
     --     -- the future if we implement resuming, or some form of that.
@@ -853,7 +852,7 @@ function readFromUnsubcribedMutableSource<Source, Snapshot>(
   source: MutableSource<Source>,
   getSnapshot: MutableSourceGetSnapshotFn<Source, Snapshot>
 ): Snapshot
-  if _G.__DEV__ then
+  if __DEV__ then
     warnAboutMultipleRenderersDEV(source)
   end
 
@@ -901,9 +900,9 @@ function readFromUnsubcribedMutableSource<Source, Snapshot>(
 
   if isSafeToReadFromSource then
     local snapshot = getSnapshot(source._source)
-    if _G.__DEV__ then
+    if __DEV__ then
       -- ROBLOX deviation: the Snapshot generic isn't constrained upstream, but it as to be for this typeof() to work
-      if typeof(snapshot :: any) == 'function' then
+      if type(snapshot :: any) == 'function' then
         console.error(
           'Mutable source should not return a function as the snapshot value. ' ..
             'Functions may close over mutable values and cause tearing.'
@@ -990,9 +989,9 @@ function useMutableSource<Source, Snapshot>(
     local maybeNewVersion = getVersion(source._source)
     if not is(version_, maybeNewVersion) then
       local maybeNewSnapshot = getSnapshot(source._source)
-      if _G.__DEV__ then
+      if __DEV__ then
         -- ROBLOX deviation: the Snapshot generic isn't constrained upstream, but it as to be for this typeof() to work
-        if typeof(maybeNewSnapshot :: any) == 'function' then
+        if type(maybeNewSnapshot :: any) == 'function' then
           console.error(
             'Mutable source should not return a function as the snapshot value. ' ..
               'Functions may close over mutable values and cause tearing.'
@@ -1043,8 +1042,8 @@ function useMutableSource<Source, Snapshot>(
     end
 
     local unsubscribe = subscribe(source._source, handleChange)
-    if _G.__DEV__ then
-      if typeof(unsubscribe) ~= 'function' then
+    if __DEV__ then
+      if type(unsubscribe) ~= 'function' then
         console.error(
           'Mutable source subscribe function must return an unsubscribe function.'
         )
@@ -1129,7 +1128,7 @@ function mountState<S>(
   initialState: (() -> S) | S
 ): (S, Dispatch<BasicStateAction<S>>)
   local hook = mountWorkInProgressHook()
-  if typeof(initialState) == 'function' then
+  if type(initialState) == 'function' then
     -- $FlowFixMe: Flow doesn't like mixed types
     -- deviation: workaround to silence cli analyze not understanding that we've already verified initialState is a function
     local initialStateAsFunction: () -> S = initialState
@@ -1290,15 +1289,15 @@ local function mountEffect(
   create: (() -> ()) | (() -> (() -> ())),
   deps: Array<any>?
 ): ()
-  if _G.__DEV__ then
+  if __DEV__ then
     -- deviation: use TestEZ's __TESTEZ_RUNNING_TEST__ as well as jest
     -- $FlowExpectedError - jest isn't a global, and isn't recognized outside of tests
-    if typeof(_G.jest) ~= "nil" or _G.__TESTEZ_RUNNING_TEST__ then
+    if type(_G.jest) ~= "nil" or _G.__TESTEZ_RUNNING_TEST__ then
       warnIfNotCurrentlyActingEffectsInDEV(currentlyRenderingFiber)
     end
   end
 
-  if _G.__DEV__ and enableDoubleInvokingEffects then
+  if __DEV__ and enableDoubleInvokingEffects then
     mountEffectImpl(
       bit32.bor(MountPassiveDevEffect, PassiveEffect, PassiveStaticEffect),
       HookPassive,
@@ -1320,10 +1319,10 @@ local function updateEffect(
   create: (() -> ()) | (() -> (() -> ())),
   deps: Array<any>?
 ): ()
-  if _G.__DEV__ then
+  if __DEV__ then
     -- deviation: use TestEZ's __TESTEZ_RUNNING_TEST__ in addition to jest
     -- $FlowExpectedError - jest isn't a global, and isn't recognized outside of tests
-    if typeof(_G.jest) ~= "nil" or _G.__TESTEZ_RUNNING_TEST__ then
+    if type(_G.jest) ~= "nil" or _G.__TESTEZ_RUNNING_TEST__ then
       warnIfNotCurrentlyActingEffectsInDEV(currentlyRenderingFiber)
     end
   end
@@ -1340,7 +1339,7 @@ local function mountLayoutEffect(
   create: (() -> ()) | (() -> (() -> ())),
   deps: Array<any>?
 ): ()
-  if _G.__DEV__ and enableDoubleInvokingEffects then
+  if __DEV__ and enableDoubleInvokingEffects then
     mountEffectImpl(
       bit32.bor(MountLayoutDevEffect, UpdateEffect),
       HookLayout,
@@ -1365,7 +1364,7 @@ function imperativeHandleEffect<T>(
   ref: {current: T | nil} | ((inst: T | nil) -> ...any) | nil
   -- ROBLOX deviation: explicit type annotation needed due to mixed return
 ): nil | () -> ...any
-  if typeof(ref) == 'function' then
+  if ref ~= nil and type(ref) == 'function' then
     local refCallback = ref
     local inst = create()
     refCallback(inst)
@@ -1373,14 +1372,14 @@ function imperativeHandleEffect<T>(
       return refCallback(nil)
     end
   elseif ref ~= nil then
-    local refObject = ref
+    local refObject = ref :: any
     -- ROBLOX deviation: can't check for key presence because nil is a legitimate value.
-    if _G.__DEV__ then
+    if __DEV__ then
       -- ROBLOX FIXME: This is a clumsy approximation, since we don't have any
       -- explicit way to know that something is a ref object; instead, we check
       -- that it's an empty object with a metatable, which is what Roact refs
       -- look like since they indirect to bindings via their metatable
-      local isRefObject = getmetatable(refObject :: any) ~= nil and #Object.keys(refObject) == 0
+      local isRefObject = getmetatable(refObject) ~= nil and #Object.keys(refObject) == 0
       if not isRefObject then
         console.error(
           'Expected useImperativeHandle() first argument to either be a ' ..
@@ -1405,13 +1404,13 @@ function mountImperativeHandle<T>(
   create: () -> T,
   deps: Array<any> | nil
 ): ()
-  if _G.__DEV__ then
-    if typeof(create) ~= 'function' then
+  if __DEV__ then
+    if type(create) ~= 'function' then
       console.error(
         'Expected useImperativeHandle() second argument to be a function ' ..
           'that creates a handle. Instead received: %s.',
         -- ROBLOX deviation START: nil instead of null
-        if create ~= nil then typeof(create) else 'nil'
+        if create ~= nil then type(create) else 'nil'
         -- ROBLOX deviation END
       )
     end
@@ -1419,7 +1418,7 @@ function mountImperativeHandle<T>(
   -- TODO: If deps are provided, should we skip comparing the ref itself?
   local effectDeps = if deps ~= nil then Array.concat(deps, {ref}) else nil
 
-  if _G.__DEV__ and enableDoubleInvokingEffects then
+  if __DEV__ and enableDoubleInvokingEffects then
     return mountEffectImpl(
       bit32.bor(MountLayoutDevEffect, UpdateEffect),
       HookLayout,
@@ -1445,11 +1444,11 @@ function updateImperativeHandle<T>(
   create: () -> T,
   deps: Array<any> | nil
 ): ()
-  if _G.__DEV__ then
-    if typeof(create) ~= 'function' then
+  if __DEV__ then
+    if type(create) ~= 'function' then
       local errorArg = 'nil'
       if create then
-        errorArg = typeof(create)
+        errorArg = type(create)
       end
       console.error(
         'Expected useImperativeHandle() second argument to be a function ' ..
@@ -1463,7 +1462,8 @@ function updateImperativeHandle<T>(
   -- ROBLOX deviation: ternary turned to explicit if/else
   local effectDeps
   if deps ~= nil then
-    effectDeps = Cryo.List.join(deps, {ref})
+    effectDeps = table.clone(deps)
+    table.insert(effectDeps, ref)
   end
 
   return updateEffectImpl(
@@ -1680,14 +1680,14 @@ end
 
 local isUpdatingOpaqueValueInRenderPhase = false
 exports.getIsUpdatingOpaqueValueInRenderPhaseInDEV = function(): boolean?
-  if _G.__DEV__ then
+  if __DEV__ then
     return isUpdatingOpaqueValueInRenderPhase
   end
   return nil
 end
 
 -- function warnOnOpaqueIdentifierAccessInDEV(fiber)
---   if _G.__DEV__ then
+--   if __DEV__ then
 --     -- TODO: Should warn in effects and callbacks, too
 --     local name = getComponentName(fiber.type) or 'Unknown'
 --     if getIsRendering() and not didWarnAboutUseOpaqueIdentifier[name] then
@@ -1703,7 +1703,7 @@ end
 
 function mountOpaqueIdentifier()
   local makeId
-  if _G.__DEV__ then
+  if __DEV__ then
     console.warn("!!! unimplemented: warnOnOpaqueIdentifierAccessInDEV")
     -- makeId = makeClientIdInDEV.bind(
     --     nil,
@@ -1724,7 +1724,7 @@ function mountOpaqueIdentifier()
   --       -- the update is added to a shared queue, which outlasts the
   --       -- in-progress render.
   --       didUpgrade = true
-  --       if _G.__DEV__ then
+  --       if __DEV__ then
   --         isUpdatingOpaqueValueInRenderPhase = true
   --         setId(makeId())
   --         isUpdatingOpaqueValueInRenderPhase = false
@@ -1744,7 +1744,7 @@ function mountOpaqueIdentifier()
   --   local setId = mountState(id)[1]
 
   --   if bit32.band(currentlyRenderingFiber.mode, ReactTypeOfMode.BlockingMode) == ReactTypeOfMode.NoMode then
-  --     if _G.__DEV__ and enableDoubleInvokingEffects then
+  --     if __DEV__ and enableDoubleInvokingEffects then
   --       currentlyRenderingFiber.flags = bit32.bor(currentlyRenderingFiber.flags,
   --         MountPassiveDevEffect, PassiveEffect, PassiveStaticEffect)
   --     else
@@ -1784,13 +1784,13 @@ function dispatchAction<S, A>(
   action: A,
   ...
 ): ()
-  if _G.__DEV__ then
+  if __DEV__ then
     local childrenLength = select("#", ...)
     local extraArg
     if childrenLength == 1 then
       extraArg = select(1, ...)
     end
-    if typeof(extraArg) == 'function' then
+    if type(extraArg) == 'function' then
       console.error(
         "State updates from the useState() and useReducer() Hooks don't support the " ..
           'second callback argument. To execute a side effect after ' ..
@@ -1842,7 +1842,7 @@ function dispatchAction<S, A>(
       local lastRenderedReducer = queue.lastRenderedReducer
       if lastRenderedReducer ~= nil then
         local prevDispatcher
-        if _G.__DEV__ then
+        if __DEV__ then
           prevDispatcher = ReactCurrentDispatcher.current
           ReactCurrentDispatcher.current = InvalidNestedHooksDispatcherOnUpdateInDEV
         end
@@ -1860,7 +1860,7 @@ function dispatchAction<S, A>(
         end
 
         -- ROBLOX finally
-        if _G.__DEV__ then
+        if __DEV__ then
           ReactCurrentDispatcher.current = prevDispatcher
         end
 
@@ -1877,10 +1877,10 @@ function dispatchAction<S, A>(
         end
       end
     end
-    if _G.__DEV__ then
+    if __DEV__ then
       -- $FlowExpectedError - jest isn't a global, and isn't recognized outside of tests
       -- deviation: use TestEZ's __TESTEZ_RUNNING_TEST__ as well as jest
-      if typeof(_G.jest) ~= "nil" or _G.__TESTEZ_RUNNING_TEST__ then
+      if type(_G.jest) ~= "nil" or _G.__TESTEZ_RUNNING_TEST__ then
         warnIfNotScopedWithMatchingAct(fiber)
         warnIfNotCurrentlyActingUpdatesInDEV(fiber)
       end
@@ -1888,7 +1888,7 @@ function dispatchAction<S, A>(
     scheduleUpdateOnFiber(fiber, lane, eventTime)
   end
 
-  if _G.__DEV__ then
+  if __DEV__ then
     if enableDebugTracing then
       if bit32.band(fiber.mode, DebugTracingMode) ~= 0 then
         local name = getComponentName(fiber.type) or 'Unknown'
@@ -1997,7 +1997,7 @@ local HooksDispatcherOnRerender: Dispatcher = {
   unstable_isNewReconciler = enableNewReconciler,
 }
 
-if _G.__DEV__ then
+if __DEV__ then
   local warnInvalidContextAccess = function()
     console.error(
       'Context can only be read while React is rendering. ' ..
@@ -3085,7 +3085,7 @@ local function renderWithHooks<Props, SecondArg>(
   renderLanes = nextRenderLanes
   currentlyRenderingFiber = workInProgress
 
-  if _G.__DEV__ then
+  if __DEV__ then
     hookTypesDev = if current ~= nil
       then ((current._debugHookTypes :: any) :: Array<HookType>)
       else nil
@@ -3116,7 +3116,7 @@ local function renderWithHooks<Props, SecondArg>(
   -- Using memoizedState to differentiate between mount/update only works if at least one stateful hook is used.
   -- Non-stateful hooks (e.g. context) don't get added to memoizedState,
   -- so memoizedState would be nil during updates and mounts.
-  if _G.__DEV__ then
+  if __DEV__ then
     if current ~= nil and current.memoizedState ~= nil then
       ReactCurrentDispatcher.current = HooksDispatcherOnUpdateInDEV
     elseif hookTypesDev ~= nil then
@@ -3155,7 +3155,7 @@ local function renderWithHooks<Props, SecondArg>(
 
       numberOfReRenders += 1
     -- ROBLOX performance: eliminate unuseful cmp in hot path, we don't currently support hot reloading
-    -- if _G.__DEV__ then
+    -- if __DEV__ then
         -- Even when hot reloading, allow dependencies to stabilize
         -- after first render to prevent infinite render phase updates.
         -- ignorePreviousDependencies = false
@@ -3168,12 +3168,12 @@ local function renderWithHooks<Props, SecondArg>(
       -- ROBLOX performance TODO: return non-nil updateQueue object to the ReactUpdateQUeue pool
       workInProgress.updateQueue = nil
 
-      if _G.__DEV__ then
+      if __DEV__ then
         -- Also validate hook order for cascading updates.
         hookTypesUpdateIndexDev = 0
       end
 
-      ReactCurrentDispatcher.current = _G.__DEV__
+      ReactCurrentDispatcher.current = __DEV__
         and HooksDispatcherOnRerenderInDEV
         or HooksDispatcherOnRerender
 
@@ -3185,7 +3185,7 @@ local function renderWithHooks<Props, SecondArg>(
   -- at the beginning of the render phase and there's no re-entrancy.
   ReactCurrentDispatcher.current = ContextOnlyDispatcher
 
-  if _G.__DEV__ then
+  if __DEV__ then
     workInProgress._debugHookTypes = hookTypesDev
   end
 
@@ -3200,7 +3200,7 @@ local function renderWithHooks<Props, SecondArg>(
   currentHook = nil
   workInProgressHook = nil
 
-  if _G.__DEV__ then
+  if __DEV__ then
     currentHookNameInDev = nil
     hookTypesDev = nil
     hookTypesUpdateIndexDev =0

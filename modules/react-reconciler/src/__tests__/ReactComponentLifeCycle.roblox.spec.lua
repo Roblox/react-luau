@@ -703,6 +703,13 @@
       beforeEach(function()
         prevCompatWarnings = _G.__COMPAT_WARNINGS__
         _G.__COMPAT_WARNINGS__ = true
+        RobloxJest.resetModules()
+        RobloxJest.useFakeTimers()
+        React = require(Packages.React)
+        ReactNoop = require(Packages.Dev.ReactNoopRenderer)
+        local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
+        ReactFeatureFlags.debugRenderPhaseSideEffectsForStrictMode = false
+
       end)
 
       afterEach(function()
@@ -760,7 +767,7 @@
             jestExpect(function()
                 function Foo:willUpdate() end
             end).toWarnDev("Warning: Foo already defined 'UNSAFE_componentWillUpdate', but it also defining the deprecated Roact method 'willUpdate'. Foo should only implement one of these methods, preferably using the non-deprecated name.", {withoutStack = true})
-  
+
             -- tests same thing but with UNSAFE_componentWillUpdate() which is the preferred name starting from Roact 16.x
             local Bar = React[component]:extend("Bar")
             function Bar:UNSAFE_componentWillUpdate() end
@@ -783,7 +790,7 @@
             end).toWarnDev("Warning: Foo already defined 'componentWillUnmount', but it also defining the deprecated Roact method 'willUnmount'. Foo should only implement one of these methods, preferably using the non-deprecated name", {withoutStack = true})
         end)
       end
-  
+
       testWithComponentKind("Component")
       testWithComponentKind("PureComponent")
     end)

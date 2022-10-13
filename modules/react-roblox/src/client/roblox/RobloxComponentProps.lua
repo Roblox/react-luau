@@ -12,7 +12,7 @@
 	* See the License for the specific language governing permissions and
 	* limitations under the License.
 ]]
-
+local __DEV__ = _G.__DEV__ :: boolean
 local CollectionService = game:GetService("CollectionService")
 local Packages = script.Parent.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
@@ -122,7 +122,7 @@ local function attachBinding(hostInstance, key, newBinding): ()
 end
 
 local function applyTags(hostInstance: Instance, oldTags: string?, newTags: string?)
-    if _G.__DEV__ then
+    if __DEV__ then
       if newTags ~= nil and typeof(newTags) ~= "string" then
         console.error(
           "Type provided for ReactRoblox.Tag is invalid - tags should be "

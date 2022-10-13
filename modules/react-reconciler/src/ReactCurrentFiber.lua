@@ -8,7 +8,7 @@
  *
  * @flow
 ]]
-
+local __DEV__ = _G.__DEV__ :: boolean
 local Packages = script.Parent.Parent
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
@@ -35,7 +35,7 @@ local exports: Exports = {
 }
 
 exports.getCurrentFiberOwnerNameInDevOrNull = function(): string?
-	if _G.__DEV__ then
+	if __DEV__ then
 		if exports.current == nil then
 			return nil
 		end
@@ -49,7 +49,7 @@ exports.getCurrentFiberOwnerNameInDevOrNull = function(): string?
 end
 
 local function getCurrentFiberStackInDev(): string
-	if _G.__DEV__ then
+	if __DEV__ then
 		if exports.current == nil then
 			return ""
 		end
@@ -62,7 +62,7 @@ local function getCurrentFiberStackInDev(): string
 end
 
 exports.resetCurrentFiber = function(): ()
-	if _G.__DEV__ then
+	if __DEV__ then
 		-- ROBLOX FIXME Luau: Expected type table, got 'ReactDebugCurrentFrame | { setExtraStackFrame: () -> () }' instead
 		(ReactDebugCurrentFrame :: any).getCurrentStack = nil
 		exports.current = nil
@@ -71,7 +71,7 @@ exports.resetCurrentFiber = function(): ()
 end
 
 exports.setCurrentFiber = function(fiber: Fiber): ()
-	if _G.__DEV__ then
+	if __DEV__ then
 		-- ROBLOX FIXME Luau: Expected type table, got 'ReactDebugCurrentFrame | { setExtraStackFrame: () -> () }' instead
 		(ReactDebugCurrentFrame :: any).getCurrentStack = getCurrentFiberStackInDev
 		exports.current = fiber
@@ -80,13 +80,13 @@ exports.setCurrentFiber = function(fiber: Fiber): ()
 end
 
 exports.setIsRendering = function(rendering: boolean): ()
-	if _G.__DEV__ then
+	if __DEV__ then
 		exports.isRendering = rendering
 	end
 end
 
 exports.getIsRendering = function(): boolean
-	if _G.__DEV__ then
+	if __DEV__ then
 		return exports.isRendering
 	end
 	return false

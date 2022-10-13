@@ -8,6 +8,7 @@
  * @flow
 ]]
 
+local __DEV__ = _G.__DEV__ :: boolean
 local Packages = script.Parent.Parent
 local flowtypes = require(Packages.Shared)
 type React_Component<Props, State> = flowtypes.React_Component<Props, State>
@@ -166,7 +167,7 @@ type DevToolsConfig = {
 local didWarnAboutNestedUpdates
 local didWarnAboutFindNodeInStrictMode
 
-if _G.__DEV__ then
+if __DEV__ then
 	didWarnAboutNestedUpdates = false
 	didWarnAboutFindNodeInStrictMode = {}
 end
@@ -216,7 +217,7 @@ local function findHostInstanceWithWarning(
 	component: Object,
 	methodName: string
 ): PublicInstance | nil
-	if _G.__DEV__ then
+	if __DEV__ then
 		local fiber = getInstance(component)
 		if fiber == nil then
 			if typeof(component.render) == "function" then
@@ -300,12 +301,12 @@ exports.updateContainer = function(
 	parentComponent,
 	callback: Function?
 ): Lane
-	if _G.__DEV__ then
+	if __DEV__ then
 		onScheduleRoot(container, element)
 	end
 	local current = container.current
 	local eventTime = requestEventTime()
-	if _G.__DEV__ then
+	if __DEV__ then
 		-- deviation: use TestEZ's __TESTEZ_RUNNING_TEST__ (no jest global)
 		-- $FlowExpectedError - jest isn't a global, and isn't recognized outside of tests
 		if _G.__TESTEZ_RUNNING_TEST__ then
@@ -326,7 +327,7 @@ exports.updateContainer = function(
 		container.pendingContext = context
 	end
 
-	if _G.__DEV__ then
+	if __DEV__ then
 		if
 			ReactCurrentFiberIsRendering and
 			ReactCurrentFiber.current ~= nil and
@@ -358,7 +359,7 @@ exports.updateContainer = function(
 	-- deviation: no undefined, so not needed
 	-- callback = callback == undefined ? nil : callback
 	if callback ~= nil then
-		if _G.__DEV__ then
+		if __DEV__ then
 			if typeof(callback) ~= "function" then
 				console.error(
 					"render(...): Expected the last optional `callback` argument to be a " ..
@@ -537,7 +538,7 @@ local overridePropsRenamePath = nil
 local scheduleUpdate = nil
 local setSuspenseHandler = nil
 
-if _G.__DEV__ then
+if __DEV__ then
 	-- deviation: FIXME: obj: `Object | Array<any>`, narrowing not possible with `isArray`
 	local function copyWithDeleteImpl(
 		obj: Object,
@@ -549,7 +550,7 @@ if _G.__DEV__ then
 		if Array.isArray(obj) then
 			updated = Array.slice(obj)
 		else
-			updated = Object.assign({}, obj)
+			updated = table.clone(obj)
 		end
 		if index + 1 == #path then
 			if Array.isArray(updated) then
@@ -586,7 +587,7 @@ if _G.__DEV__ then
 		if Array.isArray(obj) then
 			updated = Array.slice(obj)
 		else
-			updated = Object.assign({}, obj)
+			updated = table.clone(obj)
 		end
 		if index + 1 == #oldPath then
 			local newKey = newPath[index]
@@ -647,7 +648,7 @@ if _G.__DEV__ then
 		if Array.isArray(obj) then
 			updated = Array.slice(obj)
 		else
-			updated = Object.assign({}, obj)
+			updated = table.clone(obj)
 		end
 		-- $FlowFixMe number or string is fine here
 		updated[key] = copyWithSetImpl(obj[key], path, index + 1, value)
@@ -692,7 +693,7 @@ if _G.__DEV__ then
 			-- (There's no appropriate action type for DevTools overrides.)
 			-- As a result though, React will see the scheduled update as a noop and bailout.
 			-- Shallow cloning props works as a workaround for now to bypass the bailout check.
-			fiber.memoizedProps = Object.assign({}, fiber.memoizedProps)
+			fiber.memoizedProps = table.clone(fiber.memoizedProps)
 
 			scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp)
 		end
@@ -713,7 +714,7 @@ if _G.__DEV__ then
 			-- (There's no appropriate action type for DevTools overrides.)
 			-- As a result though, React will see the scheduled update as a noop and bailout.
 			-- Shallow cloning props works as a workaround for now to bypass the bailout check.
-			fiber.memoizedProps = Object.assign({}, fiber.memoizedProps)
+			fiber.memoizedProps = table.clone(fiber.memoizedProps)
 
 			scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp)
 		end
@@ -735,7 +736,7 @@ if _G.__DEV__ then
 			-- (There's no appropriate action type for DevTools overrides.)
 			-- As a result though, React will see the scheduled update as a noop and bailout.
 			-- Shallow cloning props works as a workaround for now to bypass the bailout check.
-			fiber.memoizedProps = Object.assign({}, fiber.memoizedProps)
+			fiber.memoizedProps = table.clone(fiber.memoizedProps)
 
 			scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp)
 		end
@@ -805,7 +806,7 @@ exports.injectIntoDevTools = function(devToolsConfig: DevToolsConfig): boolean
 	local findFiberByHostInstance = devToolsConfig.findFiberByHostInstance
 	local ReactCurrentDispatcher = ReactSharedInternals.ReactCurrentDispatcher
 	local getCurrentFiber = nil
-	if _G.__DEV__ then
+	if __DEV__ then
 		getCurrentFiber = getCurrentFiberForDevTools
 	end
 	return injectInternals({
@@ -827,10 +828,10 @@ exports.injectIntoDevTools = function(devToolsConfig: DevToolsConfig): boolean
 			findFiberByHostInstance or emptyFindFiberByHostInstance,
 		-- FIXME: WIP
 		-- React Refresh
-		-- findHostInstancesForRefresh = _G.__DEV__ and findHostInstancesForRefresh or nil,
-		-- scheduleRefresh = _G.__DEV__ and scheduleRefresh or nil,
-		-- scheduleRoot = _G.__DEV__ and scheduleRoot or nil,
-		-- setRefreshHandler = _G.__DEV__ and setRefreshHandler or nil,
+		-- findHostInstancesForRefresh = __DEV__ and findHostInstancesForRefresh or nil,
+		-- scheduleRefresh = __DEV__ and scheduleRefresh or nil,
+		-- scheduleRoot = __DEV__ and scheduleRoot or nil,
+		-- setRefreshHandler = __DEV__ and setRefreshHandler or nil,
 		-- Enables DevTools to append owner stacks to error messages in DEV mode.
 		getCurrentFiber = getCurrentFiber
 	})

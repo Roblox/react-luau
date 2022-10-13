@@ -17,8 +17,8 @@ local function unimplemented(message: string)
   error("FIXME (roblox): " .. message .. " is unimplemented", 2)
 end
 
-local __DEV__ = _G.__DEV__
-local __YOLO__ = _G.__YOLO__
+local __DEV__ = _G.__DEV__ :: boolean
+local __YOLO__ = _G.__YOLO__ :: boolean
 -- ROBLOX DEVIATION: keep track of the pcall run depth and stop wrapping pcalls after we hit MAX_RUN_DEPTH.
 -- ROBLOX note: if this number is raised to 195, the test in RoactRecursiveLayoutPcallDepth will fail
 local runDepth = 0
@@ -45,7 +45,6 @@ local Packages = script.Parent.Parent
 local console = require(Packages.Shared).console
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
-local Object = LuauPolyfill.Object
 local Set = LuauPolyfill.Set
 type Array<T> = { [number]: T }
 
@@ -2041,7 +2040,7 @@ function commitSuspenseComponent(finishedWork: Fiber)
     if typeof(suspenseCallback) == 'function' then
       local wakeables: Set<Wakeable> | nil = (finishedWork.updateQueue :: any)
       if wakeables ~= nil then
-        suspenseCallback(Object.assign({}, wakeables))
+        suspenseCallback(table.clone(wakeables))
       end
     elseif __DEV__ then
       if suspenseCallback ~= nil then

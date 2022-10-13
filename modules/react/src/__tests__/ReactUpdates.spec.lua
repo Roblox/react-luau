@@ -1687,10 +1687,11 @@ return function()
 		it(
 			"can have many updates inside useEffect without triggering a warning",
 			function()
+				-- ROBLOX deviation START: increase loop count to test our object caching logic
 				local function Terminating()
 					local step, setStep = React.useState(0)
 					React.useEffect(function()
-						for i = 1, 1000 do
+						for i = 1, 10000 do
 							setStep(function(x)
 								return x + 1
 							end)
@@ -1706,7 +1707,8 @@ return function()
 					)
 				end)
 				jestExpect(Scheduler).toHaveYielded({ "Done" })
-				jestExpect(container.toJSON()).toBe("1000")
+				jestExpect(container.toJSON()).toBe("10000")
+				-- ROBLOX deviation END
 			end
 		)
 	end)

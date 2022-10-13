@@ -8,13 +8,13 @@
  *
  * @flow
 ]]
+local __DEV__ = _G.__DEV__ :: boolean
+local __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ = _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ :: boolean
 
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 local Error = LuauPolyfill.Error
-
-local Cryo = require(Packages.Cryo)
 
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
@@ -38,12 +38,12 @@ local pop = ReactFiberStack.pop
 
 local warnedAboutMissingGetChildContext
 
-if _G.__DEV__ then
+if __DEV__ then
 	warnedAboutMissingGetChildContext = {}
 end
 
 local emptyContextObject = {}
-if _G.__DEV__ then
+if __DEV__ then
 	Object.freeze(emptyContextObject)
 end
 
@@ -108,14 +108,14 @@ local function getMaskedContext(
 	-- if disableLegacyContext then
 	-- 	return emptyContextObject
 	-- else
-		local type = workInProgress.type
+		local type_ = workInProgress.type
 		-- deviation: For function components, we can't support `contextTypes`;
 		-- instead, just return unmaskedContext
-		if typeof(type) == "function" then
+		if type(type_) == "function" then
 			return unmaskedContext
 		end
 
-		local contextTypes = type.contextTypes
+		local contextTypes = type_.contextTypes
 		if not contextTypes then
 			return emptyContextObject
 		end
@@ -136,8 +136,8 @@ local function getMaskedContext(
 			context[key] = unmaskedContext[key]
 		end
 
-		if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
-			local name = getComponentName(type) or "Unknown"
+		if __DEV__ or __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
+			local name = getComponentName(type_) or "Unknown"
 			-- ROBLOX deviation: nil as second argument for validateProps compatibility
 			checkPropTypes(contextTypes, nil, context, "context", name)
 		end
@@ -161,17 +161,17 @@ local function hasContextChanged(): boolean
 end
 
 -- deviation: `type: Function` - lock down component type def
-function isContextProvider(type): boolean
+function isContextProvider(type_): boolean
 	-- ROBLOX performance: skip always-false compare in hot path
 	-- if disableLegacyContext then
 	-- 	return false
 	-- else
 		-- ROBLOX deviation: context types only valid for class components
 		-- ROBLOX performance: type is already guarded as being a ClassComponent and/or typeof == 'table' in all call sites
-		if typeof(type) == "function" then
+		if type(type_) == "function" then
 			return false
 		end
-		local childContextTypes = type.childContextTypes
+		local childContextTypes = type_.childContextTypes
 		return childContextTypes ~= nil
 	-- end
 end
@@ -219,7 +219,7 @@ end
 
 local function processChildContext(
 	fiber: Fiber,
-	type: any,
+	type_: any,
 	parentContext: Object
 ): Object
 	-- ROBLOX performance: eliminate always-false compare in hot path
@@ -227,13 +227,13 @@ local function processChildContext(
 	-- 	return parentContext
 	-- else
 		local instance = fiber.stateNode
-		local childContextTypes = type.childContextTypes
+		local childContextTypes = type_.childContextTypes
 
 		-- TODO (bvaughn) Replace this behavior with an invariant() in the future.
 		-- It has only been added in Fiber to match the (unintentional) behavior in Stack.
-		if typeof(instance.getChildContext) ~= "function" then
-			if _G.__DEV__ then
-				local componentName = getComponentName(type) or "Unknown"
+		if instance.getChildContext == nil or type(instance.getChildContext) ~= "function" then
+			if __DEV__ then
+				local componentName = getComponentName(type_) or "Unknown"
 
 				if not warnedAboutMissingGetChildContext[componentName] then
 					warnedAboutMissingGetChildContext[componentName] = true
@@ -252,7 +252,7 @@ local function processChildContext(
 		local childContext = instance:getChildContext()
 		for contextKey, _ in childContext do
 			if childContextTypes[contextKey] == nil then
-				local name = getComponentName(type) or "Unknown"
+				local name = getComponentName(type_) or "Unknown"
 				error(Error.new(string.format(
 					"%s.getChildContext(): key \"%s\" is not defined in childContextTypes.",
 					name,
@@ -260,13 +260,13 @@ local function processChildContext(
 				)))
 			end
 		end
-		if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
-			local name = getComponentName(type) or "Unknown"
+		if __DEV__ or __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
+			local name = getComponentName(type_) or "Unknown"
 			-- ROBLOX deviation: nil as second argument for validateProps compatibility
 			checkPropTypes(childContextTypes, nil, childContext, "child context", name)
 		end
 
-		return Cryo.Dictionary.join(parentContext, childContext)
+		return Object.assign({}, parentContext, childContext)
 	-- end
 end
 
@@ -299,7 +299,7 @@ end
 
 local function invalidateContextProvider(
 	workInProgress: Fiber,
-	type: any,
+	type_: any,
 	didChange: boolean
 ): ()
 	-- ROBLOX performance: eliminate always-false compare in hot path
@@ -321,7 +321,7 @@ local function invalidateContextProvider(
 			-- This avoids unnecessarily recomputing memoized values.
 			local mergedContext = processChildContext(
 				workInProgress,
-				type,
+				type_,
 				previousContext
 			)
 			instance.__reactInternalMemoizedMergedChildContext = mergedContext

@@ -162,7 +162,7 @@ To avoid this in the future, be sure that your foreman binary path is *before* t
 -- ROBLOX deviation: use explicit nil check instead of falsey
 ```
 
-* For deviations due to Lua language differences (no spread operator) that don't involve changing the logic, don't put a deviation comment. Just use the appropriate equivalent from the Cryo and other utility libraries.
+* For deviations due to Lua language differences (no spread operator) that don't involve changing the logic, don't put a deviation comment. Just use the appropriate equivalent from the es7-luau (fka LuauPolyfill) and other utility libraries.
 
 * For files that are new and Roblox-specific, use the file name: ```Timeout.roblox.lua```
 

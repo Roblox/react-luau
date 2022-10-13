@@ -18,7 +18,6 @@
 
 local Packages = script.Parent.Parent
 local RobloxJest = require(Packages.RobloxJest)
-local Cryo = require(Packages.Cryo)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 
 local Array = LuauPolyfill.Array
@@ -486,7 +485,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 	-- deviation: replace spread with manual table creation
 	local hostConfig
 	if useMutation then
-		hostConfig = Cryo.Dictionary.join(sharedHostConfig, {
+		hostConfig = Object.assign({}, sharedHostConfig, {
 			supportsMutation = true,
 			supportsPersistence = false,
 
@@ -552,7 +551,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			end,
 		})
 	else
-		hostConfig = Cryo.Dictionary.join(sharedHostConfig, {
+		hostConfig = Object.assign({}, sharedHostConfig, {
 			supportsMutation = false,
 			supportsPersistence = true,
 

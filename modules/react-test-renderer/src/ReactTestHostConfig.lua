@@ -11,7 +11,6 @@
 
 local Packages = script.Parent.Parent
 
-local Cryo = require(Packages.Cryo)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 
 local Array = LuauPolyfill.Array
@@ -78,11 +77,11 @@ export type OpaqueIDType = string | Object
 export type RendererInspectionConfig = {}
 
 local ReactFiberHostConfig = require(Packages.Shared).ReactFiberHostConfig
-local exports = Cryo.Dictionary.join(
+local exports = Object.assign({},
 	ReactFiberHostConfig.WithNoPersistence,
 	ReactFiberHostConfig.WithNoHydration,
 	ReactFiberHostConfig.WithNoTestSelectors
-)
+):: { [string]: any }
 
 local NO_CONTEXT = {}
 local UPDATE_SIGNAL = {}

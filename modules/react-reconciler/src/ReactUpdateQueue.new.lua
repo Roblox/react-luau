@@ -1,4 +1,4 @@
---!nonstrict
+--!strict
 -- upstream: https://github.com/facebook/react/blob/16654436039dd8f16a63928e71081c7745872e8f/packages/react-reconciler/src/ReactUpdateQueue.new.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -97,9 +97,9 @@ local Object = LuauPolyfill.Object
 local console = require(Packages.Shared).console
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
-type Fiber = ReactInternalTypes.Fiber;
-type Lane = ReactInternalTypes.Lane;
-type Lanes = ReactInternalTypes.Lanes;
+type Fiber = ReactInternalTypes.Fiber
+type Lane = ReactInternalTypes.Lane
+type Lanes = ReactInternalTypes.Lanes
 
 local ReactFiberLane = require(script.Parent.ReactFiberLane)
 local NoLane = ReactFiberLane.NoLane
@@ -129,14 +129,18 @@ local ShouldCapture = ReactFiberFlags.ShouldCapture
 local DidCapture = ReactFiberFlags.DidCapture
 
 local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
-local debugRenderPhaseSideEffectsForStrictMode = ReactFeatureFlags.debugRenderPhaseSideEffectsForStrictMode
+local debugRenderPhaseSideEffectsForStrictMode =
+	ReactFeatureFlags.debugRenderPhaseSideEffectsForStrictMode
 
 local ReactTypeOfMode = require(script.Parent.ReactTypeOfMode)
 local StrictMode = ReactTypeOfMode.StrictMode
 -- local ReactFiberWorkLoop = require(script.Parent["ReactFiberWorkLoop.new"])
-local markSkippedUpdateLanes = require(script.Parent.ReactFiberWorkInProgress).markSkippedUpdateLanes
+local markSkippedUpdateLanes =
+	require(script.Parent.ReactFiberWorkInProgress).markSkippedUpdateLanes
 
-local invariant = require(Packages.Shared).invariant
+-- ROBLOX deviation START: use if-then-error, which avoid string format and function call overhead, as in React 18
+-- local invariant = require(Packages.Shared).invariant
+-- ROBLOX deviation END
 local describeError = require(Packages.Shared).describeError
 
 local ConsolePatchingDev = require(Packages.Shared).ConsolePatchingDev
@@ -144,7 +148,7 @@ local disableLogs = ConsolePatchingDev.disableLogs
 local reenableLogs = ConsolePatchingDev.reenableLogs
 
 -- deviation: Common types
-type Array<T> = { [number]: T };
+type Array<T> = { [number]: T }
 
 -- ROBLOX deviation: transplants UpdateQueue<> and SharedState<> types to ReactInternalTypes for export to createReactNoop
 type Update<T> = ReactInternalTypes.Update<T>
@@ -168,7 +172,7 @@ exports.CaptureUpdate = CaptureUpdate
 local hasForceUpdate = false
 
 local didWarnUpdateInsideUpdate
-local currentlyProcessingQueue
+local currentlyProcessingQueue: SharedQueue<any>?
 -- export local resetCurrentlyProcessingQueue
 if __DEV__ then
 	didWarnUpdateInsideUpdate = false
@@ -208,29 +212,28 @@ local function initializeUpdateQueue<State>(fiber: Fiber): ()
 end
 exports.initializeUpdateQueue = initializeUpdateQueue
 
-local function cloneUpdateQueue<State>(
-	current: Fiber,
-	workInProgress: Fiber
-): ()
+local function cloneUpdateQueue<State>(current: Fiber, workInProgress: Fiber): ()
 	-- Clone the update queue from current. Unless it's already a clone.
 	local queue: UpdateQueue<State> = workInProgress.updateQueue :: any
 	local currentQueue: UpdateQueue<State> = current.updateQueue :: any
 	if queue == currentQueue then
-		local clone: UpdateQueue<State> = {
-			baseState = currentQueue.baseState,
-			firstBaseUpdate = currentQueue.firstBaseUpdate,
-			lastBaseUpdate = currentQueue.lastBaseUpdate,
-			shared = currentQueue.shared,
-			effects = currentQueue.effects,
-		}
+		-- ROBLOX deviation START: use our queue method for hot path optimizations
+		local clone: UpdateQueue<State> = table.clone(currentQueue)
+		-- ROBLOX deviation END
 		workInProgress.updateQueue = clone
 	end
 end
 exports.cloneUpdateQueue = cloneUpdateQueue
 
-local function createUpdate(eventTime: number, lane: Lane): Update<any>
+-- ROBLOX deviation START: add extra parameters here so updates can be create in single table ctor
+local function createUpdate(
+	eventTime: number,
+	lane: Lane,
+	payload: any?,
+	callback: (() -> ...any)?
+): Update<any>
 	-- ROBLOX performance: Use pooled update object when available
-	if updatePoolIndex>0 then
+	if updatePoolIndex > 0 then
 		local update = updatePool[updatePoolIndex]
 		updatePool[updatePoolIndex] = nil
 		updatePoolIndex -= 1
@@ -238,9 +241,12 @@ local function createUpdate(eventTime: number, lane: Lane): Update<any>
 		update.eventTime = eventTime
 		update.lane = lane
 		update.tag = UpdateState
+		update.payload = payload
+		update.callback = callback :: any
 
 		return update :: Update<any>
 	end
+	-- ROBLOX deviation END
 
 	-- ROBLOX performance FIXME: This warning is very noisy in practice and not
 	-- actionable by Roact developers in any way. We should re-establish the
@@ -261,8 +267,8 @@ local function createUpdate(eventTime: number, lane: Lane): Update<any>
 		lane = lane,
 
 		tag = UpdateState,
-		payload = nil,
-		callback = nil,
+		payload = payload,
+		callback = callback :: any,
 
 		next = nil,
 	}
@@ -289,15 +295,12 @@ local function enqueueUpdate<State>(fiber: Fiber, update: Update<State>)
 	sharedQueue.pending = update
 
 	if __DEV__ then
-		if
-			currentlyProcessingQueue == sharedQueue and
-			not didWarnUpdateInsideUpdate
-		then
+		if currentlyProcessingQueue == sharedQueue and not didWarnUpdateInsideUpdate then
 			console.error(
-				"An update (setState, replaceState, or forceUpdate) was scheduled " ..
-					"from inside an update function. Update functions should be pure, " ..
-					"with zero side-effects. Consider using componentDidUpdate or a " ..
-					"callback."
+				"An update (setState, replaceState, or forceUpdate) was scheduled "
+					.. "from inside an update function. Update functions should be pure, "
+					.. "with zero side-effects. Consider using componentDidUpdate or a "
+					.. "callback."
 			)
 			didWarnUpdateInsideUpdate = true
 		end
@@ -397,9 +400,10 @@ local function getStateFromUpdate<State>(
 	nextProps: any,
 	instance: any
 ): any
-	if update.tag == ReplaceState then
+	local updateTag = update.tag
+	if updateTag == ReplaceState then
 		local payload = update.payload
-		if typeof(payload) == "function" then
+		if type(payload) == "function" then
 			-- Updater function
 			if __DEV__ then
 				enterDisallowedContextReadInDEV()
@@ -410,8 +414,8 @@ local function getStateFromUpdate<State>(
 			local nextState = payload(prevState, nextProps)
 			if __DEV__ then
 				if
-					debugRenderPhaseSideEffectsForStrictMode and
-					bit32.band(workInProgress.mode, StrictMode) ~= 0
+					debugRenderPhaseSideEffectsForStrictMode
+					and bit32.band(workInProgress.mode, StrictMode) ~= 0
 				then
 					disableLogs()
 					-- ROBLOX deviation: YOLO flag for disabling pcall
@@ -435,15 +439,17 @@ local function getStateFromUpdate<State>(
 		end
 		-- State object
 		return payload
-	elseif update.tag == CaptureUpdate or update.tag == UpdateState then
-		if update.tag == CaptureUpdate then
-			workInProgress.flags =
-				bit32.bor(bit32.band(workInProgress.flags, bit32.bnot(ShouldCapture)), DidCapture)
+	elseif updateTag == CaptureUpdate or updateTag == UpdateState then
+		if updateTag == CaptureUpdate then
+			workInProgress.flags = bit32.bor(
+				bit32.band(workInProgress.flags, bit32.bnot(ShouldCapture)),
+				DidCapture
+			)
 		end
 		-- Intentional fallthrough
 		local payload = update.payload
 		local partialState
-		if typeof(payload) == "function" then
+		if type(payload) == "function" then
 			-- Updater function
 			if __DEV__ then
 				enterDisallowedContextReadInDEV()
@@ -454,8 +460,8 @@ local function getStateFromUpdate<State>(
 			partialState = payload(prevState, nextProps)
 			if __DEV__ then
 				if
-					debugRenderPhaseSideEffectsForStrictMode and
-					bit32.band(workInProgress.mode, StrictMode) ~= 0
+					debugRenderPhaseSideEffectsForStrictMode
+					and bit32.band(workInProgress.mode, StrictMode) ~= 0
 				then
 					disableLogs()
 					-- ROBLOX deviation: YOLO flag for disabling pcall
@@ -484,8 +490,10 @@ local function getStateFromUpdate<State>(
 			return prevState
 		end
 		-- Merge the partial state and the previous state.
+		-- ROBLOX TODO: the below optimziation doesn't work because: invalid argument #1 to 'clone' (table has a protected metatable)
+		-- local newState = if prevState ~= nil then table.clone(prevState :: any) else {}
 		return Object.assign({}, prevState, partialState)
-	elseif update.tag == ForceUpdate then
+	elseif updateTag == ForceUpdate then
 		hasForceUpdate = true
 		return prevState
 	end
@@ -510,7 +518,6 @@ local function processUpdateQueue<State>(
 
 	local firstBaseUpdate = queue.firstBaseUpdate
 	local lastBaseUpdate = queue.lastBaseUpdate
-
 
 	-- Check if there are pending updates. If so, transfer them to the base queue.
 	local pendingQueue = queue.shared.pending
@@ -631,7 +638,7 @@ local function processUpdateQueue<State>(
 					workInProgress.flags = bit32.bor(workInProgress.flags, Callback)
 					local effects = queue.effects
 					if effects == nil then
-						queue.effects = {update}
+						queue.effects = { update }
 					else
 						table.insert(effects, update)
 					end
@@ -649,7 +656,9 @@ local function processUpdateQueue<State>(
 					local lastPendingUpdate = pendingQueue
 					-- Intentionally unsound. Pending updates form a circular list, but we
 					-- unravel them when transferring them to the base queue.
-					local firstPendingUpdate = ((lastPendingUpdate.next :: any) :: Update<State>)
+					local firstPendingUpdate = (
+							(lastPendingUpdate.next :: any) :: Update<State>
+						)
 					lastPendingUpdate.next = nil
 					update = firstPendingUpdate
 					queue.lastBaseUpdate = lastPendingUpdate
@@ -685,12 +694,17 @@ end
 exports.processUpdateQueue = processUpdateQueue
 
 local function callCallback(callback, context)
-	invariant(
-		typeof(callback) == 'function',
-		'Invalid argument passed as callback. Expected a function. Instead ' ..
-			'received: %s',
-		tostring(callback)
-	)
+	-- ROBLOX deviation START: use if-then-error, which avoid string format and function call overhead, as in React 18
+	if type(callback) ~= "function" then
+		error(
+			string.format(
+				"Invalid argument passed as callback. Expected a function. Instead "
+					.. "received: %s",
+				tostring(callback)
+			)
+		)
+		-- ROBLOX deviation END
+	end
 	callback(context)
 end
 
@@ -719,7 +733,7 @@ local function commitUpdateQueue<State>(
 
 			-- ROBLOX performance: return this object to the pool
 			table.clear(effect)
-			table.insert(updatePool, effect)
+			table.insert(updatePool, effect :: any)
 			updatePoolIndex += 1
 		end
 	end

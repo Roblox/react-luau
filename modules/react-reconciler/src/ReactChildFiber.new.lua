@@ -8,7 +8,7 @@
  *
  * @flow
 ]]
-
+local __DEV__ = _G.__DEV__ :: boolean
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
@@ -90,7 +90,7 @@ local ownerHasKeyUseWarning
 local ownerHasFunctionTypeWarning
 local warnForMissingKey = function(child: any, returnFiber: Fiber) end
 
-if _G.__DEV__ then
+if __DEV__ then
 	didWarnAboutMaps = false
 	-- ROBLOX deviation: Lua doesn't have built-in generators
 	--   didWarnAboutGenerators = false
@@ -111,14 +111,14 @@ if _G.__DEV__ then
 	-- ordering up to users via LayoutOrder, but if we accept arrays (and attempt
 	-- to somehow map them to LayoutOrder??) we'll need keys for stability
 	warnForMissingKey = function(child: any, returnFiber: Fiber)
-		if child == nil or typeof(child) ~= "table" then
+		if child == nil or type(child) ~= "table" then
 			return
 		end
 		if not child._store or child._store.validated or child.key ~= nil then
 			return
 		end
 		invariant(
-			child._store ~= nil and typeof(child._store) == "table",
+			child._store ~= nil and type(child._store) == "table",
 			"React Component in warnForMissingKey should have a _store. "
 				.. "This error is likely caused by a bug in React. Please file an issue."
 		)
@@ -145,14 +145,14 @@ function coerceRef(returnFiber: Fiber, current: Fiber | nil, element: ReactEleme
 	local mixedRef = element.ref
 	if
 		mixedRef ~= nil
-		and typeof(mixedRef) == "string"
+		and type(mixedRef) == "string"
 	then
 
 		-- ROBLOX deviation: we do not support string refs, and will not coerce
 		if not element._owner or not element._self or element._owner.stateNode == element._self then
 			-- ROBLOX performance: don't get component name unless we have to use it
 			local componentName
-			if _G.__DEV__ then
+			if __DEV__ then
 				componentName = getComponentName(returnFiber.type) or "Component"
 			else
 				componentName = "<enable __DEV__ mode for component names>"
@@ -173,7 +173,7 @@ function coerceRef(returnFiber: Fiber, current: Fiber | nil, element: ReactEleme
 			error("Expected ref to be a function or an object returned by React.createRef(), or nil.")
 		end
 
-		-- if _G.__DEV__ then
+		-- if __DEV__ then
 		-- 	-- TODO: Clean this up once we turn on the string ref warning for
 		-- 	-- everyone, because the strict mode case will no longer be relevant
 		-- 	if
@@ -309,7 +309,7 @@ end
 -- end
 
 local function warnOnFunctionType(returnFiber: Fiber)
-	if _G.__DEV__ then
+	if __DEV__ then
 		local componentName = getComponentName(returnFiber.type) or "Component"
 
 		if ownerHasFunctionTypeWarning[componentName] then
@@ -481,13 +481,13 @@ local function ChildReconciler(shouldTrackSideEffects)
 				(current :: Fiber).elementType == element.type
 				-- ROBLOX performance: avoid always-false cmp, hot reloading isn't enabled in Roblox yet
 				-- Keep this check inline so it only runs on the false path:
-				-- or (_G.__DEV__ and isCompatibleFamilyForHotReloading(current, element))
+				-- or (__DEV__ and isCompatibleFamilyForHotReloading(current, element))
 			then
 				-- Move based on index
 				local existing = useFiber(current :: Fiber, element.props)
 				existing.ref = coerceRef(returnFiber, current, element)
 				existing.return_ = returnFiber
-				if _G.__DEV__ then
+				if __DEV__ then
 					existing._debugSource = element._source
 					existing._debugOwner = element._owner
 				end
@@ -496,19 +496,19 @@ local function ChildReconciler(shouldTrackSideEffects)
 				-- The new Block might not be initialized yet. We need to initialize
 				-- it in case initializing it turns out it would match.
 				-- ROBLOX FIXME Luau: Luau should analyze closure and create union of assignments
-				local type: any = element.type
-				if typeof(type) == "table" and type["$$typeof"] == REACT_LAZY_TYPE then
-					type = resolveLazyType(type) :: LazyComponent<any, any>
+				local type_: any = element.type
+				if type(type_) == "table" and type_["$$typeof"] == REACT_LAZY_TYPE then
+					type_ = resolveLazyType(type_) :: LazyComponent<any, any>
 				end
 				if
-					type["$$typeof"] == REACT_BLOCK_TYPE
-					and type._render == (current :: Fiber).type._render
+					type_["$$typeof"] == REACT_BLOCK_TYPE
+					and type_._render == (current :: Fiber).type._render
 				then
 					-- Same as above but also update the .type field.
 					local existing = useFiber((current :: Fiber), element.props)
 					existing.return_ = returnFiber
-					existing.type = type
-					if _G.__DEV__ then
+					existing.type = type_
+					if __DEV__ then
 						existing._debugSource = element._source
 						existing._debugOwner = element._owner
 					end
@@ -592,7 +592,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 			newChild.key == nil
 		then
 			-- ROBLOX performance? only call typeof once, and only if first condition is true
-			local typeOfTableKey = typeof(tableKey)
+			local typeOfTableKey = type(tableKey)
 			if
 				typeOfTableKey == "string" or typeOfTableKey == "number"
 			then
@@ -616,7 +616,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 		end
 
 		-- ROBLOX performance: avoid repeated calls to typeof, since Luau doesn't optimize
-		local typeOfNewChild = typeof(newChild)
+		local typeOfNewChild = type(newChild)
 
 		-- ROBLOX performance: hoist more common ROblox case (non-string/number) first to reduce cmp in hot path
 		if typeOfNewChild == "table" then
@@ -672,7 +672,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 			return created
 		end
 
-		if _G.__DEV__ then
+		if __DEV__ then
 			if typeOfNewChild == "function" then
 				warnOnFunctionType(returnFiber)
 			end
@@ -698,7 +698,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 
 		local key = if oldFiber ~= nil then oldFiber.key else nil
 		-- ROBLOX performance: avoid repeated calls to typeof since Luau doesn't cache
-		local typeOfNewChild = typeof(newChild)
+		local typeOfNewChild = type(newChild)
 
 		if typeOfNewChild == "table" then
 			-- ROBLOX deviation: Roact stable keys - forward children table key to
@@ -762,7 +762,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 
 
 
-		if _G.__DEV__ then
+		if __DEV__ then
 			if typeOfNewChild == "function" then
 				warnOnFunctionType(returnFiber)
 			end
@@ -786,7 +786,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 		end
 
 		-- ROBLOX performance: avoid repeated calls to typeof since Luau doesn't cache
-		local typeOfNewChild = typeof(newChild)
+		local typeOfNewChild = type(newChild)
 
 		if typeOfNewChild == "table" then
 			-- ROBLOX deviation: Roact stable keys - forward children table key to
@@ -853,7 +853,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 			return updateTextNode(returnFiber, matchedFiber, tostring(newChild), lanes)
 		end
 
-		if _G.__DEV__ then
+		if __DEV__ then
 			if typeOfNewChild == "function" then
 				warnOnFunctionType(returnFiber)
 			end
@@ -870,8 +870,8 @@ local function ChildReconciler(shouldTrackSideEffects)
 		knownKeys: Set<string> | nil,
 		returnFiber: Fiber
 	): Set<string> | nil
-		if _G.__DEV__ then
-			if typeof(child) ~= "table" or child == nil then
+		if __DEV__ then
+			if child == nil or type(child) ~= "table"  then
 				return knownKeys
 			end
 			-- ROBLOX performance: avoid repeated indexing to $$typeof
@@ -882,7 +882,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 			then
 				warnForMissingKey(child, returnFiber)
 				local key = child.key
-				if typeof(key) ~= "string" then
+				if type(key) ~= "string" then
 					-- break
 				elseif knownKeys == nil then
 					knownKeys = {};
@@ -935,7 +935,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 		-- If you change this code, also update reconcileChildrenIterator() which
 		-- uses the same algorithm.
 
-		if _G.__DEV__ then
+		if __DEV__ then
 			-- First, validate keys.
 			local knownKeys = nil
 			for i, child in newChildren do
@@ -971,7 +971,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 			local newChildNewIdx = newChildren[newIdx]
 			if
 				newChildNewIdx ~= nil and
-				typeof(newChildNewIdx) == "table" and
+				type(newChildNewIdx) == "table" and
 				newChildNewIdx["$$typeof"] ~= nil
 			then
 				newFiber = updateSlot(returnFiber, oldFiber, newChildNewIdx, lanes, newIdx)
@@ -1036,7 +1036,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 				local newChildNewIdx = newChildren[newIdx]
 				if
 					newChildNewIdx ~= nil and
-					typeof(newChildNewIdx) == "table" and
+					type(newChildNewIdx) == "table" and
 					newChildNewIdx["$$typeof"] ~= nil
 				then
 					newFiber = createChild(returnFiber, newChildNewIdx, lanes, newIdx)
@@ -1134,7 +1134,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 		-- 		.. "React. Please file an issue."
 		-- )
 
-		if _G.__DEV__ then
+		if __DEV__ then
 			-- We don't support rendering Generators because it's a mutation.
 			-- See https://github.com/facebook/react/issues/12995
 			-- ROBLOX deviation: Lua doesn't have built-in generators
@@ -1373,7 +1373,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 						deleteRemainingChildren(returnFiber, child.sibling)
 						local existing = useFiber(child, element.props.children)
 						existing.return_ = returnFiber
-						if _G.__DEV__ then
+						if __DEV__ then
 							existing._debugSource = element._source
 							existing._debugOwner = element._owner
 						end
@@ -1414,7 +1414,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 						-- ROBLOX performance: avoid always-false cmp, hot reloading isn't enabled in Roblox yet
 						-- Keep this check inline so it only runs on the false path:
 						-- or (
-						-- 	_G.__DEV__
+						-- 	__DEV__
 						-- 	and isCompatibleFamilyForHotReloading(child, element)
 						-- )
 					then
@@ -1422,7 +1422,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 						local existing = useFiber(child, element.props)
 						existing.ref = coerceRef(returnFiber, child, element)
 						existing.return_ = returnFiber
-						if _G.__DEV__ then
+						if __DEV__ then
 							existing._debugSource = element._source
 							existing._debugOwner = element._owner
 						end
@@ -1508,7 +1508,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 		-- fragment nodes. Recursion happens at the normal flow.
 
 		-- ROBLOX performance: avoid repeated calls to typeof since Luau doesn't cache
-		local typeOfNewChild = typeof(newChild)
+		local typeOfNewChild = type(newChild)
 
 		-- Handle top level unkeyed fragments as if they were arrays.
 		-- This leads to an ambiguity between <>{[...]}</> and <>...</>.
@@ -1519,12 +1519,12 @@ local function ChildReconciler(shouldTrackSideEffects)
 			and newChild.key == nil
 		if isUnkeyedTopLevelFragment then
 			newChild = newChild.props.children
-			typeOfNewChild = typeof(newChild)
+			typeOfNewChild = type(newChild)
 		end
 		local newChildIsArray = isArray(newChild)
 
 		-- Handle object types
-		-- ROBLOX deviation: upstream checkos for `object`, but we need to manually exclude array
+		-- ROBLOX deviation: upstream checks for `object`, but we need to manually exclude array
 		local isObject = newChild ~= nil and typeOfNewChild == "table" and not newChildIsArray
 
 		if isObject then
@@ -1564,7 +1564,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 				reconcileSingleTextNode(
 					returnFiber,
 					currentFirstChild,
-					"" .. newChild,
+					tostring(newChild),
 					lanes
 				)
 			)
@@ -1589,7 +1589,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 		-- 	-- throwOnInvalidObjectType(returnFiber, newChild)
 		-- end
 
-		if _G.__DEV__ then
+		if __DEV__ then
 			if typeOfNewChild == "function" then
 				warnOnFunctionType(returnFiber)
 			end
@@ -1602,7 +1602,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 			-- we already threw above.
 			-- ROBLOX deviation: With coercion of no returns to `nil`, it
 			-- if returnFiber.tag == ClassComponent then
-			--   if _G.__DEV__ then
+			--   if __DEV__ then
 			-- isn't necessary to special case this scenario
 			-- local instance = returnFiber.stateNode
 			-- if instance.render._isMockFunction then
@@ -1644,10 +1644,11 @@ exports.reconcileChildFibers = ChildReconciler(true)
 exports.mountChildFibers = ChildReconciler(false)
 
 exports.cloneChildFibers = function(current: Fiber | nil, workInProgress: Fiber)
-	invariant(
-		current == nil or workInProgress.child == (current :: Fiber).child,
-		"Resuming work not yet implemented."
-	)
+	-- ROBLOX deviation: This message isn't tested upstream, remove for hot path optimization
+	-- invariant(
+	-- 	current == nil or workInProgress.child == (current :: Fiber).child,
+	-- 	"Resuming work not yet implemented."
+	-- )
 
 	if workInProgress.child == nil then
 		return

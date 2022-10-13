@@ -18,9 +18,9 @@ local function unimplemented(message: string)
   error("FIXME (roblox): " .. message .. " is unimplemented", 2)
 end
 
-local __DEV__ = _G.__DEV__
-local __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ = _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__
-local __COMPAT_WARNINGS__ = _G.__COMPAT_WARNINGS__
+local __DEV__ = _G.__DEV__ :: boolean
+local __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ = _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ :: boolean
+local __COMPAT_WARNINGS__ = _G.__COMPAT_WARNINGS__ :: boolean
 
 local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from Shared
@@ -460,16 +460,16 @@ local function updateMemoComponent(
   renderLanes: Lanes
 ): nil | Fiber
   if current == nil then
-    local type = Component.type
+    local type_ = Component.type
     if
-      isSimpleFunctionComponent(type) and
+      isSimpleFunctionComponent(type_) and
       Component.compare == nil and
       -- SimpleMemoComponent codepath doesn't resolve outer props either.
       Component.defaultProps == nil
     then
-      local resolvedType = type
+      local resolvedType = type_
       if  __DEV__ then
-        resolvedType = resolveFunctionForHotReloading(type)
+        resolvedType = resolveFunctionForHotReloading(type_)
       end
       -- If this is a plain function component without default props,
       -- and with only the default shallow comparison, we upgrade it
@@ -477,7 +477,7 @@ local function updateMemoComponent(
       workInProgress.tag = SimpleMemoComponent
       workInProgress.type = resolvedType
       if  __DEV__ then
-        validateFunctionComponentInDev(workInProgress, type)
+        validateFunctionComponentInDev(workInProgress, type_)
       end
       return updateSimpleMemoComponent(
         current,
@@ -493,9 +493,9 @@ local function updateMemoComponent(
       local innerPropTypes
       local validateProps
       -- ROBLOX deviation: avoid accessing propTypes on a function, Lua doesn't support fields on functions
-      if typeof(type) == "table" then
-        innerPropTypes = type.propTypes
-        validateProps = type.validateProps
+      if type(type_) == "table" then
+        innerPropTypes = type_.propTypes
+        validateProps = type_.validateProps
       end
 
       if innerPropTypes or validateProps then
@@ -506,7 +506,7 @@ local function updateMemoComponent(
           validateProps,
           nextProps, -- Resolved props
           "prop",
-          getComponentName(type)
+          getComponentName(type_)
         )
       end
     end
@@ -527,14 +527,14 @@ local function updateMemoComponent(
   -- ROBLOX the if clause above returns early if current is nil
   local current = (current :: Fiber)
   if __DEV__ or __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
-    local type = Component.type
+    local type_ = Component.type
     -- ROBLOX deviation: adds support for legacy Roact's validateProps()
     local innerPropTypes
     local validateProps
     -- ROBLOX deviation: only check for propTypes on class components, Lua doesn't support fields on functions
-    if typeof(type) == "table" then
-      innerPropTypes = type.propTypes
-      validateProps = type.validateProps
+    if type(type_) == "table" then
+      innerPropTypes = type_.propTypes
+      validateProps = type_.validateProps
     end
 
     if innerPropTypes or validateProps then
@@ -545,7 +545,7 @@ local function updateMemoComponent(
         validateProps,
         nextProps, -- Resolved props
         'prop',
-        getComponentName(type)
+        getComponentName(type_)
       )
     end
   end
@@ -607,7 +607,7 @@ function updateSimpleMemoComponent(
         local outerPropTypes
         local validateProps
         -- ROBLOX deviation: avoid accessing propTypes on a function, Lua doesn't support fields on functions
-        if typeof(outerMemoType) == "table" then
+        if outerMemoType ~= nil and type(outerMemoType) == "table" then
           outerPropTypes = (outerMemoType :: any).propTypes
           -- ROBLOX deviation: support legacy Roact's equivalent of propTypes
           validateProps = (outerMemoType :: any).validateProps
@@ -833,14 +833,14 @@ function updateFunctionComponent(
 )
   if __DEV__ or __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
     -- ROBLOX deviation: function components can't have props in Lua
-    if typeof(Component) ~= 'function' and (workInProgress.type ~= workInProgress.elementType) then
+    if type(Component) ~= 'function' and (workInProgress.type ~= workInProgress.elementType) then
       -- Lazy component props can't be validated in createElement
       -- because they're only guaranteed to be resolved here.
       -- ROBLOX deviation: adds support for legacy Roact's validateProps()
       local innerPropTypes
       local validateProps
       -- ROBLOX deviation: Roact won't support propTypes on functional components
-      if typeof(Component) == "table" then
+      if type(Component) == "table" then
         innerPropTypes = (Component :: any).propTypes
         validateProps = (Component :: any).validateProps
       end
@@ -1121,8 +1121,8 @@ function finishClassComponent(
   local nextChildren
   if
     didCaptureError and
-    typeof(Component.getDerivedStateFromError) ~= "function"
-   then
+    (Component.getDerivedStateFromError == nil or type(Component.getDerivedStateFromError) ~= "function")
+  then
     -- If we captured an error, but getDerivedStateFromError is not defined,
     -- unmount all the children. componentDidCatch will schedule an update to
     -- re-render a fallback. This is temporary until we migrate everyone to
@@ -1296,7 +1296,7 @@ local function updateHostComponent(
     tryToClaimNextHydratableInstance(workInProgress)
   end
 
-  local type = workInProgress.type
+  local type_ = workInProgress.type
   local nextProps = workInProgress.pendingProps
   local prevProps
   if current ~= nil then
@@ -1304,7 +1304,7 @@ local function updateHostComponent(
   end
 
   local nextChildren = nextProps.children
-  local isDirectTextChild = shouldSetTextContent(type, nextProps)
+  local isDirectTextChild = shouldSetTextContent(type_, nextProps)
 
   if isDirectTextChild then
     -- We special case a direct text child of a host node. This is a common
@@ -1312,7 +1312,7 @@ local function updateHostComponent(
     -- this in the host environment that also has access to this prop. That
     -- avoids allocating another HostText fiber and traversing it.
     nextChildren = nil
-  elseif prevProps ~= nil and shouldSetTextContent(type, prevProps) then
+  elseif prevProps ~= nil and shouldSetTextContent(type_, prevProps) then
     -- If we're switching from a direct text child to a normal child, or to
     -- empty, we need to schedule the text content to be reset.
     workInProgress.flags = bit32.bor(workInProgress.flags, ContentReset)
@@ -1455,11 +1455,11 @@ local function mountLazyComponent(
   if __DEV__ then
     if
       Component ~= nil and
-      typeof(Component) == 'table' and
+      type(Component) == 'table' and
       Component["$$typeof"] == REACT_LAZY_TYPE
     then
       hint = ' Did you wrap a component in React.lazy() more than once?'
-    elseif typeof(Component) == 'table' and
+    elseif type(Component) == 'table' and
       Component["$$typeof"] == nil
     then
       hint = "\n" .. inspect(Component)
@@ -1562,8 +1562,8 @@ local function mountIndeterminateComponent(
     if
       -- deviation: Instead of checking for the prototype, see if Component is a
       -- table with a render function
-      typeof(Component) == "table" and
-      typeof(Component.render) == "function"
+      type(Component) == "table" and
+      type(Component.render) == "function"
     then
       local componentName = getComponentName(Component) or "Unknown"
 
@@ -1605,14 +1605,17 @@ local function mountIndeterminateComponent(
   end
   -- React DevTools reads this flag.
   workInProgress.flags = bit32.bor(workInProgress.flags, PerformedWork)
+  -- ROBLOX deviation START: cache type(value)
+  local typeofValue = type(value)
+  -- ROBLOX deviation END
 
   if __DEV__ then
     -- Support for module components is deprecated and is removed behind a flag.
     -- Whether or not it would crash later, we want to show a good message in DEV first.
     if
-      typeof(value) == "table" and
       value ~= nil and
-      typeof(value.render) == "function" and
+      typeofValue == "table" and
+      type(value.render) == "function" and
       value["$$typeof"] == nil
     then
       local componentName = getComponentName(Component) or "Unknown"
@@ -1637,8 +1640,9 @@ local function mountIndeterminateComponent(
     -- Run these checks in production only if the flag is off.
     -- Eventually we'll delete this branch altogether.
     not disableModulePatternComponents and
-    typeof(value) == "table" and
-    typeof(value.render) == "function" and
+    value ~= nil and
+    typeofValue == "table" and
+    type(value.render) == "function" and
     value["$$typeof"] == nil
   then
     if __DEV__ then
@@ -1684,10 +1688,10 @@ local function mountIndeterminateComponent(
 
     -- ROBLOX deviation: don't access field on function
     local getDerivedStateFromProps
-    if typeof(Component) ~= "function" then
+    if type(Component) ~= "function" then
       getDerivedStateFromProps = (Component :: React_Component<any, any>).getDerivedStateFromProps
     end
-    if typeof(getDerivedStateFromProps) == "function" then
+    if getDerivedStateFromProps ~= nil and type(getDerivedStateFromProps) == "function" then
       applyDerivedStateFromProps(
         workInProgress,
         Component,
@@ -1786,7 +1790,7 @@ function validateFunctionComponentInDev(workInProgress: Fiber, Component: any)
     if
       warnAboutDefaultPropsOnFunctionComponents and
       -- ROBLOX deviation: functions can't have fields in Lua
-      typeof(Component) ~= 'function' and
+      type(Component) ~= 'function' and
       Component.defaultProps ~= nil
     then
       local componentName = getComponentName(Component) or 'Unknown'
@@ -1803,7 +1807,7 @@ function validateFunctionComponentInDev(workInProgress: Fiber, Component: any)
     end
 
     -- ROBLOX deviation: Lua functions can't have fields
-    if typeof(Component) ~= 'function' and typeof(Component.getDerivedStateFromProps) == 'function' then
+    if type(Component) ~= 'function' and Component.getDerivedStateFromProps ~= nil and type(Component.getDerivedStateFromProps) == 'function' then
       local componentName = getComponentName(Component) or 'Unknown'
 
       if not DidWarn.didWarnAboutGetDerivedStateOnFunctionComponent[componentName] then
@@ -1816,9 +1820,9 @@ function validateFunctionComponentInDev(workInProgress: Fiber, Component: any)
     end
 
     -- ROBLOX deviation: Lua functions can't have fields
-    if typeof(Component) ~= 'function' and
-      typeof(Component.contextType) == 'table' and
-      Component.contextType ~= nil
+    if type(Component) ~= 'function' and
+      Component.contextType ~= nil and
+      type(Component.contextType) == 'table'
     then
       local componentName = getComponentName(Component) or 'Unknown'
 
@@ -2008,7 +2012,7 @@ local function updateSuspenseComponent(current, workInProgress, renderLanes)
       )
       workInProgress.memoizedState = SUSPENDED_MARKER
       return fallbackFragment
-    elseif typeof(nextProps.unstable_expectedLoadTime) == 'number' then
+    elseif nextProps.unstable_expectedLoadTime ~= nil and type(nextProps.unstable_expectedLoadTime) == 'number' then
       -- This is a CPU-bound tree. Skip this tree and show a placeholder to
       -- unblock the surrounding content. Then immediately retry after the
       -- initial commit.
@@ -3175,7 +3179,7 @@ function updateContextConsumer(
   end
 
   if  __DEV__ then
-    if typeof(render) ~= 'function' then
+    if type(render) ~= 'function' then
       console.error(
         'A context consumer was rendered with multiple children, or a child ' ..
           "that isn't a function. A context consumer expects a single child " ..
@@ -3627,19 +3631,19 @@ local function beginWork(
   elseif workInProgress.tag == ContextConsumer then
     return updateContextConsumer(current, workInProgress, renderLanes)
   elseif workInProgress.tag == MemoComponent then
-    local type = workInProgress.type
+    local type_ = workInProgress.type
     local unresolvedProps = workInProgress.pendingProps
     -- Resolve outer props first, then resolve inner props.
-    local resolvedProps = resolveDefaultProps(type, unresolvedProps)
+    local resolvedProps = resolveDefaultProps(type_, unresolvedProps)
     if __DEV__ or __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
       if workInProgress.type ~= workInProgress.elementType then
         -- ROBLOX deviation: adds support for legacy Roact's validateProps()
         local outerPropTypes
         local validateProps
         -- ROBLOX deviation: only get propTypes from class components, Lua doesn't support fields on functions
-        if typeof(type) == "table" then
-          outerPropTypes = type.propTypes
-          validateProps = type.validateProps
+        if type(type_) == "table" then
+          outerPropTypes = type_.propTypes
+          validateProps = type_.validateProps
         end
         if outerPropTypes or validateProps then
           checkPropTypes(
@@ -3647,16 +3651,16 @@ local function beginWork(
             validateProps,
             resolvedProps, -- Resolved for outer only
             "prop",
-            getComponentName(type)
+            getComponentName(type_)
           )
         end
       end
     end
-    resolvedProps = resolveDefaultProps(type.type, resolvedProps)
+    resolvedProps = resolveDefaultProps(type_.type, resolvedProps)
     return updateMemoComponent(
       current,
       workInProgress,
-      type,
+      type_,
       resolvedProps,
       updateLanes,
       renderLanes

@@ -8,7 +8,6 @@ files = ["*", "!**/__tests__/**"]
 
 [dependencies]
 LuauPolyfill = { workspace = true }
-Cryo = { workspace = true }
 React = { path = "../react" }
 ReactReconciler = { path = "../react-reconciler" }
 Scheduler = { path = "../scheduler" }

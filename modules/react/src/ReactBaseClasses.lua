@@ -6,6 +6,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  ]]
+local __DEV__ = _G.__DEV__ :: boolean
+local __COMPAT_WARNINGS__ = _G.__COMPAT_WARNINGS__ :: boolean
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
@@ -14,12 +16,14 @@ type Object = LuauPolyfill.Object
 local console = require(Packages.Shared).console
 
 local SharedModule = require(Packages.Shared)
-local invariant = SharedModule.invariant
+-- ROBLOX deviation START: we do boolean checks and error() like React 18 does to save functional call in hot path
+-- local invariant = SharedModule.invariant
+-- ROBLOX deviation END
 type React_Component<Props, State = nil> = SharedModule.React_Component<Props, State>
 local ReactNoopUpdateQueue = require(script.Parent.ReactNoopUpdateQueue)
 local emptyObject = {}
 
-if _G.__DEV__ then
+if __DEV__ then
   Object.freeze(emptyObject)
 end
 
@@ -64,7 +68,7 @@ local function warnAboutExistingLifecycle(componentName, newName, existingName)
 end
 
 local function warnAboutDeprecatedLifecycleName(componentName, newName, existingName)
-  if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
+  if __DEV__ and __COMPAT_WARNINGS__ then
     local path, linenum = debug.info(3, "sln")
     console.warn(
       "%s is using method '%s', which is no longer supported and should be updated to '%s'\nFile: %s:%s",
@@ -137,7 +141,7 @@ for i=1, InstancePoolSize do
 end
 
 local function setStateInInit(componentInstance: React_Component<any, any>, statePayload: any, callback: nil): ()
-  if _G.__DEV__ and (callback :: any) ~= nil then
+  if __DEV__ and (callback :: any) ~= nil then
     console.warn(
       'Received a `callback` argument to `setState` during initialization of '
         .. '"%s". The callback behavior is not supported when using `setState` '
@@ -148,20 +152,22 @@ local function setStateInInit(componentInstance: React_Component<any, any>, stat
   end
 
   -- Use the same warning as in the "real" `setState` below
-  invariant(
-    typeof(statePayload) == 'table' or typeof(statePayload) == 'function' or statePayload == nil,
-    'setState(...): takes an object of state variables to update or a '
-      .. 'function which returns an object of state variables.'
-  )
+  local typeStatePayload = statePayload and type(statePayload)
+  if statePayload == nil or (typeStatePayload ~= 'table' and typeStatePayload ~= 'function') then
+    error('setState(...): takes an object of state variables to update or a '
+    .. 'function which returns an object of state variables.')
+  end
   local prevState = componentInstance.state
   local partialState
-  if typeof(statePayload) == "function" then
+  if typeStatePayload == "function" then
     -- Updater function
     partialState = statePayload(prevState, componentInstance.props)
   else
     -- Partial state object
     partialState = statePayload
   end
+  -- ROBLOX TODO: can't use table.clone optimization here: invalid argument #1 to 'clone' (table has a protected metatable)
+  -- local newState = if prevState then table.clone(prevState) else {}
   componentInstance.state = Object.assign({}, prevState, partialState)
 end
 
@@ -169,15 +175,14 @@ function Component:extend(name): React_Component<any, any>
   -- ROBLOX note: legacy Roact will accept nil here and default to empty string
   -- ROBLOX TODO: if name in "" in ReactComponentStack frame, we should try and get the variable name it was assigned to
   if name == nil then
-    if _G.__COMPAT_WARNINGS__ then
+    if __COMPAT_WARNINGS__ then
       console.warn("Component:extend() accepting no arguments is deprecated, and will "
           .. "not be supported in a future version of Roact. Please provide an explicit name.")
     end
     name = ""
+  elseif type(name) ~= "string" then
+    error("Component class name must be a string")
   end
-
-  assert(typeof(name) == "string", "Component class name must be a string")
-
 
   -- ROBLOX performance? do table literal in one shot instead a field at a time in a pairs() loop
   local class = {
@@ -245,7 +250,7 @@ function Component:extend(name): React_Component<any, any>
     instance = setmetatable(instance, class)
 
     -- ROBLOX performance: only do typeof if it's non-nil to begin with
-    if class.init and typeof(class.init) == "function" then
+    if class.init and type(class.init) == "function" then
       -- ROBLOX deviation: Override setState to allow it to be used in init.
       -- This maintains legacy Roact behavior and allows more consistent
       -- adherance to the "never assign directly to state" rule
@@ -292,10 +297,9 @@ end
  * @protected
  ]]
 function Component:setState(partialState, callback)
-  invariant(
-    typeof(partialState) == 'table' or typeof(partialState) == 'function' or partialState == nil,
-    'setState(...): takes an object of state variables to update or a ' .. 'function which returns an object of state variables.'
-  )
+  if partialState ~= nil and type(partialState) ~= 'table' and type(partialState) ~= 'function' then
+    error('setState(...): takes an object of state variables to update or a ' .. 'function which returns an object of state variables.')
+  end
   self.__updater.enqueueSetState(self, partialState, callback, 'setState')
 end
 
@@ -325,7 +329,7 @@ end
  ]]
 
 
-if _G.__DEV__ then
+if __DEV__ then
   -- ROBLOX FIXME Luau: need CLI-53569 to remove the any cast
   local deprecatedAPIs = {
     isMounted = {'isMounted', 'Instead, make sure to clean up subscriptions and pending requests in ' .. 'componentWillUnmount to prevent memory leaks.'},

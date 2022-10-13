@@ -55,9 +55,9 @@ local describeFunctionComponentFrame
 -- need to do additional handling to get its name. It's easier to make this a
 -- reusable function
 local function describeOwner(owner: nil | ReactComponent<any>): string?
-	if typeof(owner) == "function" then
+	if type(owner) == "function" then
 		return debug.info(owner :: (any) -> any, "n")
-	elseif typeof(owner) == "table" then
+	elseif type(owner) == "table" then
 		return tostring(owner)
 	end
 	return nil
@@ -179,7 +179,7 @@ local function describeNativeComponentFrame(
 	-- instructions in the finally block.
 	local earlyOutValue = nil
 
-	if sample and control and typeof(sample.stack) == "string" then
+	if sample and control and type(sample.stack) == "string" then
 		-- // This extracts the first frame from the sample that isn't also in the control.
 		-- // Skipping one frame that we assume is the frame that calls the two.
 		local sampleLines = string.split(sample.stack, "\n")
@@ -258,17 +258,12 @@ local function describeNativeComponentFrame(
 		return earlyOutValue
 	end
 
-	-- // Fallback to just using the name if we couldn't make it throw.
-	local name = ""
-
-	-- ROBLOX deviation: Can't get displayName for functions
-	if typeof(fn) == "function" then
-		-- ROBLOX FIXME: type refinement
-		name = debug.info(fn :: ((any) -> any), "n")
-		-- ROBLOX deviation: since fn can be a class, we can get the class name here
-	elseif typeof(fn) == "table" then
-		name = tostring(fn)
-	end
+	-- Fallback to just using the name if we couldn't make it throw.
+	-- ROBLOX deviation START: Can't get displayName for functions, since fn can be a class, we can get the class name here
+	local name = if type(fn) == "function"
+		then debug.info(fn :: Function, "n")
+		-- ROBLOX deviation :
+		else if type(fn) == "table" then tostring(fn) else ""
 
 	local syntheticFrame = ""
 	if name ~= nil and name ~= "" then
@@ -369,7 +364,10 @@ function describeFunctionComponentFrame(
 		return ""
 	end
 	-- ROBLOX deviation: use debug.info to discover function names
-	local name = debug.info(fn :: Function, "n")
+	-- ROBLOX FIXME: find out how non-functions are getting into here, they pollute test output
+	local name = if type(fn) == "function"
+		then debug.info(fn :: Function, "n")
+		else tostring(fn)
 	local ownerName = nil
 	if _G.__DEV__ and ownerFn then
 		-- ROBLOX deviation: owner may be a function or a table
@@ -387,7 +385,7 @@ end
 -- end
 
 local function describeUnknownElementTypeFrameInDEV(
-	type: any,
+	type_: any,
 	source: nil | Source,
 	-- ROBLOX deviation: owner could be a class component
 	ownerFn: nil | ReactComponent<any>
@@ -395,20 +393,20 @@ local function describeUnknownElementTypeFrameInDEV(
 	if not _G.__DEV__ then
 		return ""
 	end
-	if type == nil then
+	if type_ == nil then
 		return ""
 	end
 
 	-- ROBLOX deviation: in JavaScript, if `type` contains a class, typeof will
 	-- return "function". We need to specifically check for the class.
-	if typeof(type) == "table" and typeof(type.__ctor) == "function" then
+	if type(type_) == "table" and type(type_.__ctor) == "function" then
 		-- ROBLOX deviation: since Roact class components are tables, we can't
 		-- count on describeClassComponent being a thin wrapper for
 		-- describeFunctionComponent like upstream does implicitly
-		return describeClassComponentFrame(type, source, ownerFn)
+		return describeClassComponentFrame(type_, source, ownerFn)
 	end
 
-	if typeof(type) == "function" then
+	if type(type_) == "function" then
 		-- ROBLOX DEVIATION: ignore enableComponentStackLocations
 		-- if enableComponentStackLocations then
 		-- 	-- ROBLOX deviation: since functions and classes have different
@@ -418,30 +416,30 @@ local function describeUnknownElementTypeFrameInDEV(
 		-- else
 		-- 	return describeFunctionComponentFrame(type, source, ownerFn)
 		-- end
-		return describeFunctionComponentFrame(type, source, ownerFn)
+		return describeFunctionComponentFrame(type_, source, ownerFn)
 	end
 
-	if typeof(type) == "string" then
-		return describeBuiltInComponentFrame(type, source, ownerFn)
+	if type(type_) == "string" then
+		return describeBuiltInComponentFrame(type_, source, ownerFn)
 	end
 
-	if type == REACT_SUSPENSE_TYPE then
+	if type_ == REACT_SUSPENSE_TYPE then
 		return describeBuiltInComponentFrame("Suspense", source, ownerFn)
-	elseif type == REACT_SUSPENSE_LIST_TYPE then
+	elseif type_ == REACT_SUSPENSE_LIST_TYPE then
 		return describeBuiltInComponentFrame("SuspenseList", source, ownerFn)
 	end
 
-	if typeof(type) == "table" then
-		local typeProp = type["$$typeof"]
+	if type(type_) == "table" then
+		local typeProp = type_["$$typeof"]
 		if typeProp == REACT_FORWARD_REF_TYPE then
-			return describeFunctionComponentFrame(type.render, source, ownerFn)
+			return describeFunctionComponentFrame(type_.render, source, ownerFn)
 		elseif typeProp == REACT_MEMO_TYPE then
 			-- // Memo may contain any component type so we recursively resolve it.
-			return describeUnknownElementTypeFrameInDEV(type.type, source, ownerFn)
+			return describeUnknownElementTypeFrameInDEV(type_.type, source, ownerFn)
 		elseif typeProp == REACT_BLOCK_TYPE then
-			return describeFunctionComponentFrame(type._render, source, ownerFn)
+			return describeFunctionComponentFrame(type_._render, source, ownerFn)
 		elseif typeProp == REACT_LAZY_TYPE then
-			local lazyComponent = type
+			local lazyComponent = type_
 			local payload = lazyComponent._payload
 			local init = lazyComponent._init
 

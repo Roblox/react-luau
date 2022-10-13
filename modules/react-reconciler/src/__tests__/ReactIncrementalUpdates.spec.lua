@@ -9,6 +9,8 @@
 --  */
 
 local Packages = script.Parent.Parent.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
+local Object = LuauPolyfill.Object
 local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 local React
 local ReactNoop
@@ -21,15 +23,6 @@ return function()
     describe('ReactIncrementalUpdates', function()
         local function gate(fn)
             return fn(ReactFeatureFlags)
-        end
-        local function objectKeys(arr)
-            local keytable = {}
-            local n = 1
-            for k, _ in arr do
-                keytable[n] = k
-                n = n + 1
-            end
-            return keytable
         end
         beforeEach(function()
             RobloxJest.resetModules()
@@ -189,7 +182,7 @@ return function()
 
             function Foo:render()
                 instance = self
-                local keylist = objectKeys(self.state)
+                local keylist = Object.keys(self.state)
                 table.sort(keylist)
                 return React.createElement("span", {
                     prop = table.concat(keylist, ""),
@@ -258,7 +251,7 @@ return function()
 
             function Foo:render()
                 instance = self
-                local keylist = objectKeys(self.state)
+                local keylist = Object.keys(self.state)
                 table.sort(keylist)
                 return React.createElement("span", {
                     prop = table.concat(keylist, ""),
@@ -322,6 +315,69 @@ return function()
                 span("fg"),
             })
         end)
+        -- ROBLOX deviation START: same as above, but tests > 1000 updates
+        it("can abort an update, schedule a replaceState, and resume many times", function()
+            local instance
+
+            local Foo = React.Component:extend("Foo")
+            function Foo:init()
+                self.state = {}
+            end
+
+            function Foo:render()
+                instance = self
+                local keylist = Object.keys(self.state)
+                table.sort(keylist)
+                return React.createElement("span", {
+                    prop = table.concat(keylist, ""),
+                })
+            end
+
+            ReactNoop.render(React.createElement(Foo))
+            jestExpect(Scheduler).toFlushWithoutYielding()
+
+            local function createUpdate(letter)
+                return function()
+                    Scheduler.unstable_yieldValue(letter)
+                    return { [letter] = letter }
+                end
+            end
+
+            -- Schedule many async updates
+            for _ = 1, 500 do
+                instance:setState(createUpdate("a"))
+                instance:setState(createUpdate("b"))
+                instance:setState(createUpdate("c"))
+            end
+            jestExpect(ReactNoop.getChildren()).toEqual({
+                span(""),
+            })
+
+            -- Schedule some more updates at different priorities
+            instance:setState(createUpdate("d"))
+            ReactNoop.flushSync(function()
+                instance:setState(createUpdate("e"))
+                instance.__updater.enqueueReplaceState(instance, createUpdate("f"))
+            end)
+            instance:setState(createUpdate("g"))
+
+            -- The sync updates should have flushed, but not the async ones
+            jestExpect(Scheduler).toHaveYielded({
+                "e",
+                "f",
+            })
+            jestExpect(ReactNoop.getChildren()).toEqual({
+                span("f"),
+            })
+            -- Now flush the remaining work.
+            ReactNoop.flushSync(function() 
+                instance:setState(createUpdate("g"))
+            end)
+            jestExpect(ReactNoop.getChildren()).toEqual({
+                span("fg"),
+            })
+        end)
+        -- ROBLOX deviation END
         it("passes accumulation of previous updates to replaceState updater function", function()
             local instance
             local Foo = React.Component:extend("Foo")

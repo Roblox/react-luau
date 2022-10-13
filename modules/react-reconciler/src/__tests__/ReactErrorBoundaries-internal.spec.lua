@@ -1675,9 +1675,11 @@ return function()
 			local function getAMixOfNormalAndBrokenRenderElements()
 				local elements = {}
 
-				for i = 1, 100 do
+				-- ROBLOX deviation START: loop more times to test our object caching logic
+				for i = 1, 1000 do
 					table.insert(elements, React.createElement(Normal, { key = i }))
 				end
+				-- ROBLOX deviation END
 
 				table.insert(elements, React.createElement(MaybeBrokenRender, { key = 101 }))
 

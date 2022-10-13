@@ -64,14 +64,14 @@ return function()
 	--   jestExpect(origChildren["World"]).toBe(newChildren["Hello"])
 	-- end)
 
-	-- ROBLOX deviation: Replaces the above test. This new test verifies the
+	-- ROBLOX deviation START: Replaces the above test. This new test verifies the
 	-- behavior expected above, but uses enough table keys to greatly reduce the
 	-- likelihood of coincidental success.
 	it("should allow key property to express identity", function()
 		local ref = React.createRef()
 		local function Component(props)
 			local children = {}
-			for i = 1, 50 do
+			for i = 1, 500 do
 				local key = props.invert and tostring(51 - i) or tostring(i)
 				children[key] = React.createElement("TextLabel", { Text = i })
 			end
@@ -99,11 +99,12 @@ return function()
 
 		-- After rendering with `invert=true`, the keys will have switched and the
 		-- prop values will correspond to the opposite children
-		for i = 1, 50 do
+		for i = 1, 500 do
 			jestExpect(origChildren[i]).toBe(newChildren[51 - i])
 			jestExpect(origChildren[51 - i]).toBe(newChildren[i])
 		end
 	end)
+	-- ROBLOX deviation END
 
 	-- ROBLOX deviation: Verify equivalent behavior with table keys, an adaptation
 	-- to be compatible with currently-released Roact
