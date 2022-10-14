@@ -1,3 +1,4 @@
+--!strict
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react-devtools-shared/src/bridge.js
 -- /*
 --  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -195,14 +196,29 @@ export type Bridge<
 	_timeoutID: TimeoutID | nil,
 	_wall: Wall,
 	_wallUnlisten: Function | nil,
-	send: (EventName, ...ElementType<OutgoingEvents, IncomingEvents>) -> (),
-	shutdown: () -> (),
-	_flush: () -> (),
+	send: (
+		self: Bridge<OutgoingEvents, IncomingEvents>,
+		eventName: EventName,
+		...ElementType<OutgoingEvents, IncomingEvents>
+	) -> (),
+	shutdown: (self: Bridge<OutgoingEvents, IncomingEvents>) -> (),
+	_flush: (self: Bridge<OutgoingEvents, IncomingEvents>) -> (),
+	overrideValueAtPath: (
+		self: Bridge<OutgoingEvents, IncomingEvents>,
+		_ref: OverrideValueAtPath
+	) -> (),
+}
+
+type Bridge_Statics = {
+	new: (wall: Wall) -> Bridge<any, any>,
 }
 
 -- ROBLOX deviation: not sure where TimeoutID comes from in upstream
 type TimeoutID = any
-local Bridge = setmetatable({}, { __index = EventEmitter })
+local Bridge: Bridge<any, any> & Bridge_Statics = setmetatable(
+	{},
+	{ __index = EventEmitter }
+) :: any
 local BridgeMetatable = { __index = Bridge }
 
 function Bridge.new(wall: Wall)

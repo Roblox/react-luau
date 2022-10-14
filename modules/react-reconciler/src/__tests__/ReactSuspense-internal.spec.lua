@@ -1702,16 +1702,15 @@ return function()
         --             'C',
         --         })
         --     end)
-            -- ROBLOX FIXME: onInteractionScheduledWorkCompleted never gets called
-            -- one of these lines is getting hit one too many times: interaction.__count += 1
-            xit('should call onInteractionScheduledWorkCompleted after suspending', function()
+            it('should call onInteractionScheduledWorkCompleted after suspending', function()
                 -- ROBLOX deviation: mock performance.now
                 local performanceNowCounter = 0
                 _G.performance = {
                     now = function()
                         performanceNowCounter +=1
                         return performanceNowCounter
-                    end
+                    end,
+                    mark = function() end
                 }
                 local subscriber = {
                     onInteractionScheduledWorkCompleted = jestMock.fn(),

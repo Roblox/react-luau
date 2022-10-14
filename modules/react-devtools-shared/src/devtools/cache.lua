@@ -1,3 +1,4 @@
+--!strict
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react-devtools-shared/src/devtools/cache.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -9,8 +10,10 @@
 local Packages = script.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
-
-type Map<K, V> = { [K]: V }
+local Map = LuauPolyfill.Map
+type Map<K, V> = LuauPolyfill.Map<K, V>
+local WeakMap = LuauPolyfill.WeakMap
+type WeakMap<K, V> = LuauPolyfill.WeakMap<K, V>
 
 local ReactTypes = require(Packages.Shared)
 export type Thenable<R> = ReactTypes.Thenable<R>
@@ -28,7 +31,15 @@ local createContext = React.createContext
 --    The size of this cache is bounded by how many renders were profiled,
 --    and it will be fully reset between profiling sessions.
 
-type Suspender = { andThen: (() -> any, () -> any) -> any }
+-- ROBLOX deviation START: Suspender needs a generic param to be type compatible with Thenable
+export type Suspender<R = any> = {
+	andThen: <U>(
+		self: Thenable<R>,
+		onFulfill: (R) -> () | U,
+		onReject: (error: any) -> () | U
+	) -> (),
+}
+-- ROBLOX deviation END
 
 type PendingResult = {
 	status: number, -- ROBLOX TODO: Luau doesn't support literal: 0
@@ -73,75 +84,68 @@ local function readContext(Context, observedBits: boolean?)
 			)
 		)
 	end
-	return dispatcher:readContext(Context, observedBits)
+	assert(dispatcher ~= nil, "assert needed until Luau understands if nil then error()")
+	return dispatcher.readContext(Context, observedBits)
 end
 
 local CacheContext = createContext(nil)
 
 type Config = { useWeakMap: boolean? }
 
-local entries: Map<Resource<any, any, any>, Map<any, any>> = {}
-local resourceConfigs: Map<Resource<any, any, any>, Config> = {}
+-- ROBLOX deviation START: only use WeakMap
+local entries: Map<Resource<any, any, any>, WeakMap<any, any>> = Map.new()
+local resourceConfigs: Map<Resource<any, any, any>, Config> = Map.new()
 
-local function getEntriesForResource(resource: any): Map<any, any>
-	local entriesForResource: Map<any, any>? = entries[resource]
+local function getEntriesForResource(resource: any): WeakMap<any, any>
+	local entriesForResource = entries:get(resource) :: WeakMap<any, any>
 	if entriesForResource == nil then
-		local config: Config? = resourceConfigs[resource]
+		-- ROBLOX deviation START: skip the check and just use WeakMap
+		-- local config = resourceConfigs:get(resource)
+		entriesForResource = WeakMap.new()
+		-- ROBLOX deviation END
 
-		entriesForResource = (function()
-			if config ~= nil and (config :: Config).useWeakMap then
-				return {}
-			end
-			return {}
-		end)()
-
-		entries[resource] = entriesForResource :: Map<any, any>
+		entries:set(resource, entriesForResource :: WeakMap<any, any>)
 	end
 
-	return entriesForResource :: Map<any, any>
+	return entriesForResource :: WeakMap<any, any>
 end
+-- ROBLOX deviation END
 
--- ROBLOX TODO: Support function generics
--- accessResult<Input, Key, Value>(resource, fetch: Input -> Thenable<Value>, input: Input, key: Key)
-local function accessResult(
+local function accessResult<Input, Key, Value>(
 	resource: any,
-	fetch: (any) -> Thenable<any>,
-	input: any,
-	key: any
-): Result<any>
+	fetch: (Input) -> Thenable<Value>,
+	input: Input,
+	key: Key
+): Result<Value>
 	local entriesForResource = getEntriesForResource(resource)
 	local entry = entriesForResource:get(key)
 
 	if entry == nil then
 		local thenable = fetch(input)
 
-		-- ROBLOX deviation: define before use
-		local newResult: { status: number, value: Thenable<any>? } = {
-			status = Pending,
-			value = nil,
-		}
+		local newResult: PendingResult
 
 		thenable:andThen(function(value)
 			if newResult.status == Pending then
-				local resolvedResult = newResult
+				local resolvedResult: ResolvedResult<Value> = newResult :: any
 
 				resolvedResult.status = Resolved
 				resolvedResult.value = value
 			end
 		end, function(error_)
 			if newResult.status == Pending then
-				local rejectedResult = newResult
+				local rejectedResult: RejectedResult = newResult :: any
 
 				rejectedResult.status = Rejected
 				rejectedResult.value = error_
 			end
 		end)
 
-		-- ROBLOX deviation: deferred assign
-		newResult.value = thenable
-
-		entriesForResource[key] = newResult
-
+		newResult = {
+			status = Pending,
+			value = thenable,
+		}
+		entriesForResource:set(key, newResult)
 		return newResult
 	else
 		return entry
@@ -150,21 +154,12 @@ end
 
 local exports = {}
 
--- ROBLOX TODO: function generics
--- export function createResource<Input, Key, Value>(
---     fetch: Input => Thenable<Value>,
---     hashInput: Input => Key,
---     config?: Config = {},
---   ): Resource<Input, Key, Value> {
-type Input = any
-type Key = any
-type Value = any
-exports.createResource = function(
+exports.createResource = function<Input, Key, Value>(
 	fetch: (Input) -> Thenable<Value>,
 	hashInput: (Input) -> Key,
-	config: Config?
+	_config: Config?
 ): Resource<Input, Key, Value>
-	config = config or {}
+	local config = _config or {}
 	-- ROBLOX deviation: define before reference
 	local resource
 	resource = {
@@ -178,7 +173,7 @@ exports.createResource = function(
 		read = function(input: Input): Value
 			readContext(CacheContext)
 			local key = hashInput(input)
-			local result = accessResult(resource, fetch, input, key)
+			local result: Result<Value> = accessResult(resource, fetch, input, key)
 			if result.status == Pending then
 				error(result.value)
 			elseif result.status == Resolved then
@@ -187,32 +182,33 @@ exports.createResource = function(
 				error(result.value)
 			else
 				-- Should be unreachable
-				return nil
+				return nil :: any
 			end
 		end,
 		preload = function(input: Input): ()
 			readContext(CacheContext)
+
 			local key = hashInput(input)
 			accessResult(resource, fetch, input, key)
 		end,
 		write = function(key: Key, value: Value): ()
 			local entriesForResource = getEntriesForResource(resource)
-			local resolvedResult = {
+			local resolvedResult: ResolvedResult<Value> = {
 				status = Resolved,
 				value = value,
 			}
 
-			entriesForResource[key] = resolvedResult
+			entriesForResource:set(key, resolvedResult)
 		end,
 	}
 
-	resourceConfigs[resource] = config :: Config
+	resourceConfigs:set(resource, config)
 
 	return resource
 end
 
 exports.invalidateResources = function(): ()
-	entries = {}
+	entries:clear()
 end
 
 return exports

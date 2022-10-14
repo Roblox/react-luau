@@ -9,9 +9,11 @@
 --  * @flow
 --  */
 
-type WeakMap<K, V> = { [K]: V }
 local exports = {}
 local Packages = script.Parent.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
+local WeakMap = LuauPolyfill.WeakMap
+type WeakMap<K, V> = LuauPolyfill.WeakMap<K, V>
 
 local ReactFiberLane = require(script.Parent.ReactFiberLane)
 type Lane = ReactFiberLane.Lane
@@ -32,9 +34,13 @@ local getComponentName = require(Packages.Shared).getComponentName
 --  * If performance exists and supports the subset of the User Timing API that we
 --  * require.
 --  */
--- ROBLOX TODO: maybe use our debug.profile* API?
 local supportsUserTiming = _G.performance ~= nil
-local performance = _G.performance
+local performance = _G.performance or {
+  mark = function(str)
+    debug.profilebegin(str)
+    debug.profileend()
+  end
+}
 
 function formatLanes(laneOrLanes: Lane | Lanes): string
   return tostring(laneOrLanes)
@@ -67,14 +73,14 @@ end
 -- local PossiblyWeakMap = typeof WeakMap === 'function' ? WeakMap : Map
 
 -- $FlowFixMe: Flow cannot handle polymorphic WeakMaps
-local wakeableIDs: WeakMap<Wakeable, number> = {}
+local wakeableIDs: WeakMap<Wakeable, number> = WeakMap.new()
 local wakeableID: number = 0
 function getWakeableID(wakeable: Wakeable): number
-  if not wakeableIDs[wakeable] then
-    wakeableIDs[wakeable] = wakeableID
+  if not wakeableIDs:has(wakeable) then
+    wakeableIDs:set(wakeable, wakeableID)
     wakeableID += 1
   end
-  return wakeableIDs[wakeable]
+  return wakeableIDs:get(wakeable)
 end
 
 exports.markComponentSuspended =  function(fiber: Fiber, wakeable: Wakeable): ()

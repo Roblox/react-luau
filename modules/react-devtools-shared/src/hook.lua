@@ -1,3 +1,4 @@
+--!strict
 -- ROBLOX upstream: https://raw.githubusercontent.com/facebook/react/v17.0.1/packages/react-devtools-shared/src/hook.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -9,8 +10,10 @@ local Packages = script.Parent.Parent
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
-type Set<T> = { [T]: boolean }
-type Map<K, V> = { [K]: V }
+local Map = LuauPolyfill.Map
+local Set = LuauPolyfill.Set
+type Set<T> = LuauPolyfill.Set<T>
+type Map<K, V> = LuauPolyfill.Map<K, V>
 type Function = (...any) -> any
 local exports = {}
 
@@ -33,10 +36,10 @@ exports.installHook = function(target: any): DevToolsHook | nil
 	-- ROBLOX deviation: always false, only relevant in context of optimizing bundler
 	local hasDetectedBadDCE = false
 	-- TODO: More meaningful names for "rendererInterfaces" and "renderers".
-	local fiberRoots: Map<any, Set<any>> = {} :: Map<any, Set<any>>
-	local rendererInterfaces = {}
+	local fiberRoots = {}
+	local rendererInterfaces = Map.new()
 	local listeners = {}
-	local renderers = {}
+	local renderers = Map.new()
 
 	local function detectReactBuildType(renderer)
 		-- ROBLOX TODO? do we need to distinguish between prod and dev bundles?
@@ -56,14 +59,11 @@ exports.installHook = function(target: any): DevToolsHook | nil
 	local function inject(renderer)
 		local id = PREFIX_INCREMENT()
 
-		renderers[id] = renderer
+		renderers:set(id, renderer)
 
-		local reactBuildType = (function()
-			if hasDetectedBadDCE then
-				return "deadcode"
-			end
-			return detectReactBuildType(renderer)
-		end)()
+		local reactBuildType = if hasDetectedBadDCE
+			then "deadcode"
+			else detectReactBuildType(renderer)
 
 		-- ROBLOX deviation: instead of checking if `process.env.NODE_ENV ~= "production"`
 		-- we use the __DEV__ global
@@ -95,7 +95,7 @@ exports.installHook = function(target: any): DevToolsHook | nil
 
 		if type(attach) == "function" then
 			local rendererInterface = attach(hook, id, renderer, target)
-			hook.rendererInterfaces[id] = rendererInterface
+			hook.rendererInterfaces:set(id, rendererInterface)
 		end
 
 		hook.emit("renderer", {
@@ -143,13 +143,13 @@ exports.installHook = function(target: any): DevToolsHook | nil
 		local roots = fiberRoots
 
 		if not roots[rendererID] then
-			roots[rendererID] = {}
+			roots[rendererID] = Set.new()
 		end
 
 		return roots[rendererID]
 	end
 	local function onCommitFiberUnmount(rendererID, fiber)
-		local rendererInterface = rendererInterfaces[rendererID]
+		local rendererInterface = rendererInterfaces:get(rendererID)
 
 		if rendererInterface ~= nil then
 			rendererInterface.handleCommitFiberUnmount(fiber)
@@ -168,7 +168,7 @@ exports.installHook = function(target: any): DevToolsHook | nil
 			mountedRoots[root] = nil
 		end
 
-		local rendererInterface = rendererInterfaces[rendererID]
+		local rendererInterface = rendererInterfaces:get(rendererID)
 
 		if rendererInterface ~= nil then
 			rendererInterface.handleCommitFiberRoot(root, priorityLevel)

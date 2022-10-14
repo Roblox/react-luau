@@ -1,3 +1,4 @@
+--!strict
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react-devtools-shared/src/events.js
 -- /*
 --  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -10,11 +11,12 @@
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
-type Array<T> = { [number]: T }
-type Map<K, V> = { [K]: V }
+local Map = LuauPolyfill.Map
+type Array<T> = LuauPolyfill.Array<T>
+type Map<K, V> = LuauPolyfill.Map<K, V>
 type Function = (...any) -> ...any
 type ElementType<T, U> = any
-type EventListener = (...ElementType<any, string>) -> any
+type EventListener = (...ElementType<any, string>) -> ...any
 
 export type EventEmitter<Events> = {
 	listenersMap: Map<string, Array<Function>>,
@@ -30,42 +32,45 @@ export type EventEmitter<Events> = {
 	-- ROBLOX deviation: Luau doesn't support $Keys<Events> for first non-self param
 	removeListener: (self: EventEmitter<Events>, event: string, listener: Function) -> (),
 }
-local EventEmitter = {}
+type EventEmitter_statics = {
+	new: () -> EventEmitter<any>,
+}
+local EventEmitter: EventEmitter<any> & EventEmitter_statics =
+	({} :: any) :: EventEmitter<any> & EventEmitter_statics
 local EventEmitterMetatable = { __index = EventEmitter }
 
-function EventEmitter.new()
+function EventEmitter.new(): EventEmitter<any>
 	local self = {}
-	self.listenersMap = {} :: Map<string, Array<EventListener>>
+	self.listenersMap = Map.new()
 
-	return setmetatable(self, EventEmitterMetatable)
+	return (setmetatable(self, EventEmitterMetatable) :: any) :: EventEmitter<any>
 end
 
 function EventEmitter:addListener(event: string, listener: EventListener): ()
-	local listeners = self.listenersMap[event] :: Array<EventListener>?
+	local listeners = self.listenersMap:get(event)
 	if listeners == nil then
-		self.listenersMap[event] = { listener }
+		self.listenersMap:set(event, { listener })
 	else
 		local index = Array.indexOf(listeners :: Array<EventListener>, listener)
 		if index < 1 then
-			table.insert(listeners :: Array<EventListener>, listener)
+			table.insert(listeners, listener)
 		end
 	end
 end
 
 -- ROBLOX deviation: Luau doesn't support $Keys<Events> for first non-self param
-function EventEmitter:emit(event: string, ...: ElementType<any, string>): ()
-	local listeners = self.listenersMap[event] :: Array<EventListener>?
+function EventEmitter:emit(event: string, ...: ElementType<string, string>): ()
+	local listeners = self.listenersMap:get(event)
 	if listeners ~= nil then
-		if #(listeners :: Array<EventListener>) == 1 then
+		if #listeners == 1 then
 			-- No need to clone or try/catch
-			local listener = (listeners :: Array<EventListener>)[1]
+			local listener = listeners[1]
 			listener(...)
 		else
 			local didThrow = false
 			local caughtError = nil
-			local clonedListeners = Array.from((listeners :: Array<EventListener>))
-			for i = 1, #clonedListeners do
-				local listener = clonedListeners[i]
+			local clonedListeners = table.clone(listeners)
+			for _, listener in clonedListeners do
 				local ok, error_ = pcall(function(...)
 					listener(...)
 					return nil
@@ -83,18 +88,18 @@ function EventEmitter:emit(event: string, ...: ElementType<any, string>): ()
 end
 
 function EventEmitter:removeAllListeners(): ()
-	table.clear(self.listenersMap)
+	self.listenersMap:clear()
 end
 
 -- ROBLOX deviation: Luau doesn't support $Keys<Events> for first non-self param
 function EventEmitter:removeListener(event: string, listener: Function): ()
-	local listeners = self.listenersMap[event] :: Array<EventListener>?
+	local listeners = self.listenersMap:get(event)
 
 	if listeners ~= nil then
-		local index = Array.indexOf(listeners :: Array<EventListener>, listener)
+		local index = Array.indexOf(listeners, listener)
 
 		if index >= 1 then
-			Array.splice(listeners :: Array<EventListener>, index, 1)
+			Array.splice(listeners, index, 1)
 		end
 	end
 end

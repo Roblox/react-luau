@@ -1,6 +1,6 @@
 {
 	"language": {
-		"mode": "nonstrict"
+		"mode": "strict"
 	},
 	"lint": {
 		"*": "enabled"

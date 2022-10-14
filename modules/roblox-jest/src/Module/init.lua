@@ -93,6 +93,7 @@ local function requireOverride(scriptInstance: ModuleScript): any
 		getfenv(moduleFunction).delay = FakeTimers.delayOverride
 		getfenv(moduleFunction).tick = FakeTimers.tickOverride
 		getfenv(moduleFunction).task = FakeTimers.taskOverride
+		getfenv(moduleFunction).os = FakeTimers.osOverride
 		moduleResult = moduleFunction()
 
 		if moduleResult == nil then
@@ -143,6 +144,8 @@ local function mock(scriptInstance: ModuleScript, callback: () -> any)
 	getfenv(callback).require = requireOverride
 	getfenv(callback).delay = FakeTimers.delayOverride
 	getfenv(callback).tick = FakeTimers.tickOverride
+	getfenv(callback).task = FakeTimers.taskOverride
+	getfenv(callback).os = FakeTimers.osOverride
 	mocks[scriptInstance] = callback
 end
 

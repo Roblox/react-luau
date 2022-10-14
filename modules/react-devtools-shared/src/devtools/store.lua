@@ -1,3 +1,4 @@
+--!strict
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react-devtools-shared/src/devtools/store.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -9,13 +10,15 @@
 local Packages = script.Parent.Parent.Parent
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
-local Array = LuauPolyfill.Array
-local Set = LuauPolyfill.Set
-local Object = LuauPolyfill.Object
 local inspect = LuauPolyfill.util.inspect
+local Array = LuauPolyfill.Array
+local Error = LuauPolyfill.Error
+local Map = LuauPolyfill.Map
+local Object = LuauPolyfill.Object
+local Set = LuauPolyfill.Set
 
 type Array<T> = LuauPolyfill.Array<T>
-type Map<K, V> = { [K]: V }
+type Map<K, V> = LuauPolyfill.Map<K, V>
 type Object = LuauPolyfill.Object
 type Set<K> = LuauPolyfill.Set<K>
 local console = require(Packages.Shared).console
@@ -42,14 +45,8 @@ local localStorageGetItem = storage.localStorageGetItem
 local localStorageSetItem = storage.localStorageSetItem
 local __DEBUG__ = constants.__DEBUG__
 
--- ROBLOX TODO: implement ProfilerStore
--- local ProfilerStoreModule = require(script.Parent.ProfilerStore)
--- local ProfilerStore = ProfilerStoreModule.ProfilerStore
--- type ProfilerStore = ProfilerStoreModule.ProfilerStore
-type ProfilerStore = Object
-local ProfilerStore = {
-	new = function(...) end,
-}
+local ProfilerStore = require(script.Parent.ProfilerStore)
+type ProfilerStore = ProfilerStore.ProfilerStore
 
 local ComponentsTypes = require(script.Parent.Parent.devtools.views.Components.types)
 type Element = ComponentsTypes.Element
@@ -58,6 +55,10 @@ type ComponentFilter = Types.ComponentFilter
 type ElementType = Types.ElementType
 local Bridge = require(script.Parent.Parent.bridge)
 type FrontendBridge = Bridge.FrontendBridge
+
+local devtoolsTypes = require(script.Parent.types)
+type Store = devtoolsTypes.Store
+type Capabilities = devtoolsTypes.Capabilities
 
 local debug_ = function(methodName, ...)
 	if __DEBUG__ then
@@ -78,144 +79,22 @@ type Config = {
 	supportsTraceUpdates: boolean?,
 }
 
-type Capabilities = { hasOwnerMetadata: boolean, supportsProfiling: boolean }
-
 -- /**
 --  * The store is the single source of truth for updates from the backend.
 --  * ContextProviders can subscribe to the Store for specific things they want to provide.
 --  */
-export type Store = EventEmitter<
-	{
-		collapseNodesByDefault: Array<any>,
-		componentFilters: Array<any>,
-		mutated: Array<any>, -- ROBLOX deviation: can't express jagged array types in Luau
-		recordChangeDescriptions: Array<any>,
-		roots: Array<any>,
-		supportsNativeStyleEditor: Array<any>,
-		supportsProfiling: Array<any>,
-		supportsReloadAndProfile: Array<any>,
-		unsupportedRendererVersionDetected: Array<any>,
-	}
-> & {
-	_bridge: FrontendBridge,
 
-	-- Should new nodes be collapsed by default when added to the tree?
-	_collapseNodesByDefault: boolean,
-
-	_componentFilters: Array<ComponentFilter>,
-
-	-- At least one of the injected renderers contains (DEV only) owner metadata.
-	_hasOwnerMetadata: boolean,
-
-	-- Map of ID to (mutable) Element.
-	-- Elements are mutated to avoid excessive cloning during tree updates.
-	-- The InspectedElementContext also relies on this mutability for its WeakMap usage.
-	_idToElement: Map<number, Element>,
-
-	-- Should the React Native style editor panel be shown?
-	_isNativeStyleEditorSupported: boolean,
-
-	-- Can the backend use the Storage API (e.g. localStorage)?
-	-- If not, features like reload-and-profile will not work correctly and must be disabled.
-	_isBackendStorageAPISupported: boolean,
-
-	_nativeStyleEditorValidAttributes: Array<string> | nil,
-
-	-- Map of element (id) to the set of elements (ids) it owns.
-	-- This map enables getOwnersListForElement() to avoid traversing the entire tree.
-	_ownersMap: Map<number, Set<number>>,
-
-	_profilerStore: ProfilerStore,
-
-	_recordChangeDescriptions: boolean,
-
-	-- Incremented each time the store is mutated.
-	-- This enables a passive effect to detect a mutation between render and commit phase.
-	_revision: number,
-
-	-- This Array must be treated as immutable!
-	-- Passive effects will check it for changes between render and mount.
-	_roots: Array<number>,
-
-	_rootIDToCapabilities: Map<number, Capabilities>,
-
-	-- Renderer ID is needed to support inspection fiber props, state, and hooks.
-	_rootIDToRendererID: Map<number, number>,
-
-	-- These options may be initially set by a confiugraiton option when constructing the Store.
-	-- In the case of "supportsProfiling", the option may be updated based on the injected renderers.
-	_supportsNativeInspection: boolean,
-	_supportsProfiling: boolean,
-	_supportsReloadAndProfile: boolean,
-	_supportsTraceUpdates: boolean,
-
-	_unsupportedRendererVersionDetected: boolean,
-
-	-- Total number of visible elements (within all roots).
-	-- Used for windowing purposes.
-	_weightAcrossRoots: number,
-	assertExpectedRootMapSizes: (self: Store) -> (),
-	assertMapSizeMatchesRootCount: (
-		self: Store,
-		map: Map<any, any>,
-		mapName: string
-	) -> (),
-	getCollapseNodesByDefault: (self: Store) -> boolean,
-	setCollapseNodesByDefault: (self: Store, boolean) -> (),
-	getComponentFilters: (self: Store) -> Array<ComponentFilter>,
-	setComponentFilters: (self: Store, Array<ComponentFilter>) -> (),
-	getHasOwnerMetadata: (self: Store) -> boolean,
-	getNativeStyleEditorValidAttributes: (self: Store) -> Array<string> | nil,
-	getNumElements: (self: Store) -> number,
-	getProfilerStore: (self: Store) -> ProfilerStore,
-	getRecordChangeDescriptions: (self: Store) -> boolean,
-	setRecordChangeDescriptions: (self: Store, value: boolean) -> (),
-	getRevision: (self: Store) -> number,
-	getRootIDToRendererID: (self: Store) -> Map<number, number>,
-	getRoots: (self: Store) -> Array<number>,
-	getSupportsNativeInspection: (self: Store) -> boolean,
-	getSupportsNativeStyleEditor: (self: Store) -> boolean,
-	getSupportsProfiling: (self: Store) -> boolean,
-	getSupportsReloadAndProfile: (self: Store) -> boolean,
-	getSupportsTraceUpdates: (self: Store) -> boolean,
-	getUnsupportedRendererVersionDetected: (self: Store) -> boolean,
-	containsElement: (self: Store, id: number) -> boolean,
-	getElementAtIndex: (self: Store, index: number) -> Element | nil,
-	getElementIDAtIndex: (self: Store, index: number) -> number | nil,
-	getElementByID: (self: Store, id: number) -> Element | nil,
-	getIndexOfElementID: (self: Store, id: number) -> number | nil,
-	getOwnersListForElement: (self: Store, ownerID: number) -> Array<Element>,
-	getRendererIDForElement: (self: Store, id: number) -> number | nil,
-	getRootIDForElement: (self: Store, id: number) -> number | nil,
-	isInsideCollapsedSubTree: (self: Store, id: number) -> boolean,
-	toggleIsCollapsed: (self: Store, id: number, isCollapsed: boolean) -> (),
-	_adjustParentTreeWeight: (
-		self: Store,
-		parentElement: Element | nil,
-		weightDelta: number
-	) -> (),
-	onBridgeNativeStyleEditorSupported: (
-		self: Store,
-		options: {
-			isSupported: boolean,
-			validAttributes: Array<string>,
-		}
-	) -> (),
-	onBridgeOperations: (self: Store, operations: Array<number>) -> (),
-	onBridgeOverrideComponentFilters: (
-		self: Store,
-		componentFilters: Array<ComponentFilter>
-	) -> (),
-	onBridgeShutdown: (self: Store) -> (),
-	onBridgeStorageSupported: (self: Store, isBackendStorageAPISupported: boolean) -> (),
-	onBridgeUnsupportedRendererVersion: (self: Store) -> (),
-}
 -- ROBLOX deviation: equivalent of sub-class
-local Store = setmetatable({}, { __index = EventEmitter })
+type Store_static = {
+	new: (bridge: FrontendBridge, config: Config?) -> Store,
+}
+local Store: Store & Store_static = (
+		setmetatable({}, { __index = EventEmitter }) :: any
+	) :: Store & Store_static
 local StoreMetatable = { __index = Store }
 
-function Store.new(bridge: FrontendBridge, config: Config?)
-	local self = setmetatable(EventEmitter.new() :: any, StoreMetatable)
+function Store.new(bridge: FrontendBridge, config: Config?): Store
+	local self = setmetatable(EventEmitter.new() :: any, StoreMetatable) :: any
 	config = config or {}
 
 	-- ROBLOX deviation: define fields in constructor
@@ -232,7 +111,7 @@ function Store.new(bridge: FrontendBridge, config: Config?)
 	-- Map of ID to (mutable) Element.
 	-- Elements are mutated to avoid excessive cloning during tree updates.
 	-- The InspectedElementContext also relies on this mutability for its WeakMap usage.
-	self._idToElement = {} :: Map<number, Element>
+	self._idToElement = Map.new() :: Map<number, Element>
 
 	-- Should the React Native style editor panel be shown?
 	self._isNativeStyleEditorSupported = false
@@ -245,9 +124,7 @@ function Store.new(bridge: FrontendBridge, config: Config?)
 
 	-- Map of element (id) to the set of elements (ids) it owns.
 	-- This map enables getOwnersListForElement() to avoid traversing the entire tree.
-	self._ownersMap = {} :: Map<number, Set<number>>
-
-	self._profilerStore = nil
+	self._ownersMap = Map.new() :: Map<number, Set<number>>
 
 	self._recordChangeDescriptions = false
 
@@ -259,10 +136,10 @@ function Store.new(bridge: FrontendBridge, config: Config?)
 	-- Passive effects will check it for changes between render and mount.
 	self._roots = {} :: Array<number>
 
-	self._rootIDToCapabilities = {} :: Map<number, Capabilities>
+	self._rootIDToCapabilities = Map.new() :: Map<number, Capabilities>
 
 	-- Renderer ID is needed to support inspection fiber props, state, and hooks.
-	self._rootIDToRendererID = {} :: Map<number, number>
+	self._rootIDToRendererID = Map.new() :: Map<number, number>
 
 	-- These options may be initially set by a confiugraiton option when constructing the Store.
 	-- In the case of "supportsProfiling", the option may be updated based on the injected renderers.
@@ -312,6 +189,8 @@ function Store.new(bridge: FrontendBridge, config: Config?)
 		end
 	end
 
+	self._profilerStore = ProfilerStore.new(bridge, self, isProfiling)
+
 	-- ROBLOX deviation: bind methods which don't pass self to this instance
 	self._onBridgeOperations = self.onBridgeOperations
 	self.onBridgeOperations = function(...)
@@ -351,11 +230,6 @@ function Store.new(bridge: FrontendBridge, config: Config?)
 		self.onBridgeUnsupportedRendererVersion
 	)
 
-	-- ROBLOX FIXME: lazy init this since ProfilerStore doesn't exist in our port yet
-	if isProfiling then
-		self._profilerStore = ProfilerStore.new(bridge, self, isProfiling)
-	end
-
 	return self
 end
 
@@ -378,15 +252,16 @@ end
 -- This is only used in tests to avoid memory leaks.
 function Store:assertMapSizeMatchesRootCount(map: Map<any, any>, mapName: string)
 	local expectedSize = #self._roots
-	local mapSize = #Object.keys(map)
-	if mapSize ~= expectedSize then
+	if map.size ~= expectedSize then
 		error(
-			string.format(
-				"Expected %s to contain %s items, but it contains %s items\n\n%s",
-				mapName,
-				tostring(expectedSize),
-				tostring(mapSize),
-				inspect(map, { depth = 20 })
+			Error.new(
+				string.format(
+					"Expected %s to contain %s items, but it contains %s items\n\n%s",
+					mapName,
+					tostring(expectedSize),
+					tostring(map.size),
+					inspect(map, { depth = 20 })
+				)
 			)
 		)
 	end
@@ -411,8 +286,7 @@ function Store:getComponentFilters(): Array<ComponentFilter>
 end
 
 function Store:setComponentFilters(value: Array<ComponentFilter>): ()
-	-- ROBLOX TODO: Profiler is not implemented so store will error when attempting to check self._profilerStore.isProfiling if we don't check for existence first
-	if self._profilerStore and self._profilerStore.isProfiling then
+	if self._profilerStore:isProfiling() then
 		-- Re-mounting a tree while profiling is in progress might break a lot of assumptions.
 		-- If necessary, we could support this- but it doesn't seem like a necessary use case.
 		error("Cannot modify filter preferences while profiling")
@@ -511,7 +385,7 @@ function Store:getUnsupportedRendererVersionDetected(): boolean
 	return self._unsupportedRendererVersionDetected
 end
 function Store:containsElement(id: number): boolean
-	return self._idToElement[id] ~= nil
+	return self._idToElement:get(id) ~= nil
 end
 function Store:getElementAtIndex(index: number): Element?
 	if index < 0 or index >= self:getNumElements() then
@@ -533,29 +407,29 @@ function Store:getElementAtIndex(index: number): Element?
 	-- ROBLOX deviation: 1-indexing use 1 not 0
 	for i = 1, #self._roots do
 		rootID = self._roots[i]
-		root = self._idToElement[rootID]
+		root = (self._idToElement:get(rootID) :: any) :: Element
 		if #root.children == 0 then
 			continue
 		elseif rootWeight + root.weight > index then
 			break
 		else
-			rootWeight = rootWeight + root.weight
+			rootWeight += root.weight
 		end
 	end
 
 	-- Find the element in the tree using the weight of each node...
 	-- Skip over the root itself, because roots aren't visible in the Elements tree.
-	local currentElement = root
+	local currentElement = (root :: any) :: Element
 	local currentWeight = rootWeight - 1
 
 	while index ~= currentWeight do
 		local numChildren = #currentElement.children
 
-		-- ROBLOX deviation: 1-indexing use 1 not 0
 		for i = 1, numChildren do
 			local childID = currentElement.children[i]
-			local child = self._idToElement[childID]
+			local child = (self._idToElement:get(childID) :: any) :: Element
 			local childWeight = if child.isCollapsed then 1 else child.weight
+
 			if index <= currentWeight + childWeight then
 				currentWeight += 1
 				currentElement = child
@@ -579,11 +453,10 @@ function Store:getElementIDAtIndex(index: number): number | nil
 	end)()
 end
 function Store:getElementByID(id: number): Element | nil
-	local element = self._idToElement[id]
+	local element = self._idToElement:get(id)
 
 	if element == nil then
 		console.warn(string.format('No element found with id "%s"', tostring(id)))
-
 		return nil
 	end
 
@@ -605,17 +478,16 @@ function Store:getIndexOfElementID(id: number): number | nil
 	local index = 0
 
 	while true do
-		local current = self._idToElement[currentID]
+		local current = (self._idToElement:get(currentID) :: any) :: Element
 		local children = current.children
 
-		-- ROBLOX deviation: 1-indexing use 1 not 0
 		for i = 1, #children do
 			local childID = children[i]
 			if childID == previousID then
 				break
 			end
 
-			local child = self._idToElement[childID]
+			local child = (self._idToElement:get(childID) :: any) :: Element
 			index += if child.isCollapsed then 1 else child.weight
 		end
 
@@ -636,7 +508,7 @@ function Store:getIndexOfElementID(id: number): number | nil
 		if rootID == currentID then
 			break
 		end
-		local root = self._idToElement[rootID]
+		local root = (self._idToElement:get(rootID) :: any) :: Element
 		index += root.weight
 	end
 
@@ -645,18 +517,15 @@ end
 
 function Store:getOwnersListForElement(ownerID: number): Array<Element>
 	local list = {}
-	local element = self._idToElement[ownerID]
-
+	local element = self._idToElement:get(ownerID)
 	if element ~= nil then
 		table.insert(list, Object.assign({}, element, { depth = 0 }))
 
-		local unsortedIDs = self._ownersMap[ownerID]
+		local unsortedIDs = self._ownersMap:get(ownerID)
 
+		-- ROBLOX FIXME Luau: without manual annotation: Types Set and nil cannot be compared with ~= because they do not have the same metatable
 		if unsortedIDs ~= nil then
-			local depthMap = {
-				[ownerID] = 0,
-			}
-			local unsortedIDsDefined: Set<number> = unsortedIDs :: any
+			local depthMap: Map<number, number> = Map.new({ { ownerID, 0 } })
 
 			-- Items in a set are ordered based on insertion.
 			-- This does not correlate with their order in the tree.
@@ -665,7 +534,8 @@ function Store:getOwnersListForElement(ownerID: number): Array<Element>
 			-- but then we'd have to pay sorting costs even if the owners list was never used.
 			-- Seems better to defer the cost, since the set of ids is probably pretty small.
 			local sortedIDs = Array.sort(
-				Array.from(unsortedIDsDefined),
+				Array.from(unsortedIDs),
+				-- ROBLOX FIXME Luau: shouldn't need this annotation?
 				function(idA: number, idB: number)
 					return (self:getIndexOfElementID(idA) or 0)
 						- (self:getIndexOfElementID(idB) or 0)
@@ -679,22 +549,23 @@ function Store:getOwnersListForElement(ownerID: number): Array<Element>
 			-- (1) another node that's already in the tree, or (2) the root (owner)
 			-- at which point, our depth is just the depth of that node plus one.
 			for _, id in sortedIDs do
-				local innerElement: Element? = self._idToElement[id]
+				local innerElement = self._idToElement:get(id)
 
 				if innerElement ~= nil then
-					local parentID = (innerElement :: Element).parentID
+					local parentID = innerElement.parentID
 					local depth = 0
 
 					while parentID > 0 do
-						if parentID == ownerID or unsortedIDsDefined[parentID] then
-							depth = depthMap[parentID] + 1
-							depthMap[id] = depth
+						if parentID == ownerID or unsortedIDs:has(parentID) then
+							depth = depthMap:get(parentID) :: number + 1
+							depthMap:set(id, depth)
 							break
 						end
-						local parent: Element? = self._idToElement[parentID]
+						local parent = self._idToElement:get(parentID)
 						if parent == nil then
 							break
 						end
+						-- ROBLOX FIXME Luau: need type states to understand parent isn't nil due to break
 						parentID = (parent :: Element).parentID
 					end
 
@@ -702,10 +573,7 @@ function Store:getOwnersListForElement(ownerID: number): Array<Element>
 						error("Invalid owners list")
 					end
 
-					table.insert(
-						list,
-						Object.assign({}, innerElement :: Element, { depth = depth })
-					)
+					table.insert(list, Object.assign({}, innerElement, { depth = depth }))
 				end
 			end
 		end
@@ -715,17 +583,17 @@ function Store:getOwnersListForElement(ownerID: number): Array<Element>
 end
 
 function Store:getRendererIDForElement(id: number): number | nil
-	local current: Element? = self._idToElement[id]
+	local current = self._idToElement:get(id)
 
 	while current ~= nil do
-		if (current :: Element).parentID == 0 then
-			local rendererID = self._rootIDToRendererID[(current :: Element).id]
+		if current.parentID == 0 then
+			local rendererID = self._rootIDToRendererID:get(current.id)
 			if rendererID == nil then
 				return nil
 			end
 			return rendererID
 		else
-			current = self._idToElement[(current :: Element).parentID]
+			current = self._idToElement:get(current.parentID)
 		end
 	end
 
@@ -733,34 +601,32 @@ function Store:getRendererIDForElement(id: number): number | nil
 end
 
 function Store:getRootIDForElement(id: number): number | nil
-	local current: Element? = self._idToElement[id]
-
+	local current = self._idToElement:get(id)
 	while current ~= nil do
-		if (current :: Element).parentID == 0 then
-			return (current :: Element).id
+		if current.parentID == 0 then
+			return current.id
 		else
-			current = self._idToElement[(current :: Element).parentID]
+			current = self._idToElement:get(current.parentID)
 		end
 	end
 	return nil
 end
-function Store:isInsideCollapsedSubTree(id: number): boolean
-	local current: Element? = self._idToElement[id]
 
+function Store:isInsideCollapsedSubTree(id: number): boolean
+	local current = self._idToElement:get(id)
 	while current ~= nil do
 		if (current :: Element).parentID == 0 then
 			return false
 		else
-			current = self._idToElement[(current :: Element).parentID]
-
+			current = self._idToElement:get(current.parentID)
 			if current ~= nil and (current :: Element).isCollapsed then
 				return true
 			end
 		end
 	end
-
 	return false
 end
+
 -- TODO Maybe split this into two methods: expand() and collapse()
 function Store:toggleIsCollapsed(id: number, isCollapsed: boolean): ()
 	local didMutate = false
@@ -776,24 +642,25 @@ function Store:toggleIsCollapsed(id: number, isCollapsed: boolean): ()
 				(element :: Element).isCollapsed = true
 
 				local weightDelta = 1 - (element :: Element).weight
-				local parentElement: Element? =
-					self._idToElement[(element :: Element).parentID]
-
-				-- We don't need to break on a collapsed parent in the same way as the expand case below.
-				-- That's because collapsing a node doesn't "bubble" and affect its parents.
+				-- ROBLOX FIXME Luau: shouldn't need this annoatation, should infer correctly
+				local parentElement: Element? = (
+						self._idToElement:get(element.parentID) :: any
+					) :: Element
 				while parentElement ~= nil do
-					(parentElement :: Element).weight = (parentElement :: Element).weight
-						+ weightDelta
-					parentElement = self._idToElement[(parentElement :: Element).parentID]
+					-- We don't need to break on a collapsed parent in the same way as the expand case below.
+					-- That's because collapsing a node doesn't "bubble" and affect its parents.
+					parentElement.weight += weightDelta
+					parentElement = self._idToElement:get(parentElement.parentID)
 				end
 			end
 		else
+			-- ROBLOX FIXME Luau: shouldn't need this annoatation, should infer correctly
 			local currentElement: Element? = element
 
 			while currentElement ~= nil do
 				local oldWeight = if (currentElement :: Element).isCollapsed
 					then 1
-					else (currentElement :: Element).weight
+					else currentElement.weight
 
 				if (currentElement :: Element).isCollapsed then
 					didMutate = true;
@@ -803,12 +670,13 @@ function Store:toggleIsCollapsed(id: number, isCollapsed: boolean): ()
 						then 1
 						else (currentElement :: Element).weight
 					local weightDelta = newWeight - oldWeight
-					local parentElement: Element? = self._idToElement[(
-						currentElement :: Element
-					).parentID]
+					-- ROBLOX FIXME Luau: shouldn't need this annoatation, should infer correctly
+					local parentElement: Element? = (
+							self._idToElement:get(currentElement.parentID) :: any
+						) :: Element
 
 					while parentElement ~= nil do
-						(parentElement :: Element).weight += weightDelta
+						parentElement.weight += weightDelta
 
 						if (parentElement :: Element).isCollapsed then
 							-- It's important to break on a collapsed parent when expanding nodes.
@@ -816,8 +684,7 @@ function Store:toggleIsCollapsed(id: number, isCollapsed: boolean): ()
 							-- Breaking in this case prevents us from over-incrementing the expanded weights.
 							break
 						end
-						parentElement =
-							self._idToElement[(parentElement :: Element).parentID]
+						parentElement = self._idToElement:get(parentElement.parentID)
 					end
 				end
 
@@ -852,8 +719,7 @@ function Store:_adjustParentTreeWeight(parentElement: Element | nil, weightDelta
 	local isInsideCollapsedSubTree = false
 
 	while parentElement ~= nil do
-		(parentElement :: Element).weight = (parentElement :: Element).weight
-			+ weightDelta
+		(parentElement :: Element).weight += weightDelta
 
 		-- Additions and deletions within a collapsed subtree should not bubble beyond the collapsed parent.
 		-- Their weight will bubble up when the parent is expanded.
@@ -862,12 +728,12 @@ function Store:_adjustParentTreeWeight(parentElement: Element | nil, weightDelta
 			break
 		end
 
-		parentElement = self._idToElement[(parentElement :: Element).parentID]
+		parentElement = (self._idToElement:get(parentElement.parentID) :: any) :: Element
 	end
 
 	-- Additions and deletions within a collapsed subtree should not affect the overall number of elements.
 	if not isInsideCollapsedSubTree then
-		self._weightAcrossRoots = (self._weightAcrossRoots :: number) + weightDelta
+		self._weightAcrossRoots += weightDelta
 	end
 end
 
@@ -936,16 +802,18 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 
 			i += 3
 
-			if self._idToElement[id] then
+			if self._idToElement:has(id) then
 				error(
-					(
-						"Cannot add node %s because a node with that id is already in the Store."
-					):format(tostring(id))
+					Error.new(
+						(
+							"Cannot add node %s because a node with that id is already in the Store."
+						):format(tostring(id))
+					)
 				)
 			end
 
-			local ownerID = 0
-			local parentID = nil
+			local ownerID: number = 0
+			local parentID: number = (nil :: any) :: number
 
 			if type_ == ElementTypeRoot then
 				if __DEBUG__ then
@@ -960,12 +828,13 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 				i += 1
 				self._roots = Array.concat(self._roots, id)
 
-				self._rootIDToRendererID[id] = rendererID
-				self._rootIDToCapabilities[id] = {
+				self._rootIDToRendererID:set(id, rendererID)
+				self._rootIDToCapabilities:set(id, {
 					hasOwnerMetadata = hasOwnerMetadata,
 					supportsProfiling = supportsProfiling,
-				}
-				self._idToElement[id] = {
+				})
+
+				self._idToElement:set(id, {
 					children = {},
 					depth = -1,
 					displayName = nil,
@@ -977,12 +846,12 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 					parentID = 0,
 					type = type_,
 					weight = 0,
-				}
+				})
 				haveRootsChanged = true
 			else
-				parentID = operations[i]
+				parentID = (operations[i] :: any) :: number
 				i += 1
-				ownerID = operations[i]
+				ownerID = (operations[i] :: any) :: number
 				i += 1
 
 				local displayNameStringID = operations[i]
@@ -1008,17 +877,19 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 						)
 					)
 				end
-				if not self._idToElement[parentID] then
+				if not self._idToElement:has(parentID) then
 					error(
-						(
-							"Cannot add child %s to parent %s because parent node was not found in the Store."
-						):format(tostring(id), tostring(parentID))
+						Error.new(
+							(
+								"Cannot add child %s to parent %s because parent node was not found in the Store."
+							):format(tostring(id), tostring(parentID))
+						)
 					)
 				end
 
-				local parentElement: Element? = self._idToElement[parentID]
+				local parentElement = (self._idToElement:get(parentID) :: any) :: Element
 
-				table.insert((parentElement :: Element).children, id)
+				table.insert(parentElement.children, id)
 
 				local displayNameWithoutHOCs, hocDisplayNames =
 					separateDisplayNameAndHOCs(
@@ -1028,28 +899,29 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 
 				local element = {
 					children = {},
-					depth = (parentElement :: Element).depth + 1,
+					depth = parentElement.depth + 1,
 					displayName = displayNameWithoutHOCs,
 					hocDisplayNames = hocDisplayNames,
 					id = id,
 					isCollapsed = self._collapseNodesByDefault,
 					key = key,
 					ownerID = ownerID,
-					parentID = (parentElement :: Element).id,
+					parentID = parentElement.id,
 					type = type_,
 					weight = 1,
 				}
 
-				self._idToElement[id] = element
+				self._idToElement:set(id, element)
 				table.insert(addedElementIDs, id)
 				self:_adjustParentTreeWeight(parentElement, 1)
 
 				if ownerID > 0 then
-					local set: Set<number>? = self._ownersMap[ownerID]
+					local set = self._ownersMap:get(ownerID)
 
+					-- ROBLOX FIXME Luau: needs type states to eliminate the manual cast
 					if set == nil then
 						set = Set.new()
-						self._ownersMap[ownerID] = set
+						self._ownersMap:set(ownerID, set :: Set<number>)
 					end
 
 					(set :: Set<number>):add(id)
@@ -1061,31 +933,35 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 
 			-- ROBLOX deviation: 1-indexing use 1 not 0
 			for removeIndex = 1, removeLength do
-				local id = operations[i]
+				local id = (operations[i] :: any) :: number
 
-				if not self._idToElement[id] then
+				if not self._idToElement:has(id) then
 					error(
-						(
-							"Cannot remove node %s because no matching node was found in the Store."
-						):format(tostring(id))
+						Error.new(
+							(
+								"Cannot remove node %s because no matching node was found in the Store."
+							):format(tostring(id))
+						)
 					)
 				end
 				i += 1
 
-				local element = self._idToElement[id]
+				local element = (self._idToElement:get(id) :: any) :: Element
 				local children, ownerID, parentID, weight =
 					element.children, element.ownerID, element.parentID, element.weight
 
 				if #children > 0 then
 					error(
-						string.format(
-							"Node %s was removed before its children.",
-							tostring(id)
+						Error.new(
+							string.format(
+								"Node %s was removed before its children.",
+								tostring(id)
+							)
 						)
 					)
 				end
 
-				self._idToElement[id] = nil
+				self._idToElement:delete(id)
 
 				local parentElement: Element? = nil
 
@@ -1098,8 +974,8 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 						return rootID ~= id
 					end)
 
-					self._rootIDToRendererID[id] = nil
-					self._rootIDToCapabilities[id] = nil
+					self._rootIDToRendererID:delete(id)
+					self._rootIDToCapabilities:delete(id)
 
 					haveRootsChanged = true
 				else
@@ -1114,7 +990,7 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 						)
 					end
 
-					parentElement = self._idToElement[parentID]
+					parentElement = (self._idToElement:get(parentID) :: any) :: Element
 
 					if parentElement == nil then
 						error(
@@ -1130,30 +1006,33 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 
 				self:_adjustParentTreeWeight(parentElement, -weight)
 				removedElementIDs[id] = parentID
-				self._ownersMap[id] = nil
+				self._ownersMap:delete(id)
 
 				if ownerID > 0 then
-					local set = self._ownersMap[ownerID]
-					if set ~= nil then
-						(set :: Set<number>)[id] = nil
+					local set = self._ownersMap:get(ownerID)
+					-- ROBLOX FIXME Luau: without any cast below, we get: Types Set and nil cannot be compared with ~= because they do not have the same metatable
+					if set :: any ~= nil then
+						(set :: Set<number>):delete(id)
 					end
 				end
 			end
 		elseif operation == TREE_OPERATION_REORDER_CHILDREN then
-			local id = operations[i + 1]
-			local numChildren = operations[i + 2]
+			local id = (operations[i + 1] :: any) :: number
+			local numChildren = (operations[i + 2] :: any) :: number
 
-			i = i + 3
+			i += 3
 
-			if not self._idToElement[id] then
+			if not self._idToElement:has(id) then
 				error(
-					(
-						"Cannot reorder children for node %s because no matching node was found in the Store."
-					):format(tostring(id))
+					Error.new(
+						(
+							"Cannot reorder children for node %s because no matching node was found in the Store."
+						):format(tostring(id))
+					)
 				)
 			end
 
-			local element = self._idToElement[id]
+			local element = (self._idToElement:get(id) :: any) :: Element
 			local children = element.children
 
 			if #children ~= numChildren then
@@ -1167,7 +1046,7 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 				children[j] = childID
 
 				if _G.__DEV__ then
-					local childElement: Element? = self._idToElement[childID]
+					local childElement: Element? = self._idToElement:get(childID)
 
 					if
 						childElement == nil

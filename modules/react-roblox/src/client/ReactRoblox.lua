@@ -254,7 +254,7 @@ local exports = {
 
   -- ROBLOX deviation: Export `act` function for testing purposes; in
   -- production (a.k.a. scheduler isn't mocked), give an instructive error
-  act = function(_: () -> ())
+  act = function(_: () -> ()): ()
     error(
       "ReactRoblox.act is only available in testing environments, not "
       .. "production. Enable the `__ROACT_17_MOCK_SCHEDULER__` global in your "

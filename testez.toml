@@ -16,6 +16,12 @@ type = "string"
 [[describe.args]]
 type = "function"
 
+[[xdescribe.args]]
+type = "string"
+
+[[xdescribe.args]]
+type = "function"
+
 [[fdescribe.args]]
 type = "string"
 

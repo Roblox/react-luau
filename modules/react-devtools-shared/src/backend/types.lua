@@ -10,10 +10,10 @@
 
 local Packages = script.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
-type Object = { [string]: any }
-type Array<T> = { [number]: T }
+type Object = LuauPolyfill.Object
+type Array<T> = LuauPolyfill.Array<T>
 type Function = (...any) -> any
-type Map<K, V> = { [K]: V }
+type Map<K, V> = LuauPolyfill.Map<K, V>
 type Set<T> = LuauPolyfill.Set<T>
 type Symbol = Object
 local exports = {}
@@ -169,14 +169,12 @@ export type CommitDataBackend = {
 	-- Tuple of fiber ID and change description
 	-- ROBLOX TODO: how to express bracket syntax embedded in Array type?
 	-- changeDescriptions: Array<[number, ChangeDescription]> | nil,
-	changeDescriptions: Array<any> | nil,
+	changeDescriptions: Array<Array<number | ChangeDescription>> | nil,
 	duration: number,
 	-- Tuple of fiber ID and actual duration
-	-- ROBLOX TODO: how to express bracket syntax embedded in Array type?
-	fiberActualDurations: Array<any>,
+	fiberActualDurations: Array<Array<number>>,
 	-- Tuple of fiber ID and computed "self" duration
-	-- ROBLOX TODO: how to express bracket syntax embedded in Array type?
-	fiberSelfDurations: Array<any>,
+	fiberSelfDurations: Array<Array<number>>,
 	interactionIDs: Array<number>,
 	priorityLevel: string | nil,
 	timestamp: number,

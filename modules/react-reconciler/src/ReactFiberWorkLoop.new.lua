@@ -21,22 +21,6 @@ type Array<T> = LuauPolyfill.Array<T>
 
 local exports: any = {}
 
-local function copySet(from: Set<any>?): Set<any>
-	local to = Set.new()
-	if from == nil then
-		return to
-	end
-	for _, v in (from :: Set<any>) do
-		to:add(v)
-	end
-
-	return to
-end
-
-local function collectionHasEntries(collection)
-  return next(collection) ~= nil
-end
-
 local ReactTypes = require(Packages.Shared)
 type Thenable<T> = ReactTypes.Thenable<T>
 type Wakeable = ReactTypes.Wakeable
@@ -437,8 +421,7 @@ local rootWithPendingPassiveEffects: FiberRoot? = nil
 local pendingPassiveEffectsRenderPriority: ReactPriorityLevel = NoSchedulerPriority
 local pendingPassiveEffectsLanes: Lanes = ReactFiberLane.NoLanes
 
--- deviation: FIXME restore type Set<ReactInternalTypes.FiberRoot>?, has trouble with narrowing
-local rootsWithPendingDiscreteUpdates: any = nil
+local rootsWithPendingDiscreteUpdates: Set<ReactInternalTypes.FiberRoot> | nil = nil
 
 -- Use these to prevent an infinite loop of nested updates
 local NESTED_UPDATE_LIMIT = 50
@@ -492,11 +475,11 @@ exports.requestUpdateLane = function(fiber: Fiber): Lane
   -- Special cases
   local mode = fiber.mode
   if bit32.band(mode, ReactTypeOfMode.BlockingMode) == ReactTypeOfMode.NoMode then
-    return SyncLane
+    return SyncLane :: Lane
   elseif bit32.band(mode, ReactTypeOfMode.ConcurrentMode) == ReactTypeOfMode.NoMode then
-    return getCurrentPriorityLevel() == ImmediateSchedulerPriority
-      and SyncLane
-      or SyncBatchedLane
+    return if getCurrentPriorityLevel() == ImmediateSchedulerPriority
+      then SyncLane :: Lane
+      else SyncBatchedLane :: Lane
   elseif
     not ReactFeatureFlags.deferRenderPhaseUpdateToNextBatch and
     bit32.band(executionContext, RenderContext) ~= NoContext and
@@ -592,7 +575,7 @@ exports.requestUpdateLane = function(fiber: Fiber): Lane
   return lane
 end
 
-function requestRetryLane(fiber: Fiber)
+function requestRetryLane(fiber: Fiber): Lane
   -- This is a fork of `requestUpdateLane` designed specifically for Suspense
   -- "retries" — a special update that attempts to flip a Suspense boundary
   -- from its placeholder state to its primary/resolved state.
@@ -600,11 +583,11 @@ function requestRetryLane(fiber: Fiber)
   -- Special cases
   local mode = fiber.mode
   if bit32.band(mode, ReactTypeOfMode.BlockingMode) == ReactTypeOfMode.NoMode then
-    return SyncLane
+    return SyncLane :: Lane
   elseif bit32.band(mode, ReactTypeOfMode.ConcurrentMode) == ReactTypeOfMode.NoMode then
     return if getCurrentPriorityLevel() == ImmediateSchedulerPriority
-      then SyncLane
-      else SyncBatchedLane
+      then SyncLane :: Lane
+      else SyncBatchedLane :: Lane
   end
 
   -- See `requestUpdateLane` for explanation of `currentEventWipLanes`
@@ -700,10 +683,9 @@ exports.scheduleUpdateOnFiber = function(
       -- This is the result of a discrete event. Track the lowest priority
       -- discrete update per root so we can flush them early, if needed.
       if rootsWithPendingDiscreteUpdates == nil then
-      -- ROBLOX FIXME? not sure this translation is correct
-        rootsWithPendingDiscreteUpdates = { [root] = true }
+        rootsWithPendingDiscreteUpdates = Set.new({root})
       else
-        rootsWithPendingDiscreteUpdates[root] = true
+        rootsWithPendingDiscreteUpdates:add(root)
       end
     end
     -- Schedule other updates after in case the callback is sync.
@@ -1235,12 +1217,10 @@ mod.flushPendingDiscreteUpdates = function()
     -- immediately flush them.
     local roots = rootsWithPendingDiscreteUpdates
     rootsWithPendingDiscreteUpdates = nil
-    -- ROBLOX deviation: proper for loop instead of forEach;
-    -- rootsWithPendingDiscreteUpdates is a Set, so we use the keys
-    for root, _ in roots do
+    roots:forEach(function(root)
       markDiscreteUpdatesExpired(root)
       ensureRootIsScheduled(root, now())
-    end
+    end)
   end
   -- Now flush the immediate queue.
   flushSyncCallbackQueue()
@@ -2116,9 +2096,9 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
   if rootsWithPendingDiscreteUpdates ~= nil then
     if
       not hasDiscreteLanes(remainingLanes) and
-      rootsWithPendingDiscreteUpdates[root] ~= nil
+      rootsWithPendingDiscreteUpdates:has(root)
     then
-      rootsWithPendingDiscreteUpdates[root] = nil
+      rootsWithPendingDiscreteUpdates:delete(root)
     end
   end
 
@@ -3622,20 +3602,20 @@ function scheduleInteractions(
     return
   end
 
-  if collectionHasEntries(interactions) then
+  if interactions.size > 0 then
     local pendingInteractionMap = root.pendingInteractionMap
-    local pendingInteractions = pendingInteractionMap[lane]
+    local pendingInteractions = pendingInteractionMap:get(lane)
     if pendingInteractions ~= nil then
-      for _, interaction in interactions do
-        if not pendingInteractions[interaction] then
+      interactions:forEach(function(interaction)
+        if not pendingInteractions:has(interaction) then
           -- Update the pending async work count for previously unscheduled interaction.
           interaction.__count += 1
         end
 
-        pendingInteractions[interaction] = true
-      end
+        pendingInteractions:add(interaction)
+      end)
     else
-      pendingInteractionMap[lane] = copySet(interactions)
+      pendingInteractionMap:set(lane, Set.new(interactions))
 
       -- Update the pending async work count for the current interactions.
       for _, interaction in interactions do
@@ -3672,13 +3652,13 @@ mod.startWorkOnPendingInteractions = function(root: FiberRoot, lanes: Lanes)
   -- we can accurately attribute time spent working on it, And so that cascading
   -- work triggered during the render phase will be associated with it.
   local interactions: Set<Interaction> = Set.new()
-  for scheduledLane, scheduledInteractions in root.pendingInteractionMap do
+  root.pendingInteractionMap:forEach(function(scheduledInteractions, scheduledLane)
     if includesSomeLane(lanes, scheduledLane) then
-      for _, interaction in scheduledInteractions do
+      scheduledInteractions:forEach(function(interaction)
         interactions:add(interaction)
-      end
+      end)
     end
-  end
+  end)
 
   -- Store the current set of interactions on the ReactInternalTypes.FiberRoot for a few reasons:
   -- We can re-use it in hot functions like performConcurrentWorkOnRoot()
@@ -3688,7 +3668,7 @@ mod.startWorkOnPendingInteractions = function(root: FiberRoot, lanes: Lanes)
   -- ROBLOX FIXME: manual type check to workaround Luau analyze bug "Type 'Set<Interaction>' could not be converted into 'Set<Interaction>'"
   root.memoizedInteractions = interactions :: any
 
-  if collectionHasEntries(interactions) then
+  if interactions.size > 0 then
     local subscriber = __subscriberRef.current
     if subscriber ~= nil then
       local threadID = computeThreadID(root, lanes)
@@ -3715,7 +3695,7 @@ mod.finishPendingInteractions = function(root: FiberRoot, committedLanes)
   -- ROBLOX try
   local ok = true
   local error_
-  if subscriber ~= nil and collectionHasEntries(root.memoizedInteractions) then
+  if subscriber ~= nil and root.memoizedInteractions.size > 0 then
     -- FIXME: More than one lane can finish in a single commit.
     -- ROBLOX peformance: hoist non-throwable things out of the pcall() so we can remove an anon function
     local threadID = computeThreadID(root, committedLanes)
@@ -3729,48 +3709,28 @@ mod.finishPendingInteractions = function(root: FiberRoot, committedLanes)
   -- Unless the render was suspended or cascading work was scheduled,
   -- In which case– leave pending interactions until the subsequent render.
   local pendingInteractionMap = root.pendingInteractionMap
-  for lane, scheduledInteractions in pendingInteractionMap do
+  pendingInteractionMap:forEach(function(scheduledInteractions, lane)
     -- Only decrement the pending interaction count if we're done.
     -- If there's still work at the current priority,
     -- That indicates that we are waiting for suspense data.
     if not includesSomeLane(remainingLanesAfterCommit, lane) then
-      pendingInteractionMap[lane] = nil
+      pendingInteractionMap:delete(lane)
+      scheduledInteractions:forEach(function(interaction)
+        interaction.__count -= 1
 
-      if scheduledInteractions.size == 0 then
-        continue
-      end
-      -- ROBLOX TODO: standardize on a specific kind of Set and eliminate these checks, which cause Luau type noise
-      if scheduledInteractions.ipairs ~= nil then
-        for _, interaction in scheduledInteractions do
-          interaction.__count -= 1
-
-          if subscriber ~= nil and interaction.__count == 0 then
-            local ok_, error__ = xpcall(subscriber.onInteractionScheduledWorkCompleted, describeError, interaction)
-            if not ok_ then
-              -- If the subscriber throws, rethrow it in a separate task
-              scheduleCallback(ImmediateSchedulerPriority, function()
-                error(error__)
-              end)
-            end
+        if subscriber ~= nil and interaction.__count == 0 then
+          local ok_, error__ = xpcall(subscriber.onInteractionScheduledWorkCompleted, describeError, interaction)
+          if not ok_ then
+            -- If the subscriber throws, rethrow it in a separate task
+            scheduleCallback(ImmediateSchedulerPriority, function()
+              error(error__)
+            end)
           end
         end
-      else
-        for _, interaction in scheduledInteractions do
-          interaction.__count -= 1
+      end)
+    end
+  end)
 
-          if subscriber ~= nil and interaction.__count == 0 then
-            local ok_, error__ = xpcall(subscriber.onInteractionScheduledWorkCompleted, describeError, interaction)
-            if not ok_ then
-              -- If the subscriber throws, rethrow it in a separate task
-              scheduleCallback(ImmediateSchedulerPriority, function()
-                error(error__)
-              end)
-            end
-          end
-        end
-      end
-  end
-end
   -- ROBLOX catch
   if not ok then
     -- If the subscriber throws, rethrow it in a separate task

@@ -1,3 +1,5 @@
+--!nonstrict
+local HttpService = game:GetService("HttpService")
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react-devtools-shared/src/__tests__/utils.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -10,6 +12,7 @@ local Packages = script.Parent.Parent.Parent
 local RobloxJest = require(Packages.Dev.RobloxJest)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jest = JestGlobals.jest
+local jestExpect = JestGlobals.expect
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
@@ -21,14 +24,14 @@ local exports = {}
 
 local Bridge = require(script.Parent.Parent.bridge)
 type FrontendBridge = Bridge.FrontendBridge
-local Store = require(script.Parent.Parent.devtools.store)
-type Store = Store.Store
+local devtoolsTypes = require(script.Parent.Parent.devtools.types)
+type Store = devtoolsTypes.Store
 local ProfilerTypes = require(script.Parent.Parent.devtools.views.Profiler.types)
 type ProfilingDataFrontend = ProfilerTypes.ProfilingDataFrontend
 local Types = require(script.Parent.Parent.types)
 type ElementType = Types.ElementType
 
-exports.act = function(callback: Function): ()
+exports.act = function(callback: () -> ()): ()
 	-- ROBLOX deviation: TestRenderer and RobloxRenderer do not play nice with
 	-- one another right now. All of the ported tests in this package are
 	-- using only the ReactRoblox renderer, so we only wrap with it directly
@@ -71,7 +74,7 @@ exports.actAsync = function(cb: () -> any, recursivelyFlush: boolean?)
 				-- return actTestRenderer(function()
 				jest.runAllTimers()
 				-- end):await()
-			end):await()
+			end)
 		end
 	else
 		-- $FlowFixMe Flow doesn't know about "await act()" yet
@@ -79,22 +82,27 @@ exports.actAsync = function(cb: () -> any, recursivelyFlush: boolean?)
 			-- return actTestRenderer(function()
 			jest.runOnlyPendingTimers()
 			-- end):await()
-		end):await()
+		end)
 	end
 end
 
 exports.beforeEachProfiling = function(): ()
+	-- ROBLOX deviation BEGIN: we handle this differently until jest-roblox 27.5 is available
 	-- Mock React's timing information so that test runs are predictable.
-	jest.mock("scheduler", function()
-		return jest.requireActual("scheduler/unstable_mock")
+	RobloxJest.mock(Packages.Dev.Scheduler, function()
+		return require(Packages.Parent.Scheduler.Scheduler.unstable_mock)
 	end)
 	-- DevTools itself uses performance.now() to offset commit times
 	-- so they appear relative to when profiling was started in the UI.
 	-- ROBLOX deviation: os.clock not performance
 	-- ROBLOX TODO: Can you actually spy on os.clock?
-	jest.spyOn(os, "clock").mockImplementation(
-		jest.requireActual("scheduler/unstable_mock").unstable_now
-	)
+	-- ROBLOX deviation BEGIN: We need to do slightly more targeted mocking until
+	local Scheduler = require(Packages.Dev.Scheduler)
+	RobloxJest.mockOsClock(Scheduler.unstable_now)
+	-- jest.spyOn(os, "clock").mockImplementation(
+	-- 	jest.requireActual("scheduler/unstable_mock").unstable_now
+	-- )
+	-- ROBLOX deviation END
 end
 
 exports.createDisplayNameFilter = function(source: string, isEnabled: boolean?)
@@ -168,46 +176,67 @@ exports.getRendererID = function(): number
 	end
 
 	-- ROBLOX FIXME: create Number.parseInt() in luau-polyfill
-	return if id then tonumber(id) else Number.NaN
+	-- ROBLOX FIXME Luau: if-expression boolean doesn't narrow id correctly
+	return if id then tonumber(id) :: number else Number.NaN
 end
-exports.requireTestRenderer = function()
-	local hook
-	pcall(function()
-		-- Hide the hook before requiring TestRenderer, so we don't end up with a loop.
-		hook = global.__REACT_DEVTOOLS_GLOBAL_HOOK__
-		global.__REACT_DEVTOOLS_GLOBAL_HOOK__ = nil
+exports.requireTestRenderer = function(): any
+	-- Hide the hook before requiring TestRenderer, so we don't end up with a loop.
+	local hook = global.__REACT_DEVTOOLS_GLOBAL_HOOK__
+	global.__REACT_DEVTOOLS_GLOBAL_HOOK__ = nil
 
+	local success, module = pcall(function()
 		return require(Packages.Dev.ReactTestRenderer)
 	end)
+
 	global.__REACT_DEVTOOLS_GLOBAL_HOOK__ = hook
+
+	if not success then
+		warn("Failed to require TestRenderer", module)
+		return nil
+	else
+		return module
+	end
 end
 
--- ROBLOX TODO: currently a stub
 exports.exportImportHelper = function(bridge: FrontendBridge, store: Store): ()
-	-- local _require5 = require(script.Parent.Parent.Views.Profiler.utils)
-	-- local prepareProfilingDataExport = _require5.prepareProfilingDataExport
-	-- local prepareProfilingDataFrontendFromExport = _require5.prepareProfilingDataFrontendFromExport
-	-- local profilerStore = store.profilerStore
+	local utils = require(script.Parent.Parent.devtools.views.Profiler.utils)
+	local prepareProfilingDataExport = utils.prepareProfilingDataExport
+	local prepareProfilingDataFrontendFromExport =
+		utils.prepareProfilingDataFrontendFromExport
+	local profilerStore = store._profilerStore
 
-	-- expect(profilerStore.profilingData).never.toBeNull()
+	local profilingDataFrontendInitial = profilerStore:profilingData()
+	jestExpect(profilingDataFrontendInitial).never.toBeNull()
+	-- ROBLOX deviation: luau needs the assert since .never.toBeNull() doesn't have narrowing side-effects right now
+	assert(profilingDataFrontendInitial, "profilingDataFrontendInitial was nil")
 
-	-- local profilingDataFrontendInitial = profilerStore.profilingData
+	jestExpect(profilingDataFrontendInitial.imported).toBe(false)
 
-	-- expect(profilingDataFrontendInitial.imported).toBe(false)
+	local profilingDataExport = prepareProfilingDataExport(profilingDataFrontendInitial)
 
-	-- local profilingDataExport = prepareProfilingDataExport(profilingDataFrontendInitial)
+	-- Simulate writing/reading to disk.
+	local serializedProfilingDataExport = HttpService:JSONEncode(profilingDataExport)
+	local parsedProfilingDataExport = HttpService:JSONDecode(
+		serializedProfilingDataExport
+	)
 
-	-- local serializedProfilingDataExport = JSON:JSONDecode(profilingDataExport, nil, 2)
-	-- local parsedProfilingDataExport = JSON:JSONEncode(serializedProfilingDataExport)
-	-- local profilingDataFrontend = prepareProfilingDataFrontendFromExport(parsedProfilingDataExport)
+	local profilingDataFrontend = prepareProfilingDataFrontendFromExport(
+		parsedProfilingDataExport
+	)
+	jestExpect(profilingDataFrontend.imported).toBe(true)
 
-	-- expect(profilingDataFrontend.imported).toBe(true)
-	-- expect(profilingDataFrontendInitial.dataForRoots).toEqual(profilingDataFrontend.dataForRoots)
-	-- expect(parsedProfilingDataExport).toMatchSnapshot('imported data')
+	-- Sanity check that profiling snapshots are serialized correctly.
+	jestExpect(profilingDataFrontendInitial.dataForRoots).toEqual(
+		profilingDataFrontend.dataForRoots
+	)
 
-	-- exports.act(function()
-	-- 	profilerStore.profilingData = profilingDataFrontend
-	-- end)
+	-- Snapshot the JSON-parsed object, rather than the raw string, because Jest formats the diff nicer.
+	jestExpect(parsedProfilingDataExport).toMatchSnapshot("imported data")
+
+	exports.act(function()
+		-- Apply the new exported-then-imported data so tests can re-run assertions.
+		profilerStore:profilingData(profilingDataFrontend)
+	end)
 end
 
 return exports

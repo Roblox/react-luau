@@ -12,6 +12,7 @@
 local Packages = script.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Set = LuauPolyfill.Set
+local Map = LuauPolyfill.Map
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
@@ -81,7 +82,7 @@ local function FiberRootNode(containerInfo, tag, hydrate)
 	if enableSchedulerTracing then
 		rootNode.interactionThreadID = unstable_getThreadID()
 		rootNode.memoizedInteractions = Set.new()
-		rootNode.pendingInteractionMap = {}
+		rootNode.pendingInteractionMap = Map.new()
 	end
 	if enableSuspenseCallback then
 		rootNode.hydrationCallbacks = nil

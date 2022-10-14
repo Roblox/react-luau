@@ -1,3 +1,4 @@
+--!strict
 -- upstream https://github.com/facebook/react/blob/9abc2785cb070148d64fae81e523246b90b92016/packages/scheduler/src/Tracing.js
 -- /**
 --  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -121,23 +122,9 @@ exports.unstable_getThreadID = function(): number
 	return threadIDCounter
 end
 
-local function copySet(from)
-	local to = Set.new()
-	if from == nil then
-		return to
-	end
-	for _, k in from do
-		to:add(k)
-	end
-
-	return to
-end
-
-exports.unstable_trace = function(name: string, timestamp: number, callback: Function, threadID: number?): any
+exports.unstable_trace = function(name: string, timestamp: number, callback: Function, threadID_: number?): any
 	-- ROBLOX: default argument value
-	if threadID == nil then
-		threadID = DEFAULT_THREAD_ID
-	end
+	local threadID = if threadID_ ~= nil then threadID_ else DEFAULT_THREAD_ID
 
 	if not enableSchedulerTracing then
 		return callback()
@@ -156,8 +143,7 @@ exports.unstable_trace = function(name: string, timestamp: number, callback: Fun
 	-- Traced interactions should stack/accumulate.
 	-- To do that, clone the current interactions.
 	-- The previous set will be restored upon completion.
-	-- ROBLOX FIXME: re-align this once Set.new accepts a Set
-	local interactions = copySet(prevInteractions)
+	local interactions = Set.new(prevInteractions)
 	interactions:add(interaction)
 	interactionsRef.current = interactions
 
@@ -325,7 +311,7 @@ exports.unstable_wrap =
 			for _, interaction in wrappedInteractions do
 				interaction.__count -= 1
 
-				if subscriber and interaction.__count == 0 then
+				if subscriber ~= nil and interaction.__count == 0 then
 					subscriber.onInteractionScheduledWorkCompleted(interaction)
 				end
 			end

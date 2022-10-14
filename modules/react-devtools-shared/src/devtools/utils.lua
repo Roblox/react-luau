@@ -19,8 +19,8 @@ local exports = {}
 
 local ViewsComponentsTypes = require(script.Parent.views.Components.types)
 type Element = ViewsComponentsTypes.Element
-local Store = require(script.Parent.store)
-type Store = Store.Store
+local devtoolsTypes = require(script.Parent.types)
+type Store = devtoolsTypes.Store
 
 exports.printElement = function(element: Element, includeWeight: boolean?)
 	includeWeight = includeWeight or false
@@ -42,9 +42,9 @@ exports.printElement = function(element: Element, includeWeight: boolean?)
 		hocDisplayNames = table.clone(element.hocDisplayNames)
 	end
 
-	local hocs = if hocDisplayNames
-		then string.format(" [%s]", table.concat(hocDisplayNames, "]["))
-		else ""
+	local hocs = if hocDisplayNames == nil
+		then ""
+		else string.format(" [%s]", table.concat(hocDisplayNames, "]["))
 	local suffix = ""
 
 	if includeWeight then
@@ -79,9 +79,8 @@ exports.printStore = function(store: Store, includeWeight: boolean?)
 	local snapshotLines: Array<string> = {}
 	local rootWeight = 0
 
-	for _, rootID in store:getRoots() do
-		local rootElement: Element? = store:getElementByID(rootID)
-		local weight = (rootElement :: Element).weight
+	Array.forEach(store:getRoots(), function(rootID)
+		local weight = ((store:getElementByID(rootID) :: any) :: Element).weight
 
 		table.insert(
 			snapshotLines,
@@ -100,7 +99,7 @@ exports.printStore = function(store: Store, includeWeight: boolean?)
 			)
 		end
 		rootWeight += weight
-	end
+	end)
 
 	-- Make sure the pretty-printed test align with the Store's reported number of total rows.
 	if rootWeight ~= store:getNumElements() then

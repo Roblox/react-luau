@@ -60,9 +60,10 @@ local rendererID = nil
 local injectedHook = nil
 local hasLoggedError = false
 
-
-exports.isDevToolsPresent =
-  typeof(_G.__REACT_DEVTOOLS_GLOBAL_HOOK__) ~= 'nil'
+-- ROBLOX deviation: We use a function to handle the hook being changed at runtime
+exports.isDevToolsPresent = function()
+  return _G.__REACT_DEVTOOLS_GLOBAL_HOOK__ ~= nil
+end
 
 exports.injectInternals = function(internals: Object): boolean
   if _G.__REACT_DEVTOOLS_GLOBAL_HOOK__ == nil then

@@ -27,6 +27,9 @@ return function()
 	end)
 
 	beforeEach(function()
+		-- Fake timers let us flush Bridge operations between setup and assertions.
+		RobloxJest.useFakeTimers()
+
 		-- These files should be required (and re-required) before each test,
 		-- rather than imported at the head of the module.
 		-- That's because we reset modules between tests,
@@ -39,9 +42,6 @@ return function()
 		local utils = require(script.Parent.Parent.utils)
 		local getDefaultComponentFilters = utils.getDefaultComponentFilters
 		local saveComponentFilters = utils.saveComponentFilters
-
-		-- Fake timers let us flush Bridge operations between setup and assertions.
-		RobloxJest.useFakeTimers()
 
 		-- Initialize filters to a known good state.
 		saveComponentFilters(getDefaultComponentFilters())
@@ -68,7 +68,7 @@ return function()
 		})
 
 		local agent = Agent.new(bridge)
-		local hook = _G.__REACT_DEVTOOLS_GLOBAL_HOOK__
+		local hook = global.__REACT_DEVTOOLS_GLOBAL_HOOK__
 
 		initBackend(hook, agent, global)
 
@@ -77,10 +77,13 @@ return function()
 		global.agent = agent
 		global.bridge = bridge
 		global.store = store
+
+		local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
+		ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback = true
 	end)
 
 	afterEach(function()
-		_G.__REACT_DEVTOOLS_GLOBAL_HOOK__ = nil
+		global.__REACT_DEVTOOLS_GLOBAL_HOOK__ = nil
 
 		-- It's important to reset modules between test runs;
 		-- Without this, ReactDOM won't re-inject itself into the new hook.

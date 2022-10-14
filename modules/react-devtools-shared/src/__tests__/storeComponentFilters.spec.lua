@@ -10,16 +10,18 @@
  ]]
 
 return function()
+	type Function = (...any) -> ...any
 	local Packages = script.Parent.Parent.Parent
 	local JestGlobals = require(Packages.Dev.JestGlobals)
 	local jestExpect = JestGlobals.expect
+	local RobloxJest = require(Packages.Dev.RobloxJest)
 
 	local global = _G
 
 	local bridgeModule = require(script.Parent.Parent.bridge)
 	type FrontendBridge = bridgeModule.FrontendBridge
-	local storeModule = require(script.Parent.Parent.devtools.store)
-	type Store = storeModule.Store
+	local devtoolsTypes = require(script.Parent.Parent.devtools.types)
+	type Store = devtoolsTypes.Store
 
 	describe("Store component filters", function()
 		local React
@@ -29,7 +31,15 @@ return function()
 		local store: Store
 		local devtoolsUtils
 		local utils
-		local act
+
+		local act = function(callback: Function)
+			ReactRoblox.act(function()
+				callback()
+				-- ROBLOX FIXME: flush should be happening when all timers are run
+				bridge:_flush()
+			end)
+			RobloxJest.runAllTimers() -- Flush Bridge operations
+		end
 
 		beforeEach(function()
 			bridge = global.bridge
@@ -38,27 +48,25 @@ return function()
 			store:setComponentFilters({})
 			store:setRecordChangeDescriptions(true)
 
+			local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
+			ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback = true
+
 			React = require(Packages.React)
 			ReactRoblox = require(Packages.ReactRoblox)
 			Types = require(script.Parent.Parent.types)
 			utils = require(script.Parent.utils)
 			devtoolsUtils = require(script.Parent.Parent.devtools.utils)
-
-			act = utils.act
 		end)
 
-		-- ROBLOX TODO: profilerStore is unimplemented
-		--[[
 		it("should throw if filters are updated while profiling", function()
 			act(function()
-				return store.profilerStore:startProfiling()
+				return store:getProfilerStore():startProfiling()
 			end)
 			jestExpect(function()
 				store:setComponentFilters({})
 				return store:getComponentFilters()
 			end).toThrow("Cannot modify filter preferences while profiling")
 		end)
-		--]]
 
 		it("should support filtering by element type", function()
 			local Root = React.Component:extend("Root")
@@ -70,9 +78,9 @@ return function()
 			end
 			act(function()
 				local root = ReactRoblox.createRoot(Instance.new("Frame"))
-				return root:render(React.createElement(Root, {}, {
-					React.createElement(Component),
-				}))
+				return root:render(
+					React.createElement(Root, {}, React.createElement(Component))
+				)
 			end)
 			-- ROBLOX deviation: we use devtoolsUtils.printStore, upstream uses a jest serializer (storeSerializer) instead
 			jestExpect(devtoolsUtils.printStore(store)).toMatchSnapshot("1: mount")
@@ -83,6 +91,7 @@ return function()
 				return store:getComponentFilters()
 			end)
 			-- ROBLOX deviation: we use devtoolsUtils.printStore, upstream uses a jest serializer (storeSerializer) instead
+			-- ROBLOX FIXME: still shows the Frame and TextLabel, upstream only has [root] ▾ <Root> <Component>
 			jestExpect(devtoolsUtils.printStore(store)).toMatchSnapshot(
 				"2: hide host components"
 			)
@@ -93,6 +102,7 @@ return function()
 				return store:getComponentFilters()
 			end)
 			-- ROBLOX deviation: we use devtoolsUtils.printStore, upstream uses a jest serializer (storeSerializer) instead
+			-- ROBLOX FIXME: supposed to hide Root, but doesn't
 			jestExpect(devtoolsUtils.printStore(store)).toMatchSnapshot(
 				"3: hide class components"
 			)
@@ -104,6 +114,7 @@ return function()
 				return store:getComponentFilters()
 			end)
 			-- ROBLOX deviation: we use devtoolsUtils.printStore, upstream uses a jest serializer (storeSerializer) instead
+			-- ROBLOX FIXME: should only show Frame and TextLabel
 			jestExpect(devtoolsUtils.printStore(store)).toMatchSnapshot(
 				"4: hide class and function components"
 			)
@@ -125,7 +136,7 @@ return function()
 			end
 			act(function()
 				local root = ReactRoblox.createRoot(Instance.new("Frame"))
-				return root:render(React.createElement(Root))
+				root:render(React.createElement(Root))
 			end)
 			-- ROBLOX deviation: we use devtoolsUtils.printStore, upstream uses a jest serializer (storeSerializer) instead
 			jestExpect(devtoolsUtils.printStore(store)).toMatchSnapshot("1: mount")
@@ -133,7 +144,6 @@ return function()
 				store:setComponentFilters({
 					utils.createElementTypeFilter(Types.ElementTypeRoot),
 				})
-				return store:getComponentFilters()
 			end)
 			-- ROBLOX deviation: we use devtoolsUtils.printStore, upstream uses a jest serializer (storeSerializer) instead
 			jestExpect(devtoolsUtils.printStore(store)).toMatchSnapshot(
@@ -174,6 +184,7 @@ return function()
 				return store:getComponentFilters()
 			end)
 			-- ROBLOX deviation: we use devtoolsUtils.printStore, upstream uses a jest serializer (storeSerializer) instead
+			-- ROBLOX FIXME: doens't filter FOo
 			jestExpect(devtoolsUtils.printStore(store)).toMatchSnapshot('2: filter "Foo"')
 			act(function()
 				store:setComponentFilters({ utils.createDisplayNameFilter("Ba") })
@@ -188,13 +199,13 @@ return function()
 			-- ROBLOX deviation: we use devtoolsUtils.printStore, upstream uses a jest serializer (storeSerializer) instead
 			jestExpect(devtoolsUtils.printStore(store)).toMatchSnapshot('4: filter "B.z"')
 		end)
-		xit("should filter by path", function()
+		it("should filter by path", function()
 			local function Component()
 				return React.createElement("TextLabel", { Text = "Hi" })
 			end
 			act(function()
 				local root = ReactRoblox.createRoot(Instance.new("Frame"))
-				return root:render(React.createElement(Component))
+				root:render(React.createElement(Component))
 			end)
 			-- ROBLOX deviation: we use devtoolsUtils.printStore, upstream uses a jest serializer (storeSerializer) instead
 			jestExpect(devtoolsUtils.printStore(store)).toMatchSnapshot("1: mount")
@@ -205,6 +216,7 @@ return function()
 				return store:getComponentFilters()
 			end)
 			-- ROBLOX deviation: we use devtoolsUtils.printStore, upstream uses a jest serializer (storeSerializer) instead
+			-- ROBLOX FIXME: upstream only has `[root]`, we still show the whole tree
 			jestExpect(devtoolsUtils.printStore(store)).toMatchSnapshot(
 				"2: hide all components declared within this test filed"
 			)
@@ -245,6 +257,7 @@ return function()
 				return store:getComponentFilters()
 			end)
 			-- ROBLOX deviation: we use devtoolsUtils.printStore, upstream uses a jest serializer (storeSerializer) instead
+			-- ROBLOX FIXME: still shows all components
 			jestExpect(devtoolsUtils.printStore(store)).toMatchSnapshot(
 				"2: hide all HOCs"
 			)

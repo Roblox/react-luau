@@ -168,7 +168,7 @@ export type Agent = EventEmitter<{
 	) -> InstanceAndStyle | nil,
 	getIDForNode: (self: Agent, node: Object) -> number | nil,
 	getProfilingData: (self: Agent, rendererIdObject: { rendererID: RendererID }) -> (),
-	getProfilingStatus: (self: Agent) -> boolean,
+	getProfilingStatus: (self: Agent) -> (),
 	getOwnersList: (self: Agent, elementAndRendererID: ElementAndRendererID) -> (),
 	inspectElement: (self: Agent, inspectElementParams: InspectElementParams) -> (),
 	logElementToConsole: (self: Agent, elementAndRendererID: ElementAndRendererID) -> (),
@@ -209,7 +209,12 @@ export type Agent = EventEmitter<{
 	_throttledPersistSelection: (self: Agent, rendererID: number, id: number) -> (),
 }
 
-local Agent = setmetatable({}, { __index = EventEmitter })
+type Agent_Statics = {
+	new: (bridge: BackendBridge) -> Agent,
+}
+
+local Agent: Agent & Agent_Statics = setmetatable({}, { __index = EventEmitter }) :: any
+
 local AgentMetatable = { __index = Agent }
 -- ROBLOX deviation: equivalent of sub-class
 
@@ -243,51 +248,58 @@ function Agent.new(bridge: BackendBridge)
 		self._persistedSelection = JSON.JSONDecode(persistedSelectionString)
 	end
 
-	bridge:addListener("copyElementPath", self.copyElementPath)
-	bridge:addListener("deletePath", self.deletePath)
-	bridge:addListener("getProfilingData", self.getProfilingData)
-	bridge:addListener("getProfilingStatus", self.getProfilingStatus)
-	bridge:addListener("getOwnersList", self.getOwnersList)
-	bridge:addListener("inspectElement", self.inspectElement)
-	bridge:addListener("logElementToConsole", self.logElementToConsole)
-	bridge:addListener("overrideSuspense", self.overrideSuspense)
-	bridge:addListener("overrideValueAtPath", self.overrideValueAtPath)
-	bridge:addListener("reloadAndProfile", self.reloadAndProfile)
-	bridge:addListener("renamePath", self.renamePath)
-	bridge:addListener("setTraceUpdatesEnabled", self.setTraceUpdatesEnabled)
-	bridge:addListener("startProfiling", self.startProfiling)
-	bridge:addListener("stopProfiling", self.stopProfiling)
-	bridge:addListener("storeAsGlobal", self.storeAsGlobal)
+	local function wrapSelf(method: Function)
+		return function(...)
+			method(self, ...)
+		end
+	end
+
+	bridge:addListener("copyElementPath", wrapSelf(self.copyElementPath))
+	bridge:addListener("deletePath", wrapSelf(self.deletePath))
+	bridge:addListener("getProfilingData", wrapSelf(self.getProfilingData))
+	bridge:addListener("getProfilingStatus", wrapSelf(self.getProfilingStatus))
+	bridge:addListener("getOwnersList", wrapSelf(self.getOwnersList))
+	bridge:addListener("inspectElement", wrapSelf(self.inspectElement))
+	bridge:addListener("logElementToConsole", wrapSelf(self.logElementToConsole))
+	bridge:addListener("overrideSuspense", wrapSelf(self.overrideSuspense))
+	bridge:addListener("overrideValueAtPath", wrapSelf(self.overrideValueAtPath))
+	bridge:addListener("reloadAndProfile", wrapSelf(self.reloadAndProfile))
+	bridge:addListener("renamePath", wrapSelf(self.renamePath))
+	bridge:addListener("setTraceUpdatesEnabled", wrapSelf(self.setTraceUpdatesEnabled))
+	bridge:addListener("startProfiling", wrapSelf(self.startProfiling))
+	bridge:addListener("stopProfiling", wrapSelf(self.stopProfiling))
+	bridge:addListener("storeAsGlobal", wrapSelf(self.storeAsGlobal))
 	bridge:addListener(
 		"syncSelectionFromNativeElementsPanel",
-		self.syncSelectionFromNativeElementsPanel
+		wrapSelf(self.syncSelectionFromNativeElementsPanel)
 	)
-	bridge:addListener("shutdown", self.shutdown)
-	bridge:addListener("updateConsolePatchSettings", self.updateConsolePatchSettings)
-	bridge:addListener("updateComponentFilters", function(...)
-		return self:updateComponentFilters(...)
-	end)
-	bridge:addListener("viewAttributeSource", self.viewAttributeSource)
-	bridge:addListener("viewElementSource", self.viewElementSource)
+	bridge:addListener("shutdown", wrapSelf(self.shutdown))
+	bridge:addListener(
+		"updateConsolePatchSettings",
+		wrapSelf(self.updateConsolePatchSettings)
+	)
+	bridge:addListener("updateComponentFilters", wrapSelf(self.updateComponentFilters))
+	bridge:addListener("viewAttributeSource", wrapSelf(self.viewAttributeSource))
+	bridge:addListener("viewElementSource", wrapSelf(self.viewElementSource))
 
 	-- Temporarily support older standalone front-ends sending commands to newer embedded backends.
 	-- We do this because React Native embeds the React DevTools backend,
 	-- but cannot control which version of the frontend users use.
-	bridge:addListener("overrideContext", self.overrideContext)
-	bridge:addListener("overrideHookState", self.overrideHookState)
-	bridge:addListener("overrideProps", self.overrideProps)
-	bridge:addListener("overrideState", self.overrideState)
+	bridge:addListener("overrideContext", wrapSelf(self.overrideContext))
+	bridge:addListener("overrideHookState", wrapSelf(self.overrideHookState))
+	bridge:addListener("overrideProps", wrapSelf(self.overrideProps))
+	bridge:addListener("overrideState", wrapSelf(self.overrideState))
 
 	if self._isProfiling then
-		(bridge :: any):send("profilingStatus", true)
+		bridge:send("profilingStatus", true)
 	end
 
 	-- Notify the frontend if the backend supports the Storage API (e.g. localStorage).
 	-- If not, features like reload-and-profile will not work correctly and must be disabled.
 	-- ROBLOX deviation: Storage is supported, but we don't use localStorage per se
-	local isBackendStorageAPISupported = true;
+	local isBackendStorageAPISupported = true
 
-	(bridge :: any):send("isBackendStorageAPISupported", isBackendStorageAPISupported)
+	bridge:send("isBackendStorageAPISupported", isBackendStorageAPISupported)
 	-- ROBLOX TODO: implement Highlighter stub
 	setupHighlighter(bridge, self)
 	setupTraceUpdates(self)
@@ -303,7 +315,7 @@ end
 function Agent:copyElementPath(copyElementParams: CopyElementParams): ()
 	local id, path, rendererID =
 		copyElementParams.id, copyElementParams.path, copyElementParams.rendererID
-	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
+	local renderer = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
 		console.warn(
@@ -320,7 +332,7 @@ function Agent:deletePath(deletePathParams: DeletePathParams): ()
 		deletePathParams.path,
 		deletePathParams.rendererID,
 		deletePathParams.type
-	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
+	local renderer = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
 		console.warn(
@@ -334,7 +346,7 @@ function Agent:getInstanceAndStyle(
 	elementAndRendererId: ElementAndRendererID
 ): InstanceAndStyle | nil
 	local id, rendererID = elementAndRendererId.id, elementAndRendererId.rendererID
-	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
+	local renderer = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
 		console.warn(string.format('Invalid renderer id "%d"', rendererID))
@@ -346,11 +358,7 @@ end
 
 function Agent:getIDForNode(node: Object): number | nil
 	for _rendererID, renderer in self._rendererInterfaces do
-		local ok, result = pcall(
-			(renderer :: RendererInterface).getFiberIDForNative,
-			node,
-			true
-		)
+		local ok, result = pcall(renderer.getFiberIDForNative, node, true)
 		if ok and result ~= nil then
 			return result
 		end
@@ -361,7 +369,7 @@ function Agent:getIDForNode(node: Object): number | nil
 end
 function Agent:getProfilingData(rendererIdObject: { rendererID: RendererID }): ()
 	local rendererID = rendererIdObject.rendererID
-	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
+	local renderer = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
 		console.warn(string.format('Invalid renderer id "%d"', rendererID))
@@ -374,7 +382,7 @@ function Agent:getProfilingStatus()
 end
 function Agent:getOwnersList(elementAndRendererID: ElementAndRendererID)
 	local id, rendererID = elementAndRendererID.id, elementAndRendererID.rendererID
-	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
+	local renderer = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
 		console.warn(
@@ -394,7 +402,7 @@ function Agent:inspectElement(inspectElementParams: InspectElementParams)
 		inspectElementParams.id,
 		inspectElementParams.path,
 		inspectElementParams.rendererID
-	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
+	local renderer = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
 		console.warn(
@@ -428,7 +436,7 @@ function Agent:inspectElement(inspectElementParams: InspectElementParams)
 end
 function Agent:logElementToConsole(elementAndRendererID: ElementAndRendererID)
 	local id, rendererID = elementAndRendererID.id, elementAndRendererID.rendererID
-	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
+	local renderer = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
 		console.warn(
@@ -443,7 +451,7 @@ function Agent:overrideSuspense(overrideSuspenseParams: OverrideSuspenseParams)
 		overrideSuspenseParams.id,
 		overrideSuspenseParams.rendererID,
 		overrideSuspenseParams.forceFallback
-	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
+	local renderer = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
 		console.warn(
@@ -461,7 +469,7 @@ function Agent:overrideValueAtPath(overrideValueAtPathParams: OverrideValueAtPat
 		overrideValueAtPathParams.rendererID,
 		overrideValueAtPathParams.type,
 		overrideValueAtPathParams.value
-	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
+	local renderer = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
 		console.warn(
@@ -596,7 +604,7 @@ function Agent:renamePath(renamePathParams: RenamePathParams)
 		renamePathParams.oldPath,
 		renamePathParams.rendererID,
 		renamePathParams.type
-	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
+	local renderer = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
 		console.warn(
@@ -686,7 +694,7 @@ function Agent:storeAsGlobal(storeAsGlobalParams: StoreAsGlobalParams)
 		storeAsGlobalParams.id,
 		storeAsGlobalParams.path,
 		storeAsGlobalParams.rendererID
-	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
+	local renderer = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
 		console.warn(
@@ -727,7 +735,7 @@ end
 function Agent:viewAttributeSource(copyElementParams: CopyElementParams)
 	local id, path, rendererID =
 		copyElementParams.id, copyElementParams.path, copyElementParams.rendererID
-	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
+	local renderer = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
 		console.warn(
@@ -739,7 +747,7 @@ function Agent:viewAttributeSource(copyElementParams: CopyElementParams)
 end
 function Agent:viewElementSource(elementAndRendererID: ElementAndRendererID)
 	local id, rendererID = elementAndRendererID.id, elementAndRendererID.rendererID
-	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
+	local renderer = self._rendererInterfaces[rendererID]
 
 	if renderer == nil then
 		console.warn(
@@ -783,7 +791,7 @@ function Agent:onHookOperations(operations: Array<number>)
 
 		if (self._persistedSelection :: PersistedSelection).rendererID == rendererID then
 			-- Check if we can select a deeper match for the persisted selection.
-			local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
+			local renderer = self._rendererInterfaces[rendererID]
 
 			if renderer == nil then
 				console.warn(string.format('Invalid renderer id "%d"', rendererID))
@@ -794,20 +802,8 @@ function Agent:onHookOperations(operations: Array<number>)
 
 				self._persistedSelectionMatch = nextMatch
 
-				local prevMatchID = (function(): number?
-					if prevMatch ~= nil then
-						return (prevMatch :: PathMatch).id
-					end
-
-					return nil
-				end)()
-				local nextMatchID = (function(): number?
-					if nextMatch ~= nil then
-						return (nextMatch :: PathMatch).id
-					end
-
-					return nil
-				end)()
+				local prevMatchID = if prevMatch ~= nil then prevMatch.id else nil
+				local nextMatchID = if nextMatch ~= nil then nextMatch.id else nil
 
 				if prevMatchID ~= nextMatchID then
 					if nextMatchID ~= nil then
@@ -836,7 +832,7 @@ Agent._throttledPersistSelection = throttle(function(self, rendererID: number, i
 	-- This is throttled, so both renderer and selected ID
 	-- might not be available by the time we read them.
 	-- This is why we need the defensive checks here.
-	local renderer: RendererInterface? = self._rendererInterfaces[rendererID]
+	local renderer = self._rendererInterfaces[rendererID]
 	local path = (function()
 		if renderer ~= nil then
 			return (renderer :: RendererInterface).getPathForElement(id)

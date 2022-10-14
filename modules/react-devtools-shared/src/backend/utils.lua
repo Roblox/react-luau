@@ -10,9 +10,8 @@ local Packages = script.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Set = LuauPolyfill.Set
 local Array = LuauPolyfill.Array
-type Array<T> = { [number]: T }
-local Object = LuauPolyfill.Object
-type Object = { [string]: any }
+type Array<T> = LuauPolyfill.Array<T>
+type Object = LuauPolyfill.Object
 
 local hydration = require(script.Parent.Parent.hydration)
 local dehydrate = hydration.dehydrate
@@ -70,25 +69,27 @@ exports.copyToClipboard = function(value: any): ()
 end
 
 exports.copyWithDelete = function(
-	obj: Object | Array<any>,
+	-- ROBLOX FIXME Luau: workaround for Expected type table, got 'Array<any> | Object' instead
+	obj: { [any]: any }, --Object | Array<any>,
 	path: Array<string | number>,
 	index: number
 ): Object | Array<any>
 	-- ROBLOX deviation: 1-indexed
 	index = index or 1
 	local key = path[index]
-	local updated = Array.isArray(obj) and Array.slice(obj :: Array<any>)
-		or Object.assign({}, obj :: Object)
+	-- ROBLOX deviation START: combine [].slice() and spread into single op, because we can
+	local updated = table.clone(obj)
+	-- ROBLOX deviation END
 
 	-- ROBLOX deviation: 1-indexed, check for last element
 	if index == #path then
 		if Array.isArray(updated) then
-			updated.splice(key, 1)
+			Array.splice(updated, key :: number, 1)
 		else
 			updated[key] = nil
 		end
 	else
-		updated[key] = exports.copyWithDelete((obj :: any)[key], path, index + 1)
+		updated[key] = exports.copyWithDelete(obj[key], path, index + 1)
 	end
 
 	return updated
@@ -97,7 +98,8 @@ end
 -- This function expects paths to be the same except for the final value.
 -- e.g. ['path', 'to', 'foo'] and ['path', 'to', 'bar']
 exports.copyWithRename = function(
-	obj: Object | Array<any>,
+	-- ROBLOX FIXME Luau: workaround for Expected type table, got 'Array<any> | Object' instead
+	obj: { [any]: any }, --Object | Array<any>,
 	oldPath: Array<string | number>,
 	newPath: Array<string | number>,
 	index: number
@@ -105,8 +107,9 @@ exports.copyWithRename = function(
 	-- ROBLOX deviation: 1-indexed
 	index = index or 1
 	local oldKey = oldPath[index]
-	local updated = Array.isArray(obj) and Array.slice(obj :: Array<any>)
-		or Object.assign({}, obj :: Object)
+	-- ROBLOX deviation START: combine [].slice() and spread into single op, because we can
+	local updated = table.clone(obj)
+	-- ROBLOX deviation END
 
 	-- ROBLOX deviation: 1-indexed, check for last element
 	if index == #oldPath then
@@ -115,24 +118,20 @@ exports.copyWithRename = function(
 		updated[newKey] = updated[oldKey]
 
 		if Array.isArray(updated) then
-			updated.splice(oldKey, 1)
+			Array.splice(updated, oldKey :: number, 1)
 		else
 			updated[oldKey] = nil
 		end
 	else
-		updated[oldKey] = exports.copyWithRename(
-			(obj :: any)[oldKey],
-			oldPath,
-			newPath,
-			index + 1
-		)
+		updated[oldKey] = exports.copyWithRename(obj[oldKey], oldPath, newPath, index + 1)
 	end
 
 	return updated
 end
 
 exports.copyWithSet = function(
-	obj: Object | Array<any>,
+	-- ROBLOX FIXME Luau: workaround for Expected type table, got 'Array<any> | Object' instead
+	obj: { [any]: any }, --Object | Array<any>,
 	path: Array<string | number>,
 	value: any,
 	index: number
@@ -146,10 +145,11 @@ exports.copyWithSet = function(
 	end
 
 	local key = path[index]
-	local updated = Array.isArray(obj) and Array.slice(obj :: Array<any>)
-		or Object.assign({}, obj :: Object)
+	-- ROBLOX deviation START: combine [].slice() and spread into single op, because we can
+	local updated = table.clone(obj)
+	-- ROBLOX deviation END
 
-	updated[key] = exports.copyWithSet((obj :: any)[key], path, value, index + 1)
+	updated[key] = exports.copyWithSet(obj[key], path, value, index + 1)
 
 	return updated
 end

@@ -30,11 +30,13 @@ local RobloxJest = {
 	now = FakeTimers.now,
 	resetFakeTimers = FakeTimers.reset,
 	getTimerCount = FakeTimers.getTimerCount,
+	mockOsClock = FakeTimers.mockOsClock,
 
 	testEnv = {
 		require = Module.requireOverride,
 		delay = FakeTimers.delayOverride,
 		tick = FakeTimers.tickOverride,
+		os = FakeTimers.osOverride,
 		task = FakeTimers.taskOverride,
 	},
 }

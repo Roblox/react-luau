@@ -112,7 +112,7 @@ return function()
 					-- ROBLOX Test Noise: This warning isn't captured in
 					-- upstream, so it may rely on test setup to suppress it
 					jestExpect(function()
-						element = createElement(Symbol("foo"))
+						element = (createElement :: any)(Symbol("foo"))
 					end).toErrorDev("type is invalid", { withoutStack = true })
 
 					jestExpect(getDisplayNameForReactElement(element)).toEqual(
@@ -128,7 +128,7 @@ return function()
 					-- ROBLOX Test Noise: This warning isn't captured in
 					-- upstream, so it may rely on test setup to suppress it
 					jestExpect(function()
-						element = createElement(true)
+						element = (createElement :: any)(true)
 					end).toErrorDev("type is invalid", { withoutStack = true })
 
 					jestExpect(getDisplayNameForReactElement(element)).toEqual(
@@ -142,7 +142,7 @@ return function()
 				-- ROBLOX Test Noise: This warning isn't captured in
 				-- upstream, so it may rely on test setup to suppress it
 				jestExpect(function()
-					element = createElement()
+					element = (createElement :: any)()
 				end).toErrorDev("type is invalid", { withoutStack = true })
 
 				jestExpect(getDisplayNameForReactElement(element)).toEqual("Element")

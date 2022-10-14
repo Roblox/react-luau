@@ -17,7 +17,7 @@ exports[ [=[Store owners list should drill through interleaved intermediate comp
 
 "  ▾ <Root>
     ▾ <Intermediate key=\"intermediate\">
-      <Leaf>
+        <Leaf>
       <Leaf key=\"leaf\">"
 ]=]
 
@@ -41,7 +41,7 @@ exports[ [=[Store owners list should drill through intermediate components: 2: c
 
 "  ▾ <Root>
     ▾ <Intermediate>
-      <Leaf>"
+        <Leaf>"
 ]=]
 
 exports[ [=[Store owners list should drill through intermediate components: 3: components owned by <Intermediate> 1]=] ] = [=[
@@ -63,7 +63,7 @@ exports[ [=[Store owners list should show the proper owners list order and conte
 
 "  ▾ <Root>
     ▾ <Intermediate key=\"1\">
-      <Leaf>"
+        <Leaf>"
 ]=]
 
 exports[ [=[Store owners list should show the proper owners list order and contents after insertions and deletions: 3: update to add direct 1]=] ] = [=[
@@ -81,7 +81,7 @@ exports[ [=[Store owners list should show the proper owners list order and conte
 "  ▾ <Root>
       <Leaf key=\"1\">
     ▾ <Intermediate key=\"2\">
-      <Leaf>"
+        <Leaf>"
 ]=]
 
 exports[ [=[Store owners list should show the proper owners list order and contents after insertions and deletions: 5: update to remove indirect 1]=] ] = [=[

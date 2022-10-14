@@ -8,10 +8,11 @@
 --  * @flow
 --  */
 
-type Array<T> = { [number]: T }
-type Map<K, V> = { [K]: V }
-type Object = { [string]: any }
 local Packages = script.Parent.Parent.Parent.Parent.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
+type Array<T> = LuauPolyfill.Array<T>
+type Object = LuauPolyfill.Object
+
 local ReactShared = require(Packages.Shared)
 type Source = ReactShared.Source
 local Hydration = require(script.Parent.Parent.Parent.Parent.hydration)

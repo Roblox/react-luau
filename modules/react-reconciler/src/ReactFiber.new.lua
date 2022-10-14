@@ -491,7 +491,8 @@ local function createHostRootFiber(tag: RootTag): Fiber
 		mode = NoMode
 	end
 
-	if enableProfilerTimer and isDevToolsPresent then
+	-- ROBLOX deviation: We use a function for isDevtoolsPresent to handle the hook being changed at runtime
+	if enableProfilerTimer and isDevToolsPresent() then
 		-- Always collect profile timings when DevTools are present.
 		-- This enables DevTools to start capturing timing at any point–
 		-- Without some nodes in the tree having empty base times.

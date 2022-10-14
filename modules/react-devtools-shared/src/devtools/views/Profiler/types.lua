@@ -1,3 +1,4 @@
+--!strict
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react-devtools-shared/src/devtools/views/Profiler/types.js
 -- /**
 --  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -8,8 +9,10 @@
 --  * @flow
 --  */
 
-type Array<T> = { [number]: T }
-type Map<K, V> = { [K]: V }
+local Packages = script.Parent.Parent.Parent.Parent.Parent
+local LuauPolyfill = require(Packages.LuauPolyfill)
+type Map<K, V> = LuauPolyfill.Map<K, V>
+type Array<K> = LuauPolyfill.Array<K>
 local exports = {}
 
 local ReactDevtoolsSharedTypes = require(script.Parent.Parent.Parent.Parent.types)
@@ -113,14 +116,12 @@ export type ProfilingDataFrontend = {
 export type CommitDataExport = {
 	-- ROBLOX TODO: how to express bracket syntax embedded in Array type?
 	--   changeDescriptions: Array<[number, ChangeDescription]> | nil,
-	changeDescriptions: Array<any> | nil,
+	changeDescriptions: Array<Array<number | ChangeDescription>> | nil,
 	duration: number,
 	-- Tuple of fiber ID and actual duration
-	-- ROBLOX TODO: how to express bracket syntax embedded in Array type?
-	fiberActualDurations: Array<any>,
+	fiberActualDurations: Array<Array<number>>,
 	-- Tuple of fiber ID and computed "self" duration
-	-- ROBLOX TODO: how to express bracket syntax embedded in Array type?
-	fiberSelfDurations: Array<any>,
+	fiberSelfDurations: Array<Array<number>>,
 	interactionIDs: Array<number>,
 	priorityLevel: string | nil,
 	timestamp: number,
@@ -130,15 +131,13 @@ export type ProfilingDataForRootExport = {
 	commitData: Array<CommitDataExport>,
 	displayName: string,
 	-- Tuple of Fiber ID and base duration
-	-- ROBLOX TODO: how to express bracket syntax embedded in Array type?
-	initialTreeBaseDurations: Array<any>,
+	initialTreeBaseDurations: Array<Array<number>>,
 	-- Tuple of Interaction ID and commit indices
-	-- ROBLOX TODO: how to express bracket syntax embedded in Array type?
-	interactionCommits: Array<any>,
-	interactions: Array<any>,
+	interactionCommits: Array<Array<number | Array<number>>>,
+	interactions: Array<Array<number | Interaction>>,
 	operations: Array<Array<number>>,
 	rootID: number,
-	snapshots: Array<any>,
+	snapshots: Array<Array<number | SnapshotNode>>,
 }
 
 -- Serializable version of ProfilingDataFrontend data.

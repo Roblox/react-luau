@@ -1,3 +1,5 @@
+--!nonstrict
+-- ROBLOX FIXME: TypeError: Type '({+ count: number +}) -> Array<ReactElement<{ key: number }, a>>' could not be converted into '((React_ElementProps<any>?, any) -> (Array<(Array<*CYCLE*> | React_Element<any> | boolean | number | string | t1)?> | React_Element<any> | boolean | number | string | t1)?) | LazyComponent<a, React_ElementProps<any>?> | ReactContext<any> | ReactProviderType<any> | React_ComponentType<React_ElementProps<any>?> | string where t1 = {| [string]: (boolean | number | string | t1 | {(*CYCLE* | boolean | number | string | t1 | {| key: (number | string)?, props: {| __source: {| fileName: string, lineNumber: number |}?, children: any?, key: (number | string)?, ref: (((any?) -> ()) | {| current: any? |})? |}?, ref: any, type: any |})?}... *TRUNCATED*'; none of the union options are compatible
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react-devtools-shared/src/__tests__/store-test.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -88,7 +90,7 @@ return function()
 			-- ROBLOX deviation: use root:render instead of ReactDOM.render
 			local root = ReactRoblox.createRoot(Instance.new("Frame"))
 			act(function()
-				root:render(React.createElement(Root, {}, {}))
+				root:render(React.createElement(Root, nil, {}))
 			end)
 
 			jestExpect(devtoolsUtils.printStore(store)).toBe([[
@@ -244,10 +246,7 @@ return function()
 				local root = ReactRoblox.createRoot(Instance.new("Frame"))
 
 				act(function()
-					return root:render(
-						React.createElement(Grandparent, { count = 4 }),
-						Instance.new("Frame")
-					)
+					return root:render(React.createElement(Grandparent, { count = 4 }))
 				end)
 				-- ROBLOX deviation: we must key children implicitly due to the Roblox DOM being unordered
 				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
@@ -718,10 +717,7 @@ return function()
 				local root = ReactRoblox.createRoot(Instance.new("Frame"))
 
 				act(function()
-					return root:render(
-						React.createElement(Grandparent, { count = 2 }),
-						Instance.new("Frame")
-					)
+					return root:render(React.createElement(Grandparent, { count = 2 }))
 				end)
 				-- ROBLOX deviation: we must key children implicitly due to the Roblox DOM being unordered
 				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
@@ -917,40 +913,28 @@ return function()
 				local rootB = ReactRoblox.createRoot(Instance.new("Frame"))
 
 				act(function()
-					rootA:render(
-						React.createElement(Parent, {
-							key = "A",
-							count = 3,
-						}),
-						rootA
-					)
-					rootB:render(
-						React.createElement(Parent, {
-							key = "B",
-							count = 2,
-						}),
-						rootB
-					)
+					rootA:render(React.createElement(Parent, {
+						key = "A",
+						count = 3,
+					}))
+					rootB:render(React.createElement(Parent, {
+						key = "B",
+						count = 2,
+					}))
 				end)
 				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
   ▸ <Parent key="A">
 [root]
   ▸ <Parent key="B">]])
 				act(function()
-					rootA:render(
-						React.createElement(Parent, {
-							key = "A",
-							count = 4,
-						}),
-						rootA
-					)
-					rootB:render(
-						React.createElement(Parent, {
-							key = "B",
-							count = 1,
-						}),
-						rootB
-					)
+					rootA:render(React.createElement(Parent, {
+						key = "A",
+						count = 4,
+					}))
+					rootB:render(React.createElement(Parent, {
+						key = "B",
+						count = 1,
+					}))
 				end)
 				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
   ▸ <Parent key="A">
@@ -985,10 +969,7 @@ return function()
 				local root = ReactRoblox.createRoot(Instance.new("Frame"))
 
 				act(function()
-					return root:render(
-						React.createElement(Grandparent, { count = 4 }),
-						Instance.new("Frame")
-					)
+					return root:render(React.createElement(Grandparent, { count = 4 }))
 				end)
 				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
   ▸ <Grandparent>]])
@@ -1098,10 +1079,7 @@ return function()
 				local root = ReactRoblox.createRoot(Instance.new("Frame"))
 
 				act(function()
-					return root:render(
-						React.createElement(Grandparent, { count = 2 }),
-						Instance.new("Frame")
-					)
+					return root:render(React.createElement(Grandparent, { count = 2 }))
 				end)
 				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
   ▸ <Grandparent>]])
@@ -1193,8 +1171,7 @@ return function()
 
 				act(function()
 					return root:render(
-						React.createElement(Wrapper, { forwardedRef = ref }),
-						Instance.new("Frame")
+						React.createElement(Wrapper, { forwardedRef = ref })
 					)
 				end)
 				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
@@ -1335,10 +1312,7 @@ return function()
 				local root = ReactRoblox.createRoot(Instance.new("Frame"))
 
 				act(function()
-					return root:render(
-						React.createElement(SuspenseTree),
-						Instance.new("Frame")
-					)
+					return root:render(React.createElement(SuspenseTree))
 				end)
 				jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
   ▸ <SuspenseTree>]])
@@ -1405,10 +1379,7 @@ return function()
 				local root = ReactRoblox.createRoot(Instance.new("Frame"))
 
 				act(function()
-					return root:render(
-						React.createElement(Grandparent),
-						Instance.new("Frame")
-					)
+					return root:render(React.createElement(Grandparent))
 				end)
 
 				for i = 0, store:getNumElements() - 1 do
@@ -1432,7 +1403,7 @@ return function()
 				local root = ReactRoblox.createRoot(Instance.new("Frame"))
 
 				act(function()
-					root:render(React.createElement(Grandparent), Instance.new("Frame"))
+					root:render(React.createElement(Grandparent))
 				end)
 
 				for i = 0, store:getNumElements() - 1 do
@@ -1462,8 +1433,7 @@ return function()
 							nil,
 							React.createElement(Grandparent),
 							React.createElement(Grandparent)
-						),
-						Instance.new("Frame")
+						)
 					)
 				end)
 
@@ -1496,8 +1466,7 @@ return function()
 								nil,
 								React.createElement(Grandparent),
 								React.createElement(Grandparent)
-							),
-							Instance.new("Frame")
+							)
 						)
 					end)
 
@@ -1546,7 +1515,7 @@ return function()
 
 			local root = ReactRoblox.createRoot(Instance.new("Frame"))
 			act(function()
-				return root:render({ fauxElement }, Instance.new("Frame"))
+				return root:render({ fauxElement })
 			end)
 			jestExpect(devtoolsUtils.printStore(store)).toBe([[[root]
     <Child key="123">]])

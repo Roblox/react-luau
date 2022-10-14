@@ -1,21 +1,23 @@
+--!strict
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react-devtools-shared/src/utils.js
 -- /*
 --  * Copyright (c) Facebook, Inc. and its affiliates.
 --  *
 --  * This source code is licensed under the MIT license found in the
---  * LICENSE file in the root directory of this source tree.
 --  */
+--  * LICENSE file in the root directory of this source tree.
 
 local Packages = script.Parent.Parent
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
-local Object = LuauPolyfill.Object
+local WeakMap = LuauPolyfill.WeakMap
 local Number = LuauPolyfill.Number
-type Map<K, V> = { [K]: V }
+local Object = LuauPolyfill.Object
+type WeakMap<K, V> = LuauPolyfill.WeakMap<K, V>
 type Function = (...any) -> ...any
-type Object = { [string]: any }
-type Array<T> = { [number]: T }
+type Object = LuauPolyfill.Object
+type Array<T> = LuauPolyfill.Array<T>
 local JSON = game:GetService("HttpService")
 
 local exports = {}
@@ -69,7 +71,7 @@ local meta = hydration.meta
 type ComponentFilter = types.ComponentFilter
 type ElementType = types.ElementType
 
-local cachedDisplayNames: Map<Function, string> = {}
+local cachedDisplayNames: WeakMap<Function, string> = WeakMap.new()
 
 -- On large trees, encoding takes significant time.
 -- Try to reuse the already encoded strings.
@@ -91,7 +93,7 @@ end
 
 exports.getDisplayName = function(type_: any, fallbackName: string?): string
 	fallbackName = fallbackName or "Anonymous"
-	local nameFromCache: string? = cachedDisplayNames[type_]
+	local nameFromCache = cachedDisplayNames:get(type_)
 
 	if nameFromCache ~= nil then
 		return nameFromCache :: string
@@ -118,14 +120,14 @@ exports.getDisplayName = function(type_: any, fallbackName: string?): string
 		displayName = getComponentName(type_) or displayName
 	end
 
-	cachedDisplayNames[type_] = displayName
+	cachedDisplayNames:set(type_, displayName)
 
 	return displayName
 end
 
 local uidCounter: number = 0
 
-exports.getUID = function()
+exports.getUID = function(): number
 	uidCounter += 1
 	return uidCounter
 end
@@ -376,7 +378,7 @@ exports.shallowDiffers = function(prev: Object, next_: Object): boolean
 end
 
 exports.getInObject = function(object: Object, path: Array<string | number>): any
-	return Array.reduce(path, function(reduced: Object, attr)
+	return Array.reduce(path, function(reduced: Object, attr: any): any
 		if reduced then
 			if reduced[attr] ~= nil then
 				return reduced[attr]

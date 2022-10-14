@@ -509,12 +509,7 @@ function commitProfilerPassiveEffect(
           if enableSchedulerTracing then
             onPostCommit(
               id,
-              (function()
-                if finishedWork.alternate == nil then
-                  return 'mount'
-                end
-                return 'update'
-              end)(),
+              if finishedWork.alternate == nil then 'mount' else 'update',
               passiveEffectDuration,
               commitTime,
               finishedRoot.memoizedInteractions
@@ -522,12 +517,7 @@ function commitProfilerPassiveEffect(
           else
             onPostCommit(
               id,
-              (function()
-                if finishedWork.alternate == nil then
-                  return 'mount'
-                end
-                return 'update'
-              end)(),
+              if finishedWork.alternate == nil then 'mount' else 'update',
               passiveEffectDuration,
               commitTime
             )
@@ -816,12 +806,7 @@ function commitLayoutEffectsForProfiler(
       if enableSchedulerTracing then
         onRender(
           finishedWork.memoizedProps.id,
-          (function()
-            if current == nil then
-              return 'mount'
-            end
-            return 'update'
-          end)(),
+          if current == nil then 'mount' else 'update',
           finishedWork.actualDuration,
           finishedWork.treeBaseDuration,
           finishedWork.actualStartTime,
@@ -831,12 +816,7 @@ function commitLayoutEffectsForProfiler(
       else
         onRender(
           finishedWork.memoizedProps.id,
-          (function()
-            if current == nil then
-              return 'mount'
-            end
-            return 'update'
-          end)(),
+          if current == nil then 'mount' else 'update',
           finishedWork.actualDuration,
           finishedWork.treeBaseDuration,
           finishedWork.actualStartTime,
@@ -854,12 +834,7 @@ function commitLayoutEffectsForProfiler(
         if enableSchedulerTracing then
           onCommit(
             finishedWork.memoizedProps.id,
-            (function()
-              if current == nil then
-                return 'mount'
-              end
-              return 'update'
-            end)(),
+            if current == nil then 'mount' else 'update',
             effectDuration,
             commitTime,
             finishedRoot.memoizedInteractions
@@ -867,12 +842,7 @@ function commitLayoutEffectsForProfiler(
         else
           onCommit(
             finishedWork.memoizedProps.id,
-            (function()
-              if current == nil then
-                return 'mount'
-              end
-              return 'update'
-            end)(),
+            if current == nil then 'mount' else 'update',
             effectDuration,
             commitTime
           )

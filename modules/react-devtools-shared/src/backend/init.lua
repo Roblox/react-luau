@@ -1,3 +1,4 @@
+--!strict
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react-devtools-shared/src/backend/index.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -110,10 +111,10 @@ local function initBackend(hook: DevToolsHook, agent: Agent, global: Object): ()
 	hook.emit("react-devtools", agent)
 	hook.reactDevtoolsAgent = agent
 	local function onAgentShutdown()
-		Array.map(subs, function(fn)
+		Array.forEach(subs, function(fn)
 			fn()
 		end)
-		Array.map(hook.rendererInterfaces, function(rendererInterface)
+		hook.rendererInterfaces:forEach(function(rendererInterface)
 			rendererInterface.cleanup()
 		end)
 		hook.reactDevtoolsAgent = nil

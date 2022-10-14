@@ -7,6 +7,7 @@ type Timer = {
 
 local realDelay = delay
 local realTick = tick
+local realOsClock = os.clock
 local realTaskDelay = task.delay
 
 local timers: { [number]: Timer } = {}
@@ -54,8 +55,8 @@ local function mockTick(_)
 end
 
 function round(number, decimals)
-    local power = 10 ^ decimals
-    return math.floor(number * power) / power
+	local power = 10 ^ decimals
+	return math.floor(number * power) / power
 end
 
 local function advanceTimersByTime(msToRun: number): ()
@@ -104,6 +105,9 @@ delayOverride.__call = realDelay
 local tickOverride = {}
 tickOverride.__call = realTick
 
+local osClockOverride = {}
+osClockOverride.__call = realOsClock
+
 local taskDelayOverride = {}
 taskDelayOverride.__call = realTaskDelay
 
@@ -111,12 +115,14 @@ local function useFakeTimers()
 	reset()
 	delayOverride.__call = mockDelay
 	tickOverride.__call = mockTick
+	-- osClockOverride.__call = mockClock
 	taskDelayOverride.__call = mockDelay
 end
 
 local function useRealTimers()
 	delayOverride.__call = realDelay
 	tickOverride.__call = realTick
+	osClockOverride.__call = realOsClock
 	taskDelayOverride.__call = realTaskDelay
 end
 
@@ -128,9 +134,14 @@ local taskOverride = {
 	delay = setmetatable({}, taskDelayOverride),
 }
 
+local osOverride = {
+	clock = setmetatable({}, osClockOverride),
+}
+
 return {
 	delayOverride = setmetatable({}, delayOverride),
 	tickOverride = setmetatable({}, tickOverride),
+	osOverride = osOverride,
 	taskOverride = taskOverride,
 	runAllTimers = runAllTimers,
 	useFakeTimers = useFakeTimers,
@@ -138,5 +149,10 @@ return {
 	advanceTimersByTime = advanceTimersByTime,
 	getTimerCount = getTimerCount,
 	reset = reset,
-	now = function() return now end
+	now = function() return now end,
+	mockOsClock = function(mockFn)
+		osClockOverride.__call = function(_, ...)
+			return mockFn(...)
+		end
+	end,
 }

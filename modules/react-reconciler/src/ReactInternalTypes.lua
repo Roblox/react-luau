@@ -10,11 +10,12 @@
 ]]
 
 local Packages = script.Parent.Parent
-type Array<T> = { [number]: T }
-type Map<K, V> = { [K]: V }
+local LuauPolyfill = require(Packages.LuauPolyfill)
+type Array<T> = LuauPolyfill.Array<T>
+type Map<K, V> = LuauPolyfill.Map<K, V>
 type Object = { [string]: any }
 type SimpleSet<T> = { [T]: boolean }
-local LuauPolyfill = require(Packages.LuauPolyfill)
+type SimpleMap<K, V> = { [K]: V }
 type Set<T> = LuauPolyfill.Set<T>
 
 local ReactTypes = require(Packages.Shared)
@@ -292,7 +293,7 @@ export type FiberRoot = {
 	current: Fiber,
 
 	-- ROBLOX deviation START: we use a lightweight unordered set for performance
-	pingCache: Map<Wakeable, (SimpleSet<any> | Map<Wakeable, SimpleSet<any>>)> | nil,
+	pingCache: SimpleMap<Wakeable, (SimpleSet<any> | SimpleMap<Wakeable, SimpleSet<any>>)> | nil,
 	-- ROBLOX deviation END
 
 	-- A finished work-in-progress HostRoot that's ready to be committed.
