@@ -38,6 +38,10 @@ while (( "$#" )); do
 				exit 1
 			fi
 		;;
+		-d|--deferred)
+			DEFERRED=0
+			shift
+		;;
 		-*|--*=)
 			echo "Error: Unsupported flag $1" >&2
 			exit 1
@@ -77,7 +81,18 @@ if [[ $PROFILE  ]]; then
 	exit 0
 fi
 
-echo "Running tests..."
-# Figure out how to enable PROFILING global in jestSetup once we upgrade to jest 28
-#roblox-cli run --load.model tests.project.json --run bin/spec.lua --fastFlags.overrides EnableLoadModule=true --fastFlags.allOnLuau --lua.globals=__DEV__=true --lua.globals=__COMPAT_WARNINGS__=true --lua.globals=__PROFILE__=true
-roblox-cli run --load.model tests.project.json --run bin/spec.lua --fastFlags.overrides EnableLoadModule=true DebugDisableOptimizedBytecode=true --fastFlags.allOnLuau --lua.globals=__DEV__=true --lua.globals=__COMPAT_WARNINGS__=true
+if [[ $DEFERRED ]]; then
+	echo "Running tests with deferred lua enabled..."
+	roblox-cli run --load.model tests.project.json --run bin/spec.lua --fastFlags.allOn \
+		--fastFlags.overrides EnableLoadModule=true DebugDisableOptimizedBytecode=true EnableSignalBehavior=true DebugForceDeferredSignalBehavior=true \
+		--fastFlags.overrides MaxDeferReentrancyDepth=40 \
+		--lua.globals=__DEV__=true --lua.globals=__COMPAT_WARNINGS__=true
+else
+	echo "Running tests..."
+	# Figure out how to enable PROFILING global in jestSetup once we upgrade to jest 28
+	#roblox-cli run --load.model tests.project.json --run bin/spec.lua --fastFlags.overrides EnableLoadModule=true --fastFlags.allOnLuau --lua.globals=__DEV__=true --lua.globals=__COMPAT_WARNINGS__=true --lua.globals=__PROFILE__=true
+	roblox-cli run --load.model tests.project.json --run bin/spec.lua --fastFlags.allOn \
+		--fastFlags.overrides MaxDeferReentrancyDepth=40 \
+		--lua.globals=__DEV__=true --lua.globals=__COMPAT_WARNINGS__=true
+fi
+

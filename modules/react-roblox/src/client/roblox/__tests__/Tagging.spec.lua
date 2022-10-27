@@ -27,6 +27,8 @@ return function()
 	local jestExpect = JestGlobals.expect
 	local jest = JestGlobals.jest
 
+	local waitForEvents = require(script.Parent.waitForEvents)
+
 	beforeEach(function()
 		RobloxJest.resetModules()
 		React = require(Packages.React)
@@ -70,6 +72,7 @@ return function()
 				[Tag] = "tag1",
 			}))
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(tag1AddedMock).toHaveBeenCalledWith(ref.current)
 			jestExpect(CollectionService:GetTagged("tag1")).toEqual({ ref.current })
@@ -82,6 +85,7 @@ return function()
 				[Tag] = "tag1 tag2",
 			}))
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(tag1AddedMock).toHaveBeenCalledWith(ref.current)
 			jestExpect(tag2AddedMock).toHaveBeenCalledWith(ref.current)
@@ -106,6 +110,7 @@ return function()
 				)
 			)
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(tag1AddedMock).toHaveBeenCalledWith(textLabelRef.current)
 			jestExpect(tag1AddedMock).toHaveBeenCalledWith(textBoxRef.current)
@@ -125,6 +130,7 @@ return function()
 				[Tag] = "",
 			}))
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(CollectionService:GetTags(ref.current)).toEqual({})
 		end)
@@ -136,6 +142,7 @@ return function()
 				[Tag] = "tag1 tag2",
 			}))
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(tag1AddedMock).toHaveBeenCalledTimes(1)
 			jestExpect(tag2AddedMock).toHaveBeenCalledTimes(1)
@@ -145,6 +152,7 @@ return function()
 				[Tag] = "tag2 tag1",
 			}))
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(tag1AddedMock).toHaveBeenCalledTimes(1)
 			jestExpect(tag2AddedMock).toHaveBeenCalledTimes(1)
@@ -187,12 +195,14 @@ return function()
 				[Tag] = "tag1",
 			}))
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(CollectionService:GetTagged("tag1")).toEqual({ ref.current })
 			root:render(React.createElement("TextLabel", {
 				ref = ref,
 			}))
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(tag1RemovedMock).toHaveBeenCalledWith(ref.current)
 			jestExpect(CollectionService:GetTagged("tag1")).toEqual({})
@@ -205,6 +215,7 @@ return function()
 				[Tag] = "tag1 tag2",
 			}))
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(CollectionService:GetTagged("tag1")).toEqual({ ref.current })
 			jestExpect(CollectionService:GetTagged("tag2")).toEqual({ ref.current })
@@ -214,6 +225,7 @@ return function()
 				[Tag] = "tag2",
 			}))
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(tag1RemovedMock).toHaveBeenCalledWith(ref.current)
 			jestExpect(tag2RemovedMock).never.toHaveBeenCalled()
@@ -228,6 +240,7 @@ return function()
 				[Tag] = "tag1 tag2",
 			}))
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(CollectionService:GetTagged("tag1")).toEqual({ ref.current })
 			jestExpect(CollectionService:GetTagged("tag2")).toEqual({ ref.current })
@@ -236,6 +249,7 @@ return function()
 				ref = ref,
 			}))
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(tag1RemovedMock).toHaveBeenCalledWith(ref.current)
 			jestExpect(tag2RemovedMock).toHaveBeenCalledWith(ref.current)
@@ -250,12 +264,14 @@ return function()
 				[Tag] = "tag1 tag2",
 			}))
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(CollectionService:GetTagged("tag1")).toEqual({ ref.current })
 			jestExpect(CollectionService:GetTagged("tag2")).toEqual({ ref.current })
 
 			root:render(nil)
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(tag1RemovedMock).toHaveBeenCalledTimes(1)
 			jestExpect(tag2RemovedMock).toHaveBeenCalledTimes(1)
@@ -270,6 +286,7 @@ return function()
 				[Tag] = "tag1 tag2",
 			}))
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(CollectionService:GetTagged("tag1")).toEqual({ ref.current })
 			jestExpect(CollectionService:GetTagged("tag2")).toEqual({ ref.current })
@@ -279,6 +296,7 @@ return function()
 				[Tag] = "",
 			}))
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 
 			jestExpect(tag1RemovedMock).toHaveBeenCalledTimes(1)
 			jestExpect(tag2RemovedMock).toHaveBeenCalledTimes(1)
@@ -318,6 +336,7 @@ return function()
 		}))
 		jestExpect(function()
 			Scheduler.unstable_flushAllWithoutAsserting()
+			waitForEvents()
 		end).toWarnDev(
 			'Warning: Tags applied to orphaned TextLabel "My Label" cannot'
 				.. " be accessed via CollectionService:GetTagged. If you're relying"

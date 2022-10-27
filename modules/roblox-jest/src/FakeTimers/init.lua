@@ -132,6 +132,8 @@ end
 
 local taskOverride = {
 	delay = setmetatable({}, taskDelayOverride),
+	defer = task.defer,
+	spawn = task.spawn,
 }
 
 local osOverride = {

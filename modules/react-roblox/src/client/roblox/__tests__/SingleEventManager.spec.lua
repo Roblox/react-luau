@@ -24,6 +24,8 @@ return function()
 
 	local SingleEventManager = require(script.Parent.Parent.SingleEventManager)
 
+	local waitForEvents = require(script.Parent.waitForEvents)
+
 	describe("new", function()
 		it("should create a SingleEventManager", function()
 			local instance = Instance.new("BindableEvent")
@@ -46,16 +48,19 @@ return function()
 			manager:resume()
 
 			instance:Fire("foo")
+			waitForEvents()
 			jestExpect(eventSpy).toBeCalledTimes(1)
 			jestExpect(eventSpy).toBeCalledWith(instance, "foo")
 
 			instance:Fire("bar")
+			waitForEvents()
 			jestExpect(eventSpy).toBeCalledTimes(2)
 			jestExpect(eventSpy).toBeCalledWith(instance, "bar")
 
 			manager:connectEvent("Event")
 
 			instance:Fire("baz")
+			waitForEvents()
 			jestExpect(eventSpy).toBeCalledTimes(2)
 		end)
 
@@ -70,11 +75,13 @@ return function()
 			)
 
 			instance:Fire("foo")
+			waitForEvents()
 			jestExpect(eventSpy).never.toBeCalled()
 
 			manager:resume()
 
 			instance:Fire("bar")
+			waitForEvents()
 			jestExpect(eventSpy).toBeCalledTimes(1)
 			jestExpect(eventSpy).toBeCalledWith(instance, "bar")
 		end)
@@ -91,12 +98,14 @@ return function()
 			manager:resume()
 
 			instance:Fire("foo")
+			waitForEvents()
 			jestExpect(eventSpy).toBeCalledTimes(1)
 			jestExpect(eventSpy).toBeCalledWith(instance, "foo")
 
 			manager:suspend()
 
 			instance:Fire("bar")
+			waitForEvents()
 			jestExpect(eventSpy).toBeCalledTimes(1)
 
 			manager:resume()
@@ -121,14 +130,19 @@ return function()
 
 			manager:connectEvent(
 				"Event",
-				function(...) eventSpy(...) end
+				function(...)
+					eventSpy(...)
+				end
 			)
 			manager:suspend()
 
 			instance:Fire(1)
 			instance:Fire(2)
+			waitForEvents()
 
 			manager:resume()
+			waitForEvents()
+			waitForEvents()
 			jestExpect(eventSpy).toBeCalledTimes(4)
 			jestExpect(recordedValues).toEqual({1, 2, 3, 4})
 		end)
@@ -145,6 +159,7 @@ return function()
 			manager:suspend()
 
 			instance:Fire(1)
+			waitForEvents()
 
 			manager:connectEvent("Event")
 
@@ -167,10 +182,12 @@ return function()
 			end)
 
 			assert(coroutine.resume(co))
+			waitForEvents()
 			jestExpect(coroutine.status(co)).toBe("dead")
 
 			manager:suspend()
 			instance:Fire(5)
+			waitForEvents()
 
 			co = coroutine.create(function()
 				manager:resume()
@@ -234,6 +251,8 @@ return function()
 			manager:suspend()
 			instance:Fire(1)
 			manager:resume()
+			waitForEvents()
+			waitForEvents()
 
 			jestExpect(eventSpy).toBeCalledTimes(2)
 		end)
@@ -255,16 +274,19 @@ return function()
 			manager:resume()
 
 			instance.Name = "foo"
+			waitForEvents()
 			jestExpect(eventSpy).toBeCalledTimes(1)
 			jestExpect(eventSpy).toBeCalledWith(instance)
 
 			instance.Name = "bar"
+			waitForEvents()
 			jestExpect(eventSpy).toBeCalledTimes(2)
 			jestExpect(eventSpy).toBeCalledWith(instance)
 
 			manager:connectPropertyChange("Name")
 
 			instance.Name = "baz"
+			waitForEvents()
 			jestExpect(eventSpy).toBeCalledTimes(2)
 		end)
 
