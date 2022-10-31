@@ -99,6 +99,7 @@ local function performWorkUntilDeadline()
 				-- task.delay that makes this optimal?
 				task.delay(0, performWorkUntilDeadline)
 			end
+			return nil
 		end
 		if not _G.__YOLO__ then
 			ok, result = xpcall(doWork, describeError)
@@ -114,7 +115,7 @@ local function performWorkUntilDeadline()
 
 			-- ROBLOX FIXME: the top-level Luau VM handler doesn't deal with
 			-- non-string errors, so massage it until VM support lands
-			error(errorToString(result))
+			error(errorToString(result :: any))
 		end
 	else
 		isMessageLoopRunning = false
