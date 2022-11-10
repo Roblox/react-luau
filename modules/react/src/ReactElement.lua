@@ -412,7 +412,7 @@ local function createElement<P, T>(
 	-- ROBLOX deviation START: extreme hot path, so manually unroll RESERVED_PROPS loop and use table.clone
 	local props = if config ~= nil then table.clone(config :: any) :: any else {}
 	-- ROBLOX deviation END
-	local key = nil
+	local key: (string | number)? = nil
 	local ref = nil
 	local self = nil
 	local source: Source? = nil
@@ -440,7 +440,7 @@ local function createElement<P, T>(
 				key = configKey
 			else
 				-- ROBLOX FIXME Luau: narrowing bug: Type 'string' could not be converted into 'number'
-				key = configKey :: any or "nil"
+				key = tostring(configKey :: any)
 			end
 		end
 		-- ROBLOX deviation END

@@ -30,6 +30,44 @@ return function()
 		end)
 	end)
 
+	describe("keys", function()
+		it("should leave number keys as number", function()
+			element = ReactElement.createElement("Frame", {
+				key = 2,
+				Size = UDim2.new(1, 0, 1, 0),
+			})
+
+			jestExpect(element.key).toEqual(2)
+		end)
+
+		it("should convert table keys to string", function()
+			local tableKey = {}
+			element = ReactElement.createElement("Frame", {
+				key = tableKey,
+				Size = UDim2.new(1, 0, 1, 0),
+			})
+
+			jestExpect(element.key).toEqual(tostring(tableKey))
+		end)
+
+		it("should leave string keys as strings", function()
+			element = ReactElement.createElement("Frame", {
+				key = "hello",
+				Size = UDim2.new(1, 0, 1, 0),
+			})
+
+			jestExpect(element.key).toEqual("hello")
+		end)
+
+		it("should have element.key == nil if no key is passed", function()
+			element = ReactElement.createElement("Frame", {
+				Size = UDim2.new(1, 0, 1, 0),
+			})
+
+			jestExpect(element.key).toEqual(nil)
+		end)
+	end)
+
 	describe("should accept", function()
 		it("props", function()
 			element = ReactElement.createElement("StringValue", { Value = "Foo" })
