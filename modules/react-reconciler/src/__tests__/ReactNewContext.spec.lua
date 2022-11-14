@@ -47,7 +47,8 @@ return function()
 	end
 
 	local function readContext(Context, observedBits)
-		local dispatcher = React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentDispatcher.current
+		local dispatcher =
+			React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED.ReactCurrentDispatcher.current
 		return dispatcher.readContext(Context, observedBits)
 	end
 
@@ -56,11 +57,12 @@ return function()
 	local function LegacyHiddenDiv(props)
 		local children, mode = props.children, props.mode
 
-		return React.createElement("div", {
-			hidden = mode == "hidden",
-		}, React.createElement(
-			React.unstable_LegacyHidden,
+		return React.createElement(
+			"div",
 			{
+				hidden = mode == "hidden",
+			},
+			React.createElement(React.unstable_LegacyHidden, {
 				mode = (function()
 					if mode == "hidden" then
 						return "unstable-defer-without-hiding"
@@ -68,9 +70,8 @@ return function()
 
 					return mode
 				end)(),
-			},
-			children
-		))
+			}, children)
+		)
 	end
 
 	local function sharedContextTests(label, getConsumer)
@@ -88,9 +89,16 @@ return function()
 						React.createElement(
 							Indirection,
 							nil,
-							React.createElement(Indirection, nil, React.createElement(Consumer, nil, function(value)
-								return React.createElement("span", { prop = "Result: " .. tostring(value) })
-							end))
+							React.createElement(
+								Indirection,
+								nil,
+								React.createElement(Consumer, nil, function(value)
+									return React.createElement(
+										"span",
+										{ prop = "Result: " .. tostring(value) }
+									)
+								end)
+							)
 						)
 					)
 				end
@@ -111,14 +119,21 @@ return function()
 
 				local function Provider(props)
 					Scheduler.unstable_yieldValue("Provider")
-					return React.createElement(Context.Provider, { value = props.value }, props.children)
+					return React.createElement(
+						Context.Provider,
+						{ value = props.value },
+						props.children
+					)
 				end
 
 				local function Consumer(props)
 					Scheduler.unstable_yieldValue("Consumer")
 					return React.createElement(ContextConsumer, nil, function(value)
 						Scheduler.unstable_yieldValue("Consumer render prop")
-						return React.createElement("span", { prop = "Result: " .. tostring(value) })
+						return React.createElement(
+							"span",
+							{ prop = "Result: " .. tostring(value) }
+						)
 					end)
 				end
 
@@ -140,7 +155,11 @@ return function()
 						React.createElement(
 							Indirection,
 							nil,
-							React.createElement(Indirection, nil, React.createElement(Consumer))
+							React.createElement(
+								Indirection,
+								nil,
+								React.createElement(Consumer)
+							)
 						)
 					)
 				end
@@ -172,14 +191,21 @@ return function()
 
 				local function Provider(props)
 					Scheduler.unstable_yieldValue("Provider")
-					return React.createElement(Context.Provider, { value = props.value }, props.children)
+					return React.createElement(
+						Context.Provider,
+						{ value = props.value },
+						props.children
+					)
 				end
 
 				local function Consumer(props)
 					Scheduler.unstable_yieldValue("Consumer")
 					return React.createElement(ContextConsumer, nil, function(value)
 						Scheduler.unstable_yieldValue("Consumer render prop")
-						return React.createElement("span", { prop = "Result: " .. tostring(value) })
+						return React.createElement(
+							"span",
+							{ prop = "Result: " .. tostring(value) }
+						)
 					end)
 				end
 
@@ -201,7 +227,11 @@ return function()
 						React.createElement(
 							Indirection,
 							nil,
-							React.createElement(Indirection, nil, React.createElement(Consumer))
+							React.createElement(
+								Indirection,
+								nil,
+								React.createElement(Consumer)
+							)
 						)
 					)
 				end
@@ -232,14 +262,18 @@ return function()
 				local Consumer = getConsumer(Context)
 
 				local function Provider(props)
-					return React.createElement(Consumer, nil, function(contextValue: number)
-						-- Multiply previous context value by 2, unless prop overrides
-						return React.createElement(
-							Context.Provider,
-							{ value = props.value or contextValue * 2 },
-							props.children
-						)
-					end)
+					return React.createElement(
+						Consumer,
+						nil,
+						function(contextValue: number)
+							-- Multiply previous context value by 2, unless prop overrides
+							return React.createElement(
+								Context.Provider,
+								{ value = props.value or contextValue * 2 },
+								props.children
+							)
+						end
+					)
 				end
 
 				local Indirection = React.Component:extend("Indirection")
@@ -270,12 +304,16 @@ return function()
 										React.createElement(
 											Indirection,
 											nil,
-											React.createElement(Consumer, nil, function(value)
-												return React.createElement(
-													"span",
-													{ prop = "Result: " .. tostring(value) }
-												)
-											end)
+											React.createElement(
+												Consumer,
+												nil,
+												function(value)
+													return React.createElement("span", {
+														prop = "Result: "
+															.. tostring(value),
+													})
+												end
+											)
 										)
 									)
 								)
@@ -294,56 +332,77 @@ return function()
 				jestExpect(ReactNoop.getChildren()).toEqual({ span("Result: 12") })
 			end)
 
-			it("should provide the correct (default) values to consumers outside of a provider", function()
-				local FooContext = React.createContext({ value = "foo-initial" })
-				local BarContext = React.createContext({ value = "bar-initial" })
-				local FooConsumer = getConsumer(FooContext)
-				local BarConsumer = getConsumer(BarContext)
+			it(
+				"should provide the correct (default) values to consumers outside of a provider",
+				function()
+					local FooContext = React.createContext({ value = "foo-initial" })
+					local BarContext = React.createContext({ value = "bar-initial" })
+					local FooConsumer = getConsumer(FooContext)
+					local BarConsumer = getConsumer(BarContext)
 
-				local function Verify(props)
-					local actual, expected = props[1], props[2]
-					jestExpect(expected).toBe(actual)
-					return nil
-				end
+					local function Verify(props)
+						local actual, expected = props[1], props[2]
+						jestExpect(expected).toBe(actual)
+						return nil
+					end
 
-				ReactNoop.render(React.Fragment, nil,
-					React.createElement(
-						BarContext.Provider,
-						{ value = { value = "bar-updated" } },
-						React.createElement(BarConsumer, nil, function(value)
-							return React.createElement(Verify, { actual = value, expected = "bar-updated" })
-						end),
+					ReactNoop.render(
+						React.Fragment,
+						nil,
 						React.createElement(
-							FooContext.Provider,
-							{ value = { value = "foo-updated" } },
-							React.createElement(FooConsumer, nil, function(value)
-								return React.createElement(Verify, { actual = value, expected = "foo-updated" })
-							end)
-						)
-					),
-					React.createElement(FooConsumer, nil, function(value)
-						return React.createElement(Verify, { actual = value, expected = "foo-initial" })
-					end),
-					React.createElement(BarConsumer, nil, function(value)
-						return React.createElement(Verify, { actual = value, expected = "bar-initial" })
-					end)
-				)
-				jestExpect(Scheduler).toFlushWithoutYielding()
-			end)
+							BarContext.Provider,
+							{ value = { value = "bar-updated" } },
+							React.createElement(BarConsumer, nil, function(value)
+								return React.createElement(
+									Verify,
+									{ actual = value, expected = "bar-updated" }
+								)
+							end),
+							React.createElement(
+								FooContext.Provider,
+								{ value = { value = "foo-updated" } },
+								React.createElement(FooConsumer, nil, function(value)
+									return React.createElement(
+										Verify,
+										{ actual = value, expected = "foo-updated" }
+									)
+								end)
+							)
+						),
+						React.createElement(FooConsumer, nil, function(value)
+							return React.createElement(
+								Verify,
+								{ actual = value, expected = "foo-initial" }
+							)
+						end),
+						React.createElement(BarConsumer, nil, function(value)
+							return React.createElement(
+								Verify,
+								{ actual = value, expected = "bar-initial" }
+							)
+						end)
+					)
+					jestExpect(Scheduler).toFlushWithoutYielding()
+				end
+			)
 
 			it("multiple consumers in different branches", function()
 				local Context = React.createContext(1)
 				local Consumer = getConsumer(Context)
 
 				local function Provider(props)
-					return React.createElement(Context.Consumer, nil, function(contextValue: number)
-						-- Multiply previous context value by 2, unless prop overrides
-						return React.createElement(
-							Context.Provider,
-							{ value = props.value or contextValue * 2 },
-							props.children
-						)
-					end)
+					return React.createElement(
+						Context.Consumer,
+						nil,
+						function(contextValue: number)
+							-- Multiply previous context value by 2, unless prop overrides
+							return React.createElement(
+								Context.Provider,
+								{ value = props.value or contextValue * 2 },
+								props.children
+							)
+						end
+					)
 				end
 
 				local Indirection = React.Component:extend("Indirection")
@@ -364,13 +423,27 @@ return function()
 							React.createElement(
 								Indirection,
 								nil,
-								React.createElement(Provider, nil, React.createElement(Consumer, nil, function(value)
-									return React.createElement("span", { prop = "Result: " .. value })
-								end))
+								React.createElement(
+									Provider,
+									nil,
+									React.createElement(Consumer, nil, function(value)
+										return React.createElement(
+											"span",
+											{ prop = "Result: " .. value }
+										)
+									end)
+								)
 							),
-							React.createElement(Indirection, nil, React.createElement(Consumer, nil, function(value)
-								return React.createElement("span", { prop = "Result: " .. value })
-							end))
+							React.createElement(
+								Indirection,
+								nil,
+								React.createElement(Consumer, nil, function(value)
+									return React.createElement(
+										"span",
+										{ prop = "Result: " .. value }
+									)
+								end)
+							)
 						)
 					)
 				end
@@ -441,7 +514,11 @@ return function()
 						React.createElement(
 							Indirection,
 							nil,
-							React.createElement(Indirection, nil, React.createElement(Consumer))
+							React.createElement(
+								Indirection,
+								nil,
+								React.createElement(Consumer)
+							)
 						)
 					)
 				end
@@ -513,21 +590,24 @@ return function()
 					return self.props.children
 				end
 				local function App(props)
-					return React.createElement(React.Fragment, nil, React.createElement(Context.Provider, {
-						value = "Does not unwind",
-					}, React.createElement(
-						ErrorBoundary,
+					return React.createElement(
+						React.Fragment,
 						nil,
-						React.createElement(Context.Provider, {
-							value = "Unwinds after BadRender throws",
-						}, React.createElement(
-							BadRender,
-							nil
-						))
-					), React.createElement(
-						Consumer,
-						nil
-					)))
+						React.createElement(
+							Context.Provider,
+							{
+								value = "Does not unwind",
+							},
+							React.createElement(
+								ErrorBoundary,
+								nil,
+								React.createElement(Context.Provider, {
+									value = "Unwinds after BadRender throws",
+								}, React.createElement(BadRender, nil))
+							),
+							React.createElement(Consumer, nil)
+						)
+					)
 				end
 
 				ReactNoop.render(React.createElement(App, {
@@ -557,17 +637,20 @@ return function()
 				function Child:render()
 					Scheduler.unstable_yieldValue("Child")
 					return React.createElement("span", {
-						prop = "Context: " .. tostring(self.props.context) .. ", Step: " .. tostring(self.state.step),
+						prop = "Context: "
+							.. tostring(self.props.context)
+							.. ", Step: "
+							.. tostring(self.state.step),
 					})
 				end
 
 				local function App(props)
-					return React.createElement(Context.Provider, {
-						value = props.value,
-					}, React.createElement(
-						Consumer,
-						nil,
-						function(value)
+					return React.createElement(
+						Context.Provider,
+						{
+							value = props.value,
+						},
+						React.createElement(Consumer, nil, function(value)
 							Scheduler.unstable_yieldValue("Consumer render prop")
 							return React.createElement(Child, {
 								ref = function(inst)
@@ -576,8 +659,8 @@ return function()
 								end,
 								context = value,
 							})
-						end
-					))
+						end)
+					)
 				end
 
 				-- Initial mount
@@ -585,88 +668,96 @@ return function()
 					value = 1,
 				}))
 				jestExpect(Scheduler).toFlushAndYield({ "Consumer render prop", "Child" })
-				jestExpect(ReactNoop.getChildren()).toEqual({ span("Context: 1, Step: 0") })
+				jestExpect(ReactNoop.getChildren()).toEqual({
+					span("Context: 1, Step: 0"),
+				})
 				child:setState({
 					step = 1,
 				})
 				jestExpect(Scheduler).toFlushAndYield({ "Child" })
-				jestExpect(ReactNoop.getChildren()).toEqual({ span("Context: 1, Step: 1") })
-			end)
-
-			it("consumer bails out if value is unchanged and something above bailed out", function()
-				local Context = React.createContext(0)
-				local Consumer = getConsumer(Context)
-
-				local function renderChildValue(value)
-					Scheduler.unstable_yieldValue("Consumer")
-					return React.createElement("span", {
-						prop = value,
-					})
-				end
-
-				local function ChildWithInlineRenderCallback()
-					Scheduler.unstable_yieldValue("ChildWithInlineRenderCallback")
-					-- Note: we are intentionally passing an inline arrow. Don't refactor.
-					return React.createElement(Consumer, nil, function(value)
-						return renderChildValue(value)
-					end)
-				end
-
-				local function ChildWithCachedRenderCallback()
-					Scheduler.unstable_yieldValue("ChildWithCachedRenderCallback")
-					return React.createElement(Consumer, nil, renderChildValue)
-				end
-
-				local PureIndirection = React.PureComponent:extend("PureIndirection")
-				function PureIndirection:render()
-					Scheduler.unstable_yieldValue("PureIndirection")
-					return React.createElement(
-						React.Fragment,
-						nil,
-						React.createElement(ChildWithInlineRenderCallback),
-						React.createElement(ChildWithCachedRenderCallback)
-					)
-				end
-
-				local App = React.Component:extend("App")
-				function App:render()
-					Scheduler.unstable_yieldValue("App")
-					return React.createElement(Context.Provider, {
-						value = self.props.value,
-					}, React.createElement(
-						PureIndirection,
-						nil
-					))
-				end
-
-				-- Initial mount
-				ReactNoop.render(React.createElement(App, {
-					value = 1,
-				}))
-				jestExpect(Scheduler).toFlushAndYield({
-					"App",
-					"PureIndirection",
-					"ChildWithInlineRenderCallback",
-					"Consumer",
-					"ChildWithCachedRenderCallback",
-					"Consumer",
+				jestExpect(ReactNoop.getChildren()).toEqual({
+					span("Context: 1, Step: 1"),
 				})
-				jestExpect(ReactNoop.getChildren()).toEqual({ span(1), span(1) })
-
-				-- Update (bailout)
-				ReactNoop.render(React.createElement(App, {
-					value = 1,
-				}))
-				jestExpect(Scheduler).toFlushAndYield({ "App" })
-				jestExpect(ReactNoop.getChildren()).toEqual({ span(1), span(1) })
-
-				-- Update (no bailout)
-				ReactNoop.render(React.createElement(App, {
-					value = 2,
-				}))
-				jestExpect(Scheduler).toFlushAndYield({ "App", "Consumer", "Consumer" })
-				jestExpect(ReactNoop.getChildren()).toEqual({ span(2), span(2) })
 			end)
+
+			it(
+				"consumer bails out if value is unchanged and something above bailed out",
+				function()
+					local Context = React.createContext(0)
+					local Consumer = getConsumer(Context)
+
+					local function renderChildValue(value)
+						Scheduler.unstable_yieldValue("Consumer")
+						return React.createElement("span", {
+							prop = value,
+						})
+					end
+
+					local function ChildWithInlineRenderCallback()
+						Scheduler.unstable_yieldValue("ChildWithInlineRenderCallback")
+						-- Note: we are intentionally passing an inline arrow. Don't refactor.
+						return React.createElement(Consumer, nil, function(value)
+							return renderChildValue(value)
+						end)
+					end
+
+					local function ChildWithCachedRenderCallback()
+						Scheduler.unstable_yieldValue("ChildWithCachedRenderCallback")
+						return React.createElement(Consumer, nil, renderChildValue)
+					end
+
+					local PureIndirection = React.PureComponent:extend("PureIndirection")
+					function PureIndirection:render()
+						Scheduler.unstable_yieldValue("PureIndirection")
+						return React.createElement(
+							React.Fragment,
+							nil,
+							React.createElement(ChildWithInlineRenderCallback),
+							React.createElement(ChildWithCachedRenderCallback)
+						)
+					end
+
+					local App = React.Component:extend("App")
+					function App:render()
+						Scheduler.unstable_yieldValue("App")
+						return React.createElement(Context.Provider, {
+							value = self.props.value,
+						}, React.createElement(PureIndirection, nil))
+					end
+
+					-- Initial mount
+					ReactNoop.render(React.createElement(App, {
+						value = 1,
+					}))
+					jestExpect(Scheduler).toFlushAndYield({
+						"App",
+						"PureIndirection",
+						"ChildWithInlineRenderCallback",
+						"Consumer",
+						"ChildWithCachedRenderCallback",
+						"Consumer",
+					})
+					jestExpect(ReactNoop.getChildren()).toEqual({ span(1), span(1) })
+
+					-- Update (bailout)
+					ReactNoop.render(React.createElement(App, {
+						value = 1,
+					}))
+					jestExpect(Scheduler).toFlushAndYield({ "App" })
+					jestExpect(ReactNoop.getChildren()).toEqual({ span(1), span(1) })
+
+					-- Update (no bailout)
+					ReactNoop.render(React.createElement(App, {
+						value = 2,
+					}))
+					jestExpect(Scheduler).toFlushAndYield({
+						"App",
+						"Consumer",
+						"Consumer",
+					})
+					jestExpect(ReactNoop.getChildren()).toEqual({ span(2), span(2) })
+				end
+			)
 
 			-- @gate experimental || www
 			it("context consumer doesn't bail out inside hidden subtree", function()
@@ -675,19 +766,23 @@ return function()
 
 				local function App(ref)
 					local theme = ref.theme
-					return React.createElement(Context.Provider, {
-						value = theme,
-					}, React.createElement(
-						LegacyHiddenDiv,
+					return React.createElement(
+						Context.Provider,
 						{
-							mode = "hidden",
+							value = theme,
 						},
-						React.createElement(Consumer, nil, function(value)
-							return React.createElement(Text, {
-								text = value,
-							})
-						end)
-					))
+						React.createElement(
+							LegacyHiddenDiv,
+							{
+								mode = "hidden",
+							},
+							React.createElement(Consumer, nil, function(value)
+								return React.createElement(Text, {
+									text = value,
+								})
+							end)
+						)
+					)
 				end
 
 				ReactNoop.render(React.createElement(App, {
@@ -710,13 +805,14 @@ return function()
 
 				local App = React.Component:extend("App")
 				function App:renderItem(id)
-					return React.createElement("span", { key = id }, React.createElement(Consumer, nil, function()
-						return React.createElement("span", nil, "inner")
-					end), React.createElement(
+					return React.createElement(
 						"span",
-						nil,
-						"outer"
-					))
+						{ key = id },
+						React.createElement(Consumer, nil, function()
+							return React.createElement("span", nil, "inner")
+						end),
+						React.createElement("span", nil, "outer")
+					)
 				end
 				function App:renderList()
 					local list = Array.map({ 1, 2 }, function(id)
@@ -728,7 +824,11 @@ return function()
 					return list
 				end
 				function App:render()
-					return React.createElement(Context.Provider, { value = {} }, self:renderList())
+					return React.createElement(
+						Context.Provider,
+						{ value = {} },
+						self:renderList()
+					)
 				end
 
 				ReactNoop.render(React.createElement(App, { reverse = false }))
@@ -776,10 +876,12 @@ return function()
 
 				Indirection = React.PureComponent:extend("Indirection")
 				function Indirection:render()
-					return (React.createElement(ContextConsumer, nil, function(value)
-						Scheduler.unstable_yieldValue("Consumer")
-						return React.createElement("span", { prop = value })
-					end))
+					return (
+						React.createElement(ContextConsumer, nil, function(value)
+							Scheduler.unstable_yieldValue("Consumer")
+							return React.createElement("span", { prop = value })
+						end)
+					)
 				end
 
 				-- Initial mount
@@ -828,9 +930,18 @@ return function()
 						React.createElement(
 							Indirection,
 							nil,
-							React.createElement(Indirection, nil, React.createElement(Consumer, {render = function(value)
-								return React.createElement("span", { prop = "Result: " .. tostring(value) })
-							end}))
+							React.createElement(
+								Indirection,
+								nil,
+								React.createElement(Consumer, {
+									render = function(value)
+										return React.createElement(
+											"span",
+											{ prop = "Result: " .. tostring(value) }
+										)
+									end,
+								})
+							)
 						)
 					)
 				end
@@ -839,7 +950,7 @@ return function()
 					ReactNoop.render(React.createElement(App, { value = 2 }))
 					jestExpect(Scheduler).toFlushWithoutYielding()
 				end).toWarnDev({
-					"Your Context.Consumer component is using legacy Roact syntax"
+					"Your Context.Consumer component is using legacy Roact syntax",
 				})
 				jestExpect(ReactNoop.getChildren()).toEqual({ span("Result: 2") })
 
@@ -855,15 +966,24 @@ return function()
 
 				local function Provider(props)
 					Scheduler.unstable_yieldValue("Provider")
-					return React.createElement(Context.Provider, { value = props.value }, props.children)
+					return React.createElement(
+						Context.Provider,
+						{ value = props.value },
+						props.children
+					)
 				end
 
 				local function Consumer(props)
 					Scheduler.unstable_yieldValue("Consumer")
-					return React.createElement(ContextConsumer, {render = function(value)
-						Scheduler.unstable_yieldValue("Consumer render prop")
-						return React.createElement("span", { prop = "Result: " .. tostring(value) })
-					end})
+					return React.createElement(ContextConsumer, {
+						render = function(value)
+							Scheduler.unstable_yieldValue("Consumer render prop")
+							return React.createElement(
+								"span",
+								{ prop = "Result: " .. tostring(value) }
+							)
+						end,
+					})
 				end
 
 				local Indirection = React.Component:extend("Indirection")
@@ -884,7 +1004,11 @@ return function()
 						React.createElement(
 							Indirection,
 							nil,
-							React.createElement(Indirection, nil, React.createElement(Consumer))
+							React.createElement(
+								Indirection,
+								nil,
+								React.createElement(Consumer)
+							)
 						)
 					)
 				end
@@ -900,7 +1024,7 @@ return function()
 						"Consumer render prop",
 					})
 				end).toWarnDev({
-					"Your Context.Consumer component is using legacy Roact syntax"
+					"Your Context.Consumer component is using legacy Roact syntax",
 				})
 				jestExpect(ReactNoop.getChildren()).toEqual({ span("Result: 2") })
 
@@ -953,23 +1077,29 @@ return function()
 		end
 		return Consumer
 	end)
-	sharedContextTests("readContext(Context) inside pure class component", function(Context)
-		local Consumer = React.PureComponent:extend("Consumer")
+	sharedContextTests(
+		"readContext(Context) inside pure class component",
+		function(Context)
+			local Consumer = React.PureComponent:extend("Consumer")
 
-		function Consumer:render()
-			local contextValue = readContext(Context)
-			local render = self.props.children
-			return render(contextValue)
+			function Consumer:render()
+				local contextValue = readContext(Context)
+				local render = self.props.children
+				return render(contextValue)
+			end
+			return Consumer
 		end
-		return Consumer
-	end)
+	)
 
 	describe("Context.Provider", function()
 		it("warns if no value prop provided", function()
 			local Context = React.createContext()
 
 			ReactNoop.render(
-				React.createElement(Context.Provider, { anyPropNameOtherThanValue = "value could be anything" })
+				React.createElement(
+					Context.Provider,
+					{ anyPropNameOtherThanValue = "value could be anything" }
+				)
 			)
 
 			jestExpect(function()
@@ -991,11 +1121,13 @@ return function()
 			end
 
 			local function App(props)
-				return (React.createElement(Context.Provider, { value = props.value }, {
-					-- ROBLOX deviation: add key prop so we get the correct warning
-					React.createElement(Foo, {key = 1}),
-					React.createElement(Foo, {key = 2}),
-				}))
+				return (
+					React.createElement(Context.Provider, { value = props.value }, {
+						-- ROBLOX deviation: add key prop so we get the correct warning
+						React.createElement(Foo, { key = 1 }),
+						React.createElement(Foo, { key = 2 }),
+					})
+				)
 			end
 
 			ReactNoop.render(React.createElement(App, { value = 1 }))
@@ -1033,7 +1165,11 @@ return function()
 
 			local function App(props)
 				Scheduler.unstable_yieldValue("App")
-				return React.createElement(Context.Provider, { value = props.value }, children)
+				return React.createElement(
+					Context.Provider,
+					{ value = props.value },
+					children
+				)
 			end
 
 			-- Initial mount
@@ -1083,7 +1219,11 @@ return function()
 			end
 			function App:render()
 				Scheduler.unstable_yieldValue("App")
-				return React.createElement(Context.Provider, { value = self.state.value }, self.props.children)
+				return React.createElement(
+					Context.Provider,
+					{ value = self.state.value },
+					self.props.children
+				)
 			end
 
 			local legacyProviderRef = React.createRef()
@@ -1149,7 +1289,10 @@ return function()
 			local function FooAndBar()
 				return React.createElement(FooContext.Consumer, nil, function(foo)
 					local bar = readContext(BarContext)
-					return React.createElement(Text, { text = "Foo: " .. tostring(foo) .. ", Bar: " .. tostring(bar) })
+					return React.createElement(
+						Text,
+						{ text = "Foo: " .. tostring(foo) .. ", Bar: " .. tostring(bar) }
+					)
 				end)
 			end
 
@@ -1168,7 +1311,11 @@ return function()
 					React.createElement(
 						BarContext.Provider,
 						{ value = props.bar },
-						React.createElement(Indirection, nil, React.createElement(FooAndBar))
+						React.createElement(
+							Indirection,
+							nil,
+							React.createElement(FooAndBar)
+						)
 					)
 				)
 			end
@@ -1246,32 +1393,47 @@ return function()
 			local function renderContext()
 				ReactNoop.render(
 					React.createElement(
-							Context.Provider,
-							{ value = 1 },
-							React.createElement(Context.Consumer, {render = function(value)
-									return React.createElement("span", { prop = "Result: " .. tostring(value) })
-							end}))
+						Context.Provider,
+						{ value = 1 },
+						React.createElement(Context.Consumer, {
+							render = function(value)
+								return React.createElement(
+									"span",
+									{ prop = "Result: " .. tostring(value) }
+								)
+							end,
+						})
+					)
 				)
 			end
 
 			renderContext()
 			jestExpect(function()
 				jestExpect(Scheduler).toFlushWithoutYielding()
-			end).toWarnDev("Warning: Your Context.Consumer component is using legacy Roact syntax, which won't be supported in future versions of Roact. \n" ..
-				"Please provide no props and supply the 'render' function as a child (the 3rd argument of createElement). For example: \n" ..
-				"       createElement(ContextConsumer, {render = function(...) end})\n" ..
-				"becomes:\n" ..
-				"       createElement(ContextConsumer, nil, function(...) end)\n" ..
-				"For more info, reference the React documentation here: \n" ..
-				"https://reactjs.org/docs/context.html#contextconsumer", {withoutStack = true})
-				ReactNoop.render(
-					React.createElement(
-							Context.Provider,
-							{ value = 1 },
-							React.createElement(Context.Consumer, {render = function(value)
-									return React.createElement("span", { prop = "Result: " .. tostring(value) })
-							end}))
+			end).toWarnDev(
+				"Warning: Your Context.Consumer component is using legacy Roact syntax, which won't be supported in future versions of Roact. \n"
+					.. "Please provide no props and supply the 'render' function as a child (the 3rd argument of createElement). For example: \n"
+					.. "       createElement(ContextConsumer, {render = function(...) end})\n"
+					.. "becomes:\n"
+					.. "       createElement(ContextConsumer, nil, function(...) end)\n"
+					.. "For more info, reference the React documentation here: \n"
+					.. "https://reactjs.org/docs/context.html#contextconsumer",
+				{ withoutStack = true }
+			)
+			ReactNoop.render(
+				React.createElement(
+					Context.Provider,
+					{ value = 1 },
+					React.createElement(Context.Consumer, {
+						render = function(value)
+							return React.createElement(
+								"span",
+								{ prop = "Result: " .. tostring(value) }
+							)
+						end,
+					})
 				)
+			)
 
 			-- Does not warn a second time
 			renderContext()
@@ -1279,7 +1441,6 @@ return function()
 				jestExpect(Scheduler).toFlushWithoutYielding()
 			end).toWarnDev({})
 		end)
-
 	end)
 
 	describe("readContext", function()
@@ -1287,23 +1448,27 @@ return function()
 		-- once that exists.
 		-- @gate FIXME
 		itSKIP("can read the same context multiple times in the same function", function()
-			local Context = React.createContext({foo = 0, bar = 0, baz = 0}, function(a, b)
-				local result = 0
-				if a.foo ~= b.foo then
-					result = bit32.bor(result, 0b001)
+			local Context = React.createContext(
+				{ foo = 0, bar = 0, baz = 0 },
+				function(a, b)
+					local result = 0
+					if a.foo ~= b.foo then
+						result = bit32.bor(result, 0b001)
+					end
+					if a.bar ~= b.bar then
+						result = bit32.bor(result, 0b010)
+					end
+					if a.baz ~= b.baz then
+						result = bit32.bor(result, 0b100)
+					end
+					return result
 				end
-				if a.bar ~= b.bar then
-					result = bit32.bor(result, 0b010)
-				end
-				if a.baz ~= b.baz then
-					result = bit32.bor(result, 0b100)
-				end
-				return result
-			end)
+			)
 
 			local function Provider(props)
-				return React.createElement(Context.Provider,
-					{ value = {foo = props.foo, bar = props.bar, baz = props.baz} },
+				return React.createElement(
+					Context.Provider,
+					{ value = { foo = props.foo, bar = props.bar, baz = props.baz } },
 					props.children
 				)
 			end
@@ -1313,7 +1478,8 @@ return function()
 				local foo = values.foo
 				values = readContext(Context, 0b010)
 				local bar = values.bar
-				return React.createElement(Text,
+				return React.createElement(
+					Text,
 					{ text = "Foo: " .. tostring(foo) .. ", Bar: " .. tostring(bar) }
 				)
 			end
@@ -1321,9 +1487,7 @@ return function()
 			local function Baz()
 				local values = readContext(Context, 0b001)
 				local baz = values.baz
-				return React.createElement(Text,
-					{ text = "Baz: " .. tostring(baz) }
-				)
+				return React.createElement(Text, { text = "Baz: " .. tostring(baz) })
 			end
 
 			local Indirection = React.Component:extend("Indirection")
@@ -1337,14 +1501,16 @@ return function()
 			local function App(props)
 				return React.createElement(
 					Provider,
-					{ foo = props.foo, bar = props.bar, baz = props.baz, },
-					React.createElement(Indirection, nil,
-						React.createElement(Indirection, nil,
+					{ foo = props.foo, bar = props.bar, baz = props.baz },
+					React.createElement(
+						Indirection,
+						nil,
+						React.createElement(
+							Indirection,
+							nil,
 							React.createElement(FooAndBar)
 						),
-						React.createElement(Indirection, nil,
-							React.createElement(Baz)
-						)
+						React.createElement(Indirection, nil, React.createElement(Baz))
 					)
 				)
 			end
@@ -1353,7 +1519,7 @@ return function()
 			jestExpect(Scheduler).toFlushAndYield({ "Foo: 1, Bar: 1", "Baz: 1" })
 			jestExpect(ReactNoop.getChildren()).toEqual({
 				span("Foo: 1, Bar: 1"),
-				span("Baz: 1")
+				span("Baz: 1"),
 			})
 
 			-- Update only foo
@@ -1361,7 +1527,7 @@ return function()
 			jestExpect(Scheduler).toFlushAndYield({ "Foo: 2, Bar: 1" })
 			jestExpect(ReactNoop.getChildren()).toEqual({
 				span("Foo: 2, Bar: 1"),
-				span("Baz: 1")
+				span("Baz: 1"),
 			})
 
 			-- Update only bar
@@ -1369,7 +1535,7 @@ return function()
 			jestExpect(Scheduler).toFlushAndYield({ "Foo: 2, Bar: 2" })
 			jestExpect(ReactNoop.getChildren()).toEqual({
 				span("Foo: 2, Bar: 2"),
-				span("Baz: 1")
+				span("Baz: 1"),
 			})
 
 			-- Update only baz
@@ -1377,7 +1543,7 @@ return function()
 			jestExpect(Scheduler).toFlushAndYield({ "Baz: 2" })
 			jestExpect(ReactNoop.getChildren()).toEqual({
 				span("Foo: 2, Bar: 2"),
-				span("Baz: 2")
+				span("Baz: 2"),
 			})
 		end)
 
@@ -1435,32 +1601,34 @@ return function()
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("goodbye") })
 		end)
 
+		it(
+			"warns when reading context inside render phase class setState updater",
+			function()
+				local ThemeContext = React.createContext("light")
 
-		it("warns when reading context inside render phase class setState updater", function()
-			local ThemeContext = React.createContext("light")
+				local Cls = React.Component:extend("Cls")
+				function Cls:init()
+					self.state = {}
+				end
 
-			local Cls = React.Component:extend("Cls")
-			function Cls:init()
-				self.state = {}
+				function Cls:render()
+					self:setState(function()
+						readContext(ThemeContext)
+					end)
+					return nil
+				end
+
+				ReactNoop.render(React.createElement(Cls))
+				jestExpect(function()
+					jestExpect(Scheduler).toFlushWithoutYielding()
+				end).toErrorDev({
+					"Context can only be read while React is rendering",
+					-- A second warning comes from to setStates being added to the queue.
+					"Context can only be read while React is rendering",
+					"Cannot update during an existing state transition",
+				})
 			end
-
-			function Cls:render()
-				self:setState(function()
-					readContext(ThemeContext)
-				end)
-				return nil
-			end
-
-			ReactNoop.render(React.createElement(Cls))
-			jestExpect(function()
-				jestExpect(Scheduler).toFlushWithoutYielding()
-			end).toErrorDev({
-				"Context can only be read while React is rendering",
-				-- A second warning comes from to setStates being added to the queue.
-				"Context can only be read while React is rendering",
-				"Cannot update during an existing state transition",
-			})
-		end)
+		)
 	end)
 
 	describe("useContext", function()
@@ -1473,12 +1641,12 @@ return function()
 
 			ReactNoop.render(React.createElement(Foo))
 			jestExpect(Scheduler).toFlushAndThrow(
-				"Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen" ..
-					" for one of the following reasons:\n" ..
-					"1. You might have mismatching versions of React and the renderer (such as React DOM)\n" ..
-					"2. You might be breaking the Rules of Hooks\n" ..
-					"3. You might have more than one copy of React in the same app\n" ..
-					"See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem."
+				"Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen"
+					.. " for one of the following reasons:\n"
+					.. "1. You might have mismatching versions of React and the renderer (such as React DOM)\n"
+					.. "2. You might be breaking the Rules of Hooks\n"
+					.. "3. You might have more than one copy of React in the same app\n"
+					.. "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem."
 			)
 		end)
 
@@ -1492,9 +1660,9 @@ return function()
 			jestExpect(function()
 				jestExpect(Scheduler).toFlushWithoutYielding()
 			end).toErrorDev(
-				"Calling useContext(Context.Consumer) is not supported, may cause bugs, " ..
-				"and will be removed in a future major release. " ..
-				"Did you mean to call useContext(Context) instead?"
+				"Calling useContext(Context.Consumer) is not supported, may cause bugs, "
+					.. "and will be removed in a future major release. "
+					.. "Did you mean to call useContext(Context) instead?"
 			)
 		end)
 
@@ -1509,8 +1677,8 @@ return function()
 			jestExpect(function()
 				jestExpect(Scheduler).toFlushWithoutYielding()
 			end).toErrorDev(
-				"Calling useContext(Context.Provider) is not supported. " ..
-				"Did you mean to call useContext(Context) instead?"
+				"Calling useContext(Context.Provider) is not supported. "
+					.. "Did you mean to call useContext(Context) instead?"
 			)
 		end)
 
@@ -1573,40 +1741,42 @@ return function()
 		-- it('unwinds after errors in complete phase', () => {
 	end)
 
-
 	-- ROBLOX TODO: add this test fixture
 	-- describe('fuzz test', () => {
 
+	it(
+		"should warn with an error message when using context as a consumer in DEV",
+		function()
+			local BarContext = React.createContext({ value = "bar-initial" })
+			local BarConsumer = BarContext
 
-	it("should warn with an error message when using context as a consumer in DEV", function()
-		local BarContext = React.createContext({value = "bar-initial"})
-		local BarConsumer = BarContext
-
-		local function Component()
-			return React.createElement(React.Fragment, nil,
-				React.createElement(BarContext.Provider,
-					{ value = "bar-updated" },
-					React.createElement(BarConsumer,
-						nil,
-						function(value)
-							return React.createElement("div",
+			local function Component()
+				return React.createElement(
+					React.Fragment,
+					nil,
+					React.createElement(
+						BarContext.Provider,
+						{ value = "bar-updated" },
+						React.createElement(BarConsumer, nil, function(value)
+							return React.createElement(
+								"div",
 								{ actual = value, expected = "bar-updated" }
 							)
-						end
+						end)
 					)
 				)
+			end
+
+			jestExpect(function()
+				ReactNoop.render(React.createElement(Component))
+				jestExpect(Scheduler).toFlushWithoutYielding()
+			end).toErrorDev(
+				"Warning: " -- ROBLOX FIXME: remove the Warning: prefix in consoleWithStackDev
+					.. "Rendering <Context> directly is not supported and will be removed in "
+					.. "a future major release. Did you mean to render <Context.Consumer> instead?"
 			)
 		end
-
-		jestExpect(function()
-			ReactNoop.render(React.createElement(Component))
-			jestExpect(Scheduler).toFlushWithoutYielding()
-		end).toErrorDev(
-			"Warning: " .. -- ROBLOX FIXME: remove the Warning: prefix in consoleWithStackDev
-			"Rendering <Context> directly is not supported and will be removed in " ..
-			"a future major release. Did you mean to render <Context.Consumer> instead?"
-		)
-	end)
+	)
 
 	-- ROBLOX deviation: we don't implement this property at all
 	-- it('should warn with an error message when using nested context consumers in DEV', () => {

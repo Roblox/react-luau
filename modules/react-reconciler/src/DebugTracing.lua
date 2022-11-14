@@ -39,10 +39,10 @@ local printedGroupIndex: number = 0
 function decimalToBinaryString(decimal: number): string
 	local result = ""
 	repeat
-		  local divres = decimal / 2
-		  local int, frac = math.modf(divres)
-		  decimal = int
-		  result = math.ceil(frac) .. result
+		local divres = decimal / 2
+		local int, frac = math.modf(divres)
+		decimal = int
+		result = math.ceil(frac) .. result
 	until decimal == 0
 
 	local nbZero = 31 - string.len(result)
@@ -56,7 +56,7 @@ local function formatLanes(laneOrLanes: Lane | Lanes): string
 end
 
 local function group(...): ()
-	for _, groupArg in {...} do
+	for _, groupArg in { ... } do
 		table.insert(pendingGroupArgs, groupArg)
 	end
 	if nativeConsoleLog == nil then
@@ -138,10 +138,7 @@ exports.logCommitStopped = logCommitStopped
 -- 	return wakeableIDs[wakeable]
 -- end
 
-local function logComponentSuspended(
-	componentName: string,
-	wakeable: Wakeable
-): ()
+local function logComponentSuspended(componentName: string, wakeable: Wakeable): ()
 	if _G.__DEV__ then
 		if enableDebugTracing then
 			-- local _id = getWakeableID(wakeable)

@@ -23,8 +23,10 @@ local clearTimeout = LuauPolyfill.clearTimeout
 local console = require(Packages.Shared).console
 
 local ReactTypes = require(Packages.Shared)
-type ReactFundamentalComponentInstance<T, U> =
-	ReactTypes.ReactFundamentalComponentInstance<T, U>
+type ReactFundamentalComponentInstance<T, U> = ReactTypes.ReactFundamentalComponentInstance<
+	T,
+	U
+>
 
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 local REACT_OPAQUE_ID_TYPE = ReactSymbols.REACT_OPAQUE_ID_TYPE
@@ -77,11 +79,12 @@ export type OpaqueIDType = string | Object
 export type RendererInspectionConfig = {}
 
 local ReactFiberHostConfig = require(Packages.Shared).ReactFiberHostConfig
-local exports = Object.assign({},
+local exports = Object.assign(
+	{},
 	ReactFiberHostConfig.WithNoPersistence,
 	ReactFiberHostConfig.WithNoHydration,
 	ReactFiberHostConfig.WithNoTestSelectors
-):: { [string]: any }
+) :: { [string]: any }
 
 local NO_CONTEXT = {}
 local UPDATE_SIGNAL = {}
@@ -265,10 +268,14 @@ exports.commitUpdate = function(
 	RobloxComponentProps.updateTags(instance, newProps, oldProps)
 end
 
-exports.commitMount =
-	function(instance: Instance, type: string, newProps: Props, internalInstanceHandle: Object)
-		-- noop
-	end
+exports.commitMount = function(
+	instance: Instance,
+	type: string,
+	newProps: Props,
+	internalInstanceHandle: Object
+)
+	-- noop
+end
 
 exports.commitTextUpdate =
 	function(textInstance: TextInstance, oldText: string, newText: string)

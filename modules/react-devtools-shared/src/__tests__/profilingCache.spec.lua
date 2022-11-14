@@ -98,10 +98,8 @@ return function()
 					local count = props.count
 					local children = table.create(count) :: any
 					for index = 0, count - 1 do
-						children[index + 1] = React.createElement(
-							Child,
-							{ key = index, duration = index }
-						)
+						children[index + 1] =
+							React.createElement(Child, { key = index, duration = index })
 					end
 
 					return React.createElement(
@@ -146,9 +144,8 @@ return function()
 
 				local allProfilingDataForRoots = {}
 				local function Validator(rootID, previousProfilingDataForRoot)
-					local profilingDataForRoot = store._profilerStore:getDataForRoot(
-						rootID
-					)
+					local profilingDataForRoot =
+						store._profilerStore:getDataForRoot(rootID)
 
 					if previousProfilingDataForRoot ~= nil then
 						jestExpect(profilingDataForRoot).toEqual(
@@ -192,10 +189,8 @@ return function()
 				local count = props.count
 				local children = table.create(count) :: any
 				for index = 0, count - 1 do
-					children[index + 1] = React.createElement(
-						Child,
-						{ key = index, duration = index }
-					)
+					children[index + 1] =
+						React.createElement(Child, { key = index, duration = index })
 				end
 
 				return React.createElement(
@@ -539,9 +534,8 @@ return function()
 					return store._profilerStore:startProfiling()
 				end)
 				act(function()
-					return ReactRoblox.createRoot(Instance.new("Frame")):render(
-						React.createElement(Grandparent, nil)
-					)
+					return ReactRoblox.createRoot(Instance.new("Frame"))
+						:render(React.createElement(Grandparent, nil))
 				end)
 				act(function()
 					return store._profilerStore:stopProfiling()
@@ -653,10 +647,8 @@ return function()
 				local count = props.count
 				local children = table.create(count) :: any
 				for index = 0, count - 1 do
-					children[index + 1] = React.createElement(
-						Child,
-						{ key = index, duration = index }
-					)
+					children[index + 1] =
+						React.createElement(Child, { key = index, duration = index })
 				end
 
 				return React.createElement(
@@ -694,9 +686,8 @@ return function()
 			local function Validator(ref)
 				local fiberID, previousFiberCommits, rootID =
 					ref.fiberID, ref.previousFiberCommits, ref.rootID
-				local fiberCommits = store._profilerStore
-					:profilingCache()
-					:getFiberCommits({
+				local fiberCommits =
+					store._profilerStore:profilingCache():getFiberCommits({
 						fiberID = fiberID,
 						rootID = rootID,
 					})
@@ -760,10 +751,8 @@ return function()
 				local count = props.count
 				local children = table.create(count) :: any
 				for index = 0, count - 1 do
-					children[index + 1] = React.createElement(
-						Child,
-						{ key = index, duration = index }
-					)
+					children[index + 1] =
+						React.createElement(Child, { key = index, duration = index })
 				end
 
 				return React.createElement(

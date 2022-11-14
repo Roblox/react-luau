@@ -27,13 +27,11 @@ local function initBackend(hook: DevToolsHook, agent: Agent, global: Object): ()
 		return function() end
 	end
 	local subs = {
-		hook.sub("renderer-attached", function(
-			args: {
-				id: number,
-				renderer: ReactRenderer,
-				rendererInterface: RendererInterface,
-			}
-		)
+		hook.sub("renderer-attached", function(args: {
+			id: number,
+			renderer: ReactRenderer,
+			rendererInterface: RendererInterface,
+		})
 			local id = args.id
 			local rendererInterface = args.rendererInterface
 

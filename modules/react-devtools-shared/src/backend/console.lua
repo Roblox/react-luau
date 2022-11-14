@@ -14,12 +14,10 @@ type ReactRenderer = Types.ReactRenderer
 local exports = {}
 
 -- ROBLOX FIXME: Stub for now
-function exports.patch(
-	_object: {
-		appendComponentStack: boolean,
-		breakOnConsoleErrors: boolean,
-	}
-): () end
+function exports.patch(_object: {
+	appendComponentStack: boolean,
+	breakOnConsoleErrors: boolean,
+}): () end
 
 function exports.unpatch(): () end
 

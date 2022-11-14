@@ -31,19 +31,17 @@ type SnapshotNode = profilerTypes.SnapshotNode
 
 export type Capabilities = { hasOwnerMetadata: boolean, supportsProfiling: boolean }
 
-export type Store = EventEmitter<
-	{
-		collapseNodesByDefault: Array<any>,
-		componentFilters: Array<any>,
-		mutated: Array<any>, -- ROBLOX deviation: can't express jagged array types in Luau
-		recordChangeDescriptions: Array<any>,
-		roots: Array<any>,
-		supportsNativeStyleEditor: Array<any>,
-		supportsProfiling: Array<any>,
-		supportsReloadAndProfile: Array<any>,
-		unsupportedRendererVersionDetected: Array<any>,
-	}
-> & {
+export type Store = EventEmitter<{
+	collapseNodesByDefault: Array<any>,
+	componentFilters: Array<any>,
+	mutated: Array<any>, -- ROBLOX deviation: can't express jagged array types in Luau
+	recordChangeDescriptions: Array<any>,
+	roots: Array<any>,
+	supportsNativeStyleEditor: Array<any>,
+	supportsProfiling: Array<any>,
+	supportsReloadAndProfile: Array<any>,
+	unsupportedRendererVersionDetected: Array<any>,
+}> & {
 	_bridge: FrontendBridge,
 
 	-- Should new nodes be collapsed by default when added to the tree?

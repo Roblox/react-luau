@@ -11,7 +11,7 @@
 
 local ReactDebugCurrentFrame = {}
 
-local currentExtraStackFrame = (nil :: nil | string)
+local currentExtraStackFrame = nil :: nil | string
 
 function ReactDebugCurrentFrame.setExtraStackFrame(stack: string?): ()
 	if _G.__DEV__ then
@@ -28,7 +28,7 @@ if _G.__DEV__ then
 	-- end
 
 	-- Stack implementation injected by the current renderer.
-	ReactDebugCurrentFrame.getCurrentStack = (nil :: nil | (() -> string))
+	ReactDebugCurrentFrame.getCurrentStack = nil :: nil | (() -> string)
 
 	function ReactDebugCurrentFrame.getStackAddendum(): string
 		local stack = ""

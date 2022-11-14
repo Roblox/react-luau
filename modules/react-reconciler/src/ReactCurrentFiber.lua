@@ -12,7 +12,7 @@ local __DEV__ = _G.__DEV__ :: boolean
 local Packages = script.Parent.Parent
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
-type Fiber = ReactInternalTypes.Fiber;
+type Fiber = ReactInternalTypes.Fiber
 
 local ReactSharedInternals = require(Packages.Shared).ReactSharedInternals
 local ReactFiberComponentStack = require(script.Parent.ReactFiberComponentStack)

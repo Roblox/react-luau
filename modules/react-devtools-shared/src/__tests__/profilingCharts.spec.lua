@@ -92,15 +92,13 @@ return function()
 				local renderFinished = false
 				local function Validator(ref)
 					local commitIndex, rootID = ref.commitIndex, ref.rootID
-					local commitTree = store._profilerStore
-						:profilingCache()
-						:getCommitTree({
+					local commitTree =
+						store._profilerStore:profilingCache():getCommitTree({
 							commitIndex = commitIndex,
 							rootID = rootID,
 						})
-					local chartData = store._profilerStore
-						:profilingCache()
-						:getFlamegraphChartData({
+					local chartData =
+						store._profilerStore:profilingCache():getFlamegraphChartData({
 							commitIndex = commitIndex,
 							commitTree = commitTree,
 							rootID = rootID,
@@ -181,15 +179,13 @@ return function()
 				local renderFinished = false
 				local function Validator(ref)
 					local commitIndex, rootID = ref.commitIndex, ref.rootID
-					local commitTree = store._profilerStore
-						:profilingCache()
-						:getCommitTree({
+					local commitTree =
+						store._profilerStore:profilingCache():getCommitTree({
 							commitIndex = commitIndex,
 							rootID = rootID,
 						})
-					local chartData = store._profilerStore
-						:profilingCache()
-						:getRankedChartData({
+					local chartData =
+						store._profilerStore:profilingCache():getRankedChartData({
 							commitIndex = commitIndex,
 							commitTree = commitTree,
 							rootID = rootID,
@@ -267,9 +263,8 @@ return function()
 				local renderFinished = false
 				local function Validator(ref)
 					local _commitIndex, rootID = ref.commitIndex, ref.rootID
-					local chartData = store._profilerStore
-						:profilingCache()
-						:getInteractionsChartData({
+					local chartData =
+						store._profilerStore:profilingCache():getInteractionsChartData({
 							rootID = rootID,
 						})
 					jestExpect(chartData).toMatchSnapshot("Interactions")

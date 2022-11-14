@@ -14,7 +14,7 @@ return function()
 	local fundamentalFiber, component, update, lane, setStateCallbackWasCalled, workInProgress
 
 	local updateTime = 0
-	local nextProps = { userName = 'Dan' }
+	local nextProps = { userName = "Dan" }
 	local updatePayload = { myVariable = 90210 }
 
 	beforeEach(function()
@@ -33,16 +33,16 @@ return function()
 		setStateCallbackWasCalled = false
 		update.payload = updatePayload
 		update.callback = function()
-		  setStateCallbackWasCalled = true
+			setStateCallbackWasCalled = true
 		end
 		update.lane = lane
 	end)
 
 	describe("new ReactUpdateQueue", function()
 		it("does not have force update", function()
-			jestExpect(
-				ReactUpdateQueue.checkHasForceUpdateAfterProcessing()
-			).toEqual(false)
+			jestExpect(ReactUpdateQueue.checkHasForceUpdateAfterProcessing()).toEqual(
+				false
+			)
 		end)
 
 		it("enqueue before initialize is a no-op", function()
@@ -91,7 +91,7 @@ return function()
 				nextProps,
 				component,
 				FiberLane.NoLanes
-			  )
+			)
 
 			jestExpect(workInProgress.memoizedState).toBe(nil)
 		end)
@@ -101,10 +101,10 @@ return function()
 			jestExpect(workInProgress.memoizedState).toBe(nil)
 
 			ReactUpdateQueue.processUpdateQueue(
-			  workInProgress,
-			  nextProps,
-			  component,
-			  FiberLane.NoLanes
+				workInProgress,
+				nextProps,
+				component,
+				FiberLane.NoLanes
 			)
 
 			jestExpect(setStateCallbackWasCalled).toBe(false)
@@ -119,7 +119,7 @@ return function()
 			setStateCallbackWasCalled = false
 			update.payload = updatePayload
 			update.callback = function()
-			  setStateCallbackWasCalled = true
+				setStateCallbackWasCalled = true
 			end
 			update.lane = lane
 			ReactUpdateQueue.initializeUpdateQueue(fundamentalFiber)
@@ -133,17 +133,17 @@ return function()
 
 			-- we use RetryLanes here because the update lane needs to be a subset of that
 			ReactUpdateQueue.processUpdateQueue(
-			  workInProgress,
-			  nextProps,
-			  component,
-			  FiberLane.RetryLanes
+				workInProgress,
+				nextProps,
+				component,
+				FiberLane.RetryLanes
 			)
 			jestExpect(fundamentalFiber.updateQueue.effects).never.toBe(nil)
 
 			ReactUpdateQueue.commitUpdateQueue(
-			  workInProgress,
-			  fundamentalFiber.updateQueue,
-			  component
+				workInProgress,
+				fundamentalFiber.updateQueue,
+				component
 			)
 
 			jestExpect(setStateCallbackWasCalled).toBe(true)
@@ -168,5 +168,4 @@ return function()
 			jestExpect(workInProgress.updateQueue.lastBaseUpdate).toEqual(update)
 		end)
 	end)
-
 end

@@ -89,43 +89,46 @@ return function()
 			jestExpect(boolValueInstance.Name).toEqual(key)
 		end)
 
-		it("names instances with their key value using legacy key syntax and updates them", function()
-			local key = "Some Key"
-			local fnMock = jest.fn()
-			local ref = function(...)
-				return fnMock(...)
+		it(
+			"names instances with their key value using legacy key syntax and updates them",
+			function()
+				local key = "Some Key"
+				local fnMock = jest.fn()
+				local ref = function(...)
+					return fnMock(...)
+				end
+
+				local element = React.createElement("Folder", {}, {
+					[key] = React.createElement("BoolValue", {
+						ref = ref,
+					}),
+				})
+
+				reactRobloxRoot:render(element)
+				Scheduler.unstable_flushAllWithoutAsserting()
+
+				jestExpect(fnMock).toHaveBeenCalledTimes(1)
+				local refValue = fnMock.mock.calls[1][1]
+				jestExpect(refValue.Name).toEqual(key)
+
+				local updatedKey = "Some other key"
+				local updatedElement = React.createElement("Folder", {}, {
+					[updatedKey] = React.createElement("BoolValue", {
+						ref = ref,
+					}),
+				})
+				reactRobloxRoot:render(updatedElement)
+				Scheduler.unstable_flushAllWithoutAsserting()
+
+				jestExpect(fnMock).toHaveBeenCalledTimes(3)
+				-- ROBLOX FIXME: jest mocks should be able to handle explicit
+				-- trailing nils, but do not appear to do so
+				jestExpect(fnMock).toHaveBeenNthCalledWith(2 --[[, nil ]])
+
+				local lastRefValue = fnMock.mock.calls[3][1]
+				jestExpect(lastRefValue.Name).toEqual(updatedKey)
 			end
-
-			local element = React.createElement("Folder", {}, {
-				[key] = React.createElement("BoolValue", {
-					ref = ref,
-				}),
-			})
-
-			reactRobloxRoot:render(element)
-			Scheduler.unstable_flushAllWithoutAsserting()
-
-			jestExpect(fnMock).toHaveBeenCalledTimes(1)
-			local refValue = fnMock.mock.calls[1][1]
-			jestExpect(refValue.Name).toEqual(key)
-
-			local updatedKey = "Some other key"
-			local updatedElement = React.createElement("Folder", {}, {
-				[updatedKey] = React.createElement("BoolValue", {
-					ref = ref,
-				}),
-			})
-			reactRobloxRoot:render(updatedElement)
-			Scheduler.unstable_flushAllWithoutAsserting()
-
-			jestExpect(fnMock).toHaveBeenCalledTimes(3)
-			-- ROBLOX FIXME: jest mocks should be able to handle explicit
-			-- trailing nils, but do not appear to do so
-			jestExpect(fnMock).toHaveBeenNthCalledWith(2 --[[, nil ]])
-
-			local lastRefValue = fnMock.mock.calls[3][1]
-			jestExpect(lastRefValue.Name).toEqual(updatedKey)
-		end)
+		)
 
 		it("should create children with correct names and props", function()
 			local rootValue = "Hey there!"
@@ -168,29 +171,32 @@ return function()
 			expect(childB.ClassName).to.equal("Folder")
 		end)
 
-		it("names instances with their key value using legacy key syntax through function component", function()
-			local key = "Some Key"
+		it(
+			"names instances with their key value using legacy key syntax through function component",
+			function()
+				local key = "Some Key"
 
-			local function Foo()
-				return React.createElement("BoolValue")
+				local function Foo()
+					return React.createElement("BoolValue")
+				end
+
+				local element = React.createElement("Folder", {}, {
+					[key] = React.createElement(Foo),
+				})
+
+				reactRobloxRoot:render(element)
+				Scheduler.unstable_flushAllWithoutAsserting()
+
+				jestExpect(#parent:GetChildren()).toBe(1)
+
+				local rootInstance = parent:GetChildren()[1]
+				jestExpect(rootInstance.ClassName).toBe("Folder")
+
+				local boolValueInstance = rootInstance:FindFirstChildOfClass("BoolValue")
+				jestExpect(boolValueInstance).toBeDefined()
+				jestExpect(boolValueInstance.Name).toEqual(key)
 			end
-
-			local element = React.createElement("Folder", {}, {
-				[key] = React.createElement(Foo),
-			})
-
-			reactRobloxRoot:render(element)
-			Scheduler.unstable_flushAllWithoutAsserting()
-
-			jestExpect(#parent:GetChildren()).toBe(1)
-
-			local rootInstance = parent:GetChildren()[1]
-			jestExpect(rootInstance.ClassName).toBe("Folder")
-
-			local boolValueInstance = rootInstance:FindFirstChildOfClass("BoolValue")
-			jestExpect(boolValueInstance).toBeDefined()
-			jestExpect(boolValueInstance.Name).toEqual(key)
-		end)
+		)
 
 		-- it("should attach Bindings to Roblox properties", function()
 		-- 	local parent = Instance.new("Folder")
@@ -300,11 +306,11 @@ return function()
 
 			local element = React.createElement("StringValue", {
 				Name = key,
-				Value = firstValue
+				Value = firstValue,
 			}, {
 				ChildA = React.createElement("IntValue", {
 					Name = "ChildA",
-					Value = 1
+					Value = 1,
 				}),
 				ChildB = React.createElement("BoolValue", {
 					Name = "ChildB",
@@ -317,7 +323,7 @@ return function()
 				ChildD = React.createElement("StringValue", {
 					Name = "ChildD",
 					Value = "test",
-				})
+				}),
 			})
 
 			reactRobloxRoot:render(element)
@@ -333,7 +339,7 @@ return function()
 				-- ChildA changes element type.
 				ChildA = React.createElement("StringValue", {
 					Name = "ChildA",
-					Value = "test"
+					Value = "test",
 				}),
 				-- ChildB changes child properties.
 				ChildB = React.createElement("BoolValue", {
@@ -676,8 +682,8 @@ return function()
 			end
 
 			local element = ReactRoblox.createPortal({
-				React.createElement("Folder", {key = "1", Name = "folderOne"}),
-				React.createElement("Folder", {key = "2", Name = "folderTwo"}),
+				React.createElement("Folder", { key = "1", Name = "folderOne" }),
+				React.createElement("Folder", { key = "2", Name = "folderTwo" }),
 				React.createElement(FunctionComponent, {
 					key = "3",
 					value = 42,
@@ -703,11 +709,11 @@ return function()
 			local target = Instance.new("Folder")
 
 			local firstElement = ReactRoblox.createPortal({
-				ChildValue = React.createElement("IntValue", {Value = 1})
+				ChildValue = React.createElement("IntValue", { Value = 1 }),
 			}, target)
 
 			local secondElement = ReactRoblox.createPortal({
-				ChildValue = React.createElement("IntValue", {Value = 2})
+				ChildValue = React.createElement("IntValue", { Value = 2 }),
 			}, target)
 
 			reactRobloxRoot:render(firstElement)
@@ -732,7 +738,7 @@ return function()
 		it("should throw if `target` is nil", function()
 			-- TODO: Relax this restriction?
 			jestExpect(function()
-				ReactRoblox.createPortal(React.createElement("IntValue", {Value = 1}))
+				ReactRoblox.createPortal(React.createElement("IntValue", { Value = 1 }))
 			end).toThrow()
 		end)
 
@@ -754,12 +760,12 @@ return function()
 			local secondTarget = Instance.new("Folder")
 
 			local firstElement = ReactRoblox.createPortal(
-				React.createElement("IntValue", {Value = 1}),
+				React.createElement("IntValue", { Value = 1 }),
 				firstTarget
 			)
 
 			local secondElement = ReactRoblox.createPortal(
-				React.createElement("IntValue", {Value = 2}),
+				React.createElement("IntValue", { Value = 2 }),
 				secondTarget
 			)
 
@@ -938,25 +944,30 @@ return function()
 			local Context = React.createContext(1)
 
 			local function App(props)
-				return React.createElement(
-					Context.Provider, {
-						value = props.value
-					}, {
-						Portal = ReactRoblox.createPortal({
-							Consumer = React.createElement(Context.Consumer, nil, function(value)
-								return React.createElement("TextLabel", {Text = "Result: " .. tostring(value)})
-							end)
-						}, target)
-					}
-				)
+				return React.createElement(Context.Provider, {
+					value = props.value,
+				}, {
+					Portal = ReactRoblox.createPortal({
+						Consumer = React.createElement(
+							Context.Consumer,
+							nil,
+							function(value)
+								return React.createElement(
+									"TextLabel",
+									{ Text = "Result: " .. tostring(value) }
+								)
+							end
+						),
+					}, target),
+				})
 			end
 
-			reactRobloxRoot:render(React.createElement(App, {value = 2}))
+			reactRobloxRoot:render(React.createElement(App, { value = 2 }))
 			Scheduler.unstable_flushAllWithoutAsserting()
 			jestExpect(#target:GetChildren()).toBe(1)
 			jestExpect(target:GetChildren()[1].Text).toBe("Result: 2")
 
-			reactRobloxRoot:render(React.createElement(App, {value = 3}))
+			reactRobloxRoot:render(React.createElement(App, { value = 3 }))
 			Scheduler.unstable_flushAllWithoutAsserting()
 			jestExpect(#target:GetChildren()).toBe(1)
 			jestExpect(target:GetChildren()[1].Text).toBe("Result: 3")

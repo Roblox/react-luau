@@ -63,7 +63,7 @@ return function()
 				end,
 				[ReactRoblox.Change.Text] = function()
 					-- do something
-				end
+				end,
 			})
 		end
 
@@ -101,7 +101,7 @@ return function()
 				Button = React.createElement("TextButton", {
 					Text = value:map(function(text)
 						return text .. " (Button)"
-					end)
+					end),
 				}),
 			})
 		end
@@ -134,13 +134,13 @@ return function()
 				Button = React.createElement("TextButton", {
 					[ReactRoblox.Event.Activated] = function()
 						-- do something
-					end
+					end,
 				}),
 				Label = React.createElement("TextLabel", {
 					[ReactRoblox.Change.Text] = function()
 						-- do something
-					end
-				})
+					end,
+				}),
 			})
 		end
 

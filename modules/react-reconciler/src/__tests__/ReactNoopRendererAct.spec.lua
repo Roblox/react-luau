@@ -28,8 +28,7 @@ return function()
 		Scheduler = require(Packages.Scheduler)
 	end)
 
-
-	it('can use act to flush effects', function()
+	it("can use act to flush effects", function()
 		local function App(props)
 			React.useEffect(props.callback)
 			return nil
@@ -37,26 +36,24 @@ return function()
 
 		local calledLog = {}
 		ReactNoop.act(function()
-			ReactNoop.render(
-				React.createElement(App, {
-					callback = function()
-						table.insert(calledLog, #calledLog)
-					end,
-				})
-			)
+			ReactNoop.render(React.createElement(App, {
+				callback = function()
+					table.insert(calledLog, #calledLog)
+				end,
+			}))
 		end)
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(calledLog).toEqual({0})
+		jestExpect(calledLog).toEqual({ 0 })
 	end)
-	it('should work with async/await', function()
+	it("should work with async/await", function()
 		local function App()
 			local ctr, setCtr = React.useState(0)
 			local function someAsyncFunction()
-				Scheduler.unstable_yieldValue('stage 1')
-				Scheduler.unstable_yieldValue('stage 2')
+				Scheduler.unstable_yieldValue("stage 1")
+				Scheduler.unstable_yieldValue("stage 2")
 				setCtr(1)
 			end
-			React.useEffect(function ()
+			React.useEffect(function()
 				someAsyncFunction()
 			end, {})
 			return ctr
@@ -66,8 +63,8 @@ return function()
 				ReactNoop.render(React.createElement(App))
 			end)
 		end):await()
-		jestExpect(Scheduler).toHaveYielded({'stage 1', 'stage 2'})
+		jestExpect(Scheduler).toHaveYielded({ "stage 1", "stage 2" })
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(ReactNoop.getChildren()).toEqual({{text = '1', hidden = false}})
+		jestExpect(ReactNoop.getChildren()).toEqual({ { text = "1", hidden = false } })
 	end)
 end

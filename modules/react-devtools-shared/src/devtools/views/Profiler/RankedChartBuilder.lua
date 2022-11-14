@@ -33,14 +33,12 @@ type CommitTreeNode = Profiler_typesModule.CommitTreeNode
 export type ChartNode = { id: number, label: string, name: string, value: number }
 export type ChartData = { maxValue: number, nodes: Array<ChartNode> }
 local cachedChartData: Map<string, ChartData> = Map.new()
-local function getChartData(
-	ref: {
-		commitIndex: number,
-		commitTree: CommitTree,
-		profilerStore: ProfilerStore,
-		rootID: number,
-	}
-): ChartData
+local function getChartData(ref: {
+	commitIndex: number,
+	commitTree: CommitTree,
+	profilerStore: ProfilerStore,
+	rootID: number,
+}): ChartData
 	local commitIndex, commitTree, profilerStore, rootID =
 		ref.commitIndex, ref.commitTree, ref.profilerStore, ref.rootID
 	local commitDatum = profilerStore:getCommitData(rootID, commitIndex)

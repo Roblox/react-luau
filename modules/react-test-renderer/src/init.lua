@@ -8,4 +8,4 @@
  *
  * @emails react-core
  ]]
- return require(script.ReactTestRenderer)
+return require(script.ReactTestRenderer)

@@ -28,37 +28,36 @@ return function()
 			React = require(Packages.React)
 			ReactTestRenderer = require(Packages.ReactTestRenderer)
 		end)
-		it("renders a component with React.Change, React.Event, React.Tag props", function()
-			local onTextChangedCallback = function()
+		it(
+			"renders a component with React.Change, React.Event, React.Tag props",
+			function()
+				local onTextChangedCallback = function() end
 
-			end
+				local onActivated = function() end
 
-			local onActivated = function()
+				local function Link()
+					return React.createElement("a", {
+						role = "link",
+						[React.Change.Text] = onTextChangedCallback,
+						[React.Event.Activated] = onActivated,
+						[React.Tag] = "componentA",
+					})
+				end
 
-			end
+				local renderer = ReactTestRenderer.create(React.createElement(Link))
 
-			local function Link()
-				return React.createElement("a", {
-					role = "link",
-					[React.Change.Text] = onTextChangedCallback,
-					[React.Event.Activated] = onActivated,
-					[React.Tag] = "componentA",
+				jestExpect(renderer.toJSON()).toEqual({
+					type = "a",
+					props = {
+						role = "link",
+						[React.Change.Text] = onTextChangedCallback,
+						[React.Event.Activated] = onActivated,
+						[React.Tag] = "componentA",
+					},
+					children = nil,
 				})
 			end
-
-			local renderer = ReactTestRenderer.create(React.createElement(Link))
-
-			jestExpect(renderer.toJSON()).toEqual({
-				type = "a",
-				props = {
-					role = "link",
-					[React.Change.Text] = onTextChangedCallback,
-					[React.Event.Activated] = onActivated,
-					[React.Tag] = "componentA",
-				},
-				children = nil,
-			})
-		end)
+		)
 
 		it("Can drive change and event signals from a ref", function()
 			local ref = React.createRef()
@@ -73,19 +72,22 @@ return function()
 						ref = self.props.childRef,
 						[React.Change.Text] = self.props.textCallback,
 						[React.Event.Activated] = self.props.clickCallback,
-					})
+					}),
 				})
 			end
 
-			local renderer = ReactTestRenderer.create(React.createElement(RootComponent, {
-				childRef = ref,
-				textCallback = textCallback,
-				clickCallback = clickCallback,
-			}), {
-				createNodeMock = function(element)
-					return element
-				end
-			})
+			local renderer = ReactTestRenderer.create(
+				React.createElement(RootComponent, {
+					childRef = ref,
+					textCallback = textCallback,
+					clickCallback = clickCallback,
+				}),
+				{
+					createNodeMock = function(element)
+						return element
+					end,
+				}
+			)
 
 			ref.current.props[React.Change.Text]("Changed Text")
 			jestExpect(textCallback).toHaveBeenCalledWith("Changed Text")
@@ -102,7 +104,7 @@ return function()
 			local renderer = ReactTestRenderer.create(React.createElement("div", {
 				Name = "A",
 				[React.Tag] = "foo",
-				key = "A"
+				key = "A",
 			}, {
 				B = React.createElement("div", {
 					[React.Tag] = "foo",
@@ -115,8 +117,8 @@ return function()
 				}, {
 					E = React.createElement("div", {
 						[React.Tag] = "bar",
-					})
-				})
+					}),
+				}),
 			}))
 
 			local barInstances = renderer.getInstancesForTag("bar")
@@ -132,7 +134,7 @@ return function()
 			renderer.update(React.createElement("div", {
 				Name = "A",
 				[React.Tag] = "foo",
-				key = "A"
+				key = "A",
 			}, {
 				B = React.createElement("div", {
 					[React.Tag] = "bar,baz",

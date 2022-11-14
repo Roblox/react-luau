@@ -1538,9 +1538,8 @@ return function()
 			local function MyComponent3(props, ref)
 				return nil
 			end
-			local ForwardRefComponentWithCustomDisplayName = React.forwardRef(
-				MyComponent3
-			)
+			local ForwardRefComponentWithCustomDisplayName =
+				React.forwardRef(MyComponent3)
 
 			ForwardRefComponentWithCustomDisplayName.displayName = "Custom"
 
@@ -1563,9 +1562,8 @@ return function()
 			-- FakeHigherOrderComponent.displayName = 'withFoo(withBar(Baz))'
 
 			local MemoizedFakeHigherOrderComponent = React.memo(FakeHigherOrderComponent)
-			local ForwardRefFakeHigherOrderComponent = React.forwardRef(
-				FakeHigherOrderComponent
-			)
+			local ForwardRefFakeHigherOrderComponent =
+				React.forwardRef(FakeHigherOrderComponent)
 			local function App()
 				return React.createElement(
 					React.Fragment,

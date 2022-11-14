@@ -64,7 +64,9 @@ return function()
 					updateName("Dan")
 				end
 
-				return React.createElement("Frame", nil,
+				return React.createElement(
+					"Frame",
+					nil,
 					React.createElement("TextLabel", {
 						Text = "Your name is: " .. name,
 					})
@@ -76,11 +78,15 @@ return function()
 				React.createElement(SomeComponent, { defaultName = "Dominic" })
 			)
 
-			jestExpect(result).toEqual(React.createElement("Frame", nil,
-				React.createElement("TextLabel", {
-					Text = "Your name is: " .. "Dan",
-				})
-			))
+			jestExpect(result).toEqual(
+				React.createElement(
+					"Frame",
+					nil,
+					React.createElement("TextLabel", {
+						Text = "Your name is: " .. "Dan",
+					})
+				)
+			)
 		end)
 
 		it("should work with updating a derived value from useState", function()
@@ -98,9 +104,15 @@ return function()
 					updateLetter(string.sub(name, 1, 1))
 				end
 
-				return React.createElement("Frame", nil,
+				return React.createElement(
+					"Frame",
+					nil,
 					React.createElement("TextLabel", {
-						Text = "Your name is: " .. name .. " (" .. tostring(letter) .. ")",
+						Text = "Your name is: "
+							.. name
+							.. " ("
+							.. tostring(letter)
+							.. ")",
 					})
 				)
 			end
@@ -110,24 +122,34 @@ return function()
 				React.createElement(SomeComponent, { defaultName = "Sophie" })
 			)
 
-			jestExpect(result).toEqual(React.createElement("Frame", nil,
-				React.createElement("TextLabel", {
-					Text = "Your name is: " .. "Sophie (S)",
-				})
-			))
+			jestExpect(result).toEqual(
+				React.createElement(
+					"Frame",
+					nil,
+					React.createElement("TextLabel", {
+						Text = "Your name is: " .. "Sophie (S)",
+					})
+				)
+			)
 
 			result = shallowRenderer:render(
 				React.createElement(SomeComponent, { defaultName = "Dan" })
 			)
-			jestExpect(result).toEqual(React.createElement("Frame", nil,
-				React.createElement("TextLabel", {
-					Text = "Your name is: " .. "Sophie (S)",
-				})
-			))
+			jestExpect(result).toEqual(
+				React.createElement(
+					"Frame",
+					nil,
+					React.createElement("TextLabel", {
+						Text = "Your name is: " .. "Sophie (S)",
+					})
+				)
+			)
 
 			_updateName("Dan")
 			jestExpect(shallowRenderer:getRenderOutput()).toEqual(
-				React.createElement("Frame", nil,
+				React.createElement(
+					"Frame",
+					nil,
 					React.createElement("TextLabel", {
 						Text = "Your name is: " .. "Dan (D)",
 					})
@@ -153,7 +175,9 @@ return function()
 					}
 				end)
 
-				return React.createElement("Frame", nil,
+				return React.createElement(
+					"Frame",
+					nil,
 					React.createElement("TextLabel", {
 						"The counter is at: " .. tostring(state.count),
 					})
@@ -164,21 +188,29 @@ return function()
 			local result = shallowRenderer:render(
 				React.createElement(SomeComponent, { initialCount = 0 })
 			)
-			jestExpect(result).toEqual(React.createElement("Frame", nil,
-				React.createElement("TextLabel", {
-					"The counter is at: 0",
-				})
-			))
+			jestExpect(result).toEqual(
+				React.createElement(
+					"Frame",
+					nil,
+					React.createElement("TextLabel", {
+						"The counter is at: 0",
+					})
+				)
+			)
 
 			result = shallowRenderer:render(
 				React.createElement(SomeComponent, { initialCount = 10 })
 			)
 
-			jestExpect(result).toEqual(React.createElement("Frame", nil,
-				React.createElement("TextLabel", {
-					"The counter is at: 0",
-				})
-			))
+			jestExpect(result).toEqual(
+				React.createElement(
+					"Frame",
+					nil,
+					React.createElement("TextLabel", {
+						"The counter is at: 0",
+					})
+				)
+			)
 		end)
 
 		it("should work with a dispatched state change for a useReducer", function()
@@ -202,7 +234,9 @@ return function()
 				if state.count == 0 then
 					dispatch({ type = "increment" })
 				end
-				return React.createElement("Frame", nil,
+				return React.createElement(
+					"Frame",
+					nil,
 					React.createElement("TextLabel", {
 						"The counter is at: " .. tostring(state.count),
 					})
@@ -214,11 +248,15 @@ return function()
 				React.createElement(SomeComponent, { initialCount = 0 })
 			)
 
-			jestExpect(result).toEqual(React.createElement("Frame", nil,
-				React.createElement("TextLabel", {
-					"The counter is at: 1",
-				})
-			))
+			jestExpect(result).toEqual(
+				React.createElement(
+					"Frame",
+					nil,
+					React.createElement("TextLabel", {
+						"The counter is at: 1",
+					})
+				)
+			)
 		end)
 
 		it("should not trigger effects", function()
@@ -250,18 +288,16 @@ return function()
 					"Frame",
 					nil,
 					React.createElement("TextLabel", {
-						Text = "The random number is: " .. tostring(
-							randomNumberRef.current.number
-						),
+						Text = "The random number is: "
+							.. tostring(randomNumberRef.current.number),
 					})
 				)
 			end
 
 			local shallowRenderer = createRenderer()
 			local firstResult = shallowRenderer:render(React.createElement(SomeComponent))
-			local secondResult = shallowRenderer:render(
-				React.createElement(SomeComponent)
-			)
+			local secondResult =
+				shallowRenderer:render(React.createElement(SomeComponent))
 
 			jestExpect(firstResult).toEqual(secondResult)
 		end)
@@ -275,18 +311,16 @@ return function()
 				return React.createElement(
 					"Frame",
 					nil,
-					React.createElement(
-						"TextLabel",
-						{ Text = "The random number is: " .. tostring(randomNumber.number) }
-					)
+					React.createElement("TextLabel", {
+						Text = "The random number is: " .. tostring(randomNumber.number),
+					})
 				)
 			end
 
 			local shallowRenderer = createRenderer()
 			local firstResult = shallowRenderer:render(React.createElement(SomeComponent))
-			local secondResult = shallowRenderer:render(
-				React.createElement(SomeComponent)
-			)
+			local secondResult =
+				shallowRenderer:render(React.createElement(SomeComponent))
 
 			jestExpect(firstResult).toEqual(secondResult)
 		end)
@@ -305,16 +339,15 @@ return function()
 					nil,
 					React.createElement(
 						"TextLabel",
-						{ Text = tostring(number1) .. " " .. tostring(number2)}
+						{ Text = tostring(number1) .. " " .. tostring(number2) }
 					)
 				)
 			end
 
 			local shallowRenderer = createRenderer()
-			local firstResult = shallowRenderer:render(
-				React.createElement(SomeComponent)
-			)
-			local secondResult = shallowRenderer:render(React.createElement(SomeComponent))
+			local firstResult = shallowRenderer:render(React.createElement(SomeComponent))
+			local secondResult =
+				shallowRenderer:render(React.createElement(SomeComponent))
 
 			jestExpect(firstResult).toEqual(secondResult)
 			jestExpect(capturedNumber1).toBeDefined()
@@ -388,18 +421,16 @@ return function()
 					"Frame",
 					{ ref = ref },
 					React.createElement("TextLabel", {
-						Text = "The random number is: " .. tostring(
-							randomNumberRef.current.number
-						),
+						Text = "The random number is: "
+							.. tostring(randomNumberRef.current.number),
 					})
 				)
 			end)
 
 			local shallowRenderer = createRenderer()
 			local firstResult = shallowRenderer:render(React.createElement(SomeComponent))
-			local secondResult = shallowRenderer:render(
-				React.createElement(SomeComponent)
-			)
+			local secondResult =
+				shallowRenderer:render(React.createElement(SomeComponent))
 
 			jestExpect(firstResult).toEqual(secondResult)
 		end)
@@ -433,10 +464,8 @@ return function()
 			end
 
 			local shallowRenderer = createRenderer()
-			local element = React.createElement(
-				SomeComponent,
-				{ defaultName = "Dominic" }
-			)
+			local element =
+				React.createElement(SomeComponent, { defaultName = "Dominic" })
 			local result = shallowRenderer:render(element)
 			jestExpect(result.props.children).toEqual(
 				validateElement(React.createElement("TextLabel", {

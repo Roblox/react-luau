@@ -9,4 +9,7 @@ if _G.minSamples ~= nil then
 	config.sampleCount = tonumber(_G.minSamples)
 end
 
-require(RotrieverWorkspace.React.Dev.PerformanceBenchmarks).deepTreeBenchmark(Roact, ReactRoblox)(config)
+require(RotrieverWorkspace.React.Dev.PerformanceBenchmarks).deepTreeBenchmark(
+	Roact,
+	ReactRoblox
+)(config)

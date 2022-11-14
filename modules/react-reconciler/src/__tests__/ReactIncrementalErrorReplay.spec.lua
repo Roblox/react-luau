@@ -16,40 +16,40 @@ local ReactNoop
 local Scheduler
 
 return function()
-    local RobloxJest = require(Packages.Dev.RobloxJest)
-    local jestExpect = require(Packages.Dev.JestGlobals).expect
+	local RobloxJest = require(Packages.Dev.RobloxJest)
+	local jestExpect = require(Packages.Dev.JestGlobals).expect
 
-    beforeEach(function()
-      RobloxJest.resetModules()
+	beforeEach(function()
+		RobloxJest.resetModules()
 
-      React = require(Packages.React)
-      ReactNoop = require(Packages.Dev.ReactNoopRenderer)
-      Scheduler = require(Packages.Scheduler)
-    end)
+		React = require(Packages.React)
+		ReactNoop = require(Packages.Dev.ReactNoopRenderer)
+		Scheduler = require(Packages.Scheduler)
+	end)
 
-    -- ROBLOX deviation: this test doesn't make sense in not JSX
-    -- it('should fail gracefully on error in the host environment', () => {
-    --     ReactNoop.render(<errorInBeginPhase />);
-    --     jestExpect(Scheduler).toFlushAndThrow('Error in host config.');
-    --   });
+	-- ROBLOX deviation: this test doesn't make sense in not JSX
+	-- it('should fail gracefully on error in the host environment', () => {
+	--     ReactNoop.render(<errorInBeginPhase />);
+	--     jestExpect(Scheduler).toFlushAndThrow('Error in host config.');
+	--   });
 
-    it("should ignore error if it doesn't throw on retry", function()
-        local didInit = false
+	it("should ignore error if it doesn't throw on retry", function()
+		local didInit = false
 
-        local function badLazyInit()
-            local needsInit = not didInit
-            didInit = true
-            if needsInit then
-                error("Hi")
-            end
-        end
+		local function badLazyInit()
+			local needsInit = not didInit
+			didInit = true
+			if needsInit then
+				error("Hi")
+			end
+		end
 
-        local App = React.Component:extend("App")
-        function App:render()
-            badLazyInit()
-            return React.createElement("TextLabel", {Text="Hello"})
-        end
-        ReactNoop.render(React.createElement(App))
-        jestExpect(Scheduler).toFlushWithoutYielding()
-    end)
+		local App = React.Component:extend("App")
+		function App:render()
+			badLazyInit()
+			return React.createElement("TextLabel", { Text = "Hello" })
+		end
+		ReactNoop.render(React.createElement(App))
+		jestExpect(Scheduler).toFlushWithoutYielding()
+	end)
 end

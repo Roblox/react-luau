@@ -10,19 +10,20 @@
 ]]
 local Packages = script.Parent.Parent
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
-type FiberRoot = ReactInternalTypes.FiberRoot;
-type ReactPriorityLevel = ReactInternalTypes.ReactPriorityLevel;
+type FiberRoot = ReactInternalTypes.FiberRoot
+type ReactPriorityLevel = ReactInternalTypes.ReactPriorityLevel
 local console = require(Packages.Shared).console
 
-local ReactFiberSchedulerPriorities = require(script.Parent["ReactFiberSchedulerPriorities.roblox"])
+local ReactFiberSchedulerPriorities =
+	require(script.Parent["ReactFiberSchedulerPriorities.roblox"])
 
 -- deviation: Instead of defining these here, and and re-exporting in
 -- `ReactInternalTypes`, we depend on and re-export them here to avoid cyclical
 -- require issues
-export type LanePriority = ReactInternalTypes.LanePriority;
-export type Lane = ReactInternalTypes.Lane;
-export type Lanes = ReactInternalTypes.Lanes;
-export type LaneMap<T> = ReactInternalTypes.LaneMap<T>;
+export type LanePriority = ReactInternalTypes.LanePriority
+export type Lane = ReactInternalTypes.Lane
+export type Lanes = ReactInternalTypes.Lanes
+export type LaneMap<T> = ReactInternalTypes.LaneMap<T>
 
 local invariant = require(Packages.Shared).invariant
 
@@ -71,47 +72,66 @@ exports.NoLanePriority = NoLanePriority
 -- ROBLOX performance: only use was for loop that was manually unrolled
 -- local TotalLanes = 31
 
-local NoLanes: Lanes = --[[                             ]] 0b0000000000000000000000000000000
+local NoLanes: Lanes = --[[                             ]]
+	0b0000000000000000000000000000000
 exports.NoLanes = NoLanes
-local NoLane: Lane = --[[                               ]] 0b0000000000000000000000000000000
+local NoLane: Lane = --[[                               ]]
+	0b0000000000000000000000000000000
 exports.NoLane = NoLane
 
-local SyncLane: Lane = --[[                             ]] 0b0000000000000000000000000000001
+local SyncLane: Lane = --[[                             ]]
+	0b0000000000000000000000000000001
 exports.SyncLane = SyncLane
-local SyncBatchedLane: Lanes = --[[                     ]] 0b0000000000000000000000000000010
+local SyncBatchedLane: Lanes = --[[                     ]]
+	0b0000000000000000000000000000010
 exports.SyncBatchedLane = SyncBatchedLane
 
-local InputDiscreteHydrationLane: Lane = --[[           ]] 0b0000000000000000000000000000100
+local InputDiscreteHydrationLane: Lane = --[[           ]]
+	0b0000000000000000000000000000100
 exports.InputDiscreteHydrationLane = InputDiscreteHydrationLane
-local InputDiscreteLanes: Lanes = --[[                  ]] 0b0000000000000000000000000011000
+local InputDiscreteLanes: Lanes = --[[                  ]]
+	0b0000000000000000000000000011000
 
-local InputContinuousHydrationLane: Lane = --[[         ]] 0b0000000000000000000000000100000
-local InputContinuousLanes: Lanes = --[[                ]] 0b0000000000000000000000011000000
+local InputContinuousHydrationLane: Lane = --[[         ]]
+	0b0000000000000000000000000100000
+local InputContinuousLanes: Lanes = --[[                ]]
+	0b0000000000000000000000011000000
 
-local DefaultHydrationLane: Lane = --[[                 ]] 0b0000000000000000000000100000000
+local DefaultHydrationLane: Lane = --[[                 ]]
+	0b0000000000000000000000100000000
 exports.DefaultHydrationLane = DefaultHydrationLane
-local DefaultLanes: Lanes = --[[                        ]] 0b0000000000000000000111000000000
+local DefaultLanes: Lanes = --[[                        ]]
+	0b0000000000000000000111000000000
 exports.DefaultLanes = DefaultLanes
 
-local TransitionHydrationLane: Lane = --[[              ]] 0b0000000000000000001000000000000
-local TransitionLanes: Lanes = --[[                     ]] 0b0000000001111111110000000000000
+local TransitionHydrationLane: Lane = --[[              ]]
+	0b0000000000000000001000000000000
+local TransitionLanes: Lanes = --[[                     ]]
+	0b0000000001111111110000000000000
 
-local RetryLanes: Lanes = --[[                          ]] 0b0000011110000000000000000000000
+local RetryLanes: Lanes = --[[                          ]]
+	0b0000011110000000000000000000000
 -- ROBLOX deviation: we expose this symbol from the module for ReactUpdateQueue.roblox tests, we don't re-export outside the package
 exports.RetryLanes = RetryLanes
-local SomeRetryLane: Lanes = --[[                       ]] 0b0000010000000000000000000000000
+local SomeRetryLane: Lanes = --[[                       ]]
+	0b0000010000000000000000000000000
 exports.SomeRetryLane = SomeRetryLane
 
-local SelectiveHydrationLane: Lane = --[[               ]] 0b0000100000000000000000000000000
+local SelectiveHydrationLane: Lane = --[[               ]]
+	0b0000100000000000000000000000000
 exports.SelectiveHydrationLane = SelectiveHydrationLane
 
-local NonIdleLanes = --[[                               ]] 0b0000111111111111111111111111111
+local NonIdleLanes = --[[                               ]]
+	0b0000111111111111111111111111111
 
-local IdleHydrationLane: Lane = --[[                    ]] 0b0001000000000000000000000000000
+local IdleHydrationLane: Lane = --[[                    ]]
+	0b0001000000000000000000000000000
 exports.IdleHydrationLane = IdleHydrationLane
-local IdleLanes: Lanes = --[[                           ]] 0b0110000000000000000000000000000
+local IdleLanes: Lanes = --[[                           ]]
+	0b0110000000000000000000000000000
 
-local OffscreenLane: Lane = --[[                        ]] 0b1000000000000000000000000000000
+local OffscreenLane: Lane = --[[                        ]]
+	0b1000000000000000000000000000000
 exports.OffscreenLane = OffscreenLane
 
 local NoTimestamp = -1
@@ -131,7 +151,7 @@ end
 -- // Used by getHighestPriorityLanes and getNextLanes:
 local return_highestLanePriority: LanePriority = exports.DefaultLanePriority
 
-local function getHighestPriorityLanes(lanes: Lanes | Lane) : Lanes
+local function getHighestPriorityLanes(lanes: Lanes | Lane): Lanes
 	if bit32.band(SyncLane, lanes) ~= NoLanes then
 		return_highestLanePriority = SyncLanePriority
 		return SyncLane
@@ -199,7 +219,7 @@ local function getHighestPriorityLanes(lanes: Lanes | Lane) : Lanes
 		return OffscreenLane
 	end
 	if _G.__DEV__ then
-		console.error('Should have found matching lanes. This is a bug in React.')
+		console.error("Should have found matching lanes. This is a bug in React.")
 	end
 	-- // This shouldn't be reachable, but as a fallback, return the entire bitmask.
 	return_highestLanePriority = DefaultLanePriority
@@ -213,7 +233,8 @@ local function schedulerPriorityToLanePriority(
 		return SyncLanePriority
 	elseif schedulerPriorityLevel == UserBlockingSchedulerPriority then
 		return InputContinuousLanePriority
-	elseif schedulerPriorityLevel == NormalSchedulerPriority
+	elseif
+		schedulerPriorityLevel == NormalSchedulerPriority
 		or schedulerPriorityLevel == LowSchedulerPriority
 	then
 		-- // TODO: Handle LowSchedulerPriority, somehow. Maybe the same lane as hydration.
@@ -229,27 +250,28 @@ exports.schedulerPriorityToLanePriority = schedulerPriorityToLanePriority
 local function lanePriorityToSchedulerPriority(
 	lanePriority: LanePriority
 ): ReactPriorityLevel
-	if lanePriority == SyncLanePriority or
-		lanePriority == SyncBatchedLanePriority
-	then
+	if lanePriority == SyncLanePriority or lanePriority == SyncBatchedLanePriority then
 		return ImmediateSchedulerPriority
-	elseif lanePriority == InputDiscreteHydrationLanePriority or
-		lanePriority == InputDiscreteLanePriority or
-		lanePriority == InputContinuousHydrationLanePriority or
-		lanePriority == InputContinuousLanePriority
+	elseif
+		lanePriority == InputDiscreteHydrationLanePriority
+		or lanePriority == InputDiscreteLanePriority
+		or lanePriority == InputContinuousHydrationLanePriority
+		or lanePriority == InputContinuousLanePriority
 	then
 		return UserBlockingSchedulerPriority
-	elseif lanePriority == DefaultHydrationLanePriority or
-		lanePriority == DefaultLanePriority or
-		lanePriority == TransitionHydrationPriority or
-		lanePriority == TransitionPriority or
-		lanePriority == SelectiveHydrationLanePriority or
-		lanePriority == RetryLanePriority
+	elseif
+		lanePriority == DefaultHydrationLanePriority
+		or lanePriority == DefaultLanePriority
+		or lanePriority == TransitionHydrationPriority
+		or lanePriority == TransitionPriority
+		or lanePriority == SelectiveHydrationLanePriority
+		or lanePriority == RetryLanePriority
 	then
 		return NormalSchedulerPriority
-	elseif lanePriority == IdleHydrationLanePriority or
-		lanePriority == IdleLanePriority or
-		lanePriority == OffscreenLanePriority
+	elseif
+		lanePriority == IdleHydrationLanePriority
+		or lanePriority == IdleLanePriority
+		or lanePriority == OffscreenLanePriority
 	then
 		return IdleSchedulerPriority
 	elseif lanePriority == NoLanePriority then
@@ -257,11 +279,11 @@ local function lanePriorityToSchedulerPriority(
 	else
 		invariant(
 			false,
-			'Invalid update priority: %s. This is a bug in React.',
+			"Invalid update priority: %s. This is a bug in React.",
 			lanePriority
 		)
 		-- deviation: luau doesn't know that invariant throws, so we error
-		error('unreachable')
+		error("unreachable")
 	end
 end
 exports.lanePriorityToSchedulerPriority = lanePriorityToSchedulerPriority
@@ -294,7 +316,8 @@ local function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes
 		-- // even if the work is suspended.
 		local nonIdlePendingLanes = bit32.band(pendingLanes, NonIdleLanes)
 		if nonIdlePendingLanes ~= NoLanes then
-			local nonIdleUnblockedLanes = bit32.band(nonIdlePendingLanes, bit32.bnot(suspendedLanes))
+			local nonIdleUnblockedLanes =
+				bit32.band(nonIdlePendingLanes, bit32.bnot(suspendedLanes))
 			if nonIdleUnblockedLanes ~= NoLanes then
 				nextLanes = getHighestPriorityLanes(nonIdleUnblockedLanes)
 				nextLanePriority = return_highestLanePriority
@@ -330,16 +353,18 @@ local function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes
 	-- // are suspended.
 	-- ROBLOX performance: inline getEqualOrHigherPriorityLanes to avoid function call overhead in hot path
 	-- nextLanes = bit32.band(pendingLanes, getEqualOrHigherPriorityLanes(nextLanes))
-	nextLanes = bit32.band(pendingLanes, bit32.lshift(getLowestPriorityLane(nextLanes), 1) - 1)
+	nextLanes =
+		bit32.band(pendingLanes, bit32.lshift(getLowestPriorityLane(nextLanes), 1) - 1)
 
 	-- // If we're already in the middle of a render, switching lanes will interrupt
 	-- // it and we'll lose our progress. We should only do this if the new lanes are
 	-- // higher priority.
-	if wipLanes ~= NoLanes and
-		wipLanes ~= nextLanes and
+	if
+		wipLanes ~= NoLanes
+		and wipLanes ~= nextLanes
 		-- // If we already suspended with a delay, then interrupting is fine. Don't
 		-- // bother waiting until the root is complocale.
-		bit32.band(wipLanes, suspendedLanes) == NoLanes
+		and bit32.band(wipLanes, suspendedLanes) == NoLanes
 	then
 		getHighestPriorityLanes(wipLanes)
 		local wipLanePriority = return_highestLanePriority
@@ -458,8 +483,9 @@ local function markStarvedLanesAsExpired(root: FiberRoot, currentTime: number)
 			-- // Found a pending lane with no expiration time. If it's not suspended, or
 			-- // if it's pinged, assume it's CPU-bound. Compute a new expiration time
 			-- // using the current time.
-			if bit32.band(lane, suspendedLanes) == NoLanes or
-				bit32.band(lane, pingedLanes) ~= NoLanes
+			if
+				bit32.band(lane, suspendedLanes) == NoLanes
+				or bit32.band(lane, pingedLanes) ~= NoLanes
 			then
 				-- // Assumes timestamps are monotonically increasing.
 				expirationTimes[index] = computeExpirationTime(lane, currentTime)
@@ -482,7 +508,8 @@ end
 exports.getHighestPriorityPendingLanes = getHighestPriorityPendingLanes
 
 local function getLanesToRetrySynchronouslyOnError(root: FiberRoot): Lanes
-	local everythingButOffscreen = bit32.band(root.pendingLanes, bit32.bnot(OffscreenLane))
+	local everythingButOffscreen =
+		bit32.band(root.pendingLanes, bit32.bnot(OffscreenLane))
 	if everythingButOffscreen ~= NoLanes then
 		return everythingButOffscreen
 	end
@@ -518,10 +545,7 @@ local pickArbitraryLane
 
 -- // To ensure consistency across multiple updates in the same event, this should
 -- // be a pure function, so that it always returns the same lane for given inputs.
-local function findUpdateLane(
-	lanePriority: LanePriority,
-	wipLanes: Lanes
-): Lane
+local function findUpdateLane(lanePriority: LanePriority, wipLanes: Lanes): Lane
 	if lanePriority == NoLanePriority then
 		-- break
 	elseif lanePriority == SyncLanePriority then
@@ -529,21 +553,21 @@ local function findUpdateLane(
 	elseif lanePriority == SyncBatchedLanePriority then
 		return SyncBatchedLane
 	elseif lanePriority == InputDiscreteLanePriority then
-		local lane = pickArbitraryLane(bit32.band(InputDiscreteLanes, bit32.bnot(wipLanes)))
+		local lane =
+			pickArbitraryLane(bit32.band(InputDiscreteLanes, bit32.bnot(wipLanes)))
 		if lane == NoLane then
 			-- // Shift to the next priority level
 			return findUpdateLane(InputContinuousLanePriority, wipLanes)
 		end
 		return lane
-
 	elseif lanePriority == InputContinuousLanePriority then
-		local lane = pickArbitraryLane(bit32.band(InputContinuousLanes, bit32.bnot(wipLanes)))
+		local lane =
+			pickArbitraryLane(bit32.band(InputContinuousLanes, bit32.bnot(wipLanes)))
 		if lane == NoLane then
 			-- // Shift to the next priority level
 			return findUpdateLane(DefaultLanePriority, wipLanes)
 		end
 		return lane
-
 	elseif lanePriority == DefaultLanePriority then
 		local lane = pickArbitraryLane(bit32.band(DefaultLanes, bit32.bnot(wipLanes)))
 		if lane == NoLane then
@@ -558,9 +582,9 @@ local function findUpdateLane(
 			end
 		end
 		return lane
-
-	elseif lanePriority == TransitionPriority or -- // Should be handled by findTransitionLane instead
-		lanePriority == RetryLanePriority -- // Should be handled by findRetryLane instead
+	elseif
+		lanePriority == TransitionPriority -- // Should be handled by findTransitionLane instead
+		or lanePriority == RetryLanePriority -- // Should be handled by findRetryLane instead
 	then
 		-- break
 	elseif lanePriority == IdleLanePriority then
@@ -572,13 +596,9 @@ local function findUpdateLane(
 	else
 		-- // The remaining priorities are not valid for updates
 	end
-	invariant(
-		false,
-		'Invalid update priority: %s. This is a bug in React.',
-		lanePriority
-	)
+	invariant(false, "Invalid update priority: %s. This is a bug in React.", lanePriority)
 	-- deviation: luau doesn't know that invariant throws, so we error
-	error('unreachable')
+	error("unreachable")
 end
 exports.findUpdateLane = findUpdateLane
 
@@ -695,10 +715,7 @@ local function higherPriorityLane(a: Lane, b: Lane)
 end
 exports.higherPriorityLane = higherPriorityLane
 
-local function higherLanePriority(
-	a: LanePriority,
-	b: LanePriority
-): LanePriority
+local function higherLanePriority(a: LanePriority, b: LanePriority): LanePriority
 	if a ~= NoLanePriority and a > b then
 		return a
 	else
@@ -753,11 +770,7 @@ local function createLaneMap(initial): LaneMap<any>
 end
 exports.createLaneMap = createLaneMap
 
-local function markRootUpdated(
-	root: FiberRoot,
-	updateLane: Lane,
-	eventTime: number
-)
+local function markRootUpdated(root: FiberRoot, updateLane: Lane, eventTime: number)
 	root.pendingLanes = bit32.bor(root.pendingLanes, updateLane)
 
 	-- // TODO: Theoretically, any update to any lane can unblock any other lane. But
@@ -779,7 +792,7 @@ local function markRootUpdated(
 	local eventTimes = root.eventTimes
 	-- ROBLOX performance: inline laneToIndex in hot path
 	-- local index = laneToIndex(updateLane)
-	local index =  31 - bit32.countlz(updateLane)
+	local index = 31 - bit32.countlz(updateLane)
 	-- // We can always overwrite an existing timestamp because we prefer the most
 	-- // recent event, and we assume time is monotonically increasing.
 	eventTimes[index] = eventTime
@@ -804,22 +817,21 @@ local function markRootSuspended(root: FiberRoot, suspendedLanes: Lanes)
 end
 exports.markRootSuspended = markRootSuspended
 
-local function markRootPinged(
-	root: FiberRoot,
-	pingedLanes: Lanes,
-	eventTime: number
-)
-	root.pingedLanes = bit32.bor(root.pingedLanes, bit32.band(root.suspendedLanes, pingedLanes))
+local function markRootPinged(root: FiberRoot, pingedLanes: Lanes, eventTime: number)
+	root.pingedLanes =
+		bit32.bor(root.pingedLanes, bit32.band(root.suspendedLanes, pingedLanes))
 end
 exports.markRootPinged = markRootPinged
 
 local function markRootExpired(root: FiberRoot, expiredLanes: Lanes)
-	root.expiredLanes = bit32.bor(root.expiredLanes, bit32.band(expiredLanes, root.pendingLanes))
+	root.expiredLanes =
+		bit32.bor(root.expiredLanes, bit32.band(expiredLanes, root.pendingLanes))
 end
 exports.markRootExpired = markRootExpired
 
 local function markDiscreteUpdatesExpired(root: FiberRoot)
-	root.expiredLanes = bit32.bor(root.expiredLanes, bit32.band(InputDiscreteLanes, root.pendingLanes))
+	root.expiredLanes =
+		bit32.bor(root.expiredLanes, bit32.band(InputDiscreteLanes, root.pendingLanes))
 end
 exports.markDiscreteUpdatesExpired = markDiscreteUpdatesExpired
 
@@ -829,7 +841,8 @@ end
 exports.hasDiscreteLanes = hasDiscreteLanes
 
 local function markRootMutableRead(root: FiberRoot, updateLane: Lane)
-	root.mutableReadLanes = bit32.bor(root.mutableReadLanes, bit32.band(updateLane, root.pendingLanes))
+	root.mutableReadLanes =
+		bit32.bor(root.mutableReadLanes, bit32.band(updateLane, root.pendingLanes))
 end
 exports.markRootMutableRead = markRootMutableRead
 
@@ -882,33 +895,35 @@ local function markRootEntangled(root: FiberRoot, entangledLanes: Lanes)
 end
 exports.markRootEntangled = markRootEntangled
 
-local function getBumpedLaneForHydration(
-	root: FiberRoot,
-	renderLanes: Lanes
-): Lane
+local function getBumpedLaneForHydration(root: FiberRoot, renderLanes: Lanes): Lane
 	getHighestPriorityLanes(renderLanes)
 	local highestLanePriority = return_highestLanePriority
 
 	local lane
 
-	if highestLanePriority == SyncLanePriority or
-		highestLanePriority == SyncBatchedLanePriority
+	if
+		highestLanePriority == SyncLanePriority
+		or highestLanePriority == SyncBatchedLanePriority
 	then
 		lane = NoLane
-	elseif highestLanePriority == InputDiscreteHydrationLanePriority or
-		highestLanePriority == InputDiscreteLanePriority
+	elseif
+		highestLanePriority == InputDiscreteHydrationLanePriority
+		or highestLanePriority == InputDiscreteLanePriority
 	then
 		lane = InputDiscreteHydrationLane
-	elseif highestLanePriority == InputContinuousHydrationLanePriority or
-		highestLanePriority == InputContinuousLanePriority
+	elseif
+		highestLanePriority == InputContinuousHydrationLanePriority
+		or highestLanePriority == InputContinuousLanePriority
 	then
 		lane = InputContinuousHydrationLane
-	elseif highestLanePriority == DefaultHydrationLanePriority or
-		highestLanePriority == DefaultLanePriority
+	elseif
+		highestLanePriority == DefaultHydrationLanePriority
+		or highestLanePriority == DefaultLanePriority
 	then
 		lane = DefaultHydrationLane
-	elseif highestLanePriority == TransitionHydrationPriority or
-		highestLanePriority == TransitionPriority
+	elseif
+		highestLanePriority == TransitionHydrationPriority
+		or highestLanePriority == TransitionPriority
 	then
 		lane = TransitionHydrationLane
 	elseif highestLanePriority == RetryLanePriority then
@@ -917,16 +932,18 @@ local function getBumpedLaneForHydration(
 		lane = TransitionHydrationLane
 	elseif highestLanePriority == SelectiveHydrationLanePriority then
 		lane = SelectiveHydrationLane
-	elseif highestLanePriority == IdleHydrationLanePriority or
-		highestLanePriority == IdleLanePriority
+	elseif
+		highestLanePriority == IdleHydrationLanePriority
+		or highestLanePriority == IdleLanePriority
 	then
 		lane = IdleHydrationLane
-	elseif highestLanePriority == OffscreenLanePriority or
-		highestLanePriority == NoLanePriority
+	elseif
+		highestLanePriority == OffscreenLanePriority
+		or highestLanePriority == NoLanePriority
 	then
 		lane = NoLane
 	else
-		invariant(false, 'Invalid lane: %s. This is a bug in React.', tostring(lane))
+		invariant(false, "Invalid lane: %s. This is a bug in React.", tostring(lane))
 	end
 
 	-- // Check if the lane we chose is suspended. If so, that indicates that we

@@ -18,7 +18,8 @@ return function()
 	local Packages = script.Parent.Parent.Parent.Parent.Parent
 	local JestGlobals = require(Packages.Dev.JestGlobals)
 	local jestExpect = JestGlobals.expect
-	local getDefaultInstanceProperty = require(script.Parent.Parent.getDefaultInstanceProperty)
+	local getDefaultInstanceProperty =
+		require(script.Parent.Parent.getDefaultInstanceProperty)
 
 	it("should get default name string values", function()
 		local _, defaultName = getDefaultInstanceProperty("StringValue", "Name")

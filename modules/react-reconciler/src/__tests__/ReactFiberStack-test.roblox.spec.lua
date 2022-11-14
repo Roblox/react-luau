@@ -12,8 +12,10 @@ return function()
 		end)
 
 		it("creates a cursor with the given default value", function()
-			local defaultValue = {foo = 3}
-			jestExpect(ReactFiberStack.createCursor(defaultValue)).toEqual({current = defaultValue})
+			local defaultValue = { foo = 3 }
+			jestExpect(ReactFiberStack.createCursor(defaultValue)).toEqual({
+				current = defaultValue,
+			})
 		end)
 
 		it("initializes the stack empty", function()
@@ -35,7 +37,7 @@ return function()
 			end)
 
 			it("pushes an element and assigns the value to the cursor", function()
-				local pushedElement = {foo = 3}
+				local pushedElement = { foo = 3 }
 				ReactFiberStack.push(cursor, pushedElement, fiber)
 				jestExpect(cursor.current).toEqual(pushedElement)
 			end)
@@ -46,14 +48,17 @@ return function()
 				jestExpect(ReactFiberStack.isEmpty()).toBe(true)
 			end)
 
-			it("pushes an element, pops it back and the cursor has its initial value", function()
-				local initialCursorValue = "foo"
-				cursor.current = initialCursorValue
+			it(
+				"pushes an element, pops it back and the cursor has its initial value",
+				function()
+					local initialCursorValue = "foo"
+					cursor.current = initialCursorValue
 
-				ReactFiberStack.push(cursor, true, fiber)
-				ReactFiberStack.pop(cursor, fiber)
-				jestExpect(cursor.current).toBe(initialCursorValue)
-			end)
+					ReactFiberStack.push(cursor, true, fiber)
+					ReactFiberStack.pop(cursor, fiber)
+					jestExpect(cursor.current).toBe(initialCursorValue)
+				end
+			)
 		end)
 	end)
 end

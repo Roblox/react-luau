@@ -28,7 +28,7 @@ return function()
 			React.createElement(
 				"Frame",
 				{},
-				{Root = React.createElement("TextLabel", { AbsentProp = 1 })}
+				{ Root = React.createElement("TextLabel", { AbsentProp = 1 }) }
 			)
 		)
 
@@ -44,19 +44,18 @@ return function()
 			React.createElement(
 				"Frame",
 				{},
-				{Root = React.createElement("TextLabel", { Text = "Okay!" })}
+				{ Root = React.createElement("TextLabel", { Text = "Okay!" }) }
 			)
 		)
 
 		Scheduler.unstable_flushAllWithoutAsserting()
 
-		reactRobloxRoot:render(
-			React.createElement(
-				"Frame",
-				{},
-				{Root = React.createElement("TextLabel", { Text = "Not good", AbsentProp = 1 })}
-			)
-		)
+		reactRobloxRoot:render(React.createElement("Frame", {}, {
+			Root = React.createElement(
+				"TextLabel",
+				{ Text = "Not good", AbsentProp = 1 }
+			),
+		}))
 
 		jestExpect(function()
 			jestExpect(Scheduler.unstable_flushAllWithoutAsserting).toErrorDev(
@@ -67,13 +66,9 @@ return function()
 
 	it("should provide a useful error when a binding update fails", function()
 		local neighbor, setNeighbor = React.createBinding(nil)
-		reactRobloxRoot:render(
-			React.createElement(
-				"Frame",
-				{},
-				{Root = React.createElement("TextLabel", { NextSelectionLeft = neighbor })}
-			)
-		)
+		reactRobloxRoot:render(React.createElement("Frame", {}, {
+			Root = React.createElement("TextLabel", { NextSelectionLeft = neighbor }),
+		}))
 
 		Scheduler.unstable_flushAllWithoutAsserting()
 
@@ -82,7 +77,7 @@ return function()
 				setNeighbor("not an Instance")
 			end).toErrorDev(
 				"Error updating binding or ref assigned to key NextSelectionLeft of 'Root' (TextLabel).",
-				{withoutStack = true}
+				{ withoutStack = true }
 			)
 		end).toThrow()
 	end)

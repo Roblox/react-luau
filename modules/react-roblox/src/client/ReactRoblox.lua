@@ -11,9 +11,9 @@
 local Packages = script.Parent.Parent.Parent
 
 local ReactTypes = require(Packages.Shared)
-type ReactNodeList = ReactTypes.ReactNodeList;
+type ReactNodeList = ReactTypes.ReactNodeList
 local ReactRobloxHostTypes = require(script.Parent["ReactRobloxHostTypes.roblox"])
-type Container = ReactRobloxHostTypes.Container;
+type Container = ReactRobloxHostTypes.Container
 
 -- local '../shared/checkReact'
 -- local ReactRobloxLegacy = require(script.Parent.ReactRobloxLegacy)
@@ -122,22 +122,22 @@ local Tag = require(Packages.Shared).Tag
 -- )
 
 local function createPortal(
-  children: ReactNodeList,
-  container: Container,
-  key: string?
+	children: ReactNodeList,
+	container: Container,
+	key: string?
 ): any
--- ): React$Portal
-  invariant(
-    isValidContainer(container),
-    -- ROBLOX deviation: Use roblox engine terminology
-    "Target container is not a Roblox Instance."
-  )
-  -- TODO: pass ReactDOM portal implementation as third argument
-  -- $FlowFixMe The Flow type is opaque but there's no way to actually create it.
-  -- ROBLOX FIXME: luau doesn't realize that this function errors, and it's
-  -- expecting us to return something. Can be removed when implementation is
-  -- done.
-  return createPortalImpl(children, container, nil, key)
+	-- ): React$Portal
+	invariant(
+		isValidContainer(container),
+		-- ROBLOX deviation: Use roblox engine terminology
+		"Target container is not a Roblox Instance."
+	)
+	-- TODO: pass ReactDOM portal implementation as third argument
+	-- $FlowFixMe The Flow type is opaque but there's no way to actually create it.
+	-- ROBLOX FIXME: luau doesn't realize that this function errors, and it's
+	-- expecting us to return something. Can be removed when implementation is
+	-- done.
+	return createPortalImpl(children, container, nil, key)
 end
 
 -- local function scheduleHydration(target: any)
@@ -199,111 +199,111 @@ end
 -- end
 
 local Internals = {
-  -- Keep in sync with ReactTestUtils.js, and ReactTestUtilsAct.js.
-  -- This is an array for better minification.
-  Events = {
-    getInstanceFromNode = getInstanceFromNode,
-    getNodeFromInstance = getNodeFromInstance,
-    getFiberCurrentPropsFromNode = getFiberCurrentPropsFromNode,
-    -- enqueueStateRestore = enqueueStateRestore,
-    -- restoreStateIfNeeded = restoreStateIfNeeded,
-    flushPassiveEffects = flushPassiveEffects,
-    -- TODO: This is related to `act`, not events. Move to separate key?
-    IsThisRendererActing = IsThisRendererActing,
-  },
+	-- Keep in sync with ReactTestUtils.js, and ReactTestUtilsAct.js.
+	-- This is an array for better minification.
+	Events = {
+		getInstanceFromNode = getInstanceFromNode,
+		getNodeFromInstance = getNodeFromInstance,
+		getFiberCurrentPropsFromNode = getFiberCurrentPropsFromNode,
+		-- enqueueStateRestore = enqueueStateRestore,
+		-- restoreStateIfNeeded = restoreStateIfNeeded,
+		flushPassiveEffects = flushPassiveEffects,
+		-- TODO: This is related to `act`, not events. Move to separate key?
+		IsThisRendererActing = IsThisRendererActing,
+	},
 }
 
 local exports = {
-  createPortal = createPortal,
-  unstable_batchedUpdates = batchedUpdates,
-  -- flushSync = flushSync,
-  __SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = Internals,
-  version = ReactVersion,
-  -- Disabled behind disableLegacyReactDOMAPIs
-  -- findDOMNode = findDOMNode,
-  -- hydrate = hydrate,
-  -- render = render,
-  -- unmountComponentAtNode = unmountComponentAtNode,
-  -- exposeConcurrentModeAPIs
-  createRoot = createRoot,
-  createBlockingRoot = createBlockingRoot,
-  createLegacyRoot = createLegacyRoot,
-  -- unstable_flushControlled = flushControlled,
-  -- unstable_scheduleHydration = scheduleHydration,
-  -- Disabled behind disableUnstableRenderSubtreeIntoContainer
-  -- unstable_renderSubtreeIntoContainer = renderSubtreeIntoContainer,
-  -- Disabled behind disableUnstableCreatePortal
-  -- Temporary alias since we already shipped React 16 RC with it.
-  -- TODO: remove in React 18.
-  -- unstable_createPortal = unstable_createPortal,
-  -- enableCreateEventHandleAPI
-  -- unstable_createEventHandle = createEventHandle,
-  -- TODO: Remove this once callers migrate to alternatives.
-  -- This should only be used by React internals.
-  -- unstable_runWithPriority = runWithPriority,
+	createPortal = createPortal,
+	unstable_batchedUpdates = batchedUpdates,
+	-- flushSync = flushSync,
+	__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = Internals,
+	version = ReactVersion,
+	-- Disabled behind disableLegacyReactDOMAPIs
+	-- findDOMNode = findDOMNode,
+	-- hydrate = hydrate,
+	-- render = render,
+	-- unmountComponentAtNode = unmountComponentAtNode,
+	-- exposeConcurrentModeAPIs
+	createRoot = createRoot,
+	createBlockingRoot = createBlockingRoot,
+	createLegacyRoot = createLegacyRoot,
+	-- unstable_flushControlled = flushControlled,
+	-- unstable_scheduleHydration = scheduleHydration,
+	-- Disabled behind disableUnstableRenderSubtreeIntoContainer
+	-- unstable_renderSubtreeIntoContainer = renderSubtreeIntoContainer,
+	-- Disabled behind disableUnstableCreatePortal
+	-- Temporary alias since we already shipped React 16 RC with it.
+	-- TODO: remove in React 18.
+	-- unstable_createPortal = unstable_createPortal,
+	-- enableCreateEventHandleAPI
+	-- unstable_createEventHandle = createEventHandle,
+	-- TODO: Remove this once callers migrate to alternatives.
+	-- This should only be used by React internals.
+	-- unstable_runWithPriority = runWithPriority,
 
-  -- ROBLOX deviation: Export logic attached from Roact
+	-- ROBLOX deviation: Export logic attached from Roact
 
-  -- ROBLOX FIXME: Is there a better way to provide this? Exposing these here
-  -- means that a large number of react components that wouldn't otherwise need
-  -- to import `ReactRoblox` will need to do so in order to set events/change
-  Event = Event,
-  Change = Change,
-  Tag = Tag,
-  unstable_isNewReconciler = enableNewReconciler,
+	-- ROBLOX FIXME: Is there a better way to provide this? Exposing these here
+	-- means that a large number of react components that wouldn't otherwise need
+	-- to import `ReactRoblox` will need to do so in order to set events/change
+	Event = Event,
+	Change = Change,
+	Tag = Tag,
+	unstable_isNewReconciler = enableNewReconciler,
 
-  -- ROBLOX deviation: Export `act` function for testing purposes; in
-  -- production (a.k.a. scheduler isn't mocked), give an instructive error
-  act = function(_: () -> ()): ()
-    error(
-      "ReactRoblox.act is only available in testing environments, not "
-      .. "production. Enable the `__ROACT_17_MOCK_SCHEDULER__` global in your "
-      .. "test configuration in order to use `act`."
-    )
-  end
+	-- ROBLOX deviation: Export `act` function for testing purposes; in
+	-- production (a.k.a. scheduler isn't mocked), give an instructive error
+	act = function(_: () -> ()): ()
+		error(
+			"ReactRoblox.act is only available in testing environments, not "
+				.. "production. Enable the `__ROACT_17_MOCK_SCHEDULER__` global in your "
+				.. "test configuration in order to use `act`."
+		)
+	end,
 }
 
 if _G.__ROACT_17_MOCK_SCHEDULER__ then
-  -- ROBLOX deviation: When the __ROACT_17_MOCK_SCHEDULER__ is enabled, we
-  -- re-export the `act` function from ReactReconciler. The global will
-  -- additionally force the scheduler to use the mock interface
-  exports.act = ReactReconciler.act
+	-- ROBLOX deviation: When the __ROACT_17_MOCK_SCHEDULER__ is enabled, we
+	-- re-export the `act` function from ReactReconciler. The global will
+	-- additionally force the scheduler to use the mock interface
+	exports.act = ReactReconciler.act
 end
 
 -- ROBLOX deviation: we don't currently implement the logic below that uses this
 -- value
 local _foundDevTools = injectIntoDevTools({
-  findFiberByHostInstance = getClosestInstanceFromNode,
-  bundleType = if _G.__DEV__ then 1 else 0,
-  version = ReactVersion,
-  rendererPackageName = 'ReactRoblox',
+	findFiberByHostInstance = getClosestInstanceFromNode,
+	bundleType = if _G.__DEV__ then 1 else 0,
+	version = ReactVersion,
+	rendererPackageName = "ReactRoblox",
 })
 
 if _G.__DEV__ then
-  -- if not foundDevTools and canUseDOM and window.top == window.self then
-  --   If we're in Chrome or Firefox, provide a download link if not installed.
-  --   if
-  --     (navigator.userAgent.indexOf('Chrome') > -1 and
-  --       navigator.userAgent.indexOf('Edge') == -1) or
-  --     navigator.userAgent.indexOf('Firefox') > -1
-  --   )
-  --     local protocol = window.location.protocol
-  --     -- Don't warn in exotic cases like chrome-extension://.
-  --     if /^(https?|file):$/.test(protocol))
-  --       -- eslint-disable-next-line react-internal/no-production-logging
-  --       console.info(
-  --         '%cDownload the React DevTools ' +
-  --           'for a better development experience: ' +
-  --           'https://reactjs.org/link/react-devtools' +
-  --           (protocol == 'file:'
-  --             ? '\nYou might need to use a local HTTP server (instead of file://): ' +
-  --               'https://reactjs.org/link/react-devtools-faq'
-  --             : ''),
-  --         'font-weight:bold',
-  --       )
-  --     end
-  --   end
-  -- end
+	-- if not foundDevTools and canUseDOM and window.top == window.self then
+	--   If we're in Chrome or Firefox, provide a download link if not installed.
+	--   if
+	--     (navigator.userAgent.indexOf('Chrome') > -1 and
+	--       navigator.userAgent.indexOf('Edge') == -1) or
+	--     navigator.userAgent.indexOf('Firefox') > -1
+	--   )
+	--     local protocol = window.location.protocol
+	--     -- Don't warn in exotic cases like chrome-extension://.
+	--     if /^(https?|file):$/.test(protocol))
+	--       -- eslint-disable-next-line react-internal/no-production-logging
+	--       console.info(
+	--         '%cDownload the React DevTools ' +
+	--           'for a better development experience: ' +
+	--           'https://reactjs.org/link/react-devtools' +
+	--           (protocol == 'file:'
+	--             ? '\nYou might need to use a local HTTP server (instead of file://): ' +
+	--               'https://reactjs.org/link/react-devtools-faq'
+	--             : ''),
+	--         'font-weight:bold',
+	--       )
+	--     end
+	--   end
+	-- end
 end
 
 return exports

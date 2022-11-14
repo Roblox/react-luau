@@ -50,8 +50,9 @@ local ProfilingCache = {} :: ProfilingCache & ProfilingCache_statics;
 (ProfilingCache :: any).__index = ProfilingCache
 
 function ProfilingCache.new(profilerStore: ProfilerStore): ProfilingCache
-	local profilingCache: ProfilingCache =
-		(setmetatable({}, ProfilingCache) :: any) :: ProfilingCache
+	local profilingCache: ProfilingCache = (
+		setmetatable({}, ProfilingCache) :: any
+	) :: ProfilingCache
 	profilingCache._fiberCommits = Map.new()
 	profilingCache._profilerStore = profilerStore
 
@@ -81,13 +82,11 @@ function ProfilingCache.new(profilerStore: ProfilerStore): ProfilingCache
 		self._fiberCommits:set(fiberID, fiberCommits)
 		return fiberCommits
 	end
-	function profilingCache:getFlamegraphChartData(
-		ref: {
-			commitIndex: number,
-			commitTree: CommitTree,
-			rootID: number,
-		}
-	): FlamegraphChartData
+	function profilingCache:getFlamegraphChartData(ref: {
+		commitIndex: number,
+		commitTree: CommitTree,
+		rootID: number,
+	}): FlamegraphChartData
 		local commitIndex, commitTree, rootID =
 			ref.commitIndex, ref.commitTree, ref.rootID
 		return getFlamegraphChartData({
@@ -106,13 +105,11 @@ function ProfilingCache.new(profilerStore: ProfilerStore): ProfilingCache
 			rootID = rootID,
 		})
 	end
-	function profilingCache:getRankedChartData(
-		ref: {
-			commitIndex: number,
-			commitTree: CommitTree,
-			rootID: number,
-		}
-	): RankedChartData
+	function profilingCache:getRankedChartData(ref: {
+		commitIndex: number,
+		commitTree: CommitTree,
+		rootID: number,
+	}): RankedChartData
 		local commitIndex, commitTree, rootID =
 			ref.commitIndex, ref.commitTree, ref.rootID
 		return getRankedChartData({

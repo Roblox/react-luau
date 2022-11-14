@@ -173,9 +173,7 @@ local getCurrentTime = function()
 	return os.clock()
 end
 
-exports.getInternalReactConstants = function(
-	version: string
-): {
+exports.getInternalReactConstants = function(version: string): {
 	getDisplayNameForFiber: getDisplayNameForFiberType,
 	getTypeSymbol: getTypeSymbolType,
 	ReactPriorityLevels: ReactPriorityLevelsType,
@@ -1579,15 +1577,14 @@ exports.attach = function(
 				alternate == nil
 				or treeBaseDuration ~= (alternate :: Fiber).treeBaseDuration
 			then
-				local convertedTreeBaseDuration = math.floor(
-					(treeBaseDuration or 0) * 1000
-				)
+				local convertedTreeBaseDuration =
+					math.floor((treeBaseDuration or 0) * 1000)
 
 				pushOperation(TREE_OPERATION_UPDATE_TREE_BASE_DURATION)
 				pushOperation(id)
 				pushOperation(convertedTreeBaseDuration)
 			end
-			if alternate == nil or didFiberRender((alternate :: Fiber), fiber) then
+			if alternate == nil or didFiberRender(alternate :: Fiber, fiber) then
 				if actualDuration ~= nil then
 					-- The actual duration reported by React includes time spent working on children.
 					-- This is useful information, but it's also useful to be able to exclude child durations.
@@ -1612,17 +1609,18 @@ exports.attach = function(
 					table.insert(metadata.durations, id)
 					table.insert(metadata.durations, actualDuration :: number)
 					table.insert(metadata.durations, selfDuration)
-					metadata.maxActualDuration = math.max(
-						metadata.maxActualDuration,
-						actualDuration :: number
-					)
+					metadata.maxActualDuration =
+						math.max(metadata.maxActualDuration, actualDuration :: number)
 
 					if recordChangeDescriptions then
 						local changeDescription = getChangeDescription(alternate, fiber)
 						if changeDescription ~= nil then
 							if metadata.changeDescriptions ~= nil then
 								(
-									metadata.changeDescriptions :: Map<number, ChangeDescription>
+									metadata.changeDescriptions :: Map<
+										number,
+										ChangeDescription
+									>
 								):set(id, changeDescription :: ChangeDescription)
 							end
 						end
@@ -2232,7 +2230,7 @@ exports.attach = function(
 		local alternate = (fiber :: Fiber).alternate
 		if not alternate then
 			-- If there is no alternate, then we only need to check if it is mounted.
-			local nearestMounted = getNearestMountedFiber((fiber :: Fiber))
+			local nearestMounted = getNearestMountedFiber(fiber :: Fiber)
 			invariant(
 				nearestMounted ~= nil,
 				"Unable to find node on an unmounted component."
@@ -2240,7 +2238,7 @@ exports.attach = function(
 			if nearestMounted ~= (fiber :: Fiber) then
 				return nil
 			end
-			return (fiber :: Fiber)
+			return fiber :: Fiber
 		end
 		-- If we have two possible branches, we'll walk backwards up to the root
 		-- to see what path the root points to. On the way we may hit one of the
@@ -2416,9 +2414,9 @@ exports.attach = function(
 		local _debugOwner = (fiber :: Fiber)._debugOwner
 		local owners = {
 			{
-				displayName = getDisplayNameForFiber((fiber :: Fiber)) or "Anonymous",
+				displayName = getDisplayNameForFiber(fiber :: Fiber) or "Anonymous",
 				id = id,
-				type = getElementTypeForFiber((fiber :: Fiber)),
+				type = getElementTypeForFiber(fiber :: Fiber),
 			},
 		}
 
@@ -2482,10 +2480,10 @@ exports.attach = function(
 		local elementType = getElementTypeForFiber(fiber :: Fiber)
 
 		local usesHooks = (
-				tag == FunctionComponent
-				or tag == SimpleMemoComponent
-				or tag == ForwardRef
-			) and (not not memoizedState or not not dependencies)
+			tag == FunctionComponent
+			or tag == SimpleMemoComponent
+			or tag == ForwardRef
+		) and (not not memoizedState or not not dependencies)
 
 		local typeSymbol = getTypeSymbol(type_)
 		local canViewSource = false
@@ -2858,10 +2856,8 @@ exports.attach = function(
 			-- Clone before cleaning so that we preserve the full data.
 			-- This will enable us to send patches without re-inspecting if hydrated paths are requested.
 			-- (Reducing how often we shallow-render is a better DX for function components that use hooks.)
-			local cleanedInspectedElement = Object.assign(
-				{},
-				mostRecentlyInspectedElement
-			)
+			local cleanedInspectedElement =
+				Object.assign({}, mostRecentlyInspectedElement)
 
 			cleanedInspectedElement.context = cleanForBridge(
 				cleanedInspectedElement.context,
@@ -2965,12 +2961,12 @@ exports.attach = function(
 				end
 			elseif type_ == "hooks" then
 				if type(overrideHookStateDeletePath) == "function" then
-					overrideHookStateDeletePath((fiber :: Fiber), hookID, path)
+					overrideHookStateDeletePath(fiber :: Fiber, hookID, path)
 				end
 			elseif type_ == "props" then
 				if instance == nil then
 					if type(overridePropsDeletePath) == "function" then
-						overridePropsDeletePath((fiber :: Fiber), path)
+						overridePropsDeletePath(fiber :: Fiber, path)
 					end
 				else
 					(fiber :: Fiber).pendingProps = copyWithDelete(instance.props, path)
@@ -3023,11 +3019,8 @@ exports.attach = function(
 						overridePropsRenamePath(fiber, oldPath, newPath)
 					end
 				else
-					(fiber :: Fiber).pendingProps = copyWithRename(
-						instance.props,
-						oldPath,
-						newPath
-					)
+					(fiber :: Fiber).pendingProps =
+						copyWithRename(instance.props, oldPath, newPath)
 					instance:forceUpdate()
 				end
 			elseif type_ == "state" then
@@ -3069,19 +3062,16 @@ exports.attach = function(
 				end
 			elseif type_ == "hooks" then
 				if type(overrideHookState) == "function" then
-					overrideHookState((fiber :: Fiber), hookID, path, value)
+					overrideHookState(fiber :: Fiber, hookID, path, value)
 				end
 			elseif type_ == "props" then
 				if instance == nil then
 					if type(overrideProps) == "function" then
-						overrideProps((fiber :: Fiber), path, value)
+						overrideProps(fiber :: Fiber, path, value)
 					end
 				else
-					(fiber :: Fiber).pendingProps = copyWithSet(
-						instance.props,
-						path,
-						value
-					)
+					(fiber :: Fiber).pendingProps =
+						copyWithSet(instance.props, path, value)
 					instance:forceUpdate()
 				end
 			elseif type_ == "state" then
@@ -3118,9 +3108,7 @@ exports.attach = function(
 				local allInteractions: Map<number, Interaction> = Map.new()
 				local interactionCommits: Map<number, Array<number>> = Map.new()
 				local displayName = displayNamesByRootID ~= nil
-						and (
-							displayNamesByRootID :: DisplayNamesByRootID
-						):get(rootID)
+						and (displayNamesByRootID :: DisplayNamesByRootID):get(rootID)
 					or "Unknown"
 
 				if initialTreeBaseDurationsMap ~= nil then
@@ -3330,8 +3318,7 @@ exports.attach = function(
 		then
 			-- Is this the next Fiber we should select? Let's compare the frames.
 			local actualFrame = getPathFrame(fiber)
-			local expectedFrame: PathFrame? =
-				(trackedPath :: Array<PathFrame>)[trackedPathMatchDepth + 1]
+			local expectedFrame: PathFrame? = (trackedPath :: Array<PathFrame>)[trackedPathMatchDepth + 1]
 
 			if expectedFrame == nil then
 				error("Expected to see a frame at the next depth.")

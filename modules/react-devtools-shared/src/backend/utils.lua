@@ -37,7 +37,7 @@ exports.cleanForBridge = function(
 			data :: Object,
 			cleanedPaths,
 			unserializablePaths,
-			(path :: Array<string | number>),
+			path :: Array<string | number>,
 			isPathAllowed
 		)
 		return {

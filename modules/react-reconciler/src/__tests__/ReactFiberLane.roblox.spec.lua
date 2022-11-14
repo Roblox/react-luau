@@ -17,7 +17,8 @@ return function()
 
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 
-	local ReactFiberSchedulerPriorities = require(script.Parent.Parent["ReactFiberSchedulerPriorities.roblox"])
+	local ReactFiberSchedulerPriorities =
+		require(script.Parent.Parent["ReactFiberSchedulerPriorities.roblox"])
 	local ImmediatePriority = ReactFiberSchedulerPriorities.ImmediatePriority
 	local NormalPriority = ReactFiberSchedulerPriorities.NormalPriority
 	local NoPriority = ReactFiberSchedulerPriorities.NoPriority
@@ -44,20 +45,30 @@ return function()
 		}
 		-- ROBLOX FIXME Luau: need to fix CLI-56768 to remove any casts
 		for priorityName, priority in expectedPriorities :: any do
-			it(string.format("returns the expected priority (%d) for lane %s", priority, priorityName), function()
-				local lane = ReactFiberLane[priorityName]
-				jestExpect(lane).toBeDefined()
-				jestExpect(ReactFiberLane.lanePriorityToSchedulerPriority(lane)).toBe(
-					priority
-				)
-			end)
+			it(
+				string.format(
+					"returns the expected priority (%d) for lane %s",
+					priority,
+					priorityName
+				),
+				function()
+					local lane = ReactFiberLane[priorityName]
+					jestExpect(lane).toBeDefined()
+					jestExpect(ReactFiberLane.lanePriorityToSchedulerPriority(lane)).toBe(
+						priority
+					)
+				end
+			)
 		end
 
 		it("throws when giving an invalid lane priority", function()
 			jestExpect(function()
 				ReactFiberLane.lanePriorityToSchedulerPriority(INVALID_PRIORITY_LANE)
 			end).toThrow(
-				string.format("Invalid update priority: %s. This is a bug in React", tostring(INVALID_PRIORITY_LANE))
+				string.format(
+					"Invalid update priority: %s. This is a bug in React",
+					tostring(INVALID_PRIORITY_LANE)
+				)
 			)
 		end)
 	end)
@@ -73,28 +84,28 @@ return function()
 		end)
 	end)
 
-	describe('getNextLanes', function()
-		describe('given no pending lanes', function()
+	describe("getNextLanes", function()
+		describe("given no pending lanes", function()
 			local root
 
 			beforeEach(function()
-				root = {pendingLanes = ReactFiberLane.NoLanes}
+				root = { pendingLanes = ReactFiberLane.NoLanes }
 			end)
 
-			it('returns no lanes', function()
-				jestExpect(
-					ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)
-				).toBe(ReactFiberLane.NoLanes)
+			it("returns no lanes", function()
+				jestExpect(ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)).toBe(
+					ReactFiberLane.NoLanes
+				)
 			end)
 
-			it('sets the highest lane priority to no lane', function()
+			it("sets the highest lane priority to no lane", function()
 				ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)
 				jestExpect(ReactFiberLane.returnNextLanesPriority()).toBe(
 					ReactFiberLane.NoLanePriority
 				)
 			end)
 		end)
-		describe('given expired lanes', function()
+		describe("given expired lanes", function()
 			local root
 
 			beforeEach(function()
@@ -107,76 +118,81 @@ return function()
 				}
 			end)
 
-			describe('no entangled lanes', function()
-				describe('pending lanes with higher priority than expired lanes', function()
-					beforeEach(function()
-						root = Object.assign(root, {
-							pendingLanes = ReactFiberLane.mergeLanes(
-								ReactFiberLane.SomeRetryLane,
-								ReactFiberLane.DefaultHydrationLane
-							),
-							expiredLanes = ReactFiberLane.DefaultLanes,
-						})
-					end)
+			describe("no entangled lanes", function()
+				describe(
+					"pending lanes with higher priority than expired lanes",
+					function()
+						beforeEach(function()
+							root = Object.assign(root, {
+								pendingLanes = ReactFiberLane.mergeLanes(
+									ReactFiberLane.SomeRetryLane,
+									ReactFiberLane.DefaultHydrationLane
+								),
+								expiredLanes = ReactFiberLane.DefaultLanes,
+							})
+						end)
 
-					it('returns the lanes above or equal to the priority of the expired lanes', function()
-						local result = ReactFiberLane.getNextLanes(
-							root,
-							ReactFiberLane.NoLanes
+						it(
+							"returns the lanes above or equal to the priority of the expired lanes",
+							function()
+								local result = ReactFiberLane.getNextLanes(
+									root,
+									ReactFiberLane.NoLanes
+								)
+								jestExpect(result).toBe(
+									ReactFiberLane.DefaultHydrationLane
+								)
+							end
 						)
-						jestExpect(result).toBe(ReactFiberLane.DefaultHydrationLane)
-					end)
 
-					it('sets the highest lane priority to sync lane', function()
-						ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)
-						jestExpect(ReactFiberLane.returnNextLanesPriority()).toBe(ReactFiberLane.SyncLanePriority)
-					end)
-				end)
+						it("sets the highest lane priority to sync lane", function()
+							ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)
+							jestExpect(ReactFiberLane.returnNextLanesPriority()).toBe(
+								ReactFiberLane.SyncLanePriority
+							)
+						end)
+					end
+				)
 
-				describe('pending lanes with lower priority than expired lanes', function()
-					beforeEach(function()
-						root = Object.assign(root, {
-							pendingLanes = ReactFiberLane.SyncBatchedLane,
-							expiredLanes = ReactFiberLane.SyncLane,
-						})
-					end)
+				describe(
+					"pending lanes with lower priority than expired lanes",
+					function()
+						beforeEach(function()
+							root = Object.assign(root, {
+								pendingLanes = ReactFiberLane.SyncBatchedLane,
+								expiredLanes = ReactFiberLane.SyncLane,
+							})
+						end)
 
-					it('returns no lanes', function()
-						local result = ReactFiberLane.getNextLanes(
-							root,
-							ReactFiberLane.NoLanes
-						)
-						jestExpect(result).toBe(ReactFiberLane.NoLanes)
-					end)
+						it("returns no lanes", function()
+							local result =
+								ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)
+							jestExpect(result).toBe(ReactFiberLane.NoLanes)
+						end)
 
-					it('sets the highest lane priority to sync lane', function()
-						ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)
-						jestExpect(ReactFiberLane.returnNextLanesPriority()).toBe(
-							ReactFiberLane.SyncLanePriority
-						)
-					end)
-				end)
+						it("sets the highest lane priority to sync lane", function()
+							ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)
+							jestExpect(ReactFiberLane.returnNextLanesPriority()).toBe(
+								ReactFiberLane.SyncLanePriority
+							)
+						end)
+					end
+				)
 			end)
 
-			it('sets the highest lane priority to sync lane', function()
-				local result = ReactFiberLane.getNextLanes(
-					root,
-					ReactFiberLane.NoLanes
-				)
+			it("sets the highest lane priority to sync lane", function()
+				local result = ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)
 				jestExpect(result).toBe(ReactFiberLane.SyncLane)
 				jestExpect(ReactFiberLane.returnNextLanesPriority()).toBe(
 					ReactFiberLane.SyncLanePriority
 				)
 			end)
 
-			it('sets the highest lane priority to sync lane 2', function()
+			it("sets the highest lane priority to sync lane 2", function()
 				root = Object.assign(root, {
 					expiredLanes = ReactFiberLane.SyncBatchedLane,
 				})
-				local result = ReactFiberLane.getNextLanes(
-					root,
-					ReactFiberLane.NoLanes
-				)
+				local result = ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)
 
 				jestExpect(result).toBe(ReactFiberLane.SyncLane)
 				jestExpect(ReactFiberLane.returnNextLanesPriority()).toBe(
@@ -223,15 +239,15 @@ return function()
 
 	describe("includesOnlyRetries", function()
 		it("is true for a retry lane", function()
-			jestExpect(
-				ReactFiberLane.includesOnlyRetries(ReactFiberLane.SomeRetryLane
-			)).toBe(true)
+			jestExpect(ReactFiberLane.includesOnlyRetries(ReactFiberLane.SomeRetryLane)).toBe(
+				true
+			)
 		end)
 
 		it("is false for the sync lane", function()
-			jestExpect(
-				ReactFiberLane.includesOnlyRetries(ReactFiberLane.SyncLane
-			)).toBe(false)
+			jestExpect(ReactFiberLane.includesOnlyRetries(ReactFiberLane.SyncLane)).toBe(
+				false
+			)
 		end)
 
 		it("is false for a retry lane merged with another lane", function()
@@ -251,10 +267,8 @@ return function()
 
 		it("is true given lanes that includes the other", function()
 			local lane = ReactFiberLane.SyncLane
-			local mergedLanes = ReactFiberLane.mergeLanes(
-				lane,
-				ReactFiberLane.DefaultHydrationLane
-			)
+			local mergedLanes =
+				ReactFiberLane.mergeLanes(lane, ReactFiberLane.DefaultHydrationLane)
 
 			jestExpect(ReactFiberLane.includesSomeLane(mergedLanes, lane)).toBe(true)
 		end)
@@ -281,10 +295,8 @@ return function()
 				ReactFiberLane.SyncLane,
 				ReactFiberLane.DefaultHydrationLane
 			)
-			local mergedLanes = ReactFiberLane.mergeLanes(
-				subset,
-				ReactFiberLane.SyncBatchedLane
-			)
+			local mergedLanes =
+				ReactFiberLane.mergeLanes(subset, ReactFiberLane.SyncBatchedLane)
 
 			jestExpect(ReactFiberLane.includesSomeLane(mergedLanes, subset)).toBe(true)
 		end)
@@ -330,7 +342,9 @@ return function()
 				ReactFiberLane.SyncLane,
 				ReactFiberLane.DefaultHydrationLane
 			)
-			jestExpect(ReactFiberLane.removeLanes(lanes, ReactFiberLane.SyncBatchedLane)).toBe(lanes)
+			jestExpect(ReactFiberLane.removeLanes(lanes, ReactFiberLane.SyncBatchedLane)).toBe(
+				lanes
+			)
 		end)
 	end)
 
@@ -338,23 +352,23 @@ return function()
 		it("returns the other lane if one is NoLane", function()
 			local lane = ReactFiberLane.SyncLane
 
-			jestExpect(
-				ReactFiberLane.higherPriorityLane(ReactFiberLane.NoLane, lane)
-			).toBe(lane)
-			jestExpect(
-				ReactFiberLane.higherPriorityLane(lane, ReactFiberLane.NoLane)
-			).toBe(lane)
+			jestExpect(ReactFiberLane.higherPriorityLane(ReactFiberLane.NoLane, lane)).toBe(
+				lane
+			)
+			jestExpect(ReactFiberLane.higherPriorityLane(lane, ReactFiberLane.NoLane)).toBe(
+				lane
+			)
 		end)
 
 		it("returns the higher priority lane", function()
 			local higherLane = ReactFiberLane.SyncLane
 			local otherLane = ReactFiberLane.OffscreenLane
-			jestExpect(
-				ReactFiberLane.higherPriorityLane(higherLane, otherLane)
-			).toBe(higherLane)
-			jestExpect(
-				ReactFiberLane.higherPriorityLane(otherLane, higherLane)
-			).toBe(higherLane)
+			jestExpect(ReactFiberLane.higherPriorityLane(higherLane, otherLane)).toBe(
+				higherLane
+			)
+			jestExpect(ReactFiberLane.higherPriorityLane(otherLane, higherLane)).toBe(
+				higherLane
+			)
 		end)
 	end)
 
@@ -372,12 +386,12 @@ return function()
 		it("returns the higher lane priority", function()
 			local higherPriority = ReactFiberLane.SyncLanePriority
 			local otherPriority = ReactFiberLane.TransitionPriority
-			jestExpect(
-				ReactFiberLane.higherLanePriority(higherPriority, otherPriority)
-			).toBe(higherPriority)
-			jestExpect(
-				ReactFiberLane.higherLanePriority(otherPriority, higherPriority)
-			).toBe(higherPriority)
+			jestExpect(ReactFiberLane.higherLanePriority(higherPriority, otherPriority)).toBe(
+				higherPriority
+			)
+			jestExpect(ReactFiberLane.higherLanePriority(otherPriority, higherPriority)).toBe(
+				higherPriority
+			)
 		end)
 	end)
 end

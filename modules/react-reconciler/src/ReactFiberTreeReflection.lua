@@ -18,9 +18,8 @@ type Fiber = ReactInternalTypes.Fiber
 local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
 type Container = ReactFiberHostConfig.Container
 type SuspenseInstance = ReactFiberHostConfig.SuspenseInstance
-local ReactFiberSuspenseComponent = require(
-	script.Parent["ReactFiberSuspenseComponent.new"]
-)
+local ReactFiberSuspenseComponent =
+	require(script.Parent["ReactFiberSuspenseComponent.new"])
 type SuspenseState = ReactFiberSuspenseComponent.SuspenseState
 
 local invariant = require(Packages.Shared).invariant

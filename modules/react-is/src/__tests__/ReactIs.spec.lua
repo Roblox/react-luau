@@ -193,10 +193,8 @@ return function()
 
 		it("should identify portals", function()
 			local ScreenGui = Instance.new("ScreenGui")
-			local portal = ReactRoblox.createPortal(
-				React.createElement("Frame"),
-				ScreenGui
-			)
+			local portal =
+				ReactRoblox.createPortal(React.createElement("Frame"), ScreenGui)
 			jestExpect(ReactIs.isValidElementType(portal)).toBe(false)
 			jestExpect(ReactIs.typeOf(portal)).toBe(ReactIs.Portal)
 			jestExpect(ReactIs.isPortal(portal)).toBe(true)

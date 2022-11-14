@@ -17,9 +17,9 @@ local Map = LuauPolyfill.Map
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
 type FiberRoot = ReactInternalTypes.FiberRoot
-type SuspenseHydrationCallbacks = ReactInternalTypes.SuspenseHydrationCallbacks;
+type SuspenseHydrationCallbacks = ReactInternalTypes.SuspenseHydrationCallbacks
 local ReactRootTags = require(script.Parent.ReactRootTags)
-type RootTag = ReactRootTags.RootTag;
+type RootTag = ReactRootTags.RootTag
 
 local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
 local noTimeout = ReactFiberHostConfig.noTimeout

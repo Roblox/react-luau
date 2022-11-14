@@ -45,11 +45,14 @@ return function()
 			end).toThrow("Unexpected context found on stack.")
 		end)
 
-		it("should throw if when invalidating a provider that isn't initialized", function()
-			local fiber = ReactFiber.createHostRootFiber(ReactRootTags.BlockingRoot)
-			jestExpect(function()
-				ReactFiberContext.invalidateContextProvider(fiber, nil, true)
-			end).toThrow("Expected to have an instance by this point.")
-		end)
+		it(
+			"should throw if when invalidating a provider that isn't initialized",
+			function()
+				local fiber = ReactFiber.createHostRootFiber(ReactRootTags.BlockingRoot)
+				jestExpect(function()
+					ReactFiberContext.invalidateContextProvider(fiber, nil, true)
+				end).toThrow("Expected to have an instance by this point.")
+			end
+		)
 	end)
 end

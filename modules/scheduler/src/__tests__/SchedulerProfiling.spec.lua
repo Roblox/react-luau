@@ -7,7 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  * @flow
  *]]
- return function()
+return function()
 	local Packages = script.Parent.Parent.Parent
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 	local JestGlobals = require(Packages.Dev.JestGlobals)
@@ -39,9 +39,8 @@
 	end
 	describe("Scheduler", function()
 		it("profiling APIs are not available", function()
-			local SchedulerFeatureFlags = require(
-				script.Parent.Parent.SchedulerFeatureFlags
-			)
+			local SchedulerFeatureFlags =
+				require(script.Parent.Parent.SchedulerFeatureFlags)
 			SchedulerFeatureFlags.enableProfiling = false
 
 			Scheduler = require(script.Parent.Parent.Scheduler)()
@@ -51,9 +50,8 @@
 			RobloxJest.resetModules()
 
 			RobloxJest.useFakeTimers()
-			local SchedulerFeatureFlags = require(
-				script.Parent.Parent.SchedulerFeatureFlags
-			)
+			local SchedulerFeatureFlags =
+				require(script.Parent.Parent.SchedulerFeatureFlags)
 			SchedulerFeatureFlags.enableProfiling = true
 
 			-- ROBLOX deviation: In react, jest mocks Scheduler -> unstable_mock since
@@ -440,7 +438,7 @@ Task 1 [Normal]              │                    XXXXXXXXXXXXXXXXXXXX
 					cancelCallback(task_)
 					jestExpect(Scheduler).toFlushAndYield({})
 				end
-			end).toErrorDev("Event log exceeded maximum size", {withoutStack = true})
+			end).toErrorDev("Event log exceeded maximum size", { withoutStack = true })
 			jestExpect(stopProfilingAndPrintFlamegraph()).toEqual("(empty profile)")
 			Scheduler.unstable_Profiling.startLoggingProfilingEvents()
 			scheduleCallback(NormalPriority, function()

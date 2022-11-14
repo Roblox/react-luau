@@ -28,9 +28,8 @@ local Types = require(script.Parent.Parent.types)
 type ComponentFilter = Types.ComponentFilter
 type ElementType = Types.ElementType
 
-local DevToolsViewsProfilerTypes = require(
-	script.Parent.Parent.devtools.views.Profiler.types
-)
+local DevToolsViewsProfilerTypes =
+	require(script.Parent.Parent.devtools.views.Profiler.types)
 type Interaction = DevToolsViewsProfilerTypes.Interaction
 
 type ResolveNativeStyle = (any) -> Object?
@@ -131,7 +130,9 @@ export type ReactRenderer = {
 	-- 16.7+
 	overrideProps: ((self: ReactRenderer, Object, Array<string | number>, any) -> ()),
 	-- 17+
-	overridePropsDeletePath: ((self: ReactRenderer, Object, Array<string | number>) -> ()),
+	overridePropsDeletePath: (
+		(self: ReactRenderer, Object, Array<string | number>) -> ()
+	),
 	-- 17+
 	overridePropsRenamePath: ((
 		self: ReactRenderer,

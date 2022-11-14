@@ -250,10 +250,9 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				-- text: shouldSetTextContent(type, newProps)
 				-- 	? computeText((newProps.children: any) + '', instance.context)
 				-- 	: null,
-				text = shouldSetTextContent(type, newProps) and computeText(
-					tostring(newProps.children),
-					instance.context
-				) or nil,
+				text = shouldSetTextContent(type, newProps)
+						and computeText(tostring(newProps.children), instance.context)
+					or nil,
 				context = instance.context,
 			},
 		})
@@ -278,7 +277,11 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			return NO_CONTEXT
 		end,
 
-		getChildHostContext = function(parentHostContext: HostContext, type: string, rootcontainerInstance: Container)
+		getChildHostContext = function(
+			parentHostContext: HostContext,
+			type: string,
+			rootcontainerInstance: Container
+		)
 			if type == "uppercase" then
 				return UPPERCASE_CONTEXT
 			end
@@ -313,10 +316,9 @@ local function createReactNoop(reconciler, useMutation: boolean)
 					-- text: shouldSetTextContent(type, props)
 					-- 	? computeText((props.children: any) + '', hostContext)
 					-- 	: null,
-					text = shouldSetTextContent(type, props) and computeText(
-						tostring(props.children),
-						hostContext
-					) or nil,
+					text = shouldSetTextContent(type, props)
+							and computeText(tostring(props.children), hostContext)
+						or nil,
 					context = hostContext,
 				},
 			})
@@ -328,11 +330,20 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			table.insert(parentInstance.children, child)
 		end,
 
-		finalizeInitialChildren = function(_domElement: Instance, _type: string, _props: Props): boolean
+		finalizeInitialChildren = function(
+			_domElement: Instance,
+			_type: string,
+			_props: Props
+		): boolean
 			return false
 		end,
 
-		prepareUpdate = function(instanceH: Instance, type: string, oldProps: Props, newProps: Props): Object?
+		prepareUpdate = function(
+			instanceH: Instance,
+			type: string,
+			oldProps: Props,
+			newProps: Props
+		): Object?
 			if type == "errorInCompletePhase" then
 				error(Error("Error in host config."))
 			end
@@ -508,14 +519,16 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				instance.hidden = not not newProps.hidden
 				if shouldSetTextContent(type, newProps) then
 					-- deviation: Not sure about this one
-					instance.text = computeText(
-						tostring(newProps.children),
-						instance.context
-					)
+					instance.text =
+						computeText(tostring(newProps.children), instance.context)
 				end
 			end,
 
-			commitTextUpdate = function(textInstance: TextInstance, oldText: string, newText: string)
+			commitTextUpdate = function(
+				textInstance: TextInstance,
+				oldText: string,
+				newText: string
+			)
 				hostUpdateCounter += 1
 				textInstance.text = computeText(newText, textInstance.context)
 			end,
@@ -558,15 +571,23 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			cloneInstance = cloneInstance,
 			clearContainer = clearContainer,
 
-			createContainerChildSet = function(container: Container): Array<Instance | TextInstance>
+			createContainerChildSet = function(
+				container: Container
+			): Array<Instance | TextInstance>
 				return {}
 			end,
 
-			appendChildToContainerChildSet = function(childSet: Array<Instance | TextInstance>, child: Instance | TextInstance)
+			appendChildToContainerChildSet = function(
+				childSet: Array<Instance | TextInstance>,
+				child: Instance | TextInstance
+			)
 				table.insert(childSet, child)
 			end,
 
-			finalizeContainerChildren = function(container: Container, newChildren: Array<Instance | TextInstance>)
+			finalizeContainerChildren = function(
+				container: Container,
+				newChildren: Array<Instance | TextInstance>
+			)
 				container.pendingChildren = newChildren
 				if
 					#newChildren == 1
@@ -577,7 +598,10 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				end
 			end,
 
-			replaceContainerChildren = function(container: Container, newChildren: Array<Instance | TextInstance>)
+			replaceContainerChildren = function(
+				container: Container,
+				newChildren: Array<Instance | TextInstance>
+			)
 				container.children = newChildren
 			end,
 
@@ -601,7 +625,11 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				return clone
 			end,
 
-			cloneHiddenTextInstance = function(instance: TextInstance, text: string, internalInstanceHandle: Object)
+			cloneHiddenTextInstance = function(
+				instance: TextInstance,
+				text: string,
+				internalInstanceHandle: Object
+			)
 				-- deviation: use metatable to define non-enumerable properties
 				local clone = setmetatable({
 					text = instance.text,
@@ -801,12 +829,8 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				children = {},
 			}
 			idCounter += 1
-			local fiberRoot = NoopRenderer.createContainer(
-				container,
-				ConcurrentRoot,
-				false,
-				nil
-			)
+			local fiberRoot =
+				NoopRenderer.createContainer(container, ConcurrentRoot, false, nil)
 			return {
 				_Scheduler = Scheduler,
 				render = function(children)
@@ -828,12 +852,8 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				children = {},
 			}
 			idCounter += 1
-			local fiberRoot = NoopRenderer.createContainer(
-				container,
-				BlockingRoot,
-				false,
-				nil
-			)
+			local fiberRoot =
+				NoopRenderer.createContainer(container, BlockingRoot, false, nil)
 			return {
 				_Scheduler = Scheduler,
 				render = function(children)
@@ -855,12 +875,8 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				children = {},
 			}
 			idCounter += 1
-			local fiberRoot = NoopRenderer.createContainer(
-				container,
-				LegacyRoot,
-				false,
-				nil
-			)
+			local fiberRoot =
+				NoopRenderer.createContainer(container, LegacyRoot, false, nil)
 			return {
 				_Scheduler = Scheduler,
 				render = function(children)
@@ -939,9 +955,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			return Scheduler.unstable_clearYields()
 		end,
 
-		flushWithHostCounters = function(
-			_fn: () -> ()
-		): {
+		flushWithHostCounters = function(_fn: () -> ()): {
 			hostDiffCounter: number,
 			hostUpdateCounter: number,
 		} | {

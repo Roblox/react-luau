@@ -10,7 +10,6 @@
 --  * @jest-environment node
 --  */
 
-
 local Packages = script.Parent.Parent.Parent
 local RobloxJest = require(Packages.Dev.RobloxJest)
 local LuauPolyfill = require(Packages.LuauPolyfill)
@@ -105,7 +104,10 @@ return function()
 									Context.Provider,
 									{ value = Object.None },
 									React.createElement(Context.Consumer, nil, function()
-										return React.createElement(View, { nested = true })
+										return React.createElement(
+											View,
+											{ nested = true }
+										)
 									end)
 								)
 							),
@@ -115,11 +117,11 @@ return function()
 					)
 				)
 			end
-	
+
 			function ExampleSpread:render()
 				return React.createElement(View, self.props)
 			end
-	
+
 			ExampleFn = function(props)
 				return React.createElement(View, {
 					baz = "baz",
@@ -361,7 +363,8 @@ return function()
 						React.createElement("div"),
 						React.createElement("div")
 					)
-				).root:findAllByType("div")
+				).root
+					:findAllByType("div")
 			).toEqual(2)
 			jestExpect(
 				#ReactTestRenderer.create(
@@ -371,19 +374,13 @@ return function()
 						React.createElement("div"),
 						React.createElement("div")
 					)
-				).root:findAllByType("div")
+				).root
+					:findAllByType("div")
 			).toEqual(2)
-			jestExpect(
-				#ReactTestRenderer.create(React.createElement(React.Fragment, {
-					key = "foo",
-				}, React.createElement(
-					"div",
-					nil
-				), React.createElement(
-					"div",
-					nil
-				))).root:findAllByType("div")
-			).toEqual(2)
+			jestExpect(#ReactTestRenderer.create(React.createElement(React.Fragment, {
+				key = "foo",
+			}, React.createElement("div", nil), React.createElement("div", nil))).root
+				:findAllByType("div")).toEqual(2)
 			jestExpect(
 				#ReactTestRenderer.create(
 					React.createElement(
@@ -392,7 +389,8 @@ return function()
 						React.createElement("div"),
 						React.createElement("div")
 					)
-				).root:findAllByType("div")
+				).root
+					:findAllByType("div")
 			).toEqual(2)
 			jestExpect(
 				#ReactTestRenderer.create(
@@ -402,7 +400,8 @@ return function()
 						React.createElement("div"),
 						React.createElement("div")
 					)
-				).root:findAllByType("div")
+				).root
+					:findAllByType("div")
 			).toEqual(2)
 		end)
 	end)

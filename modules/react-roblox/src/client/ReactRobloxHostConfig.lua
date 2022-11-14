@@ -11,10 +11,10 @@
 ]]
 -- FIXME (roblox): remove this when our unimplemented
 local function unimplemented(message: string)
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-  print("UNIMPLEMENTED ERROR: " .. tostring(message))
-  error("FIXME (roblox): " .. message .. " is unimplemented", 2)
+	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+	print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+	print("UNIMPLEMENTED ERROR: " .. tostring(message))
+	error("FIXME (roblox): " .. message .. " is unimplemented", 2)
 end
 
 local CollectionService = game:GetService("CollectionService")
@@ -104,8 +104,8 @@ local enableCreateEventHandleAPI = ReactFeatureFlags.enableCreateEventHandleAPI
 --   listenToAllSupportedEvents,
 -- } = require(Packages.../events/DOMPluginEventSystem'
 
-type Array<T> = { [number]: T };
-type Object = { [any]: any };
+type Array<T> = { [number]: T }
+type Object = { [any]: any }
 
 -- ROBLOX deviation: Moved to ReactRobloxHostTypes
 -- export type Type = string;
@@ -140,7 +140,6 @@ type Object = { [any]: any };
 --   },
 --   ...
 -- end
-
 
 -- ROBLOX deviation: Moved to ReactRobloxHostTypes
 -- export type SuspenseInstance = Comment & {_reactRetry?: () => void, ...}
@@ -204,127 +203,125 @@ type Object = { [any]: any };
 
 -- ROBLOX deviation: Use GetDescendants rather than recursion
 local function recursivelyUncacheFiberNode(node: HostInstance)
-  -- ROBLOX https://jira.rbx.com/browse/LUAFDN-713: Tables are somehow ending up
-  -- in this function that expects Instances. In that case, we won't be able to
-  -- iterate through its descendants.
-  if typeof(node :: any) ~= "Instance" then
-    return
-  end
+	-- ROBLOX https://jira.rbx.com/browse/LUAFDN-713: Tables are somehow ending up
+	-- in this function that expects Instances. In that case, we won't be able to
+	-- iterate through its descendants.
+	if typeof(node :: any) ~= "Instance" then
+		return
+	end
 
-  uncacheFiberNode(node)
+	uncacheFiberNode(node)
 
-  for _, child in node:GetDescendants() do
-    uncacheFiberNode(child)
-  end
+	for _, child in node:GetDescendants() do
+		uncacheFiberNode(child)
+	end
 end
 
-local exports: {[any]: any} = {}
+local exports: { [any]: any } = {}
 Object.assign(exports, require(Packages.Shared).ReactFiberHostConfig.WithNoPersistence)
 
-exports.getRootHostContext = function(
-  rootContainerInstance: Container
-): HostContext
-  -- ROBLOX deviation: This is a lot of HTML-DOM specific logic; I'm not clear on
-  -- whether there'll be an equivalent of `namespaceURI` for our use cases, but
-  -- we may want to provide other kinds of context for host objects.
+exports.getRootHostContext = function(rootContainerInstance: Container): HostContext
+	-- ROBLOX deviation: This is a lot of HTML-DOM specific logic; I'm not clear on
+	-- whether there'll be an equivalent of `namespaceURI` for our use cases, but
+	-- we may want to provide other kinds of context for host objects.
 
-  -- For now, as a guess, we'll return the kind of instance we're attached to
-  return rootContainerInstance.ClassName
+	-- For now, as a guess, we'll return the kind of instance we're attached to
+	return rootContainerInstance.ClassName
 
-  -- local type
-  -- local namespace
-  -- local nodeType = rootContainerInstance.nodeType
-  -- switch (nodeType)
-  --   case DOCUMENT_NODE:
-  --   case DOCUMENT_FRAGMENT_NODE: {
-  --     type = nodeType == DOCUMENT_NODE ? '#document' : '#fragment'
-  --     local root = (rootContainerInstance: any).documentElement
-  --     namespace = root ? root.namespaceURI : getChildNamespace(null, '')
-  --     break
-  --   end
-  --   default: {
-  --     local container: any =
-  --       nodeType == COMMENT_NODE
-  --         ? rootContainerInstance.parentNode
-  --         : rootContainerInstance
-  --     local ownNamespace = container.namespaceURI or nil
-  --     type = container.tagName
-  --     namespace = getChildNamespace(ownNamespace, type)
-  --     break
-  --   end
-  -- end
-  -- if _G.__DEV__ then
-  --   local validatedTag = type.toLowerCase()
-  --   local ancestorInfo = updatedAncestorInfo(null, validatedTag)
-  --   return {namespace, ancestorInfo}
-  -- end
-  -- return namespace
+	-- local type
+	-- local namespace
+	-- local nodeType = rootContainerInstance.nodeType
+	-- switch (nodeType)
+	--   case DOCUMENT_NODE:
+	--   case DOCUMENT_FRAGMENT_NODE: {
+	--     type = nodeType == DOCUMENT_NODE ? '#document' : '#fragment'
+	--     local root = (rootContainerInstance: any).documentElement
+	--     namespace = root ? root.namespaceURI : getChildNamespace(null, '')
+	--     break
+	--   end
+	--   default: {
+	--     local container: any =
+	--       nodeType == COMMENT_NODE
+	--         ? rootContainerInstance.parentNode
+	--         : rootContainerInstance
+	--     local ownNamespace = container.namespaceURI or nil
+	--     type = container.tagName
+	--     namespace = getChildNamespace(ownNamespace, type)
+	--     break
+	--   end
+	-- end
+	-- if _G.__DEV__ then
+	--   local validatedTag = type.toLowerCase()
+	--   local ancestorInfo = updatedAncestorInfo(null, validatedTag)
+	--   return {namespace, ancestorInfo}
+	-- end
+	-- return namespace
 end
 
 exports.getChildHostContext = function(
-  parentHostContext: HostContext,
-  type: string,
-  rootContainerInstance: Container
+	parentHostContext: HostContext,
+	type: string,
+	rootContainerInstance: Container
 ): HostContext
-  -- ROBLOX deviation: unclear on the purpose here just yet, might be fine to
-  -- just return parent's hostContext for now
-  return parentHostContext
-  -- if _G.__DEV__ then
-  --   local parentHostContextDev = ((parentHostContext: any): HostContextDev)
-  --   local namespace = getChildNamespace(parentHostContextDev.namespace, type)
-  --   local ancestorInfo = updatedAncestorInfo(
-  --     parentHostContextDev.ancestorInfo,
-  --     type,
-  --   )
-  --   return {namespace, ancestorInfo}
-  -- end
-  -- local parentNamespace = ((parentHostContext: any): HostContextProd)
-  -- return getChildNamespace(parentNamespace, type)
+	-- ROBLOX deviation: unclear on the purpose here just yet, might be fine to
+	-- just return parent's hostContext for now
+	return parentHostContext
+	-- if _G.__DEV__ then
+	--   local parentHostContextDev = ((parentHostContext: any): HostContextDev)
+	--   local namespace = getChildNamespace(parentHostContextDev.namespace, type)
+	--   local ancestorInfo = updatedAncestorInfo(
+	--     parentHostContextDev.ancestorInfo,
+	--     type,
+	--   )
+	--   return {namespace, ancestorInfo}
+	-- end
+	-- local parentNamespace = ((parentHostContext: any): HostContextProd)
+	-- return getChildNamespace(parentNamespace, type)
 end
 
 exports.getPublicInstance = function(instance: Instance): any
-  return instance
+	return instance
 end
 
 exports.prepareForCommit = function(containerInfo: Container): Object?
-  -- eventsEnabled = ReactBrowserEventEmitterIsEnabled()
-  -- selectionInformation = getSelectionInformation()
-  local activeInstance = nil
-  if enableCreateEventHandleAPI then
-    unimplemented("enableCreateEventHandleAPI")
-  --   local focusedElem = selectionInformation.focusedElem
-  --   if focusedElem ~= nil then
-  --     activeInstance = getClosestInstanceFromNode(focusedElem)
-  --   end
-  end
-  -- ReactBrowserEventEmitterSetEnabled(false)
-  return activeInstance
+	-- eventsEnabled = ReactBrowserEventEmitterIsEnabled()
+	-- selectionInformation = getSelectionInformation()
+	local activeInstance = nil
+	if enableCreateEventHandleAPI then
+		unimplemented("enableCreateEventHandleAPI")
+		--   local focusedElem = selectionInformation.focusedElem
+		--   if focusedElem ~= nil then
+		--     activeInstance = getClosestInstanceFromNode(focusedElem)
+		--   end
+	end
+	-- ReactBrowserEventEmitterSetEnabled(false)
+	return activeInstance
 end
 
 exports.beforeActiveInstanceBlur = function()
-  if enableCreateEventHandleAPI then
-    unimplemented("enableCreateEventHandleAPI")
-    -- ReactBrowserEventEmitterSetEnabled(true)
-    -- dispatchBeforeDetachedBlur((selectionInformation: any).focusedElem)
-    -- ReactBrowserEventEmitterSetEnabled(false)
-  end
+	if enableCreateEventHandleAPI then
+		unimplemented("enableCreateEventHandleAPI")
+		-- ReactBrowserEventEmitterSetEnabled(true)
+		-- dispatchBeforeDetachedBlur((selectionInformation: any).focusedElem)
+		-- ReactBrowserEventEmitterSetEnabled(false)
+	end
 end
 
 exports.afterActiveInstanceBlur = function()
-  if enableCreateEventHandleAPI then
-    unimplemented("enableCreateEventHandleAPI")
-    -- ReactBrowserEventEmitterSetEnabled(true)
-    -- dispatchAfterDetachedBlur((selectionInformation: any).focusedElem)
-    -- ReactBrowserEventEmitterSetEnabled(false)
-  end
+	if enableCreateEventHandleAPI then
+		unimplemented("enableCreateEventHandleAPI")
+		-- ReactBrowserEventEmitterSetEnabled(true)
+		-- dispatchAfterDetachedBlur((selectionInformation: any).focusedElem)
+		-- ReactBrowserEventEmitterSetEnabled(false)
+	end
 end
 
 exports.resetAfterCommit = function(containerInfo: Container)
-  -- warn("Skip unimplemented: resetAfterCommit")
-  -- restoreSelection(selectionInformation)
-  -- ReactBrowserEventEmitterSetEnabled(eventsEnabled)
-  -- eventsEnabled = nil
-  -- selectionInformation = nil
+	-- warn("Skip unimplemented: resetAfterCommit")
+	-- restoreSelection(selectionInformation)
+	-- ReactBrowserEventEmitterSetEnabled(eventsEnabled)
+	-- eventsEnabled = nil
+	-- selectionInformation = nil
 end
 
 exports.createInstance = function(
@@ -394,83 +391,74 @@ exports.createInstance = function(
 	-- )
 end
 
-exports.appendInitialChild = function(
-  parentInstance: Instance,
-  child: Instance
-)
-  -- ROBLOX deviation: Establish hierarchy with Parent property
-  child.Parent = parentInstance
+exports.appendInitialChild = function(parentInstance: Instance, child: Instance)
+	-- ROBLOX deviation: Establish hierarchy with Parent property
+	child.Parent = parentInstance
 end
 
 exports.finalizeInitialChildren = function(
-  domElement: HostInstance,
-  type_: string,
-  props: Props,
-  rootContainerInstance: Container,
-  hostContext: HostContext
+	domElement: HostInstance,
+	type_: string,
+	props: Props,
+	rootContainerInstance: Container,
+	hostContext: HostContext
 ): boolean
-  setInitialProperties(domElement, type_, props, rootContainerInstance)
-  return false
-  -- return shouldAutoFocusHostComponent(type_, props)
+	setInitialProperties(domElement, type_, props, rootContainerInstance)
+	return false
+	-- return shouldAutoFocusHostComponent(type_, props)
 end
 
 local function prepareUpdate(
-  domElement: Instance,
-  type_: string,
-  oldProps: Props,
-  newProps: Props,
-  rootContainerInstance: Container,
-  hostContext: HostContext
+	domElement: Instance,
+	type_: string,
+	oldProps: Props,
+	newProps: Props,
+	rootContainerInstance: Container,
+	hostContext: HostContext
 ): nil | Array<any>
-  -- if _G.__DEV__ then
-  --   local hostContextDev = ((hostContext: any): HostContextDev)
-  --   if
-  --     typeof newProps.children ~= typeof oldProps.children and
-  --     (typeof newProps.children == 'string' or
-  --       typeof newProps.children == 'number')
-  --   )
-  --     local string = '' + newProps.children
-  --     local ownAncestorInfo = updatedAncestorInfo(
-  --       hostContextDev.ancestorInfo,
-  --       type,
-  --     )
-  --     validateDOMNesting(null, string, ownAncestorInfo)
-  --   end
-  -- end
-  return diffProperties(
-    domElement,
-    type_,
-    oldProps,
-    newProps,
-    rootContainerInstance
-  )
+	-- if _G.__DEV__ then
+	--   local hostContextDev = ((hostContext: any): HostContextDev)
+	--   if
+	--     typeof newProps.children ~= typeof oldProps.children and
+	--     (typeof newProps.children == 'string' or
+	--       typeof newProps.children == 'number')
+	--   )
+	--     local string = '' + newProps.children
+	--     local ownAncestorInfo = updatedAncestorInfo(
+	--       hostContextDev.ancestorInfo,
+	--       type,
+	--     )
+	--     validateDOMNesting(null, string, ownAncestorInfo)
+	--   end
+	-- end
+	return diffProperties(domElement, type_, oldProps, newProps, rootContainerInstance)
 end
 exports.prepareUpdate = prepareUpdate
 
 exports.shouldSetTextContent = function(_type: string, _props: Props): boolean
-  -- ROBLOX deviation: Ignore TextInstance logic, which isn't applicable to Roblox
-  return false
---   return (
---     type == 'textarea' or
---     type == 'option' or
---     type == 'noscript' or
---     typeof props.children == 'string' or
---     typeof props.children == 'number' or
---     (typeof props.dangerouslySetInnerHTML == 'table’' and
---       props.dangerouslySetInnerHTML ~= nil and
---       props.dangerouslySetInnerHTML.__html ~= nil)
---   )
+	-- ROBLOX deviation: Ignore TextInstance logic, which isn't applicable to Roblox
+	return false
+	--   return (
+	--     type == 'textarea' or
+	--     type == 'option' or
+	--     type == 'noscript' or
+	--     typeof props.children == 'string' or
+	--     typeof props.children == 'number' or
+	--     (typeof props.dangerouslySetInnerHTML == 'table’' and
+	--       props.dangerouslySetInnerHTML ~= nil and
+	--       props.dangerouslySetInnerHTML.__html ~= nil)
+	--   )
 end
 
 -- ROBLOX deviation: Text nodes aren't supported in Roblox renderer, so error so that tests fail immediately
 exports.createTextInstance = function(
-  text: string,
-  rootContainerInstance: Container,
-  hostContext: HostContext,
-  internalInstanceHandle: Object
+	text: string,
+	rootContainerInstance: Container,
+	hostContext: HostContext,
+	internalInstanceHandle: Object
 ): any
-  unimplemented("createTextInstance")
-  return nil
+	unimplemented("createTextInstance")
+	return nil
 end
 
 exports.isPrimaryRenderer = true
@@ -490,40 +478,40 @@ exports.noTimeout = -1
 exports.supportsMutation = true
 
 exports.commitMount = function(
-  domElement: Instance,
-  type: string,
-  newProps: Props,
-  internalInstanceHandle: Object
+	domElement: Instance,
+	type: string,
+	newProps: Props,
+	internalInstanceHandle: Object
 )
-  unimplemented("commitMount")
-  -- -- Despite the naming that might imply otherwise, this method only
-  -- -- fires if there is an `Update` effect scheduled during mounting.
-  -- -- This happens if `finalizeInitialChildren` returns `true` (which it
-  -- -- does to implement the `autoFocus` attribute on the client). But
-  -- -- there are also other cases when this might happen (such as patching
-  -- -- up text content during hydration mismatch). So we'll check this again.
-  -- if shouldAutoFocusHostComponent(type, newProps))
-  --   ((domElement: any):
-  --     | HTMLButtonElement
-  --     | HTMLInputElement
-  --     | HTMLSelectElement
-  --     | HTMLTextAreaElement).focus()
-  -- end
+	unimplemented("commitMount")
+	-- -- Despite the naming that might imply otherwise, this method only
+	-- -- fires if there is an `Update` effect scheduled during mounting.
+	-- -- This happens if `finalizeInitialChildren` returns `true` (which it
+	-- -- does to implement the `autoFocus` attribute on the client). But
+	-- -- there are also other cases when this might happen (such as patching
+	-- -- up text content during hydration mismatch). So we'll check this again.
+	-- if shouldAutoFocusHostComponent(type, newProps))
+	--   ((domElement: any):
+	--     | HTMLButtonElement
+	--     | HTMLInputElement
+	--     | HTMLSelectElement
+	--     | HTMLTextAreaElement).focus()
+	-- end
 end
 
 exports.commitUpdate = function(
-  domElement: Instance,
-  updatePayload: Array<any>,
-  type_: string,
-  oldProps: Props,
-  newProps: Props,
-  internalInstanceHandle: Object
+	domElement: Instance,
+	updatePayload: Array<any>,
+	type_: string,
+	oldProps: Props,
+	newProps: Props,
+	internalInstanceHandle: Object
 )
-  -- Update the props handle so that we know which props are the ones with
-  -- with current event handlers.
-  updateFiberProps(domElement, newProps)
-  -- Apply the diff to the DOM node.
-  updateProperties(domElement, updatePayload, oldProps)
+	-- Update the props handle so that we know which props are the ones with
+	-- with current event handlers.
+	updateFiberProps(domElement, newProps)
+	-- Apply the diff to the DOM node.
+	updateProperties(domElement, updatePayload, oldProps)
 end
 
 -- ROBLOX deviation: Ignore TextInstance logic, which isn't applicable to Roblox
@@ -541,95 +529,83 @@ end
 -- end
 
 local function checkTags(instance: Instance)
-  if typeof(instance :: any) ~= "Instance" then
-    console.warn("Could not check tags on non-instance %s.", inspect(instance))
-    return
-  end
-  if not instance:IsDescendantOf(game) then
-    if #CollectionService:GetTags(instance) > 0 then
-      console.warn(
-        'Tags applied to orphaned %s "%s" cannot be accessed via'
-          .. " CollectionService:GetTagged. If you're relying on tag"
-          .. " behavior in a unit test, consider mounting your test "
-          .. "root into the DataModel.",
-        instance.ClassName,
-        instance.Name
-      )
-    end
-  end
+	if typeof(instance :: any) ~= "Instance" then
+		console.warn("Could not check tags on non-instance %s.", inspect(instance))
+		return
+	end
+	if not instance:IsDescendantOf(game) then
+		if #CollectionService:GetTags(instance) > 0 then
+			console.warn(
+				'Tags applied to orphaned %s "%s" cannot be accessed via'
+					.. " CollectionService:GetTagged. If you're relying on tag"
+					.. " behavior in a unit test, consider mounting your test "
+					.. "root into the DataModel.",
+				instance.ClassName,
+				instance.Name
+			)
+		end
+	end
 end
 
-exports.appendChild = function(
-  parentInstance: Instance,
-  child: Instance
-)
-  -- ROBLOX deviation: Roblox's DOM is based on child->parent references
-  child.Parent = parentInstance
-  -- parentInstance.appendChild(child)
-  if _G.__DEV__ then
-    checkTags(child)
-  end
+exports.appendChild = function(parentInstance: Instance, child: Instance)
+	-- ROBLOX deviation: Roblox's DOM is based on child->parent references
+	child.Parent = parentInstance
+	-- parentInstance.appendChild(child)
+	if _G.__DEV__ then
+		checkTags(child)
+	end
 end
 
-exports.appendChildToContainer = function(
-  container: Container,
-  child: Instance
-)
-  -- ROBLOX TODO: Some of this logic may come back; for now, keep it simple
-  local parentNode = container
-  exports.appendChild(parentNode, child)
+exports.appendChildToContainer = function(container: Container, child: Instance)
+	-- ROBLOX TODO: Some of this logic may come back; for now, keep it simple
+	local parentNode = container
+	exports.appendChild(parentNode, child)
 
-  -- if container.nodeType == COMMENT_NODE)
-  --   parentNode = (container.parentNode: any)
-  --   parentNode.insertBefore(child, container)
-  -- } else {
-  --   parentNode = container
-  --   parentNode.appendChild(child)
-  -- end
-  -- -- This container might be used for a portal.
-  -- -- If something inside a portal is clicked, that click should bubble
-  -- -- through the React tree. However, on Mobile Safari the click would
-  -- -- never bubble through the *DOM* tree unless an ancestor with onclick
-  -- -- event exists. So we wouldn't see it and dispatch it.
-  -- -- This is why we ensure that non React root containers have inline onclick
-  -- -- defined.
-  -- -- https://github.com/facebook/react/issues/11918
-  -- local reactRootContainer = container._reactRootContainer
-  -- if
-  --   reactRootContainer == nil and parentNode.onclick == nil
-  -- then
-  --   -- TODO: This cast may not be sound for SVG, MathML or custom elements.
-  --   trapClickOnNonInteractiveElement(((parentNode: any): HTMLElement))
-  -- end
+	-- if container.nodeType == COMMENT_NODE)
+	--   parentNode = (container.parentNode: any)
+	--   parentNode.insertBefore(child, container)
+	-- } else {
+	--   parentNode = container
+	--   parentNode.appendChild(child)
+	-- end
+	-- -- This container might be used for a portal.
+	-- -- If something inside a portal is clicked, that click should bubble
+	-- -- through the React tree. However, on Mobile Safari the click would
+	-- -- never bubble through the *DOM* tree unless an ancestor with onclick
+	-- -- event exists. So we wouldn't see it and dispatch it.
+	-- -- This is why we ensure that non React root containers have inline onclick
+	-- -- defined.
+	-- -- https://github.com/facebook/react/issues/11918
+	-- local reactRootContainer = container._reactRootContainer
+	-- if
+	--   reactRootContainer == nil and parentNode.onclick == nil
+	-- then
+	--   -- TODO: This cast may not be sound for SVG, MathML or custom elements.
+	--   trapClickOnNonInteractiveElement(((parentNode: any): HTMLElement))
+	-- end
 end
 
-exports.insertBefore = function(
-  parentInstance: Instance,
-  child: Instance,
-  _beforeChild: Instance
-)
-  -- ROBLOX deviation: Roblox's DOM is based on child->parent references
-  child.Parent = parentInstance
-  -- parentInstance.insertBefore(child, beforeChild)
-  if _G.__DEV__ then
-    checkTags(child)
-  end
-end
+exports.insertBefore =
+	function(parentInstance: Instance, child: Instance, _beforeChild: Instance)
+		-- ROBLOX deviation: Roblox's DOM is based on child->parent references
+		child.Parent = parentInstance
+		-- parentInstance.insertBefore(child, beforeChild)
+		if _G.__DEV__ then
+			checkTags(child)
+		end
+	end
 
-exports.insertInContainerBefore = function(
-  container: Container,
-  child: Instance,
-  beforeChild: Instance
-)
-  -- ROBLOX deviation: use our container definition
-  local parentNode = container
-  exports.insertBefore(parentNode, child, beforeChild)
-  -- if container.nodeType == COMMENT_NODE)
-  --   (container.parentNode: any).insertBefore(child, beforeChild)
-  -- } else {
-  --   container.insertBefore(child, beforeChild)
-  -- end
-end
+exports.insertInContainerBefore =
+	function(container: Container, child: Instance, beforeChild: Instance)
+		-- ROBLOX deviation: use our container definition
+		local parentNode = container
+		exports.insertBefore(parentNode, child, beforeChild)
+		-- if container.nodeType == COMMENT_NODE)
+		--   (container.parentNode: any).insertBefore(child, beforeChild)
+		-- } else {
+		--   container.insertBefore(child, beforeChild)
+		-- end
+	end
 
 -- function createEvent(type: DOMEventName, bubbles: boolean): Event {
 --   local event = document.createEvent('Event')
@@ -658,147 +634,134 @@ end
 --   end
 -- end
 
-exports.removeChild = function(
-  _parentInstance: Instance,
-  child: Instance
-)
-  recursivelyUncacheFiberNode(child)
-  -- ROBLOX deviation: The roblox renderer tracks bindings and event managers
-  -- for instances, so make sure we clean those up when we remove the instance
-  cleanupHostComponent(child)
-  -- ROBLOX deviation: Roblox's DOM is based on child->parent references
-  child.Parent = nil
-  -- parentInstance.removeChild(child)
-  -- ROBLOX deviation: Guard against misuse by locking parent and forcing external cleanup via Destroy
-  child:Destroy()
+exports.removeChild = function(_parentInstance: Instance, child: Instance)
+	recursivelyUncacheFiberNode(child)
+	-- ROBLOX deviation: The roblox renderer tracks bindings and event managers
+	-- for instances, so make sure we clean those up when we remove the instance
+	cleanupHostComponent(child)
+	-- ROBLOX deviation: Roblox's DOM is based on child->parent references
+	child.Parent = nil
+	-- parentInstance.removeChild(child)
+	-- ROBLOX deviation: Guard against misuse by locking parent and forcing external cleanup via Destroy
+	child:Destroy()
 end
 
-exports.removeChildFromContainer = function(
-  _container: Container,
-  child: Instance
-)
-  -- ROBLOX deviation: Containers don't have special behavior and comment nodes
-  -- have no datamodel equivalent, so just forward to the removeChild logic
-  exports.removeChild(_container, child)
-  -- if container.nodeType == COMMENT_NODE)
-  --   (container.parentNode: any).removeChild(child)
-  -- } else {
-  --   container.removeChild(child)
-  -- end
+exports.removeChildFromContainer = function(_container: Container, child: Instance)
+	-- ROBLOX deviation: Containers don't have special behavior and comment nodes
+	-- have no datamodel equivalent, so just forward to the removeChild logic
+	exports.removeChild(_container, child)
+	-- if container.nodeType == COMMENT_NODE)
+	--   (container.parentNode: any).removeChild(child)
+	-- } else {
+	--   container.removeChild(child)
+	-- end
 end
 
-exports.clearSuspenseBoundary = function(
-  parentInstance: Instance,
-  suspenseInstance: SuspenseInstance
-)
-  -- ROBLOX FIXME: this is a major thing we need to fix for Suspense to work as a feature
-  unimplemented("clearSuspenseBoundary")
---   local node = suspenseInstance
---   -- Delete all nodes within this suspense boundary.
---   -- There might be nested nodes so we need to keep track of how
---   -- deep we are and only break out when we're back on top.
---   local depth = 0
---   do {
---     local nextNode = node.nextSibling
---     parentInstance.removeChild(node)
---     if nextNode and nextNode.nodeType == COMMENT_NODE)
---       local data = ((nextNode: any).data: string)
---       if data == SUSPENSE_END_DATA)
---         if depth == 0)
---           parentInstance.removeChild(nextNode)
---           -- Retry if any event replaying was blocked on this.
---           retryIfBlockedOn(suspenseInstance)
---           return
---         } else {
---           depth--
---         end
---       } else if
---         data == SUSPENSE_START_DATA or
---         data == SUSPENSE_PENDING_START_DATA or
---         data == SUSPENSE_FALLBACK_START_DATA
---       )
---         depth++
---       end
---     end
---     node = nextNode
---   } while (node)
---   -- TODO: Warn, we didn't find the end comment boundary.
---   -- Retry if any event replaying was blocked on this.
---   retryIfBlockedOn(suspenseInstance)
-end
+exports.clearSuspenseBoundary =
+	function(parentInstance: Instance, suspenseInstance: SuspenseInstance)
+		-- ROBLOX FIXME: this is a major thing we need to fix for Suspense to work as a feature
+		unimplemented("clearSuspenseBoundary")
+		--   local node = suspenseInstance
+		--   -- Delete all nodes within this suspense boundary.
+		--   -- There might be nested nodes so we need to keep track of how
+		--   -- deep we are and only break out when we're back on top.
+		--   local depth = 0
+		--   do {
+		--     local nextNode = node.nextSibling
+		--     parentInstance.removeChild(node)
+		--     if nextNode and nextNode.nodeType == COMMENT_NODE)
+		--       local data = ((nextNode: any).data: string)
+		--       if data == SUSPENSE_END_DATA)
+		--         if depth == 0)
+		--           parentInstance.removeChild(nextNode)
+		--           -- Retry if any event replaying was blocked on this.
+		--           retryIfBlockedOn(suspenseInstance)
+		--           return
+		--         } else {
+		--           depth--
+		--         end
+		--       } else if
+		--         data == SUSPENSE_START_DATA or
+		--         data == SUSPENSE_PENDING_START_DATA or
+		--         data == SUSPENSE_FALLBACK_START_DATA
+		--       )
+		--         depth++
+		--       end
+		--     end
+		--     node = nextNode
+		--   } while (node)
+		--   -- TODO: Warn, we didn't find the end comment boundary.
+		--   -- Retry if any event replaying was blocked on this.
+		--   retryIfBlockedOn(suspenseInstance)
+	end
 
-exports.clearSuspenseBoundaryFromContainer = function(
-  container: Container,
-  suspenseInstance: SuspenseInstance
-)
-  -- ROBLOX FIXME: this is a major thing we need to fix for Suspense to work as a feature
-  unimplemented("clearSuspenseBoundaryFromContainer")
---   if container.nodeType == COMMENT_NODE)
---     clearSuspenseBoundary((container.parentNode: any), suspenseInstance)
---   } else if container.nodeType == ELEMENT_NODE)
---     clearSuspenseBoundary((container: any), suspenseInstance)
---   } else {
---     -- Document nodes should never contain suspense boundaries.
---   end
---   -- Retry if any event replaying was blocked on this.
---   retryIfBlockedOn(container)
-end
+exports.clearSuspenseBoundaryFromContainer =
+	function(container: Container, suspenseInstance: SuspenseInstance)
+		-- ROBLOX FIXME: this is a major thing we need to fix for Suspense to work as a feature
+		unimplemented("clearSuspenseBoundaryFromContainer")
+		--   if container.nodeType == COMMENT_NODE)
+		--     clearSuspenseBoundary((container.parentNode: any), suspenseInstance)
+		--   } else if container.nodeType == ELEMENT_NODE)
+		--     clearSuspenseBoundary((container: any), suspenseInstance)
+		--   } else {
+		--     -- Document nodes should never contain suspense boundaries.
+		--   end
+		--   -- Retry if any event replaying was blocked on this.
+		--   retryIfBlockedOn(container)
+	end
 
 exports.hideInstance = function(instance: Instance)
-  unimplemented("hideInstance")
-  -- -- TODO: Does this work for all element types? What about MathML? Should we
-  -- -- pass host context to this method?
-  -- instance = ((instance: any): HTMLElement)
-  -- local style = instance.style
-  -- if typeof style.setProperty == 'function')
-  --   style.setProperty('display', 'none', 'important')
-  -- } else {
-  --   style.display = 'none'
-  -- end
+	unimplemented("hideInstance")
+	-- -- TODO: Does this work for all element types? What about MathML? Should we
+	-- -- pass host context to this method?
+	-- instance = ((instance: any): HTMLElement)
+	-- local style = instance.style
+	-- if typeof style.setProperty == 'function')
+	--   style.setProperty('display', 'none', 'important')
+	-- } else {
+	--   style.display = 'none'
+	-- end
 end
 
 -- ROBLOX deviation: error on TextInstance logic, which isn't applicable to Roblox
 exports.hideTextInstance = function(textInstance: TextInstance): ()
-  unimplemented("hideTextInstance")
---   textInstance.nodeValue = ''
+	unimplemented("hideTextInstance")
+	--   textInstance.nodeValue = ''
 end
 
 exports.unhideInstance = function(instance: Instance, props: Props)
-  unimplemented("unhideInstance")
-  -- instance = ((instance: any): HTMLElement)
-  -- local styleProp = props[STYLE]
-  -- local display =
-  --   styleProp ~= undefined and
-  --   styleProp ~= nil and
-  --   styleProp.hasOwnProperty('display')
-  --     ? styleProp.display
-  --     : nil
-  -- instance.style.display = dangerousStyleValue('display', display)
+	unimplemented("unhideInstance")
+	-- instance = ((instance: any): HTMLElement)
+	-- local styleProp = props[STYLE]
+	-- local display =
+	--   styleProp ~= undefined and
+	--   styleProp ~= nil and
+	--   styleProp.hasOwnProperty('display')
+	--     ? styleProp.display
+	--     : nil
+	-- instance.style.display = dangerousStyleValue('display', display)
 end
 
 -- ROBLOX deviation: error on TextInstance logic, which isn't applicable to Roblox
-exports.unhideTextInstance = function(
-  textInstance: TextInstance,
-  text: string
-): ()
-  unimplemented("unhideTextInstance")
---   textInstance.nodeValue = text
+exports.unhideTextInstance = function(textInstance: TextInstance, text: string): ()
+	unimplemented("unhideTextInstance")
+	--   textInstance.nodeValue = text
 end
 
 exports.clearContainer = function(container: Container)
-  -- ROBLOX deviation: with Roblox, we can simply enumerate and remove the children
-  local parentInstance = container
-  for _, child in parentInstance:GetChildren() do
-    exports.removeChild(parentInstance, child)
-  end
-  -- if container.nodeType == ELEMENT_NODE)
-  --   ((container: any): Element).textContent = ''
-  -- } else if container.nodeType == DOCUMENT_NODE)
-  --   local body = ((container: any): Document).body
-  --   if body ~= nil)
-  --     body.textContent = ''
-  --   end
-  -- end
+	-- ROBLOX deviation: with Roblox, we can simply enumerate and remove the children
+	local parentInstance = container
+	for _, child in parentInstance:GetChildren() do
+		exports.removeChild(parentInstance, child)
+	end
+	-- if container.nodeType == ELEMENT_NODE)
+	--   ((container: any): Element).textContent = ''
+	-- } else if container.nodeType == DOCUMENT_NODE)
+	--   local body = ((container: any): Document).body
+	--   if body ~= nil)
+	--     body.textContent = ''
+	--   end
+	-- end
 end
 
 -- -- -------------------
@@ -1229,12 +1192,12 @@ end
 -- end
 
 exports.preparePortalMount = function(portalInstance: Instance): ()
-  -- ROBLOX TODO: Revisit this logic and see if any of it applies
-  -- if enableEagerRootListeners then
-  --   listenToAllSupportedEvents(portalInstance)
-  -- else
-  --   listenToReactEvent('onMouseEnter', portalInstance)
-  -- end
+	-- ROBLOX TODO: Revisit this logic and see if any of it applies
+	-- if enableEagerRootListeners then
+	--   listenToAllSupportedEvents(portalInstance)
+	-- else
+	--   listenToReactEvent('onMouseEnter', portalInstance)
+	-- end
 end
 
 -- exports.prepareScopeUpdate(

@@ -16,11 +16,11 @@ type ReactNodeList = ReactTypes.ReactNodeList
 type Wakeable = ReactTypes.Wakeable
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
-type Fiber = ReactInternalTypes.Fiber;
+type Fiber = ReactInternalTypes.Fiber
 local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
-type SuspenseInstance = ReactFiberHostConfig.SuspenseInstance;
+type SuspenseInstance = ReactFiberHostConfig.SuspenseInstance
 local ReactFiberLane = require(script.Parent.ReactFiberLane)
-type Lane = ReactFiberLane.Lane;
+type Lane = ReactFiberLane.Lane
 local ReactWorkTags = require(script.Parent.ReactWorkTags)
 local SuspenseComponent = ReactWorkTags.SuspenseComponent
 local SuspenseListComponent = ReactWorkTags.SuspenseListComponent
@@ -31,7 +31,7 @@ local isSuspenseInstancePending = ReactFiberHostConfig.isSuspenseInstancePending
 local isSuspenseInstanceFallback = ReactFiberHostConfig.isSuspenseInstanceFallback
 
 -- deviation: Common types
-type Set<T> = { [T]: boolean };
+type Set<T> = { [T]: boolean }
 
 export type SuspenseProps = {
 	children: ReactNodeList?,
@@ -41,7 +41,7 @@ export type SuspenseProps = {
 	suspenseCallback: (Set<Wakeable>?) -> any,
 
 	unstable_expectedLoadTime: number?,
-};
+}
 
 -- A nil SuspenseState represents an unsuspended normal Suspense boundary.
 -- A non-null SuspenseState means that it is blocked for one reason or another.
@@ -59,11 +59,11 @@ export type SuspenseState = {
 	-- OffscreenLane is the default for dehydrated boundaries.
 	-- NoLane is the default for normal boundaries, which turns into "normal" pri.
 	retryLane: Lane,
-};
+}
 
 -- deviation: Can't use literals for types
 -- export type SuspenseListTailMode = 'collapsed' | 'hidden' | void
-export type SuspenseListTailMode = string?;
+export type SuspenseListTailMode = string?
 
 export type SuspenseListRenderState = {
 	isBackwards: boolean,
@@ -77,41 +77,39 @@ export type SuspenseListRenderState = {
 	tail: Fiber?,
 	-- Tail insertions setting.
 	tailMode: SuspenseListTailMode,
-};
+}
 
 local exports = {}
 
-exports.shouldCaptureSuspense = function(
-	workInProgress: Fiber,
-	hasInvisibleParent: boolean
-): boolean
-	-- If it was the primary children that just suspended, capture and render the
-	-- fallback. Otherwise, don't capture and bubble to the next boundary.
-	local nextState: SuspenseState? = workInProgress.memoizedState
-	if nextState then
-		if nextState.dehydrated ~= nil then
-			-- A dehydrated boundary always captures.
+exports.shouldCaptureSuspense =
+	function(workInProgress: Fiber, hasInvisibleParent: boolean): boolean
+		-- If it was the primary children that just suspended, capture and render the
+		-- fallback. Otherwise, don't capture and bubble to the next boundary.
+		local nextState: SuspenseState? = workInProgress.memoizedState
+		if nextState then
+			if nextState.dehydrated ~= nil then
+				-- A dehydrated boundary always captures.
+				return true
+			end
+			return false
+		end
+		local props = workInProgress.memoizedProps
+		-- In order to capture, the Suspense component must have a fallback prop.
+		if props.fallback == nil then
+			return false
+		end
+		-- Regular boundaries always capture.
+		if props.unstable_avoidThisFallback ~= true then
 			return true
 		end
-		return false
-	end
-	local props = workInProgress.memoizedProps
-	-- In order to capture, the Suspense component must have a fallback prop.
-	if props.fallback == nil then
-		return false
-	end
-	-- Regular boundaries always capture.
-	if props.unstable_avoidThisFallback ~= true then
+		-- If it's a boundary we should avoid, then we prefer to bubble up to the
+		-- parent boundary if it is currently invisible.
+		if hasInvisibleParent then
+			return false
+		end
+		-- If the parent is not able to handle it, we must handle it.
 		return true
 	end
-	-- If it's a boundary we should avoid, then we prefer to bubble up to the
-	-- parent boundary if it is currently invisible.
-	if hasInvisibleParent then
-		return false
-	end
-	-- If the parent is not able to handle it, we must handle it.
-	return true
-end
 
 exports.findFirstSuspended = function(row: Fiber): Fiber?
 	local node = row
@@ -121,18 +119,18 @@ exports.findFirstSuspended = function(row: Fiber): Fiber?
 			if state then
 				local dehydrated: SuspenseInstance? = state.dehydrated
 				if
-					dehydrated == nil or
-					isSuspenseInstancePending(dehydrated) or
-					isSuspenseInstanceFallback(dehydrated)
+					dehydrated == nil
+					or isSuspenseInstancePending(dehydrated)
+					or isSuspenseInstanceFallback(dehydrated)
 				then
 					return node
 				end
 			end
 		elseif
-			node.tag == SuspenseListComponent and
+			node.tag == SuspenseListComponent
 			-- revealOrder undefined can't be trusted because it don't
 			-- keep track of whether it suspended or not.
-			node.memoizedProps.revealOrder ~= nil
+			and node.memoizedProps.revealOrder ~= nil
 		then
 			local didSuspend = bit32.band(node.flags, DidCapture) ~= NoFlags
 			if didSuspend then

@@ -32,7 +32,8 @@ local function shouldIgnoreConsoleError(format, args)
 			return true
 		end
 		if
-			string.find(format, "act(...) is not supported in production builds of React") == 0
+			string.find(format, "act(...) is not supported in production builds of React")
+			== 0
 		then
 			-- // We don't yet support act() for prod builds, and warn for it.
 			-- // But we'd like to use act() ourselves for prod builds.
@@ -80,7 +81,8 @@ return function(consoleMethod, matcherName)
 				expectedMessages = { expectedMessages }
 			elseif not Array.isArray(expectedMessages) then
 				error(
-					string.format("%s() requires a parameter of type string or an array of strings ",
+					string.format(
+						"%s() requires a parameter of type string or an array of strings ",
 						matcherName
 					)
 						.. string.format("but was given %s.", typeof(expectedMessages))
@@ -93,7 +95,8 @@ return function(consoleMethod, matcherName)
 				or (Array.isArray(options) and next(options) ~= nil)
 			then
 				error(
-					string.format("%s() second argument, when present, should be an object. ",
+					string.format(
+						"%s() second argument, when present, should be an object. ",
 						matcherName
 					)
 						.. "Did you forget to wrap the messages into an array?"
@@ -122,7 +125,8 @@ return function(consoleMethod, matcherName)
 			local caughtError
 
 			local function isLikelyAComponentStack(message)
-				return typeof(message) == "string" and string.match(message, "\n    in ") ~= nil
+				return typeof(message) == "string"
+					and string.match(message, "\n    in ") ~= nil
 			end
 
 			local function consoleSpy(format, ...)
@@ -138,11 +142,8 @@ return function(consoleMethod, matcherName)
 				end
 
 				local message = format
-				local formattedOk, formattedOrError = pcall(
-					string.format,
-					format,
-					unpack(args)
-				)
+				local formattedOk, formattedOrError =
+					pcall(string.format, format, unpack(args))
 				if formattedOk then
 					message = formattedOrError
 				end
@@ -201,7 +202,9 @@ return function(consoleMethod, matcherName)
 						.. tostring(JestDiff.diff(expectedMessages[1], normalizedMessage))
 				else
 					errorMessage = "Unexpected warning recorded: "
-						.. tostring(JestDiff.diff(expectedMessages, { normalizedMessage }))
+						.. tostring(
+							JestDiff.diff(expectedMessages, { normalizedMessage })
+						)
 				end
 
 				-- // Record the call stack for unexpected warnings.
@@ -247,7 +250,8 @@ return function(consoleMethod, matcherName)
 			if #expectedMessages > 0 then
 				return {
 					message = function()
-						return string.format("Expected warning was not recorded: %s\n  ",
+						return string.format(
+							"Expected warning was not recorded: %s\n  ",
 							expectedMessages[1]
 						)
 					end,
@@ -261,12 +265,10 @@ return function(consoleMethod, matcherName)
 					local warnings = warningsWithoutComponentStack
 					return {
 						message = function()
-							return (
-								"Expected %d warnings without a component stack but received %d:\n"
-							):format(withoutStack, #warningsWithoutComponentStack) .. table.concat(
-								warnings,
-								"\n"
-							)
+							return ("Expected %d warnings without a component stack but received %d:\n"):format(
+								withoutStack,
+								#warningsWithoutComponentStack
+							) .. table.concat(warnings, "\n")
 						end,
 						pass = false,
 					}
@@ -276,17 +278,16 @@ return function(consoleMethod, matcherName)
 					return {
 						message = function()
 							return "Received warning unexpectedly includes a component stack:\n"
-								.. (
-									"  %s\nIf this warning intentionally includes the component stack, remove "
-								):format(warningsWithComponentStack[1])
-								.. (
-									"{withoutStack: true} from the %s() call. If you have a mix of "
-								):format(matcherName)
-								.. (
-									"warnings with and without stack in one %s() call, pass "
-								):format(matcherName)
+								.. ("  %s\nIf this warning intentionally includes the component stack, remove "):format(
+									warningsWithComponentStack[1]
+								)
+								.. ("{withoutStack: true} from the %s() call. If you have a mix of "):format(
+									matcherName
+								)
+								.. ("warnings with and without stack in one %s() call, pass "):format(
+									matcherName
+								)
 								.. "{withoutStack: N} where N is the number of warnings without stacks."
-
 						end,
 						pass = false,
 					}
@@ -298,10 +299,11 @@ return function(consoleMethod, matcherName)
 					return {
 						message = function()
 							return "Received warning unexpectedly does not include a component stack:\n"
-								.. (
-									"  %s\nIf this warning intentionally omits the component stack, add "
-								):format(warningsWithoutComponentStack[1])
-								.. string.format("{withoutStack: true} to the %s call.",
+								.. ("  %s\nIf this warning intentionally omits the component stack, add "):format(
+									warningsWithoutComponentStack[1]
+								)
+								.. string.format(
+									"{withoutStack: true} to the %s call.",
 									matcherName
 								)
 						end,
@@ -310,9 +312,9 @@ return function(consoleMethod, matcherName)
 				end
 			else
 				error(
-					(
-						"The second argument for %s(), when specified, must be an object. It may have a "
-					):format(matcherName)
+					("The second argument for %s(), when specified, must be an object. It may have a "):format(
+						matcherName
+					)
 						.. 'property called "withoutStack" whose value may be undefined, boolean, or a number. '
 						.. string.format("Instead received %s.", typeof(withoutStack))
 				)
@@ -321,9 +323,7 @@ return function(consoleMethod, matcherName)
 			if lastWarningWithMismatchingFormat ~= nil then
 				return {
 					message = function()
-						return (
-							"Received %d arguments for a message with %s placeholders:\n  %s"
-						):format(
+						return ("Received %d arguments for a message with %s placeholders:\n  %s"):format(
 							#lastWarningWithMismatchingFormat.args,
 							lastWarningWithMismatchingFormat.expectedArgCount,
 							lastWarningWithMismatchingFormat.format
@@ -336,9 +336,9 @@ return function(consoleMethod, matcherName)
 				return {
 					message = function()
 						return "Received more than one component stack for a warning:\n"
-							.. (
-								"  %s\nDid you accidentally pass a stack to warning() as the last argument? "
-							):format(lastWarningWithExtraComponentStack.format)
+							.. ("  %s\nDid you accidentally pass a stack to warning() as the last argument? "):format(
+								lastWarningWithExtraComponentStack.format
+							)
 							.. "Don't forget warning() already injects the component stack automatically."
 					end,
 					pass = false,

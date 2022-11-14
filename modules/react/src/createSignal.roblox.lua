@@ -39,7 +39,10 @@ local function createSignal(): ((Function) -> (() -> ()), (...any) -> ())
 	local firing = false
 
 	local function subscribe(callback)
-		assert(typeof(callback) == "function", "Can only subscribe to signals with a function.")
+		assert(
+			typeof(callback) == "function",
+			"Can only subscribe to signals with a function."
+		)
 
 		local connection = {
 			callback = callback,
@@ -55,7 +58,10 @@ local function createSignal(): ((Function) -> (() -> ()), (...any) -> ())
 		connections[callback] = connection
 
 		local function disconnect()
-			assert(not connection.disconnected, "Listeners can only be disconnected once.")
+			assert(
+				not connection.disconnected,
+				"Listeners can only be disconnected once."
+			)
 
 			connection.disconnected = true
 			connections[callback] = nil

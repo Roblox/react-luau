@@ -128,10 +128,7 @@ return function()
 			function Component:render()
 				return React.createElement("div", {
 					className = "purple",
-				}, React.createElement(
-					Child,
-					nil
-				))
+				}, React.createElement(Child, nil))
 			end
 
 			local renderer = ReactTestRenderer.create(React.createElement(Component))
@@ -171,15 +168,9 @@ return function()
 			function Component:render()
 				renders = renders + 1
 
-				return React.createElement(
-					"div",
-					{
-						className = "purple",
-					},
-					self.state.x,
-					React.createElement(Child),
-					React.createElement(Null)
-				)
+				return React.createElement("div", {
+					className = "purple",
+				}, self.state.x, React.createElement(Child), React.createElement(Null))
 			end
 			function Component:componentDidMount()
 				self:setState({ x = 7 })
@@ -242,9 +233,8 @@ return function()
 			})
 		end)
 		it("updates types", function()
-			local renderer = ReactTestRenderer.create(
-				React.createElement("div", nil, "mouse")
-			)
+			local renderer =
+				ReactTestRenderer.create(React.createElement("div", nil, "mouse"))
 
 			jestExpect(renderer.toJSON()).toEqual({
 				type = "div",
@@ -263,19 +253,21 @@ return function()
 			})
 		end)
 		it("updates children", function()
-			local renderer = ReactTestRenderer.create(React.createElement(
-				"div",
-				nil,
-				React.createElement("span", {
-					key = "a",
-				}, "A"),
-				React.createElement("span", {
-					key = "b",
-				}, "B"),
-				React.createElement("span", {
-					key = "c",
-				}, "C")
-			))
+			local renderer = ReactTestRenderer.create(
+				React.createElement(
+					"div",
+					nil,
+					React.createElement("span", {
+						key = "a",
+					}, "A"),
+					React.createElement("span", {
+						key = "b",
+					}, "B"),
+					React.createElement("span", {
+						key = "c",
+					}, "C")
+				)
+			)
 
 			jestExpect(renderer.toJSON()).toEqual({
 				type = "div",
@@ -700,9 +692,8 @@ return function()
 				return React.createElement("div", nil, self.props.children)
 			end
 
-			local renderer = ReactTestRenderer.create(
-				React.createElement(Component, nil, "Hi")
-			)
+			local renderer =
+				ReactTestRenderer.create(React.createElement(Component, nil, "Hi"))
 
 			jestExpect(renderer.toJSON()).toEqual({
 				type = "div",

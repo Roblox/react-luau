@@ -198,7 +198,7 @@ return function()
 					Name = "LabelLength",
 					Text = props.length:map(function(value)
 						return "Length: " .. tostring(value)
-					end)
+					end),
 				})
 			end
 
@@ -208,9 +208,10 @@ return function()
 				local text, setText = React.useBinding("hello")
 				updateBinding = setText
 				renderCount += 1
-				return React.createElement(React.Fragment, nil,
-					React.createElement(
-						"TextLabel", {
+				return React.createElement(
+					React.Fragment,
+					nil,
+					React.createElement("TextLabel", {
 						Name = "Label",
 						Text = text:map(string.reverse),
 					}),

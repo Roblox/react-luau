@@ -82,7 +82,8 @@ function onInteractionScheduledWorkCompleted(interaction: Interaction): ()
 
 	for subscriber, _ in subscribers do
 		-- ROBLOX try
-		local ok, result = pcall(subscriber.onInteractionScheduledWorkCompleted, interaction)
+		local ok, result =
+			pcall(subscriber.onInteractionScheduledWorkCompleted, interaction)
 		-- ROBLOX catch
 		if not ok then
 			local error_ = result

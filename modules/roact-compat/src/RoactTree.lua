@@ -33,22 +33,24 @@ local function mount(element: any, parent: any, key: string?): RoactHandle
 	end
 
 	if parent ~= nil and typeof(parent) ~= "Instance" then
-		error(string.format(
-			"Cannot mount element (`%s`) into a parent that is not a Roblox Instance (got type `%s`) \n%s",
-			(function()
-				if element then
-					return tostring(element.type)
-				end
-				return "<unknown>"
-			end)(),
-			typeof(parent),
-			(function()
-				if parent ~= nil then
-					return inspect(parent)
-				end
-				return ""
-			end)()
-		))
+		error(
+			string.format(
+				"Cannot mount element (`%s`) into a parent that is not a Roblox Instance (got type `%s`) \n%s",
+				(function()
+					if element then
+						return tostring(element.type)
+					end
+					return "<unknown>"
+				end)(),
+				typeof(parent),
+				(function()
+					if parent ~= nil then
+						return inspect(parent)
+					end
+					return ""
+				end)()
+			)
+		)
 	end
 
 	-- Since we use portals to actually parent to the provided parent argument,

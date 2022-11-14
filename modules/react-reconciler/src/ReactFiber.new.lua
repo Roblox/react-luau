@@ -265,7 +265,7 @@ end
 function _shouldConstruct(Component)
 	-- deviation: With Lua metatables, members of the "prototype" can be
 	-- accessed directly. so we don't need to check for a prototype separately
-	return type(Component) ~= "function" and (not not Component.isReactComponent)
+	return type(Component) ~= "function" and not not Component.isReactComponent
 end
 -- ROBLOX deviation END
 
@@ -415,10 +415,8 @@ local function resetWorkInProgress(workInProgress: Fiber, renderLanes: Lanes)
 
 	-- Reset the effect tag but keep any Placement tags, since that's something
 	-- that child fiber is setting, not the reconciliation.
-	workInProgress.flags = bit32.band(
-		workInProgress.flags,
-		bit32.bor(StaticMask, Placement)
-	)
+	workInProgress.flags =
+		bit32.band(workInProgress.flags, bit32.bor(StaticMask, Placement))
 
 	-- The effects are no longer valid
 
@@ -521,7 +519,7 @@ local function createFiberFromTypeAndProps(
 		if __DEV__ then
 			resolvedType = resolveFunctionForHotReloading(resolvedType)
 		end
-	elseif typeOfType_ == "table" and (not not type_.isReactComponent) then
+	elseif typeOfType_ == "table" and not not type_.isReactComponent then
 		fiberTag = ClassComponent
 		if __DEV__ then
 			resolvedType = resolveClassForHotReloading(resolvedType)
@@ -620,10 +618,8 @@ local function createFiberFromTypeAndProps(
 				elseif Array.isArray(type_) then
 					typeString = "array"
 				elseif typeOfType_ == "table" and type_typeof == REACT_ELEMENT_TYPE then
-					typeString = string.format(
-						"<%s />",
-						getComponentName(type_.type) or "Unknown"
-					)
+					typeString =
+						string.format("<%s />", getComponentName(type_.type) or "Unknown")
 					info =
 						" Did you accidentally export a JSX literal or Element instead of a component?"
 				else
@@ -643,16 +639,8 @@ local function createFiberFromTypeAndProps(
 	end
 
 	-- ROBLOX deviation START: we pass in all needed values so the table creation+field assignment is a one-shot
-	local fiber = createFiber(
-		fiberTag,
-		pendingProps,
-		key,
-		mode,
-		type_,
-		resolvedType,
-		nil,
-		lanes
-	)
+	local fiber =
+		createFiber(fiberTag, pendingProps, key, mode, type_, resolvedType, nil, lanes)
 
 	-- fiber.elementType = type_
 	-- fiber.type = resolvedType
@@ -740,16 +728,8 @@ function createFiberFromScope(
 	key: string?
 ): Fiber
 	-- ROBLOX deviation START: we pass in all needed values so the table creation+field assignment is a one-shot
-	local fiber = createFiber(
-		ScopeComponent,
-		pendingProps,
-		key,
-		mode,
-		scope,
-		scope,
-		nil,
-		lanes
-	)
+	local fiber =
+		createFiber(ScopeComponent, pendingProps, key, mode, scope, scope, nil, lanes)
 	-- fiber.type = scope
 	-- fiber.elementType = scope
 	-- fiber.lanes = lanes
@@ -937,15 +917,8 @@ end
 
 local function createFiberFromDehydratedFragment(dehydratedNode: SuspenseInstance): Fiber
 	-- ROBLOX deviation START: we pass in all needed values so the table creation+field assignment is a one-shot
-	local fiber = createFiber(
-		DehydratedFragment,
-		nil,
-		nil,
-		NoMode,
-		nil,
-		nil,
-		dehydratedNode
-	)
+	local fiber =
+		createFiber(DehydratedFragment, nil, nil, NoMode, nil, nil, dehydratedNode)
 	-- fiber.stateNode = dehydratedNode
 	-- ROBLOX deviation END
 	return fiber

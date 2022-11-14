@@ -92,7 +92,9 @@ return function()
 				Scheduler.unstable_yieldValue("BrokenConstructor componentDidMount")
 			end
 			function BrokenConstructor:UNSAFE_componentWillReceiveProps()
-				Scheduler.unstable_yieldValue("BrokenConstructor componentWillReceiveProps")
+				Scheduler.unstable_yieldValue(
+					"BrokenConstructor componentWillReceiveProps"
+				)
 			end
 			function BrokenConstructor:UNSAFE_componentWillUpdate()
 				Scheduler.unstable_yieldValue("BrokenConstructor componentWillUpdate")
@@ -117,27 +119,39 @@ return function()
 			end
 
 			function BrokenComponentWillMount:UNSAFE_componentWillMount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillMount componentWillMount [!]")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillMount componentWillMount [!]"
+				)
 				error("Hello", 0)
 			end
 
 			function BrokenComponentWillMount:componentDidMount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillMount componentDidMount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillMount componentDidMount"
+				)
 			end
 			function BrokenComponentWillMount:UNSAFE_componentWillReceiveProps()
-				Scheduler.unstable_yieldValue("BrokenComponentWillMount componentWillReceiveProps")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillMount componentWillReceiveProps"
+				)
 			end
 
 			function BrokenComponentWillMount:UNSAFE_componentWillUpdate()
-				Scheduler.unstable_yieldValue("BrokenComponentWillMount componentWillUpdate")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillMount componentWillUpdate"
+				)
 			end
 
 			function BrokenComponentWillMount:componentDidUpdate()
-				Scheduler.unstable_yieldValue("BrokenComponentWillMount componentDidUpdate")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillMount componentDidUpdate"
+				)
 			end
 
 			function BrokenComponentWillMount:componentWillUnmount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillMount componentWillUnmount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillMount componentWillUnmount"
+				)
 			end
 
 			BrokenComponentDidMount = React.Component:extend("BrokenComponentDidMount")
@@ -150,55 +164,83 @@ return function()
 				return React.createElement("div", nil, self.props.children)
 			end
 			function BrokenComponentDidMount:UNSAFE_componentWillMount()
-				Scheduler.unstable_yieldValue("BrokenComponentDidMount componentWillMount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidMount componentWillMount"
+				)
 			end
 			function BrokenComponentDidMount:componentDidMount()
-				Scheduler.unstable_yieldValue("BrokenComponentDidMount componentDidMount [!]")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidMount componentDidMount [!]"
+				)
 				error("Hello", 0)
 			end
 			function BrokenComponentDidMount:UNSAFE_componentWillReceiveProps()
-				Scheduler.unstable_yieldValue("BrokenComponentDidMount componentWillReceiveProps")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidMount componentWillReceiveProps"
+				)
 			end
 			function BrokenComponentDidMount:UNSAFE_componentWillUpdate()
-				Scheduler.unstable_yieldValue("BrokenComponentDidMount componentWillUpdate")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidMount componentWillUpdate"
+				)
 			end
 			function BrokenComponentDidMount:componentDidUpdate()
-				Scheduler.unstable_yieldValue("BrokenComponentDidMount componentDidUpdate")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidMount componentDidUpdate"
+				)
 			end
 			function BrokenComponentDidMount:componentWillUnmount()
-				Scheduler.unstable_yieldValue("BrokenComponentDidMount componentWillUnmount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidMount componentWillUnmount"
+				)
 			end
 
-			BrokenComponentWillReceiveProps = React.Component:extend("BrokenComponentWillReceiveProps")
+			BrokenComponentWillReceiveProps =
+				React.Component:extend("BrokenComponentWillReceiveProps")
 
 			function BrokenComponentWillReceiveProps:init()
-				Scheduler.unstable_yieldValue("BrokenComponentWillReceiveProps constructor")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillReceiveProps constructor"
+				)
 			end
 			function BrokenComponentWillReceiveProps:render()
 				Scheduler.unstable_yieldValue("BrokenComponentWillReceiveProps render")
 				return React.createElement("div", nil, self.props.children)
 			end
 			function BrokenComponentWillReceiveProps:UNSAFE_componentWillMount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillReceiveProps componentWillMount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillReceiveProps componentWillMount"
+				)
 			end
 			function BrokenComponentWillReceiveProps:componentDidMount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillReceiveProps componentDidMount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillReceiveProps componentDidMount"
+				)
 			end
 			function BrokenComponentWillReceiveProps:UNSAFE_componentWillReceiveProps()
-				Scheduler.unstable_yieldValue("BrokenComponentWillReceiveProps componentWillReceiveProps [!]")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillReceiveProps componentWillReceiveProps [!]"
+				)
 				error("Hello", 0)
 			end
 			function BrokenComponentWillReceiveProps:UNSAFE_componentWillUpdate()
-				Scheduler.unstable_yieldValue("BrokenComponentWillReceiveProps componentWillUpdate")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillReceiveProps componentWillUpdate"
+				)
 			end
 			function BrokenComponentWillReceiveProps:componentDidUpdate()
-				Scheduler.unstable_yieldValue("BrokenComponentWillReceiveProps componentDidUpdate")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillReceiveProps componentDidUpdate"
+				)
 			end
 			function BrokenComponentWillReceiveProps:componentWillUnmount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillReceiveProps componentWillUnmount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillReceiveProps componentWillUnmount"
+				)
 			end
 
-			BrokenComponentWillUpdate = React.Component:extend("BrokenComponentWillUpdate")
+			BrokenComponentWillUpdate =
+				React.Component:extend("BrokenComponentWillUpdate")
 
 			function BrokenComponentWillUpdate:init()
 				Scheduler.unstable_yieldValue("BrokenComponentWillUpdate constructor")
@@ -208,23 +250,35 @@ return function()
 				return React.createElement("div", nil, self.props.children)
 			end
 			function BrokenComponentWillUpdate:UNSAFE_componentWillMount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillUpdate componentWillMount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillUpdate componentWillMount"
+				)
 			end
 			function BrokenComponentWillUpdate:componentDidMount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillUpdate componentDidMount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillUpdate componentDidMount"
+				)
 			end
 			function BrokenComponentWillUpdate:UNSAFE_componentWillReceiveProps()
-				Scheduler.unstable_yieldValue("BrokenComponentWillUpdate componentWillReceiveProps")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillUpdate componentWillReceiveProps"
+				)
 			end
 			function BrokenComponentWillUpdate:UNSAFE_componentWillUpdate()
-				Scheduler.unstable_yieldValue("BrokenComponentWillUpdate componentWillUpdate [!]")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillUpdate componentWillUpdate [!]"
+				)
 				error("Hello", 0)
 			end
 			function BrokenComponentWillUpdate:componentDidUpdate()
-				Scheduler.unstable_yieldValue("BrokenComponentWillUpdate componentDidUpdate")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillUpdate componentDidUpdate"
+				)
 			end
 			function BrokenComponentWillUpdate:componentWillUnmount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillUpdate componentWillUnmount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillUpdate componentWillUnmount"
+				)
 			end
 
 			BrokenComponentDidUpdate = React.Component:extend("BrokenComponentDidUpdate")
@@ -237,28 +291,41 @@ return function()
 				return React.createElement("div", nil, self.props.children)
 			end
 			function BrokenComponentDidUpdate:UNSAFE_componentWillMount()
-				Scheduler.unstable_yieldValue("BrokenComponentDidUpdate componentWillMount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidUpdate componentWillMount"
+				)
 			end
 			function BrokenComponentDidUpdate:componentDidMount()
-				Scheduler.unstable_yieldValue("BrokenComponentDidUpdate componentDidMount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidUpdate componentDidMount"
+				)
 			end
 			function BrokenComponentDidUpdate:UNSAFE_componentWillReceiveProps()
-				Scheduler.unstable_yieldValue("BrokenComponentDidUpdate componentWillReceiveProps")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidUpdate componentWillReceiveProps"
+				)
 			end
 			function BrokenComponentDidUpdate:UNSAFE_componentWillUpdate()
-				Scheduler.unstable_yieldValue("BrokenComponentDidUpdate componentWillUpdate")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidUpdate componentWillUpdate"
+				)
 			end
 			function BrokenComponentDidUpdate:componentDidUpdate()
-				Scheduler.unstable_yieldValue("BrokenComponentDidUpdate componentDidUpdate [!]")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidUpdate componentDidUpdate [!]"
+				)
 
 				-- ROBLOX deviation: or 'Hello' in place of setting defaultProps
 				error(self.props.errorText or "Hello", 0)
 			end
 			function BrokenComponentDidUpdate:componentWillUnmount()
-				Scheduler.unstable_yieldValue("BrokenComponentDidUpdate componentWillUnmount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidUpdate componentWillUnmount"
+				)
 			end
 
-			BrokenComponentWillUnmount = React.Component:extend("BrokenComponentWillUnmount")
+			BrokenComponentWillUnmount =
+				React.Component:extend("BrokenComponentWillUnmount")
 
 			function BrokenComponentWillUnmount:init()
 				Scheduler.unstable_yieldValue("BrokenComponentWillUnmount constructor")
@@ -268,85 +335,138 @@ return function()
 				return React.createElement("div", nil, self.props.children)
 			end
 			function BrokenComponentWillUnmount:UNSAFE_componentWillMount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillUnmount componentWillMount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillUnmount componentWillMount"
+				)
 			end
 			function BrokenComponentWillUnmount:componentDidMount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillUnmount componentDidMount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillUnmount componentDidMount"
+				)
 			end
 			function BrokenComponentWillUnmount:UNSAFE_componentWillReceiveProps()
-				Scheduler.unstable_yieldValue("BrokenComponentWillUnmount componentWillReceiveProps")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillUnmount componentWillReceiveProps"
+				)
 			end
 			function BrokenComponentWillUnmount:UNSAFE_componentWillUpdate()
-				Scheduler.unstable_yieldValue("BrokenComponentWillUnmount componentWillUpdate")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillUnmount componentWillUpdate"
+				)
 			end
 			function BrokenComponentWillUnmount:componentDidUpdate()
-				Scheduler.unstable_yieldValue("BrokenComponentWillUnmount componentDidUpdate")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillUnmount componentDidUpdate"
+				)
 			end
 			function BrokenComponentWillUnmount:componentWillUnmount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillUnmount componentWillUnmount [!]")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillUnmount componentWillUnmount [!]"
+				)
 				-- ROBLOX deviation: or 'Hello' in place of setting defaultProps
 				error(self.props.errorText or "Hello", 0)
 			end
 
-			BrokenComponentWillMountErrorBoundary = React.Component:extend("BrokenComponentWillMountErrorBoundary")
+			BrokenComponentWillMountErrorBoundary =
+				React.Component:extend("BrokenComponentWillMountErrorBoundary")
 
 			function BrokenComponentWillMountErrorBoundary:init()
 				self.state = { error = nil }
-				Scheduler.unstable_yieldValue("BrokenComponentWillMountErrorBoundary constructor")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillMountErrorBoundary constructor"
+				)
 			end
 			function BrokenComponentWillMountErrorBoundary:render()
 				if self.state.error then
-					Scheduler.unstable_yieldValue("BrokenComponentWillMountErrorBoundary render error")
-					return React.createElement("div", nil, "Caught an error: " .. tostring(self.state.error.message))
+					Scheduler.unstable_yieldValue(
+						"BrokenComponentWillMountErrorBoundary render error"
+					)
+					return React.createElement(
+						"div",
+						nil,
+						"Caught an error: " .. tostring(self.state.error.message)
+					)
 				end
-				Scheduler.unstable_yieldValue("BrokenComponentWillMountErrorBoundary render success")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillMountErrorBoundary render success"
+				)
 				return React.createElement("div", nil, self.props.children)
 			end
 			function BrokenComponentWillMountErrorBoundary:UNSAFE_componentWillMount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillMountErrorBoundary componentWillMount [!]")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillMountErrorBoundary componentWillMount [!]"
+				)
 				error("Hello", 0)
 			end
 			function BrokenComponentWillMountErrorBoundary:componentDidMount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillMountErrorBoundary componentDidMount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillMountErrorBoundary componentDidMount"
+				)
 			end
 			function BrokenComponentWillMountErrorBoundary:componentWillUnmount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillMountErrorBoundary componentWillUnmount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillMountErrorBoundary componentWillUnmount"
+				)
 			end
-			function BrokenComponentWillMountErrorBoundary.getDerivedStateFromError(error_)
-				Scheduler.unstable_yieldValue("BrokenComponentWillMountErrorBoundary static getDerivedStateFromError")
+			function BrokenComponentWillMountErrorBoundary.getDerivedStateFromError(
+				error_
+			)
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillMountErrorBoundary static getDerivedStateFromError"
+				)
 				return { error = error_ }
 			end
 
-			BrokenComponentDidMountErrorBoundary = React.Component:extend("BrokenComponentDidMountErrorBoundary")
+			BrokenComponentDidMountErrorBoundary =
+				React.Component:extend("BrokenComponentDidMountErrorBoundary")
 
 			function BrokenComponentDidMountErrorBoundary:init()
 				self.state = { error = nil }
-				Scheduler.unstable_yieldValue("BrokenComponentDidMountErrorBoundary constructor")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidMountErrorBoundary constructor"
+				)
 			end
 			function BrokenComponentDidMountErrorBoundary:render()
 				if self.state.error then
-					Scheduler.unstable_yieldValue("BrokenComponentDidMountErrorBoundary render error")
-					return React.createElement("div", nil, "Caught an error: " .. tostring(self.state.error.message))
+					Scheduler.unstable_yieldValue(
+						"BrokenComponentDidMountErrorBoundary render error"
+					)
+					return React.createElement(
+						"div",
+						nil,
+						"Caught an error: " .. tostring(self.state.error.message)
+					)
 				end
-				Scheduler.unstable_yieldValue("BrokenComponentDidMountErrorBoundary render success")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidMountErrorBoundary render success"
+				)
 				return React.createElement("div", nil, self.props.children)
 			end
 			function BrokenComponentDidMountErrorBoundary:UNSAFE_componentWillMount()
-				Scheduler.unstable_yieldValue("BrokenComponentDidMountErrorBoundary componentWillMount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidMountErrorBoundary componentWillMount"
+				)
 			end
 			function BrokenComponentDidMountErrorBoundary:componentDidMount()
-				Scheduler.unstable_yieldValue("BrokenComponentDidMountErrorBoundary componentDidMount [!]")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidMountErrorBoundary componentDidMount [!]"
+				)
 				error("Hello", 0)
 			end
 			function BrokenComponentDidMountErrorBoundary:componentWillUnmount()
-				Scheduler.unstable_yieldValue("BrokenComponentDidMountErrorBoundary componentWillUnmount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidMountErrorBoundary componentWillUnmount"
+				)
 			end
 			function BrokenComponentDidMountErrorBoundary.getDerivedStateFromError(error_)
-				Scheduler.unstable_yieldValue("BrokenComponentDidMountErrorBoundary static getDerivedStateFromError")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentDidMountErrorBoundary static getDerivedStateFromError"
+				)
 				return { error = error_ }
 			end
 
-			BrokenRenderErrorBoundary = React.Component:extend("BrokenRenderErrorBoundary")
+			BrokenRenderErrorBoundary =
+				React.Component:extend("BrokenRenderErrorBoundary")
 
 			function BrokenRenderErrorBoundary:init()
 				self.state = { error = nil }
@@ -354,23 +474,33 @@ return function()
 			end
 			function BrokenRenderErrorBoundary:render()
 				if self.state.error then
-					Scheduler.unstable_yieldValue("BrokenRenderErrorBoundary render error [!]")
+					Scheduler.unstable_yieldValue(
+						"BrokenRenderErrorBoundary render error [!]"
+					)
 					error("Hello", 0)
 				end
 				Scheduler.unstable_yieldValue("BrokenRenderErrorBoundary render success")
 				return React.createElement("div", nil, self.props.children)
 			end
 			function BrokenRenderErrorBoundary:UNSAFE_componentWillMount()
-				Scheduler.unstable_yieldValue("BrokenRenderErrorBoundary componentWillMount")
+				Scheduler.unstable_yieldValue(
+					"BrokenRenderErrorBoundary componentWillMount"
+				)
 			end
 			function BrokenRenderErrorBoundary:componentDidMount()
-				Scheduler.unstable_yieldValue("BrokenRenderErrorBoundary componentDidMount")
+				Scheduler.unstable_yieldValue(
+					"BrokenRenderErrorBoundary componentDidMount"
+				)
 			end
 			function BrokenRenderErrorBoundary:componentWillUnmount()
-				Scheduler.unstable_yieldValue("BrokenRenderErrorBoundary componentWillUnmount")
+				Scheduler.unstable_yieldValue(
+					"BrokenRenderErrorBoundary componentWillUnmount"
+				)
 			end
 			function BrokenRenderErrorBoundary.getDerivedStateFromError(error_)
-				Scheduler.unstable_yieldValue("BrokenRenderErrorBoundary static getDerivedStateFromError")
+				Scheduler.unstable_yieldValue(
+					"BrokenRenderErrorBoundary static getDerivedStateFromError"
+				)
 				return { error = error_ }
 			end
 
@@ -418,7 +548,9 @@ return function()
 
 				Scheduler.unstable_yieldValue("BrokenUseLayoutEffect render")
 				React.useLayoutEffect(function()
-					Scheduler.unstable_yieldValue("BrokenUseLayoutEffect useLayoutEffect [!]")
+					Scheduler.unstable_yieldValue(
+						"BrokenUseLayoutEffect useLayoutEffect [!]"
+					)
 					error("Hello", 0)
 				end)
 
@@ -444,7 +576,9 @@ return function()
 				Scheduler.unstable_yieldValue("NoopErrorBoundary componentWillUnmount")
 			end
 			function NoopErrorBoundary.getDerivedStateFromError()
-				Scheduler.unstable_yieldValue("NoopErrorBoundary static getDerivedStateFromError")
+				Scheduler.unstable_yieldValue(
+					"NoopErrorBoundary static getDerivedStateFromError"
+				)
 				return nil
 			end
 
@@ -467,16 +601,22 @@ return function()
 				Scheduler.unstable_yieldValue(self.props.logName .. " componentDidMount")
 			end
 			function Normal:UNSAFE_componentWillReceiveProps()
-				Scheduler.unstable_yieldValue(self.props.logName .. " componentWillReceiveProps")
+				Scheduler.unstable_yieldValue(
+					self.props.logName .. " componentWillReceiveProps"
+				)
 			end
 			function Normal:UNSAFE_componentWillUpdate()
-				Scheduler.unstable_yieldValue(self.props.logName .. " componentWillUpdate")
+				Scheduler.unstable_yieldValue(
+					self.props.logName .. " componentWillUpdate"
+				)
 			end
 			function Normal:componentDidUpdate()
 				Scheduler.unstable_yieldValue(self.props.logName .. " componentDidUpdate")
 			end
 			function Normal:componentWillUnmount()
-				Scheduler.unstable_yieldValue(self.props.logName .. " componentWillUnmount")
+				Scheduler.unstable_yieldValue(
+					self.props.logName .. " componentWillUnmount"
+				)
 			end
 
 			ErrorBoundary = React.Component:extend("ErrorBoundary")
@@ -496,7 +636,9 @@ return function()
 				return React.createElement("div", nil, self.props.children)
 			end
 			function ErrorBoundary.getDerivedStateFromError(error_)
-				Scheduler.unstable_yieldValue("ErrorBoundary static getDerivedStateFromError")
+				Scheduler.unstable_yieldValue(
+					"ErrorBoundary static getDerivedStateFromError"
+				)
 				return { error = error_ }
 			end
 			function ErrorBoundary:UNSAFE_componentWillMount()
@@ -506,16 +648,22 @@ return function()
 				Scheduler.unstable_yieldValue(self.props.logName .. " componentDidMount")
 			end
 			function ErrorBoundary:UNSAFE_componentWillReceiveProps()
-				Scheduler.unstable_yieldValue(self.props.logName .. " componentWillReceiveProps")
+				Scheduler.unstable_yieldValue(
+					self.props.logName .. " componentWillReceiveProps"
+				)
 			end
 			function ErrorBoundary:UNSAFE_componentWillUpdate()
-				Scheduler.unstable_yieldValue(self.props.logName .. " componentWillUpdate")
+				Scheduler.unstable_yieldValue(
+					self.props.logName .. " componentWillUpdate"
+				)
 			end
 			function ErrorBoundary:componentDidUpdate()
 				Scheduler.unstable_yieldValue(self.props.logName .. " componentDidUpdate")
 			end
 			function ErrorBoundary:componentWillUnmount()
-				Scheduler.unstable_yieldValue(self.props.logName .. " componentWillUnmount")
+				Scheduler.unstable_yieldValue(
+					self.props.logName .. " componentWillUnmount"
+				)
 			end
 			ErrorBoundary.defaultProps = {
 				logName = "ErrorBoundary",
@@ -550,7 +698,9 @@ return function()
 				Scheduler.unstable_yieldValue("RetryErrorBoundary componentWillUnmount")
 			end
 			function RetryErrorBoundary.getDerivedStateFromError(error)
-				Scheduler.unstable_yieldValue("RetryErrorBoundary static getDerivedStateFromError [!]")
+				Scheduler.unstable_yieldValue(
+					"RetryErrorBoundary static getDerivedStateFromError [!]"
+				)
 				-- In Fiber, calling setState() (and failing) is treated as a rethrow.
 				return {}
 			end
@@ -571,7 +721,11 @@ return function()
 			end
 			function ErrorMessage:render()
 				Scheduler.unstable_yieldValue("ErrorMessage render")
-				return React.createElement("div", nil, "Caught an error: " .. tostring(self.props.message))
+				return React.createElement(
+					"div",
+					nil,
+					"Caught an error: " .. tostring(self.props.message)
+				)
 			end
 		end)
 		it("does not swallow exceptions on mounting without boundaries", function()
@@ -635,7 +789,9 @@ return function()
 			jestExpect(function()
 				root2.render(React.createElement(BrokenRender))
 			end).toThrow("Hello")
-			root3.render(React.createElement(ErrorBoundary, nil, React.createElement(BrokenRender)))
+			root3.render(
+				React.createElement(ErrorBoundary, nil, React.createElement(BrokenRender))
+			)
 			jestExpect(root1.getChildren()[1].text).toEqual("Before 1")
 			jestExpect(root2.getChildren()[1]).toEqual(nil)
 
@@ -644,7 +800,10 @@ return function()
 
 			root1.render(React.createElement("span", nil, "After 1"), root1)
 			root2.render(React.createElement("span", nil, "After 2"), root2)
-			root3.render(React.createElement(ErrorBoundary, { forceRetry = true }, "After 3"), root3)
+			root3.render(
+				React.createElement(ErrorBoundary, { forceRetry = true }, "After 3"),
+				root3
+			)
 			jestExpect(root1.getChildren()[1].text).toEqual("After 1")
 			jestExpect(root2.getChildren()[1].text).toEqual("After 2")
 			jestExpect(root3.getChildren()[1].text).toEqual("After 3")
@@ -660,8 +819,17 @@ return function()
 			local root = ReactNoop.createLegacyRoot()
 
 			jestExpect(function()
-				return root.render(React.createElement(ErrorBoundary, nil, React.createElement(BrokenRender)))
-			end).toErrorDev("The above error occurred in the <BrokenRender> component:", { logAllErrors = true })
+				return root.render(
+					React.createElement(
+						ErrorBoundary,
+						nil,
+						React.createElement(BrokenRender)
+					)
+				)
+			end).toErrorDev(
+				"The above error occurred in the <BrokenRender> component:",
+				{ logAllErrors = true }
+			)
 
 			-- ROBLOX deviation: using textContent helper in place of upstream .textContent()
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
@@ -687,7 +855,9 @@ return function()
 		it("renders an error state if child throws in render", function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(BrokenRender)))
+			root.render(
+				React.createElement(ErrorBoundary, nil, React.createElement(BrokenRender))
+			)
 			-- ROBLOX deviation: using textContent helper in place of upstream .textContent()
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
@@ -713,7 +883,13 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(BrokenConstructor)))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(BrokenConstructor)
+				)
+			)
 			-- ROBLOX deviation: using textContent helper in place of upstream .textContent()
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
@@ -737,7 +913,13 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(BrokenComponentWillMount)))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(BrokenComponentWillMount)
+				)
+			)
 			-- ROBLOX deviation: using textContent helper in place of upstream .textContent()
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
@@ -758,72 +940,91 @@ return function()
 				"ErrorBoundary componentWillUnmount",
 			})
 		end)
-		it("renders an error state if context provider throws in componentWillMount", function()
-			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
-			local root = ReactNoop.createLegacyRoot()
-
-			local BrokenComponentWillMountWithContext = React.Component:extend("BrokenComponentWillMountWithContext")
-
-			function BrokenComponentWillMountWithContext:getChildContext()
-				return { foo = 42 }
-			end
-			function BrokenComponentWillMountWithContext:render()
-				return React.createElement("div", nil, self.props.children)
-			end
-			function BrokenComponentWillMountWithContext:UNSAFE_componentWillMount()
-				error("Hello", 0)
-			end
-
-			BrokenComponentWillMountWithContext.childContextTypes = {
-				-- ROBLOX Deviation: using 0 as a workaround for Proptypes.number
-				foo = 0,
-			}
-
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(BrokenComponentWillMountWithContext)))
-			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
-		end)
-		if not ReactFeatureFlags.disableModulePatternComponents then
-			it("renders an error state if module-style context provider throws in componentWillMount", function()
+		it(
+			"renders an error state if context provider throws in componentWillMount",
+			function()
 				-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 				local root = ReactNoop.createLegacyRoot()
 
-				local function BrokenComponentWillMountWithContext()
-					return {
-						getChildContext = function()
-							return { foo = 42 }
-						end,
-						render = function(self)
-							return React.createElement("div", nil, self.props.children)
-						end,
-						UNSAFE_componentWillMount = function()
-							error("Hello")
-						end,
-					}
+				local BrokenComponentWillMountWithContext =
+					React.Component:extend("BrokenComponentWillMountWithContext")
+
+				function BrokenComponentWillMountWithContext:getChildContext()
+					return { foo = 42 }
+				end
+				function BrokenComponentWillMountWithContext:render()
+					return React.createElement("div", nil, self.props.children)
+				end
+				function BrokenComponentWillMountWithContext:UNSAFE_componentWillMount()
+					error("Hello", 0)
 				end
 
-				-- ROBLOX deviation: no propTypes, test seems to work OK without it
-				-- BrokenComponentWillMountWithContext.childContextTypes = {
-				--     foo = 0,
-				-- }
+				BrokenComponentWillMountWithContext.childContextTypes = {
+					-- ROBLOX Deviation: using 0 as a workaround for Proptypes.number
+					foo = 0,
+				}
 
-				jestExpect(function()
-					return root.render(React.createElement(
+				root.render(
+					React.createElement(
 						ErrorBoundary,
 						nil,
 						React.createElement(BrokenComponentWillMountWithContext)
-					))
-				end).toErrorDev(
-					"Warning: The <BrokenComponentWillMountWithContext /> component appears to be a function component that "
-						.. "returns a class instance. "
-						.. "Change BrokenComponentWillMountWithContext to a class that extends React.Component instead. "
-					-- ROBLOX deviation: Remove JS specifics
-					-- .. "If you can't use a class try assigning the prototype on the function as a workaround. "
-					-- 	.. "`BrokenComponentWillMountWithContext.prototype = React.Component.prototype`. "
-					-- 	.. "Don't use an arrow function since it cannot be called with `new` by React."
+					)
 				)
-				-- ROBLOX FIXME: fails here, but error message above is correct. root appears to have empty children tables
-				-- jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
-			end)
+				jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
+			end
+		)
+		if not ReactFeatureFlags.disableModulePatternComponents then
+			it(
+				"renders an error state if module-style context provider throws in componentWillMount",
+				function()
+					-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
+					local root = ReactNoop.createLegacyRoot()
+
+					local function BrokenComponentWillMountWithContext()
+						return {
+							getChildContext = function()
+								return { foo = 42 }
+							end,
+							render = function(self)
+								return React.createElement(
+									"div",
+									nil,
+									self.props.children
+								)
+							end,
+							UNSAFE_componentWillMount = function()
+								error("Hello")
+							end,
+						}
+					end
+
+					-- ROBLOX deviation: no propTypes, test seems to work OK without it
+					-- BrokenComponentWillMountWithContext.childContextTypes = {
+					--     foo = 0,
+					-- }
+
+					jestExpect(function()
+						return root.render(
+							React.createElement(
+								ErrorBoundary,
+								nil,
+								React.createElement(BrokenComponentWillMountWithContext)
+							)
+						)
+					end).toErrorDev(
+						"Warning: The <BrokenComponentWillMountWithContext /> component appears to be a function component that "
+							.. "returns a class instance. "
+							.. "Change BrokenComponentWillMountWithContext to a class that extends React.Component instead. "
+						-- ROBLOX deviation: Remove JS specifics
+						-- .. "If you can't use a class try assigning the prototype on the function as a workaround. "
+						-- 	.. "`BrokenComponentWillMountWithContext.prototype = React.Component.prototype`. "
+						-- 	.. "Don't use an arrow function since it cannot be called with `new` by React."
+					)
+					-- ROBLOX FIXME: fails here, but error message above is correct. root appears to have empty children tables
+					-- jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
+				end
+			)
 		end
 		it("mounts the error message if mounting fails", function()
 			local function renderError(error_)
@@ -840,11 +1041,13 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				{ renderError = renderError },
-				React.createElement(BrokenRender)
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					{ renderError = renderError },
+					React.createElement(BrokenRender)
+				)
+			)
 			jestExpect(Scheduler).toHaveYielded({
 				"ErrorBoundary constructor",
 				"ErrorBoundary componentWillMount",
@@ -873,11 +1076,17 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(RetryErrorBoundary, nil, React.createElement(BrokenRender))
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(
+						RetryErrorBoundary,
+						nil,
+						React.createElement(BrokenRender)
+					)
+				)
+			)
 			-- ROBLOX deviation: using textContent helper in place of upstream .textContent()
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
@@ -912,11 +1121,13 @@ return function()
 		it("propagates errors inside boundary during componentWillMount", function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(BrokenComponentWillMountErrorBoundary)
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(BrokenComponentWillMountErrorBoundary)
+				)
+			)
 			-- ROBLOX deviation: using textContent helper in place of upstream .textContent()
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
@@ -941,11 +1152,17 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(BrokenRenderErrorBoundary, nil, React.createElement(BrokenRender))
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(
+						BrokenRenderErrorBoundary,
+						nil,
+						React.createElement(BrokenRender)
+					)
+				)
+			)
 			-- ROBLOX deviation: using textContent helper in place of upstream .textContent()
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
@@ -978,13 +1195,15 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(Normal),
-				React.createElement(BrokenRender),
-				React.createElement(Normal)
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(Normal),
+					React.createElement(BrokenRender),
+					React.createElement(Normal)
+				)
+			)
 			-- ROBLOX deviation: using textContent helper in place of upstream .textContent()
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
@@ -1031,12 +1250,14 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				{ errorMessageRef = errorMessageRef },
-				React.createElement("div", { ref = childRef }),
-				React.createElement(BrokenRender)
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					{ errorMessageRef = errorMessageRef },
+					React.createElement("div", { ref = childRef }),
+					React.createElement(BrokenRender)
+				)
+			)
 			-- ROBLOX deviation: using textContent helper in place of upstream .textContent()
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
@@ -1066,12 +1287,14 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				{ errorMessageRef = errorMessageRef },
-				React.createElement("div", { ref = childRef }),
-				React.createElement(BrokenRender)
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					{ errorMessageRef = errorMessageRef },
+					React.createElement("div", { ref = childRef }),
+					React.createElement(BrokenRender)
+				)
+			)
 			-- ROBLOX deviation: using textContent helper in place of upstream .textContent()
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
@@ -1088,7 +1311,9 @@ return function()
 				"ErrorBoundary componentDidMount",
 			})
 			-- ROBLOX deviation: workaround for object '[object HTMLDivElement]'
-			jestExpect(string.find(tostring(errorMessageRef.current), "table: ") ~= nil).toEqual(true)
+			jestExpect(string.find(tostring(errorMessageRef.current), "table: ") ~= nil).toEqual(
+				true
+			)
 			-- ROBLOX deviation: render nil to unmount
 			root.render(nil)
 			jestExpect(Scheduler).toHaveYielded({
@@ -1100,11 +1325,13 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement("div", nil, { "Mounted successfully." })
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement("div", nil, { "Mounted successfully." })
+				)
+			)
 			-- ROBLOX deviation: using textContent helper in place of upstream .textContent()
 			jestExpect(textContent(root)).toEqual("Mounted successfully.")
 			jestExpect(Scheduler).toHaveYielded({
@@ -1123,17 +1350,21 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(Normal)))
+			root.render(
+				React.createElement(ErrorBoundary, nil, React.createElement(Normal))
+			)
 			Scheduler.unstable_clearYields()
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(Normal),
-				React.createElement(Normal, {
-					logName = "Normal2",
-				}),
-				React.createElement(BrokenConstructor)
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(Normal),
+					React.createElement(Normal, {
+						logName = "Normal2",
+					}),
+					React.createElement(BrokenConstructor)
+				)
+			)
 
 			-- ROBLOX deviation: using textContent helper in place of upstream .textContent()
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
@@ -1168,17 +1399,21 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(Normal)))
+			root.render(
+				React.createElement(ErrorBoundary, nil, React.createElement(Normal))
+			)
 			Scheduler.unstable_clearYields()
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(Normal),
-				React.createElement(Normal, {
-					logName = "Normal2",
-				}),
-				React.createElement(BrokenComponentWillMount)
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(Normal),
+					React.createElement(Normal, {
+						logName = "Normal2",
+					}),
+					React.createElement(BrokenComponentWillMount)
+				)
+			)
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
 				"ErrorBoundary componentWillReceiveProps",
@@ -1208,65 +1443,76 @@ return function()
 				"ErrorBoundary componentWillUnmount",
 			})
 		end)
-		it("catches if child throws in componentWillReceiveProps during update", function()
-			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
-			local root = ReactNoop.createLegacyRoot()
+		it(
+			"catches if child throws in componentWillReceiveProps during update",
+			function()
+				-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
+				local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(Normal),
-				React.createElement(BrokenComponentWillReceiveProps)
-			))
-			Scheduler.unstable_clearYields()
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(Normal),
-				React.createElement(BrokenComponentWillReceiveProps)
-			))
-			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
-			jestExpect(Scheduler).toHaveYielded({
-				"ErrorBoundary componentWillReceiveProps",
-				"ErrorBoundary componentWillUpdate",
-				"ErrorBoundary render success",
-				"Normal componentWillReceiveProps",
-				"Normal componentWillUpdate",
-				"Normal render",
-				-- BrokenComponentWillReceiveProps will abort rendering:
-				"BrokenComponentWillReceiveProps componentWillReceiveProps [!]",
-				-- Handle the error
-				"ErrorBoundary static getDerivedStateFromError",
-				-- Render the error message
-				"ErrorBoundary componentWillUpdate",
-				"ErrorBoundary render error",
-				"Normal componentWillUnmount",
-				"BrokenComponentWillReceiveProps componentWillUnmount",
-				"ErrorBoundary componentDidUpdate",
-			})
-			-- ROBLOX deviation: render nil to unmount
-			root.render(nil)
-			jestExpect(Scheduler).toHaveYielded({
-				"ErrorBoundary componentWillUnmount",
-			})
-		end)
+				root.render(
+					React.createElement(
+						ErrorBoundary,
+						nil,
+						React.createElement(Normal),
+						React.createElement(BrokenComponentWillReceiveProps)
+					)
+				)
+				Scheduler.unstable_clearYields()
+				root.render(
+					React.createElement(
+						ErrorBoundary,
+						nil,
+						React.createElement(Normal),
+						React.createElement(BrokenComponentWillReceiveProps)
+					)
+				)
+				jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
+				jestExpect(Scheduler).toHaveYielded({
+					"ErrorBoundary componentWillReceiveProps",
+					"ErrorBoundary componentWillUpdate",
+					"ErrorBoundary render success",
+					"Normal componentWillReceiveProps",
+					"Normal componentWillUpdate",
+					"Normal render",
+					-- BrokenComponentWillReceiveProps will abort rendering:
+					"BrokenComponentWillReceiveProps componentWillReceiveProps [!]",
+					-- Handle the error
+					"ErrorBoundary static getDerivedStateFromError",
+					-- Render the error message
+					"ErrorBoundary componentWillUpdate",
+					"ErrorBoundary render error",
+					"Normal componentWillUnmount",
+					"BrokenComponentWillReceiveProps componentWillUnmount",
+					"ErrorBoundary componentDidUpdate",
+				})
+				-- ROBLOX deviation: render nil to unmount
+				root.render(nil)
+				jestExpect(Scheduler).toHaveYielded({
+					"ErrorBoundary componentWillUnmount",
+				})
+			end
+		)
 		it("catches if child throws in componentWillUpdate during update", function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(Normal),
-				React.createElement(BrokenComponentWillUpdate)
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(Normal),
+					React.createElement(BrokenComponentWillUpdate)
+				)
+			)
 			Scheduler.unstable_clearYields()
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(Normal),
-				React.createElement(BrokenComponentWillUpdate)
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(Normal),
+					React.createElement(BrokenComponentWillUpdate)
+				)
+			)
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
 				"ErrorBoundary componentWillReceiveProps",
@@ -1296,17 +1542,21 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(Normal)))
+			root.render(
+				React.createElement(ErrorBoundary, nil, React.createElement(Normal))
+			)
 			Scheduler.unstable_clearYields()
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(Normal),
-				React.createElement(Normal, {
-					logName = "Normal2",
-				}),
-				React.createElement(BrokenRender)
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(Normal),
+					React.createElement(Normal, {
+						logName = "Normal2",
+					}),
+					React.createElement(BrokenRender)
+				)
+			)
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
 				"ErrorBoundary componentWillReceiveProps",
@@ -1356,11 +1606,13 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				{ errorMessageRef = errorMessageRef },
-				React.createElement("div", { ref = child1Ref })
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					{ errorMessageRef = errorMessageRef },
+					React.createElement("div", { ref = child1Ref })
+				)
+			)
 			jestExpect(Scheduler).toHaveYielded({
 				"ErrorBoundary constructor",
 				"ErrorBoundary componentWillMount",
@@ -1368,13 +1620,15 @@ return function()
 				"Child1 ref is set to [object HTMLDivElement]",
 				"ErrorBoundary componentDidMount",
 			})
-			root.render(React.createElement(
-				ErrorBoundary,
-				{ errorMessageRef = errorMessageRef },
-				React.createElement("div", { ref = child1Ref }),
-				React.createElement("div", { ref = child2Ref }),
-				React.createElement(BrokenRender)
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					{ errorMessageRef = errorMessageRef },
+					React.createElement("div", { ref = child1Ref }),
+					React.createElement("div", { ref = child2Ref }),
+					React.createElement(BrokenRender)
+				)
+			)
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
 				"ErrorBoundary componentWillReceiveProps",
@@ -1403,20 +1657,26 @@ return function()
 		it("recovers from componentWillUnmount errors on update", function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(BrokenComponentWillUnmount),
-				React.createElement(BrokenComponentWillUnmount),
-				React.createElement(Normal)
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(BrokenComponentWillUnmount),
+					React.createElement(BrokenComponentWillUnmount),
+					React.createElement(Normal)
+				)
+			)
 			Scheduler.unstable_clearYields()
 			-- ROBLOX DEVIATION: Pass a key to the "BrokenWillUnmount" element. This allows for
 			-- compatibility when we go from rendering multiple children to rendering a single
 			-- child, as we apply keys to children in an array by default, but not to a single
 			-- element
-			root.render(React.createElement(ErrorBoundary, nil,
-				React.createElement(BrokenComponentWillUnmount, { key = 1 }))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(BrokenComponentWillUnmount, { key = 1 })
+				)
 			)
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
@@ -1458,23 +1718,33 @@ return function()
 		it("recovers from nested componentWillUnmount errors on update", function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(Normal, nil, React.createElement(BrokenComponentWillUnmount)),
-				React.createElement(BrokenComponentWillUnmount)
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(
+						Normal,
+						nil,
+						React.createElement(BrokenComponentWillUnmount)
+					),
+					React.createElement(BrokenComponentWillUnmount)
+				)
+			)
 			Scheduler.unstable_clearYields()
 			-- ROBLOX DEVIATION: Pass a key to the "Normal" element. This allows for compatibility
 			-- when we go from rendering multiple children to rendering a single child, as we
 			-- apply keys to children in an array by default, but not to a single element
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(Normal, { key = 1 },
-					React.createElement(BrokenComponentWillUnmount)
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(
+						Normal,
+						{ key = 1 },
+						React.createElement(BrokenComponentWillUnmount)
+					)
 				)
-			))
+			)
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
 				"ErrorBoundary componentWillReceiveProps",
@@ -1515,10 +1785,22 @@ return function()
 		end)
 		it("picks the right boundary when handling unmounting errors", function()
 			local function renderInnerError(error_)
-				return React.createElement("div", nil, "Caught an inner error: ", error_.message, ".")
+				return React.createElement(
+					"div",
+					nil,
+					"Caught an inner error: ",
+					error_.message,
+					"."
+				)
 			end
 			local function renderOuterError(error_)
-				return React.createElement("div", nil, "Caught an outer error: ", error_.message, ".")
+				return React.createElement(
+					"div",
+					nil,
+					"Caught an outer error: ",
+					error_.message,
+					"."
+				)
 			end
 
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
@@ -1579,14 +1861,24 @@ return function()
 		it("can recover from error state", function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(BrokenRender)))
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(Normal)))
+			root.render(
+				React.createElement(ErrorBoundary, nil, React.createElement(BrokenRender))
+			)
+			root.render(
+				React.createElement(ErrorBoundary, nil, React.createElement(Normal))
+			)
 			-- Error boundary doesn't retry by itself
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			-- Force the success path:
 			Scheduler.unstable_clearYields()
 
-			root.render(React.createElement(ErrorBoundary, { forceRetry = true }, React.createElement(Normal)))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					{ forceRetry = true },
+					React.createElement(Normal)
+				)
+			)
 
 			jestExpect(textContent(root)).never.toContain("Caught an error")
 
@@ -1612,9 +1904,13 @@ return function()
 		it("can update multiple times in error state", function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(BrokenRender)))
+			root.render(
+				React.createElement(ErrorBoundary, nil, React.createElement(BrokenRender))
+			)
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(BrokenRender)))
+			root.render(
+				React.createElement(ErrorBoundary, nil, React.createElement(BrokenRender))
+			)
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 
 			-- ROBLOX deviation: render nil to clear children for textContent
@@ -1627,13 +1923,15 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(Normal),
-				React.createElement(BrokenComponentWillUnmount),
-				React.createElement(Normal)
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(Normal),
+					React.createElement(BrokenComponentWillUnmount),
+					React.createElement(Normal)
+				)
+			)
 			root.render(React.createElement(ErrorBoundary))
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			Scheduler.unstable_clearYields()
@@ -1646,13 +1944,15 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 			root.render(React.createElement(ErrorBoundary))
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(Normal),
-				React.createElement(BrokenRender),
-				React.createElement(Normal)
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(Normal),
+					React.createElement(BrokenRender),
+					React.createElement(Normal)
+				)
+			)
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			Scheduler.unstable_clearYields()
 			root.render(nil)
@@ -1681,7 +1981,10 @@ return function()
 				end
 				-- ROBLOX deviation END
 
-				table.insert(elements, React.createElement(MaybeBrokenRender, { key = 101 }))
+				table.insert(
+					elements,
+					React.createElement(MaybeBrokenRender, { key = 101 })
+				)
 
 				local currentIndex = #elements
 
@@ -1703,14 +2006,26 @@ return function()
 			local root = ReactNoop.createLegacyRoot()
 			-- ROBLOX FIXME LUAU: For some reason, `{React_Element<any, any>}`
 			-- is not a valid type for children here
-			root.render(React.createElement(ErrorBoundary, nil, getAMixOfNormalAndBrokenRenderElements() :: any))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					getAMixOfNormalAndBrokenRenderElements() :: any
+				)
+			)
 			jestExpect(textContent(root)).never.toContain("Caught an error")
 
 			fail_ = true
 
 			-- ROBLOX FIXME LUAU: For some reason, `{React_Element<any, any>}`
 			-- is not a valid type for children here
-			root.render(React.createElement(ErrorBoundary, nil, getAMixOfNormalAndBrokenRenderElements() :: any))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					getAMixOfNormalAndBrokenRenderElements() :: any
+				)
+			)
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			Scheduler.unstable_clearYields()
 			root.render(nil)
@@ -1739,15 +2054,17 @@ return function()
 			local statefulInst
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(Stateful, {
-					ref = function(inst)
-						statefulInst = inst
-					end,
-				})
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(Stateful, {
+						ref = function(inst)
+							statefulInst = inst
+						end,
+					})
+				)
+			)
 			Scheduler.unstable_clearYields()
 			jestExpect(function()
 				fail_ = true
@@ -1768,15 +2085,21 @@ return function()
 		it("catches errors in componentDidMount", function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(BrokenComponentWillUnmount, nil, React.createElement(Normal)),
-				React.createElement(BrokenComponentDidMount),
-				React.createElement(Normal, {
-					logName = "LastChild",
-				})
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(
+						BrokenComponentWillUnmount,
+						nil,
+						React.createElement(Normal)
+					),
+					React.createElement(BrokenComponentDidMount),
+					React.createElement(Normal, {
+						logName = "LastChild",
+					})
+				)
+			)
 			jestExpect(Scheduler).toHaveYielded({
 				"ErrorBoundary constructor",
 				"ErrorBoundary componentWillMount",
@@ -1826,9 +2149,21 @@ return function()
 		it("catches errors in componentDidUpdate", function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(BrokenComponentDidUpdate)))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(BrokenComponentDidUpdate)
+				)
+			)
 			Scheduler.unstable_clearYields()
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(BrokenComponentDidUpdate)))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(BrokenComponentDidUpdate)
+				)
+			)
 			jestExpect(Scheduler).toHaveYielded({
 				"ErrorBoundary componentWillReceiveProps",
 				"ErrorBoundary componentWillUpdate",
@@ -1857,11 +2192,13 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 			ReactNoop.act(function()
-				root.render(React.createElement(
-					ErrorBoundary,
-					nil,
-					React.createElement(BrokenUseEffect, nil, "Initial value")
-				))
+				root.render(
+					React.createElement(
+						ErrorBoundary,
+						nil,
+						React.createElement(BrokenUseEffect, nil, "Initial value")
+					)
+				)
 				jestExpect(Scheduler).toHaveYielded({
 					"ErrorBoundary constructor",
 					"ErrorBoundary componentWillMount",
@@ -1888,11 +2225,13 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(BrokenUseLayoutEffect, nil, "Initial value")
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(BrokenUseLayoutEffect, nil, "Initial value")
+				)
+			)
 			jestExpect(Scheduler).toHaveYielded({
 				"ErrorBoundary constructor",
 				"ErrorBoundary componentWillMount",
@@ -1914,21 +2253,23 @@ return function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(BrokenComponentDidMountErrorBoundary, {
-					renderError = function(error_)
-						return React.createElement(
-							"div",
-							nil,
-							"We should never catch our own error: ",
-							error_.message,
-							"."
-						)
-					end,
-				})
-			))
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement(BrokenComponentDidMountErrorBoundary, {
+						renderError = function(error_)
+							return React.createElement(
+								"div",
+								nil,
+								"We should never catch our own error: ",
+								error_.message,
+								"."
+							)
+						end,
+					})
+				)
+			)
 			jestExpect(textContent(root)).toEqual("Caught an error: Hello.")
 			jestExpect(Scheduler).toHaveYielded({
 				"ErrorBoundary constructor",
@@ -1953,125 +2294,142 @@ return function()
 				"ErrorBoundary componentWillUnmount",
 			})
 		end)
-		it("calls static getDerivedStateFromError for each error that is captured", function()
-			local function renderUnmountError(error_)
-				return React.createElement("div", nil, "Caught an unmounting error: ", error_.message, ".")
-			end
-			local function renderUpdateError(error_)
-				return React.createElement("div", nil, "Caught an updating error: ", error_.message, ".")
-			end
+		it(
+			"calls static getDerivedStateFromError for each error that is captured",
+			function()
+				local function renderUnmountError(error_)
+					return React.createElement(
+						"div",
+						nil,
+						"Caught an unmounting error: ",
+						error_.message,
+						"."
+					)
+				end
+				local function renderUpdateError(error_)
+					return React.createElement(
+						"div",
+						nil,
+						"Caught an updating error: ",
+						error_.message,
+						"."
+					)
+				end
 
-			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
-			local root = ReactNoop.createLegacyRoot()
+				-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
+				local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				{
-					logName = "OuterErrorBoundary",
-				},
-				React.createElement(
+				root.render(React.createElement(
 					ErrorBoundary,
 					{
+						logName = "OuterErrorBoundary",
+					},
+					React.createElement(
+						ErrorBoundary,
+						{
+							logName = "InnerUnmountBoundary",
+							renderError = renderUnmountError,
+						},
+						React.createElement(BrokenComponentWillUnmount, {
+							errorText = "E1",
+						}),
+						React.createElement(BrokenComponentWillUnmount, {
+							errorText = "E2",
+						})
+					),
+					React.createElement(
+						ErrorBoundary,
+						{
+							logName = "InnerUpdateBoundary",
+							renderError = renderUpdateError,
+						},
+						React.createElement(BrokenComponentDidUpdate, {
+							errorText = "E3",
+						}),
+						React.createElement(BrokenComponentDidUpdate, {
+							errorText = "E4",
+						})
+					)
+				))
+				Scheduler.unstable_clearYields()
+				root.render(React.createElement(
+					ErrorBoundary,
+					{
+						logName = "OuterErrorBoundary",
+					},
+					React.createElement(ErrorBoundary, {
 						logName = "InnerUnmountBoundary",
 						renderError = renderUnmountError,
-					},
-					React.createElement(BrokenComponentWillUnmount, {
-						errorText = "E1",
 					}),
-					React.createElement(BrokenComponentWillUnmount, {
-						errorText = "E2",
-					})
-				),
-				React.createElement(
-					ErrorBoundary,
-					{
-						logName = "InnerUpdateBoundary",
-						renderError = renderUpdateError,
-					},
-					React.createElement(BrokenComponentDidUpdate, {
-						errorText = "E3",
-					}),
-					React.createElement(BrokenComponentDidUpdate, {
-						errorText = "E4",
-					})
+					React.createElement(
+						ErrorBoundary,
+						{
+							logName = "InnerUpdateBoundary",
+							renderError = renderUpdateError,
+						},
+						React.createElement(BrokenComponentDidUpdate, {
+							errorText = "E3",
+						}),
+						React.createElement(BrokenComponentDidUpdate, {
+							errorText = "E4",
+						})
+					)
+				))
+				jestExpect(textContent(root)).toEqual(
+					"Caught an unmounting error: E2.Caught an updating error: E4."
 				)
-			))
-			Scheduler.unstable_clearYields()
-			root.render(React.createElement(
-				ErrorBoundary,
-				{
-					logName = "OuterErrorBoundary",
-				},
-				React.createElement(ErrorBoundary, {
-					logName = "InnerUnmountBoundary",
-					renderError = renderUnmountError,
-				}),
-				React.createElement(
-					ErrorBoundary,
-					{
-						logName = "InnerUpdateBoundary",
-						renderError = renderUpdateError,
-					},
-					React.createElement(BrokenComponentDidUpdate, {
-						errorText = "E3",
-					}),
-					React.createElement(BrokenComponentDidUpdate, {
-						errorText = "E4",
-					})
-				)
-			))
-			jestExpect(textContent(root)).toEqual("Caught an unmounting error: E2.Caught an updating error: E4.")
-			jestExpect(Scheduler).toHaveYielded({
-				-- Begin update phase
-				"OuterErrorBoundary componentWillReceiveProps",
-				"OuterErrorBoundary componentWillUpdate",
-				"OuterErrorBoundary render success",
-				"InnerUnmountBoundary componentWillReceiveProps",
-				"InnerUnmountBoundary componentWillUpdate",
-				"InnerUnmountBoundary render success",
-				"InnerUpdateBoundary componentWillReceiveProps",
-				"InnerUpdateBoundary componentWillUpdate",
-				"InnerUpdateBoundary render success",
-				-- First come the updates
-				"BrokenComponentDidUpdate componentWillReceiveProps",
-				"BrokenComponentDidUpdate componentWillUpdate",
-				"BrokenComponentDidUpdate render",
-				"BrokenComponentDidUpdate componentWillReceiveProps",
-				"BrokenComponentDidUpdate componentWillUpdate",
-				"BrokenComponentDidUpdate render",
-				-- We're in commit phase now, deleting
-				"BrokenComponentWillUnmount componentWillUnmount [!]",
-				"BrokenComponentWillUnmount componentWillUnmount [!]",
-				-- Continue despite errors, handle them after commit is done
-				"InnerUnmountBoundary componentDidUpdate",
-				-- We're still in commit phase, now calling update lifecycles
-				"BrokenComponentDidUpdate componentDidUpdate [!]",
-				-- Again, continue despite errors, we'll handle them later
-				"BrokenComponentDidUpdate componentDidUpdate [!]",
-				"InnerUpdateBoundary componentDidUpdate",
-				"OuterErrorBoundary componentDidUpdate",
-				-- After the commit phase, attempt to recover from any errors that
-				-- were captured
-				"ErrorBoundary static getDerivedStateFromError",
-				"ErrorBoundary static getDerivedStateFromError",
-				"InnerUnmountBoundary componentWillUpdate",
-				"InnerUnmountBoundary render error",
-				"ErrorBoundary static getDerivedStateFromError",
-				"ErrorBoundary static getDerivedStateFromError",
-				"InnerUpdateBoundary componentWillUpdate",
-				"InnerUpdateBoundary render error",
-				"BrokenComponentDidUpdate componentWillUnmount",
-				"BrokenComponentDidUpdate componentWillUnmount",
-				"InnerUnmountBoundary componentDidUpdate",
-				"InnerUpdateBoundary componentDidUpdate",
-			})
-			root.render(nil)
-			jestExpect(Scheduler).toHaveYielded({
-				"OuterErrorBoundary componentWillUnmount",
-				"InnerUnmountBoundary componentWillUnmount",
-				"InnerUpdateBoundary componentWillUnmount",
-			})
-		end)
+				jestExpect(Scheduler).toHaveYielded({
+					-- Begin update phase
+					"OuterErrorBoundary componentWillReceiveProps",
+					"OuterErrorBoundary componentWillUpdate",
+					"OuterErrorBoundary render success",
+					"InnerUnmountBoundary componentWillReceiveProps",
+					"InnerUnmountBoundary componentWillUpdate",
+					"InnerUnmountBoundary render success",
+					"InnerUpdateBoundary componentWillReceiveProps",
+					"InnerUpdateBoundary componentWillUpdate",
+					"InnerUpdateBoundary render success",
+					-- First come the updates
+					"BrokenComponentDidUpdate componentWillReceiveProps",
+					"BrokenComponentDidUpdate componentWillUpdate",
+					"BrokenComponentDidUpdate render",
+					"BrokenComponentDidUpdate componentWillReceiveProps",
+					"BrokenComponentDidUpdate componentWillUpdate",
+					"BrokenComponentDidUpdate render",
+					-- We're in commit phase now, deleting
+					"BrokenComponentWillUnmount componentWillUnmount [!]",
+					"BrokenComponentWillUnmount componentWillUnmount [!]",
+					-- Continue despite errors, handle them after commit is done
+					"InnerUnmountBoundary componentDidUpdate",
+					-- We're still in commit phase, now calling update lifecycles
+					"BrokenComponentDidUpdate componentDidUpdate [!]",
+					-- Again, continue despite errors, we'll handle them later
+					"BrokenComponentDidUpdate componentDidUpdate [!]",
+					"InnerUpdateBoundary componentDidUpdate",
+					"OuterErrorBoundary componentDidUpdate",
+					-- After the commit phase, attempt to recover from any errors that
+					-- were captured
+					"ErrorBoundary static getDerivedStateFromError",
+					"ErrorBoundary static getDerivedStateFromError",
+					"InnerUnmountBoundary componentWillUpdate",
+					"InnerUnmountBoundary render error",
+					"ErrorBoundary static getDerivedStateFromError",
+					"ErrorBoundary static getDerivedStateFromError",
+					"InnerUpdateBoundary componentWillUpdate",
+					"InnerUpdateBoundary render error",
+					"BrokenComponentDidUpdate componentWillUnmount",
+					"BrokenComponentDidUpdate componentWillUnmount",
+					"InnerUnmountBoundary componentDidUpdate",
+					"InnerUpdateBoundary componentDidUpdate",
+				})
+				root.render(nil)
+				jestExpect(Scheduler).toHaveYielded({
+					"OuterErrorBoundary componentWillUnmount",
+					"InnerUnmountBoundary componentWillUnmount",
+					"InnerUpdateBoundary componentWillUnmount",
+				})
+			end
+		)
 		it("discards a bad root if the root component fails", function()
 			local X = nil
 			local Y = nil
@@ -2116,12 +2474,18 @@ return function()
 			local root = ReactNoop.createLegacyRoot()
 
 			jestExpect(function()
-				return root.render(React.createElement(
-					"div",
-					nil,
-					"Sibling",
-					React.createElement(NoopErrorBoundary, nil, React.createElement(BrokenRender))
-				))
+				return root.render(
+					React.createElement(
+						"div",
+						nil,
+						"Sibling",
+						React.createElement(
+							NoopErrorBoundary,
+							nil,
+							React.createElement(BrokenRender)
+						)
+					)
+				)
 			end).toThrow("Hello")
 			jestExpect(textContent(root)).toEqual("")
 			jestExpect(Scheduler).toHaveYielded({
@@ -2206,8 +2570,7 @@ return function()
 				table.insert(errors, "child sad")
 				error("child sad")
 			end
-			function Child:componentDidUpdate()
-			end
+			function Child:componentDidUpdate() end
 			function Child:render()
 				return React.createElement("div")
 			end
@@ -2217,8 +2580,7 @@ return function()
 				table.insert(errors, "parent sad")
 				error("parent sad")
 			end
-			function Parent:componentDidUpdate()
-			end
+			function Parent:componentDidUpdate() end
 			function Parent:render()
 				return React.createElement(Child, self.props)
 			end
@@ -2229,7 +2591,10 @@ return function()
 			root.render(React.createElement(Parent, { value = 1 }))
 			local ok, e = pcall(root.render, React.createElement(Parent, { value = 2 }))
 			if not ok then
-				if not (string.sub(e.message, -#"parent sad") == "parent sad") and not (string.sub(e.message, -#"child sad") == "child sad") then
+				if
+					not (string.sub(e.message, -#"parent sad") == "parent sad")
+					and not (string.sub(e.message, -#"child sad") == "child sad")
+				then
 					error(e)
 				end
 				caughtError = e
@@ -2241,108 +2606,143 @@ return function()
 			-- Error should be the first thrown
 			jestExpect(caughtError.message).toBe("child sad")
 		end)
-		it("should warn if an error boundary with only componentDidCatch does not update state", function()
-			local InvalidErrorBoundary = React.Component:extend("InvalidErrorBoundary")
+		it(
+			"should warn if an error boundary with only componentDidCatch does not update state",
+			function()
+				local InvalidErrorBoundary =
+					React.Component:extend("InvalidErrorBoundary")
 
-			function InvalidErrorBoundary:componentDidCatch(error, info)
-				-- This component does not define getDerivedStateFromError().
-				-- It also doesn't call setState().
-				-- So it would swallow errors (which is probably unintentional).
-			end
-			function InvalidErrorBoundary:render()
-				return self.props.children
-			end
-
-			local function Throws()
-				error("expected")
-			end
-
-			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
-			local root = ReactNoop.createLegacyRoot()
-
-			-- deviation: ReactNoop runs with a StrictMode root and logs more warnings
-			jestExpect(function()
-				root.render(React.createElement(InvalidErrorBoundary, nil, React.createElement(Throws)))
-			end).toErrorDev(
-				"InvalidErrorBoundary: Error boundaries should implement getDerivedStateFromError(). " ..
-				"In that method, return a state update to display an error message or fallback UI."
-			)
-			jestExpect(textContent(root)).toEqual("")
-		end)
-		it("should call both componentDidCatch and getDerivedStateFromError if both exist on a component", function()
-			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
-			local root = ReactNoop.createLegacyRoot()
-
-			local componentDidCatchError, getDerivedStateFromErrorError
-			local ErrorBoundaryWithBothMethods = React.Component:extend("ErrorBoundaryWithBothMethods")
-			function ErrorBoundaryWithBothMethods:init()
-				self.state = {}
-			end
-			function ErrorBoundaryWithBothMethods.getDerivedStateFromError(error_)
-				getDerivedStateFromErrorError = error_
-
-				return { error = error_ }
-			end
-			function ErrorBoundaryWithBothMethods:componentDidCatch(error_, info)
-				componentDidCatchError = error_
-			end
-			function ErrorBoundaryWithBothMethods:render()
-				return (function()
-					if self.state.error then
-						return "ErrorBoundary"
-					end
-
+				function InvalidErrorBoundary:componentDidCatch(error, info)
+					-- This component does not define getDerivedStateFromError().
+					-- It also doesn't call setState().
+					-- So it would swallow errors (which is probably unintentional).
+				end
+				function InvalidErrorBoundary:render()
 					return self.props.children
-				end)()
+				end
+
+				local function Throws()
+					error("expected")
+				end
+
+				-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
+				local root = ReactNoop.createLegacyRoot()
+
+				-- deviation: ReactNoop runs with a StrictMode root and logs more warnings
+				jestExpect(function()
+					root.render(
+						React.createElement(
+							InvalidErrorBoundary,
+							nil,
+							React.createElement(Throws)
+						)
+					)
+				end).toErrorDev(
+					"InvalidErrorBoundary: Error boundaries should implement getDerivedStateFromError(). "
+						.. "In that method, return a state update to display an error message or fallback UI."
+				)
+				jestExpect(textContent(root)).toEqual("")
 			end
+		)
+		it(
+			"should call both componentDidCatch and getDerivedStateFromError if both exist on a component",
+			function()
+				-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
+				local root = ReactNoop.createLegacyRoot()
 
-			local thrownError = LuauPolyfill.Error.new("expected")
-			local Throws = function()
-				error(thrownError, 0)
+				local componentDidCatchError, getDerivedStateFromErrorError
+				local ErrorBoundaryWithBothMethods =
+					React.Component:extend("ErrorBoundaryWithBothMethods")
+				function ErrorBoundaryWithBothMethods:init()
+					self.state = {}
+				end
+				function ErrorBoundaryWithBothMethods.getDerivedStateFromError(error_)
+					getDerivedStateFromErrorError = error_
+
+					return { error = error_ }
+				end
+				function ErrorBoundaryWithBothMethods:componentDidCatch(error_, info)
+					componentDidCatchError = error_
+				end
+				function ErrorBoundaryWithBothMethods:render()
+					return (function()
+						if self.state.error then
+							return "ErrorBoundary"
+						end
+
+						return self.props.children
+					end)()
+				end
+
+				local thrownError = LuauPolyfill.Error.new("expected")
+				local Throws = function()
+					error(thrownError, 0)
+				end
+
+				root.render(
+					React.createElement(
+						ErrorBoundaryWithBothMethods,
+						nil,
+						React.createElement(Throws)
+					)
+				)
+				jestExpect(textContent(root)).toEqual("ErrorBoundary")
+
+				jestExpect(componentDidCatchError).toEqual(thrownError)
+				jestExpect(getDerivedStateFromErrorError).toEqual(thrownError)
 			end
-
-			root.render(React.createElement(ErrorBoundaryWithBothMethods, nil, React.createElement(Throws)))
-			jestExpect(textContent(root)).toEqual("ErrorBoundary")
-
-			jestExpect(componentDidCatchError).toEqual(thrownError)
-			jestExpect(getDerivedStateFromErrorError).toEqual(thrownError)
-		end)
+		)
 		-- ROBLOX TODO: ReactDOMComponent not translated
 		xit("should catch errors from invariants in completion phase", function()
 			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
 			local root = ReactNoop.createLegacyRoot()
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement("input", nil, React.createElement("div"))
-			))
-			jestExpect(textContent(root)).toContain("Caught an error: input is a void element tag")
+			root.render(
+				React.createElement(
+					ErrorBoundary,
+					nil,
+					React.createElement("input", nil, React.createElement("div"))
+				)
+			)
+			jestExpect(textContent(root)).toContain(
+				"Caught an error: input is a void element tag"
+			)
 		end)
-		it("should catch errors from errors in the throw phase from boundaries", function()
-			-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
-			local root = ReactNoop.createLegacyRoot()
-			local thrownError = "original error"
-			local Throws = function()
-				error(thrownError, 0)
-			end
-			local EvilErrorBoundary = React.Component:extend("EvilErrorBoundary")
+		it(
+			"should catch errors from errors in the throw phase from boundaries",
+			function()
+				-- ROBLOX deviation: using legacy root of Noop renderer instead of ReactDOM
+				local root = ReactNoop.createLegacyRoot()
+				local thrownError = "original error"
+				local Throws = function()
+					error(thrownError, 0)
+				end
+				local EvilErrorBoundary = React.Component:extend("EvilErrorBoundary")
 
-			function EvilErrorBoundary:componentDidCatch()
-				error("gotta catch em all", 0)
-			end
+				function EvilErrorBoundary:componentDidCatch()
+					error("gotta catch em all", 0)
+				end
 
-			function EvilErrorBoundary:render()
-				return self.props.children
-			end
+				function EvilErrorBoundary:render()
+					return self.props.children
+				end
 
-			root.render(React.createElement(
-				ErrorBoundary,
-				nil,
-				React.createElement(EvilErrorBoundary, nil, React.createElement(Throws))
-			))
-			jestExpect(textContent(root)).toContain("Caught an error: gotta catch em all.")
-		end)
+				root.render(
+					React.createElement(
+						ErrorBoundary,
+						nil,
+						React.createElement(
+							EvilErrorBoundary,
+							nil,
+							React.createElement(Throws)
+						)
+					)
+				)
+				jestExpect(textContent(root)).toContain(
+					"Caught an error: gotta catch em all."
+				)
+			end
+		)
 		-- ROBLOX TODO: when focused this test passes, however it causes 'runAllTimers flushes all scheduled callbacks' and
 		-- 'executes callbacks in order of priority' tests to fail in SchedulerNoDOM but only in __DEV__ mode
 		local skipIfDev = (function()
@@ -2387,9 +2787,13 @@ return function()
 				return React.createElement(Throws :: any)
 			end
 
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(Wrapper)))
+			root.render(
+				React.createElement(ErrorBoundary, nil, React.createElement(Wrapper))
+			)
 			-- ROBLOX deviation: using textContent helper in place of upstream .textContent()
-			jestExpect(textContent(root)).toContain("Caught an error: gotta catch em all.")
+			jestExpect(textContent(root)).toContain(
+				"Caught an error: gotta catch em all."
+			)
 		end)
 		-- @gate skipUnmountedBoundaries
 		it("catches errors thrown in componentWillUnmount", function()
@@ -2410,11 +2814,14 @@ return function()
 			end
 
 			function LocalErrorBoundary.getDerivedStateFromError(error_)
-				Scheduler.unstable_yieldValue("ErrorBoundary static getDerivedStateFromError")
+				Scheduler.unstable_yieldValue(
+					"ErrorBoundary static getDerivedStateFromError"
+				)
 				return { error = error_ }
 			end
 			function LocalErrorBoundary:render()
-				local children, id, fallbackID = self.props.children, self.props.id, self.props.fallbackID
+				local children, id, fallbackID =
+					self.props.children, self.props.id, self.props.fallbackID
 				local error_ = self.state.error
 
 				if error_ then
@@ -2428,10 +2835,13 @@ return function()
 				return children or nil
 			end
 
-			local LocalBrokenComponentWillUnmount = React.Component:extend("LocalBrokenComponentWillUnmount")
+			local LocalBrokenComponentWillUnmount =
+				React.Component:extend("LocalBrokenComponentWillUnmount")
 
 			function LocalBrokenComponentWillUnmount:componentWillUnmount()
-				Scheduler.unstable_yieldValue("BrokenComponentWillUnmount componentWillUnmount")
+				Scheduler.unstable_yieldValue(
+					"BrokenComponentWillUnmount componentWillUnmount"
+				)
 				error("Expected")
 			end
 			function LocalBrokenComponentWillUnmount:render()
@@ -2461,15 +2871,16 @@ return function()
 				"InnerBoundary render success",
 				"BrokenComponentWillUnmount render",
 			})
-			root.render(React.createElement(LocalErrorBoundary, {
-				id = "OuterBoundary",
-				fallbackID = "OuterFallback",
-			}, React.createElement(
-				Component,
+			root.render(React.createElement(
+				LocalErrorBoundary,
 				{
+					id = "OuterBoundary",
+					fallbackID = "OuterFallback",
+				},
+				React.createElement(Component, {
 					id = "sibling",
-				}
-			)))
+				})
+			))
 			-- React should skip over the unmounting boundary and find the nearest still-mounted boundary.
 			jestExpect(textContent(root)).toEqual("OuterFallback")
 			jestExpect(textContent(root)).toEqual("OuterFallback")
@@ -2503,11 +2914,14 @@ return function()
 				self.state = {}
 			end
 			function LocalErrorBoundary.getDerivedStateFromError(error_)
-				Scheduler.unstable_yieldValue("ErrorBoundary static getDerivedStateFromError")
+				Scheduler.unstable_yieldValue(
+					"ErrorBoundary static getDerivedStateFromError"
+				)
 				return { error = error_ }
 			end
 			function LocalErrorBoundary:render()
-				local children, id, fallbackID = self.props.children, self.props.id, self.props.fallbackID
+				local children, id, fallbackID =
+					self.props.children, self.props.id, self.props.fallbackID
 				local error_ = self.state.error
 
 				if error_ then
@@ -2521,10 +2935,13 @@ return function()
 				return children or nil
 			end
 
-			local LocalBrokenCallbackRef = React.Component:extend("LocalBrokenCallbackRef")
+			local LocalBrokenCallbackRef =
+				React.Component:extend("LocalBrokenCallbackRef")
 
 			function LocalBrokenCallbackRef._ref(ref)
-				Scheduler.unstable_yieldValue("LocalBrokenCallbackRef ref " .. tostring(not not ref))
+				Scheduler.unstable_yieldValue(
+					"LocalBrokenCallbackRef ref " .. tostring(not not ref)
+				)
 				if ref == nil then
 					error("Expected")
 				end
@@ -2560,15 +2977,16 @@ return function()
 				"LocalBrokenCallbackRef render",
 				"LocalBrokenCallbackRef ref true",
 			})
-			root.render(React.createElement(LocalErrorBoundary, {
-				id = "OuterBoundary",
-				fallbackID = "OuterFallback",
-			}, React.createElement(
-				Component,
+			root.render(React.createElement(
+				LocalErrorBoundary,
 				{
+					id = "OuterBoundary",
+					fallbackID = "OuterFallback",
+				},
+				React.createElement(Component, {
 					id = "sibling",
-				}
-			)))
+				})
+			))
 			-- React should skip over the unmounting boundary and find the nearest still-mounted boundary.
 			local rootChildren = root.getChildren()
 			jestExpect(rootChildren[1].text).toEqual("OuterFallback")

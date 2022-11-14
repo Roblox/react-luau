@@ -216,13 +216,11 @@ exports.exportImportHelper = function(bridge: FrontendBridge, store: Store): ()
 
 	-- Simulate writing/reading to disk.
 	local serializedProfilingDataExport = HttpService:JSONEncode(profilingDataExport)
-	local parsedProfilingDataExport = HttpService:JSONDecode(
-		serializedProfilingDataExport
-	)
+	local parsedProfilingDataExport =
+		HttpService:JSONDecode(serializedProfilingDataExport)
 
-	local profilingDataFrontend = prepareProfilingDataFrontendFromExport(
-		parsedProfilingDataExport
-	)
+	local profilingDataFrontend =
+		prepareProfilingDataFrontendFromExport(parsedProfilingDataExport)
 	jestExpect(profilingDataFrontend.imported).toBe(true)
 
 	-- Sanity check that profiling snapshots are serialized correctly.

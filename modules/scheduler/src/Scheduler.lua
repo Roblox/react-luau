@@ -244,7 +244,8 @@ return function(hostConfig)
 		if not _G.__YOLO__ then
 			-- ROBLOX performance: don't nest try/catch here, Lua can do better, and it eliminated an anon function creation
 			if enableProfiling then
-				ok, result = xpcall(workLoop, describeError, hasTimeRemaining, initialTime)
+				ok, result =
+					xpcall(workLoop, describeError, hasTimeRemaining, initialTime)
 
 				if not ok then
 					if currentTask ~= nil then
@@ -284,8 +285,7 @@ return function(hostConfig)
 		advanceTimers(currentTime)
 		currentTask = peek(taskQueue)
 		while
-			currentTask ~= nil
-			and not (enableSchedulerDebugging and isSchedulerPaused)
+			currentTask ~= nil and not (enableSchedulerDebugging and isSchedulerPaused)
 		do
 			if
 				currentTask.expirationTime > currentTime
@@ -573,7 +573,7 @@ return function(hostConfig)
 		unstable_getFirstCallbackNode = unstable_getFirstCallbackNode,
 		unstable_now = getCurrentTime,
 		unstable_forceFrameRate = forceFrameRate,
-	    -- ROBLOX TODO: use if-expressions when all clients are on 503+
+		-- ROBLOX TODO: use if-expressions when all clients are on 503+
 		unstable_Profiling = (function()
 			if enableProfiling then
 				return {
@@ -582,6 +582,6 @@ return function(hostConfig)
 				}
 			end
 			return nil
-		end)()
+		end)(),
 	}
 end

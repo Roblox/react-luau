@@ -14,7 +14,6 @@ type Array<T> = LuauPolyfill.Array<T>
 type Function = (...any) -> ...any
 type Object = LuauPolyfill.Object
 
-
 -- local type {Fiber} = require(Packages.react-reconciler/src/ReactInternalTypes'
 -- local type {Instance} = require(Packages../ReactFiberHostConfig'
 
@@ -378,10 +377,10 @@ local exports = {}
 -- end
 
 export type BoundingRect = {
-  x: number,
-  y: number,
-  width: number,
-  height: number,
+	x: number,
+	y: number,
+	width: number,
+	height: number,
 }
 
 -- exports.findBoundingRects(
@@ -511,17 +510,17 @@ export type BoundingRect = {
 local commitHooks: Array<Function> = {}
 
 exports.onCommitRoot = function(): ()
-  if supportsTestSelectors then
-    for i, commitHook in commitHooks do
-            commitHook()
-        end
-    end
+	if supportsTestSelectors then
+		for i, commitHook in commitHooks do
+			commitHook()
+		end
+	end
 end
 
 export type IntersectionObserverOptions = Object
 
 export type ObserveVisibleRectsCallback = (
-  intersections: Array<{ratio: number, rect: BoundingRect}>
+	intersections: Array<{ ratio: number, rect: BoundingRect }>
 ) -> ()
 
 -- exports.observeVisibleRects(

@@ -48,7 +48,10 @@ function bindingPrototype.getValue<T>(binding: BindingInternal<T>): T
 	return BindingInternalApi.getValue(binding)
 end
 
-function bindingPrototype.map<T, U>(binding: BindingInternal<T>, predicate: (T) -> U): Binding<U>
+function bindingPrototype.map<T, U>(
+	binding: BindingInternal<T>,
+	predicate: (T) -> U
+): Binding<U>
 	return BindingInternalApi.map(binding, predicate)
 end
 
@@ -97,14 +100,19 @@ function BindingInternalApi.create<T>(initialValue: T): (Binding<T>, BindingUpda
 		["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
 		[BindingImpl] = impl,
 		_source = source,
-	}, BindingPublicMeta) :: any) :: Binding<T>, impl.update
+	}, BindingPublicMeta) :: any) :: Binding<T>,
+		impl.update
 end
 
-function BindingInternalApi.map<T, U>(upstreamBinding: BindingInternal<T>, predicate: (T) -> U): Binding<U>
+function BindingInternalApi.map<T, U>(
+	upstreamBinding: BindingInternal<T>,
+	predicate: (T) -> U
+): Binding<U>
 	if _G.__DEV__ then
 		-- ROBLOX TODO: More informative error messages here
 		assert(
-			typeof(upstreamBinding) == "table" and upstreamBinding["$$typeof"] == ReactSymbols.REACT_BINDING_TYPE,
+			typeof(upstreamBinding) == "table"
+				and upstreamBinding["$$typeof"] == ReactSymbols.REACT_BINDING_TYPE,
 			"Expected `self` to be a binding"
 		)
 		assert(typeof(predicate) == "function", "Expected arg #1 to be a function")
@@ -132,24 +140,29 @@ function BindingInternalApi.map<T, U>(upstreamBinding: BindingInternal<T>, predi
 		source = debug.traceback("Mapped binding created at:", 3)
 	end
 
-	return (setmetatable({
-		["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
-		[BindingImpl] = impl,
-		_source = source,
-	}, BindingPublicMeta) :: any) :: Binding<U>
+	return (
+		setmetatable({
+			["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
+			[BindingImpl] = impl,
+			_source = source,
+		}, BindingPublicMeta) :: any
+	) :: Binding<U>
 end
 
 -- The `join` API is used statically, so the input will be a table with values
 -- typed as the public Binding type
-function BindingInternalApi.join<T>(upstreamBindings: { [string | number]: Binding<any> }): Binding<T>
+function BindingInternalApi.join<T>(
+	upstreamBindings: { [string | number]: Binding<any> }
+): Binding<T>
 	if _G.__DEV__ then
 		assert(typeof(upstreamBindings) == "table", "Expected arg #1 to be of type table")
 
 		for key, value in upstreamBindings do
-			if typeof(value) ~= "table" or value["$$typeof"] ~= ReactSymbols.REACT_BINDING_TYPE then
-				local message = (
-					"Expected arg #1 to contain only bindings, but key %q had a non-binding value"
-				):format(
+			if
+				typeof(value) ~= "table"
+				or value["$$typeof"] ~= ReactSymbols.REACT_BINDING_TYPE
+			then
+				local message = ("Expected arg #1 to contain only bindings, but key %q had a non-binding value"):format(
 					tostring(key)
 				)
 				error(message, 2)
@@ -207,11 +220,13 @@ function BindingInternalApi.join<T>(upstreamBindings: { [string | number]: Bindi
 		source = debug.traceback("Joined binding created at:", 2)
 	end
 
-	return (setmetatable({
-		["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
-		[BindingImpl] = impl,
-		_source = source,
-	}, BindingPublicMeta) :: any) :: Binding<T>
+	return (
+		setmetatable({
+			["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
+			[BindingImpl] = impl,
+			_source = source,
+		}, BindingPublicMeta) :: any
+	) :: Binding<T>
 end
 
 return BindingInternalApi

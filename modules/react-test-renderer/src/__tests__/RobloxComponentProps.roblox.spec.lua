@@ -15,7 +15,8 @@ return function()
 	describe("TestRenderer Tag Support", function()
 		beforeEach(function()
 			RobloxJest.resetModules()
-			RobloxComponentProps = require(script.Parent.Parent.roblox.RobloxComponentProps)
+			RobloxComponentProps =
+				require(script.Parent.Parent.roblox.RobloxComponentProps)
 			setInitialTags = RobloxComponentProps.setInitialTags
 			updateTags = RobloxComponentProps.updateTags
 			removeTags = RobloxComponentProps.removeTags
@@ -92,8 +93,8 @@ return function()
 			local newProps = {
 				{ [Tag] = "foo,bar" },
 				{ [Tag] = "baz" },
-				{ [Tag] = "baz"},
-				{ [Tag] = "bar"}
+				{ [Tag] = "baz" },
+				{ [Tag] = "bar" },
 			}
 
 			for i, inst in hostInstances do
@@ -149,7 +150,7 @@ return function()
 			-- Children should have tags removed as well
 			hostInstances[1]["children"] = {
 				[2] = hostInstances[2],
-				[3] = hostInstances[3]
+				[3] = hostInstances[3],
 			}
 
 			removeTags(hostInstances[1])

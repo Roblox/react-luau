@@ -35,8 +35,9 @@ export type EventEmitter<Events> = {
 type EventEmitter_statics = {
 	new: () -> EventEmitter<any>,
 }
-local EventEmitter: EventEmitter<any> & EventEmitter_statics =
-	({} :: any) :: EventEmitter<any> & EventEmitter_statics
+local EventEmitter: EventEmitter<any> & EventEmitter_statics = (
+	{} :: any
+) :: EventEmitter<any> & EventEmitter_statics
 local EventEmitterMetatable = { __index = EventEmitter }
 
 function EventEmitter.new(): EventEmitter<any>

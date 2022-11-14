@@ -136,20 +136,16 @@ return function()
 					)
 				)
 			end).toLogDev({
-					-- "* render (0b0000000000000000000000000000001)",
-					"* Example suspended",
-					-- "* render (0b0000000000000000000000000000001)"
-				},
-				{ withoutStack = true }
-			)
+				-- "* render (0b0000000000000000000000000000001)",
+				"* Example suspended",
+				-- "* render (0b0000000000000000000000000000001)"
+			}, { withoutStack = true })
 
 			jestExpect(function()
 				fakeSuspensePromise:await()
 			end).toLogDev({
-					"* Example resolved",
-				},
-				{ withoutStack = true}
-			)
+				"* Example resolved",
+			}, { withoutStack = true })
 		end)
 
 		-- @gate experimental && build === 'development' && enableDebugTracing
@@ -182,17 +178,17 @@ return function()
 					)
 				)
 			end).toLogDev({
-			-- 	"group: * render (0b0000000000000000000000000000001)",
+				-- 	"group: * render (0b0000000000000000000000000000001)",
 				"<Wrapper/>",
-			-- 	"groupEnd: * render (0b0000000000000000000000000000001)",
+				-- 	"groupEnd: * render (0b0000000000000000000000000000001)",
 			}, { withoutStack = true })
 
 			jestExpect(function()
 				jestExpect(Scheduler).toFlushUntilNextPaint({})
 			end).toLogDev({
-			-- 	"group: * render (0b0000010000000000000000000000000)",
+				-- 	"group: * render (0b0000010000000000000000000000000)",
 				"<Example/>",
-			-- 	"groupEnd: * render (0b0000010000000000000000000000000)",
+				-- 	"groupEnd: * render (0b0000010000000000000000000000000)",
 			}, { withoutStack = true })
 		end)
 
@@ -224,17 +220,14 @@ return function()
 			jestExpect(function()
 				jestExpect(Scheduler).toFlushUntilNextPaint({})
 			end).toLogDev({
-			-- 	"group: * render (0b0000000000000000000001000000000)",
+				-- 	"group: * render (0b0000000000000000000001000000000)",
 				"* Example suspended",
-			-- 	"groupEnd: * render (0b0000000000000000000001000000000)",
+				-- 	"groupEnd: * render (0b0000000000000000000001000000000)",
 			}, { withoutStack = true })
 
 			jestExpect(function()
 				fakeSuspensePromise:await()
-			end).toLogDev(
-				{ "* Example resolved" },
-				{withoutStack = true}
-			)
+			end).toLogDev({ "* Example resolved" }, { withoutStack = true })
 		end)
 
 		-- @gate experimental && build === 'development' && enableDebugTracing
@@ -273,21 +266,17 @@ return function()
 				jestExpect(Scheduler).toFlushUntilNextPaint({})
 			end).toLogDev({
 				-- 	"group: * render (0b0000000000000000000001000000000)",
-					"<Wrapper/>",
+				"<Wrapper/>",
 				-- 	"groupEnd: * render (0b0000000000000000000001000000000)",
-				},
-				{withoutStack = true}
-			)
+			}, { withoutStack = true })
 
 			jestExpect(function()
 				jestExpect(Scheduler).toFlushUntilNextPaint({})
 			end).toLogDev({
 				-- 	"group: * render (0b0000010000000000000000000000000)",
-					"<Example/>",
+				"<Example/>",
 				-- 	"groupEnd: * render (0b0000010000000000000000000000000)",
-				},
-				{ withoutStack = true}
-			)
+			}, { withoutStack = true })
 		end)
 
 		-- @gate experimental && build === 'development' && enableDebugTracing
@@ -317,14 +306,12 @@ return function()
 			jestExpect(function()
 				jestExpect(Scheduler).toFlushUntilNextPaint({})
 			end).toLogDev({
-			-- 	"group: * commit (0b0000000000000000000001000000000)",
-			-- 	"group: * layout effects (0b0000000000000000000001000000000)",
-					"* Example updated state (0b0000000000000000000000000000001)",
-			-- 	"groupEnd: * layout effects (0b0000000000000000000001000000000)",
-			-- 	"groupEnd: * commit (0b0000000000000000000001000000000)",
-				},
-				{ withoutStack = true }
-			)
+				-- 	"group: * commit (0b0000000000000000000001000000000)",
+				-- 	"group: * layout effects (0b0000000000000000000001000000000)",
+				"* Example updated state (0b0000000000000000000000000000001)",
+				-- 	"groupEnd: * layout effects (0b0000000000000000000001000000000)",
+				-- 	"groupEnd: * commit (0b0000000000000000000001000000000)",
+			}, { withoutStack = true })
 		end)
 
 		-- @gate experimental && build === 'development' && enableDebugTracing
@@ -356,12 +343,10 @@ return function()
 					jestExpect(Scheduler).toFlushUntilNextPaint({})
 				end).toErrorDev("Cannot update during an existing state transition")
 			end).toLogDev({
-			-- 	"group: * render (0b0000000000000000000001000000000)",
-					"* Example updated state (0b0000000000000000000001000000000)",
-					"* Example updated state (0b0000000000000000000001000000000)"
-				},
-				{ withoutStack = true }
-			)
+				-- 	"group: * render (0b0000000000000000000001000000000)",
+				"* Example updated state (0b0000000000000000000001000000000)",
+				"* Example updated state (0b0000000000000000000001000000000)",
+			}, { withoutStack = true })
 		end)
 
 		-- @gate experimental && build === 'development' && enableDebugTracing
@@ -388,14 +373,12 @@ return function()
 			jestExpect(function()
 				jestExpect(Scheduler).toFlushUntilNextPaint({})
 			end).toLogDev({
-			-- 	"group: * commit (0b0000000000000000000001000000000)",
-			-- 	"group: * layout effects (0b0000000000000000000001000000000)",
-					"* Example updated state (0b0000000000000000000000000000001)",
-			-- 	"groupEnd: * layout effects (0b0000000000000000000001000000000)",
-			-- 	"groupEnd: * commit (0b0000000000000000000001000000000)",
-				},
-				{ withoutStack = true }
-			)
+				-- 	"group: * commit (0b0000000000000000000001000000000)",
+				-- 	"group: * layout effects (0b0000000000000000000001000000000)",
+				"* Example updated state (0b0000000000000000000000000000001)",
+				-- 	"groupEnd: * layout effects (0b0000000000000000000001000000000)",
+				-- 	"groupEnd: * commit (0b0000000000000000000001000000000)",
+			}, { withoutStack = true })
 		end)
 
 		-- @gate experimental && build === 'development' && enableDebugTracing
@@ -407,7 +390,6 @@ return function()
 				end, {})
 				return didMount
 			end
-
 
 			jestExpect(function()
 				ReactTestRenderer.act(function()
@@ -421,12 +403,10 @@ return function()
 					)
 				end)
 			end).toLogDev({
-			-- 	"group: * passive effects (0b0000000000000000000001000000000)",
+				-- 	"group: * passive effects (0b0000000000000000000001000000000)",
 				"* Example updated state (0b0000000000000000000010000000000)",
-			-- 	"groupEnd: * passive effects (0b0000000000000000000001000000000)",
-				},
-				{ withoutStack = true }
-			)
+				-- 	"groupEnd: * passive effects (0b0000000000000000000001000000000)",
+			}, { withoutStack = true })
 		end)
 
 		-- @gate experimental && build === 'development' && enableDebugTracing
@@ -451,13 +431,11 @@ return function()
 					)
 				end)
 			end).toLogDev({
-			-- 	"group: * render (0b0000000000000000000001000000000)",
+				-- 	"group: * render (0b0000000000000000000001000000000)",
 				"* Example updated state (0b0000000000000000000001000000000)",
 				"* Example updated state (0b0000000000000000000001000000000)",
-			-- 	"groupEnd: * render (0b0000000000000000000001000000000)",
-				},
-				{ withoutStack = true }
-			)
+				-- 	"groupEnd: * render (0b0000000000000000000001000000000)",
+			}, { withoutStack = true })
 
 			-- ROBLOX deviation: we don't have build-time gating like upstream
 			-- gate(function(flags)
@@ -496,9 +474,9 @@ return function()
 			jestExpect(function()
 				jestExpect(Scheduler).toFlushUntilNextPaint({})
 			end).toLogDev({
-			-- 	"group: * render (0b0000000000000000000001000000000)",
-					"Hello from user code",
-			-- 	"groupEnd: * render (0b0000000000000000000001000000000)",
+				-- 	"group: * render (0b0000000000000000000001000000000)",
+				"Hello from user code",
+				-- 	"groupEnd: * render (0b0000000000000000000001000000000)",
 			})
 		end)
 

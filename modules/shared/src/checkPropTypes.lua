@@ -74,9 +74,10 @@ local function checkPropTypes<P>(
 		if validateProps then
 			if typeof(validateProps) ~= "function" then
 				console.error(
-					(
-						"validateProps must be a function, but it is a %s.\nCheck the definition of the component %q."
-					):format(typeof(validateProps), componentName or "")
+					("validateProps must be a function, but it is a %s.\nCheck the definition of the component %q."):format(
+						typeof(validateProps),
+						componentName or ""
+					)
 				)
 			else
 				local success, failureReason = validateProps(props)

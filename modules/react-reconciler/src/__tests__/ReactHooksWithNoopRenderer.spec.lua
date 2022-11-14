@@ -21,7 +21,6 @@ local setTimeout = LuauPolyfill.setTimeout
 local Array = LuauPolyfill.Array
 type Array<T> = LuauPolyfill.Array<T>
 
-
 -- local textCache
 -- local readText
 -- local resolveText
@@ -45,12 +44,10 @@ local forwardRef
 local memo
 local act
 
-
 return function()
 	local jestExpect = require(Packages.Dev.JestGlobals).expect
 	local RobloxJest = require(Packages.Dev.RobloxJest)
 	local LuauPolyfill = require(Packages.LuauPolyfill)
-
 
 	beforeEach(function()
 		RobloxJest.resetModules()
@@ -182,14 +179,19 @@ return function()
 			useImperativeHandle(ref, function()
 				return { updateCount = updateCount }
 			end)
-			return React.createElement(Text, { text = tostring(props.label) .. ": " .. count })
+			return React.createElement(
+				Text,
+				{ text = tostring(props.label) .. ": " .. count }
+			)
 		end
 		-- ROBLOX TODO: upstream this rename so this can typecheck and be generally sane
 		local CounterRef = forwardRef(Counter)
 
 		-- Initial mount
 		local counter = React.createRef()
-		ReactNoop.render(React.createElement(CounterRef, { label = "Count", ref = counter }))
+		ReactNoop.render(
+			React.createElement(CounterRef, { label = "Count", ref = counter })
+		)
 		jestExpect(Scheduler).toFlushAndYield({ "Count: 0" })
 		jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 0") })
 
@@ -296,7 +298,7 @@ return function()
 				.. "2. You might be breaking the Rules of Hooks\n"
 				.. "3. You might have more than one copy of React in the same app\n"
 				.. "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.",
-				{ withoutStack = true }
+			{ withoutStack = true }
 		)
 	end)
 
@@ -346,7 +348,9 @@ return function()
 			-- ROBLOX TODO: upstream this rename, which keeps the code and types more sane
 			local CounterRef = forwardRef(Counter)
 			local counter = React.createRef()
-			ReactNoop.render(React.createElement(CounterRef, { initialState = 42, ref = counter }))
+			ReactNoop.render(
+				React.createElement(CounterRef, { initialState = 42, ref = counter })
+			)
 			jestExpect(Scheduler).toFlushAndYield({ "getInitialState", "Count: 42" })
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 42") })
 
@@ -480,7 +484,9 @@ return function()
 					setRow(newRow)
 				end
 
-				return React.createElement(Text, { text = string.format("Scrolling down: %s", tostring(isScrollingDown)) })
+				return React.createElement(Text, {
+					text = string.format("Scrolling down: %s", tostring(isScrollingDown)),
+				})
 			end
 
 			ReactNoop.render(React.createElement(ScrollView, { row = 1 }))
@@ -633,7 +639,8 @@ return function()
 			end
 			ReactNoop.render(React.createElement(Counter))
 			jestExpect(Scheduler).toFlushAndThrow(
-				"Too many re-renders. React limits the number of renders to prevent " .. "an infinite loop."
+				"Too many re-renders. React limits the number of renders to prevent "
+					.. "an infinite loop."
 			)
 		end)
 
@@ -745,158 +752,186 @@ return function()
 			} :: Array<any>)
 			jestExpect(ReactNoop.getChildren()).toEqual({ span(22) })
 		end)
-		it('discards render phase updates if something suspends', function()
-		    local thenable = {andThen = function() end}
+		it("discards render phase updates if something suspends", function()
+			local thenable = { andThen = function() end }
 			local Bar
 
-		    local function Foo(props)
+			local function Foo(props)
 				local signal = props.signal
-		    	return React.createElement(Suspense, {fallback="Loading..."}, React.createElement(Bar, {signal=signal}))
-		    end
-
-		    function Bar(props)
-			  local newSignal = props.signal
-		      local counter, setCounter = useState(0)
-		      local signal, setSignal = useState(true)
-
-		      -- Increment a counter every time the signal changes
-		      if signal ~= newSignal then
-		        setCounter(function(c)
-					return c + 1
-				end)
-		        setSignal(newSignal)
-		        if counter == 0 then
-		          -- We're suspending during a render that includes render phase
-		          -- updates. Those updates should not persist to the next render.
-		          Scheduler.unstable_yieldValue('Suspend!')
-		          error(thenable)
-		        end
-		      end
-
-		      return React.createElement(Text, {text=counter})
-		    end
-
-		    local root = ReactNoop.createRoot()
-		    root.render(React.createElement(Foo, {signal=true}))
-
-		    jestExpect(Scheduler).toFlushAndYield({0})
-		    jestExpect(root).toMatchRenderedOutput(React.createElement("span", {prop=0}))
-
-
-		    root.render(React.createElement(Foo, {signal=false}))
-		    jestExpect(Scheduler).toFlushAndYield({'Suspend!'})
-		    jestExpect(root).toMatchRenderedOutput(React.createElement("span", {prop=0}))
-
-		    -- Rendering again should suspend again.
-		    root.render(React.createElement(Foo, {signal=false}))
-		    jestExpect(Scheduler).toFlushAndYield({'Suspend!'})
-		end)
-		it('discards render phase updates if something suspends, but not other updates in the same component', function()
-		    local thenable = {andThen = function() end}
-			local Bar
-
-		    local function Foo(props)
-				local signal = props.signal
-		    	return React.createElement(Suspense, {fallback="Loading..."}, React.createElement(Bar, {signal=signal}))
-		    end
-
-		    local setLabel
+				return React.createElement(
+					Suspense,
+					{ fallback = "Loading..." },
+					React.createElement(Bar, { signal = signal })
+				)
+			end
 
 			function Bar(props)
-			  local newSignal = props.signal
-		      local counter, setCounter = useState(0)
+				local newSignal = props.signal
+				local counter, setCounter = useState(0)
+				local signal, setSignal = useState(true)
 
-		      if counter == 1 then
-		        -- We're suspending during a render that includes render phase
-		        -- updates. Those updates should not persist to the next render.
-		        Scheduler.unstable_yieldValue('Suspend!')
-		        error(thenable)
-		      end
-
-		      local signal, setSignal = useState(true)
-
-		      -- Increment a counter every time the signal changes
-		      if signal ~= newSignal then
-		        setCounter(function(c)
-					return c + 1
-				end)
-		        setSignal(newSignal)
-		      end
-
-		      local label, _setLabel = useState('A')
-		      setLabel = _setLabel
-
-		      return React.createElement(Text,
-			    {text = label .. ":" .. tostring(counter) }
-			  )
-		    end
-
-		    local root = ReactNoop.createRoot()
-		    root.render(React.createElement(Foo, {signal=true}))
-
-		    jestExpect(Scheduler).toFlushAndYield({'A:0'})
-		    jestExpect(root).toMatchRenderedOutput(React.createElement("span", {prop="A:0"}))
-
-		    ReactNoop.act(function()
-		      root.render(React.createElement(Foo, {signal=false}))
-		      setLabel('B')
-
-		      jestExpect(Scheduler).toFlushAndYield({'Suspend!'})
-		      jestExpect(root).toMatchRenderedOutput(React.createElement("span", {prop="A:0"}))
-
-		      -- Rendering again should suspend again.
-		      root.render(React.createElement(Foo, {signal=false}))
-		      jestExpect(Scheduler).toFlushAndYield({'Suspend!'})
-
-		      -- Flip the signal back to "cancel" the update. However, the update to
-		      -- label should still proceed. It shouldn't have been dropped.
-		      root.render(React.createElement(Foo, {signal=true}))
-		      jestExpect(Scheduler).toFlushAndYield({'B:0'})
-		      jestExpect(root).toMatchRenderedOutput(React.createElement("span", {prop="B:0"}))
-			  return Promise.resolve()
-			end)
-		end)
-
-		it("regression: render phase updates cause lower pri work to be dropped", function()
-		  local setRow
-		  local function ScrollView()
-		    local row, _setRow = useState(10)
-		    setRow = _setRow
-
-		    local scrollDirection, setScrollDirection = useState("Up")
-			-- ROBLOX TODO Luau? it would be nice if setPrevRow usage in the closure informed this `nil` so we didn't need this annotation
-		    local prevRow, setPrevRow = useState((nil :: any) :: number)
-
-		    if prevRow ~= row then
-				local direction = "Up"
-				if prevRow ~= nil and row > prevRow then
-					direction = "Down"
+				-- Increment a counter every time the signal changes
+				if signal ~= newSignal then
+					setCounter(function(c)
+						return c + 1
+					end)
+					setSignal(newSignal)
+					if counter == 0 then
+						-- We're suspending during a render that includes render phase
+						-- updates. Those updates should not persist to the next render.
+						Scheduler.unstable_yieldValue("Suspend!")
+						error(thenable)
+					end
 				end
-				setScrollDirection(direction)
-				-- ROBLOX FIXME Luau: even with explicit nubmer? annotation above, we still get None of the union options are compatible. For example: Type 'number' could not be converted into '(nil) -> nil'
-				setPrevRow(row)
-		    end
 
-			return React.createElement(Text, {text = scrollDirection})
-		  end
+				return React.createElement(Text, { text = counter })
+			end
 
-		  local root = ReactNoop.createRoot()
+			local root = ReactNoop.createRoot()
+			root.render(React.createElement(Foo, { signal = true }))
 
-		  act(function()
-		    	root.render(React.createElement(ScrollView, {row = 10}))
-			end)
-		  jestExpect(Scheduler).toHaveYielded({"Up"})
-		  jestExpect(root).toMatchRenderedOutput(React.createElement("span", {prop="Up"}))
+			jestExpect(Scheduler).toFlushAndYield({ 0 })
+			jestExpect(root).toMatchRenderedOutput(
+				React.createElement("span", { prop = 0 })
+			)
 
-		  act(function()
-				ReactNoop.discreteUpdates(function()
-					setRow(5)
-				end)
-				setRow(20)
-			end)
-		  jestExpect(Scheduler).toHaveYielded({"Up", "Down"})
-		  jestExpect(root).toMatchRenderedOutput(React.createElement("span", {prop="Down"}))
+			root.render(React.createElement(Foo, { signal = false }))
+			jestExpect(Scheduler).toFlushAndYield({ "Suspend!" })
+			jestExpect(root).toMatchRenderedOutput(
+				React.createElement("span", { prop = 0 })
+			)
+
+			-- Rendering again should suspend again.
+			root.render(React.createElement(Foo, { signal = false }))
+			jestExpect(Scheduler).toFlushAndYield({ "Suspend!" })
 		end)
+		it(
+			"discards render phase updates if something suspends, but not other updates in the same component",
+			function()
+				local thenable = { andThen = function() end }
+				local Bar
+
+				local function Foo(props)
+					local signal = props.signal
+					return React.createElement(
+						Suspense,
+						{ fallback = "Loading..." },
+						React.createElement(Bar, { signal = signal })
+					)
+				end
+
+				local setLabel
+
+				function Bar(props)
+					local newSignal = props.signal
+					local counter, setCounter = useState(0)
+
+					if counter == 1 then
+						-- We're suspending during a render that includes render phase
+						-- updates. Those updates should not persist to the next render.
+						Scheduler.unstable_yieldValue("Suspend!")
+						error(thenable)
+					end
+
+					local signal, setSignal = useState(true)
+
+					-- Increment a counter every time the signal changes
+					if signal ~= newSignal then
+						setCounter(function(c)
+							return c + 1
+						end)
+						setSignal(newSignal)
+					end
+
+					local label, _setLabel = useState("A")
+					setLabel = _setLabel
+
+					return React.createElement(
+						Text,
+						{ text = label .. ":" .. tostring(counter) }
+					)
+				end
+
+				local root = ReactNoop.createRoot()
+				root.render(React.createElement(Foo, { signal = true }))
+
+				jestExpect(Scheduler).toFlushAndYield({ "A:0" })
+				jestExpect(root).toMatchRenderedOutput(
+					React.createElement("span", { prop = "A:0" })
+				)
+
+				ReactNoop.act(function()
+					root.render(React.createElement(Foo, { signal = false }))
+					setLabel("B")
+
+					jestExpect(Scheduler).toFlushAndYield({ "Suspend!" })
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement("span", { prop = "A:0" })
+					)
+
+					-- Rendering again should suspend again.
+					root.render(React.createElement(Foo, { signal = false }))
+					jestExpect(Scheduler).toFlushAndYield({ "Suspend!" })
+
+					-- Flip the signal back to "cancel" the update. However, the update to
+					-- label should still proceed. It shouldn't have been dropped.
+					root.render(React.createElement(Foo, { signal = true }))
+					jestExpect(Scheduler).toFlushAndYield({ "B:0" })
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement("span", { prop = "B:0" })
+					)
+					return Promise.resolve()
+				end)
+			end
+		)
+
+		it(
+			"regression: render phase updates cause lower pri work to be dropped",
+			function()
+				local setRow
+				local function ScrollView()
+					local row, _setRow = useState(10)
+					setRow = _setRow
+
+					local scrollDirection, setScrollDirection = useState("Up")
+					-- ROBLOX TODO Luau? it would be nice if setPrevRow usage in the closure informed this `nil` so we didn't need this annotation
+					local prevRow, setPrevRow = useState((nil :: any) :: number)
+
+					if prevRow ~= row then
+						local direction = "Up"
+						if prevRow ~= nil and row > prevRow then
+							direction = "Down"
+						end
+						setScrollDirection(direction)
+						-- ROBLOX FIXME Luau: even with explicit nubmer? annotation above, we still get None of the union options are compatible. For example: Type 'number' could not be converted into '(nil) -> nil'
+						setPrevRow(row)
+					end
+
+					return React.createElement(Text, { text = scrollDirection })
+				end
+
+				local root = ReactNoop.createRoot()
+
+				act(function()
+					root.render(React.createElement(ScrollView, { row = 10 }))
+				end)
+				jestExpect(Scheduler).toHaveYielded({ "Up" })
+				jestExpect(root).toMatchRenderedOutput(
+					React.createElement("span", { prop = "Up" })
+				)
+
+				act(function()
+					ReactNoop.discreteUpdates(function()
+						setRow(5)
+					end)
+					setRow(20)
+				end)
+				jestExpect(Scheduler).toHaveYielded({ "Up", "Down" })
+				jestExpect(root).toMatchRenderedOutput(
+					React.createElement("span", { prop = "Down" })
+				)
+			end
+		)
 
 		--   -- TODO: This should probably warn
 		--   -- @gate experimental
@@ -1087,18 +1122,23 @@ return function()
 		it("simple mount and update", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(string.format("Passive effect [%d]", props.count))
+					Scheduler.unstable_yieldValue(
+						string.format("Passive effect [%d]", props.count)
+					)
 				end)
 				return React.createElement(Text, {
 					text = "Count: " .. props.count,
 				})
 			end
 			act(function()
-				ReactNoop.render(React.createElement(Counter, {
-					count = 0,
-				}), function()
-					Scheduler.unstable_yieldValue("Sync effect")
-				end)
+				ReactNoop.render(
+					React.createElement(Counter, {
+						count = 0,
+					}),
+					function()
+						Scheduler.unstable_yieldValue("Sync effect")
+					end
+				)
 				jestExpect(Scheduler).toFlushAndYieldThrough({ "Count: 0", "Sync effect" })
 				jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 0") })
 				-- Effects are deferred until after the commit
@@ -1106,11 +1146,14 @@ return function()
 			end)
 
 			act(function()
-				ReactNoop.render(React.createElement(Counter, {
-					count = 1,
-				}), function()
-					Scheduler.unstable_yieldValue("Sync effect")
-				end)
+				ReactNoop.render(
+					React.createElement(Counter, {
+						count = 1,
+					}),
+					function()
+						Scheduler.unstable_yieldValue("Sync effect")
+					end
+				)
 				jestExpect(Scheduler).toFlushAndYieldThrough({ "Count: 1", "Sync effect" })
 				jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 1") })
 				-- Effects are deferred until after the commit
@@ -1133,7 +1176,10 @@ return function()
 			end
 			local passive = React.createElement(PassiveEffect, { key = "p" })
 			act(function()
-				ReactNoop.render({ React.createElement(LayoutEffect, { key = "l" }), passive })
+				ReactNoop.render({
+					React.createElement(LayoutEffect, { key = "l" }),
+					passive,
+				})
 				jestExpect(Scheduler).toFlushAndYieldThrough({
 					"Layout",
 					"Passive",
@@ -1205,7 +1251,10 @@ return function()
 				useLayoutEffect(function()
 					Scheduler.unstable_yieldValue("Layout effect")
 					-- Scheduling work shouldn't interfere with the queued passive effect
-					ReactNoop.renderToRootWithID(React.createElement(Text, { text = "New Root" }), "root2")
+					ReactNoop.renderToRootWithID(
+						React.createElement(Text, { text = "New Root" }),
+						"root2"
+					)
 				end)
 				return React.createElement(Text, { text = "Layout" })
 			end
@@ -1243,21 +1292,28 @@ return function()
 				local function Counter(props)
 					useEffect(function()
 						Scheduler.unstable_yieldValue(
-							"Committed state when effect was fired: " .. tostring(getCommittedText())
+							"Committed state when effect was fired: "
+								.. tostring(getCommittedText())
 						)
 					end)
 					return React.createElement(Text, { text = props.count })
 				end
 				act(function()
-					ReactNoop.render(React.createElement(Counter, { count = 0 }), function()
-						Scheduler.unstable_yieldValue("Sync effect")
-					end)
+					ReactNoop.render(
+						React.createElement(Counter, { count = 0 }),
+						function()
+							Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
 					jestExpect(Scheduler).toFlushAndYieldThrough({ 0, "Sync effect" } :: Array<any>)
 					jestExpect(ReactNoop.getChildren()).toEqual({ span(0) })
 					-- Before the effects have a chance to flush, schedule another update
-					ReactNoop.render(React.createElement(Counter, { count = 1 }), function()
-						Scheduler.unstable_yieldValue("Sync effect")
-					end)
+					ReactNoop.render(
+						React.createElement(Counter, { count = 1 }),
+						function()
+							Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
 					jestExpect(Scheduler).toFlushAndYieldThrough({
 						-- The previous effect flushes before the reconciliation
 						"Committed state when effect was fired: 0",
@@ -1314,9 +1370,12 @@ return function()
 			end
 
 			act(function()
-				ReactNoop.render(React.createElement(Child, { bar = 1, foo = 1 }), function()
-					Scheduler.unstable_yieldValue("Sync effect")
-				end)
+				ReactNoop.render(
+					React.createElement(Child, { bar = 1, foo = 1 }),
+					function()
+						Scheduler.unstable_yieldValue("Sync effect")
+					end
+				)
 				jestExpect(Scheduler).toFlushAndYieldThrough({
 					"render",
 					"layout bar create",
@@ -1333,9 +1392,12 @@ return function()
 			-- This update is exists to test an internal implementation detail:
 			-- Effects without updating dependencies lose their layout/passive tag during an update.
 			act(function()
-				ReactNoop.render(React.createElement(Child, { bar = 1, foo = 2 }), function()
-					Scheduler.unstable_yieldValue("Sync effect")
-				end)
+				ReactNoop.render(
+					React.createElement(Child, { bar = 1, foo = 2 }),
+					function()
+						Scheduler.unstable_yieldValue("Sync effect")
+					end
+				)
 				jestExpect(Scheduler).toFlushAndYieldThrough({
 					"render",
 					"layout foo destroy",
@@ -1367,54 +1429,61 @@ return function()
 			end)
 		end)
 
-		it("does not warn about state updates for unmounted components with pending passive unmounts", function()
-			local completePendingRequest = nil
-			local function Component()
-				Scheduler.unstable_yieldValue("Component")
-				local didLoad, setDidLoad = React.useState(false)
-				React.useLayoutEffect(function()
-					Scheduler.unstable_yieldValue("layout create")
-					return function()
-						Scheduler.unstable_yieldValue("layout destroy")
-					end
-				end, {})
-				React.useEffect(function()
-					Scheduler.unstable_yieldValue("passive create")
-					-- Mimic an XHR request with a complete handler that updates state.
-					completePendingRequest = function()
-						setDidLoad(true)
-					end
-					return function()
-						Scheduler.unstable_yieldValue("passive destroy")
-					end
-				end, {})
-				return didLoad
-			end
+		it(
+			"does not warn about state updates for unmounted components with pending passive unmounts",
+			function()
+				local completePendingRequest = nil
+				local function Component()
+					Scheduler.unstable_yieldValue("Component")
+					local didLoad, setDidLoad = React.useState(false)
+					React.useLayoutEffect(function()
+						Scheduler.unstable_yieldValue("layout create")
+						return function()
+							Scheduler.unstable_yieldValue("layout destroy")
+						end
+					end, {})
+					React.useEffect(function()
+						Scheduler.unstable_yieldValue("passive create")
+						-- Mimic an XHR request with a complete handler that updates state.
+						completePendingRequest = function()
+							setDidLoad(true)
+						end
+						return function()
+							Scheduler.unstable_yieldValue("passive destroy")
+						end
+					end, {})
+					return didLoad
+				end
 
-			act(function()
-				ReactNoop.renderToRootWithID(React.createElement(Component), "root", function()
-					Scheduler.unstable_yieldValue("Sync effect")
+				act(function()
+					ReactNoop.renderToRootWithID(
+						React.createElement(Component),
+						"root",
+						function()
+							Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
+					jestExpect(Scheduler).toFlushAndYieldThrough({
+						"Component",
+						"layout create",
+						"Sync effect",
+					})
+					ReactNoop.flushPassiveEffects()
+					jestExpect(Scheduler).toHaveYielded({ "passive create" })
+
+					-- Unmount but don't process pending passive destroy function
+					ReactNoop.unmountRootWithID("root")
+					jestExpect(Scheduler).toFlushAndYieldThrough({ "layout destroy" })
+
+					-- Simulate an XHR completing, which will cause a state update-
+					-- but should not log a warning.
+					completePendingRequest()
+
+					ReactNoop.flushPassiveEffects()
+					jestExpect(Scheduler).toHaveYielded({ "passive destroy" })
 				end)
-				jestExpect(Scheduler).toFlushAndYieldThrough({
-					"Component",
-					"layout create",
-					"Sync effect",
-				})
-				ReactNoop.flushPassiveEffects()
-				jestExpect(Scheduler).toHaveYielded({ "passive create" })
-
-				-- Unmount but don't process pending passive destroy function
-				ReactNoop.unmountRootWithID("root")
-				jestExpect(Scheduler).toFlushAndYieldThrough({ "layout destroy" })
-
-				-- Simulate an XHR completing, which will cause a state update-
-				-- but should not log a warning.
-				completePendingRequest()
-
-				ReactNoop.flushPassiveEffects()
-				jestExpect(Scheduler).toHaveYielded({ "passive destroy" })
-			end)
-		end)
+			end
+		)
 
 		it(
 			"does not warn about state updates for unmounted components with pending passive unmounts for alternates",
@@ -1432,9 +1501,13 @@ return function()
 					end)
 					useEffect(function()
 						table.insert(setChildStates, setState)
-						Scheduler.unstable_yieldValue("Child " .. label .. " passive create")
+						Scheduler.unstable_yieldValue(
+							"Child " .. label .. " passive create"
+						)
 						return function()
-							Scheduler.unstable_yieldValue("Child " .. label .. " passive destroy")
+							Scheduler.unstable_yieldValue(
+								"Child " .. label .. " passive destroy"
+							)
 						end
 					end, {})
 					Scheduler.unstable_yieldValue("Child " .. label .. " render")
@@ -1444,9 +1517,13 @@ return function()
 				local function Parent()
 					local state, setState = useState(true)
 					setParentState = setState
-					Scheduler.unstable_yieldValue("Parent " .. tostring(state) .. " render")
+					Scheduler.unstable_yieldValue(
+						"Parent " .. tostring(state) .. " render"
+					)
 					useLayoutEffect(function()
-						Scheduler.unstable_yieldValue("Parent " .. tostring(state) .. " commit")
+						Scheduler.unstable_yieldValue(
+							"Parent " .. tostring(state) .. " commit"
+						)
 					end)
 					if state then
 						return React.createElement(
@@ -1501,9 +1578,12 @@ return function()
 					jestExpect(Scheduler).toFlushAndYieldThrough({ "Child one render" })
 
 					-- Schedule unmount for the parent that unmounts children with pending update.
-					Scheduler.unstable_runWithPriority(Scheduler.unstable_UserBlockingPriority, function()
-						return setParentState(false)
-					end)
+					Scheduler.unstable_runWithPriority(
+						Scheduler.unstable_UserBlockingPriority,
+						function()
+							return setParentState(false)
+						end
+					)
 					jestExpect(Scheduler).toFlushAndYieldThrough({
 						"Parent false render",
 						"Parent false commit",
@@ -1523,141 +1603,158 @@ return function()
 			end
 		)
 
-		it("does not warn about state updates for unmounted components with no pending passive unmounts", function()
-			local completePendingRequest = nil
-			local function Component()
-				Scheduler.unstable_yieldValue("Component")
-				local didLoad, setDidLoad = React.useState(false)
-				React.useLayoutEffect(function()
-					Scheduler.unstable_yieldValue("layout create")
-					-- Mimic an XHR request with a complete handler that updates state.
-					completePendingRequest = function()
-						setDidLoad(true)
-					end
-					return function()
-						Scheduler.unstable_yieldValue("layout destroy")
-					end
-				end, {})
-				return didLoad
-			end
+		it(
+			"does not warn about state updates for unmounted components with no pending passive unmounts",
+			function()
+				local completePendingRequest = nil
+				local function Component()
+					Scheduler.unstable_yieldValue("Component")
+					local didLoad, setDidLoad = React.useState(false)
+					React.useLayoutEffect(function()
+						Scheduler.unstable_yieldValue("layout create")
+						-- Mimic an XHR request with a complete handler that updates state.
+						completePendingRequest = function()
+							setDidLoad(true)
+						end
+						return function()
+							Scheduler.unstable_yieldValue("layout destroy")
+						end
+					end, {})
+					return didLoad
+				end
 
-			act(function()
-				ReactNoop.renderToRootWithID(React.createElement(Component), "root", function()
-					Scheduler.unstable_yieldValue("Sync effect")
+				act(function()
+					ReactNoop.renderToRootWithID(
+						React.createElement(Component),
+						"root",
+						function()
+							Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
+					jestExpect(Scheduler).toFlushAndYieldThrough({
+						"Component",
+						"layout create",
+						"Sync effect",
+					})
+
+					-- Unmount but don't process pending passive destroy function
+					ReactNoop.unmountRootWithID("root")
+					jestExpect(Scheduler).toFlushAndYieldThrough({ "layout destroy" })
+
+					-- Simulate an XHR completing.
+					completePendingRequest()
 				end)
-				jestExpect(Scheduler).toFlushAndYieldThrough({
-					"Component",
-					"layout create",
-					"Sync effect",
-				})
-
-				-- Unmount but don't process pending passive destroy function
-				ReactNoop.unmountRootWithID("root")
-				jestExpect(Scheduler).toFlushAndYieldThrough({ "layout destroy" })
-
-				-- Simulate an XHR completing.
-				completePendingRequest()
-			end)
-		end)
-
-		it("does not warn if there are pending passive unmount effects but not for the current fiber", function()
-			local completePendingRequest = nil
-			local function ComponentWithXHR()
-				Scheduler.unstable_yieldValue("Component")
-				local didLoad, setDidLoad = React.useState(false)
-				React.useLayoutEffect(function()
-					Scheduler.unstable_yieldValue("a:layout create")
-					return function()
-						Scheduler.unstable_yieldValue("a:layout destroy")
-					end
-				end, {})
-				React.useEffect(function()
-					Scheduler.unstable_yieldValue("a:passive create")
-					-- Mimic an XHR request with a complete handler that updates state.
-					completePendingRequest = function()
-						setDidLoad(true)
-					end
-				end, {})
-				return didLoad
 			end
+		)
 
-			local function ComponentWithPendingPassiveUnmount()
-				React.useEffect(function()
-					Scheduler.unstable_yieldValue("b:passive create")
-					return function()
-						Scheduler.unstable_yieldValue("b:passive destroy")
-					end
-				end, {})
-				return nil
+		it(
+			"does not warn if there are pending passive unmount effects but not for the current fiber",
+			function()
+				local completePendingRequest = nil
+				local function ComponentWithXHR()
+					Scheduler.unstable_yieldValue("Component")
+					local didLoad, setDidLoad = React.useState(false)
+					React.useLayoutEffect(function()
+						Scheduler.unstable_yieldValue("a:layout create")
+						return function()
+							Scheduler.unstable_yieldValue("a:layout destroy")
+						end
+					end, {})
+					React.useEffect(function()
+						Scheduler.unstable_yieldValue("a:passive create")
+						-- Mimic an XHR request with a complete handler that updates state.
+						completePendingRequest = function()
+							setDidLoad(true)
+						end
+					end, {})
+					return didLoad
+				end
+
+				local function ComponentWithPendingPassiveUnmount()
+					React.useEffect(function()
+						Scheduler.unstable_yieldValue("b:passive create")
+						return function()
+							Scheduler.unstable_yieldValue("b:passive destroy")
+						end
+					end, {})
+					return nil
+				end
+
+				act(function()
+					ReactNoop.renderToRootWithID(
+						React.createElement(
+							React.Fragment,
+							nil,
+							React.createElement(ComponentWithXHR),
+							React.createElement(ComponentWithPendingPassiveUnmount)
+						),
+						"root",
+						function()
+							return Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
+					jestExpect(Scheduler).toFlushAndYieldThrough({
+						"Component",
+						"a:layout create",
+						"Sync effect",
+					})
+					ReactNoop.flushPassiveEffects()
+					jestExpect(Scheduler).toHaveYielded({
+						"a:passive create",
+						"b:passive create",
+					})
+
+					-- Unmount but don't process pending passive destroy function
+					ReactNoop.unmountRootWithID("root")
+					jestExpect(Scheduler).toFlushAndYieldThrough({ "a:layout destroy" })
+
+					-- Simulate an XHR completing in the component without a pending passive effect..
+					completePendingRequest()
+				end)
 			end
+		)
 
-			act(function()
-				ReactNoop.renderToRootWithID(
-					React.createElement(
-						React.Fragment,
-						nil,
-						React.createElement(ComponentWithXHR),
-						React.createElement(ComponentWithPendingPassiveUnmount)
-					),
-					"root",
-					function()
-						return Scheduler.unstable_yieldValue("Sync effect")
-					end
-				)
-				jestExpect(Scheduler).toFlushAndYieldThrough({
-					"Component",
-					"a:layout create",
-					"Sync effect",
-				})
-				ReactNoop.flushPassiveEffects()
+		it(
+			"does not warn if there are updates after pending passive unmount effects have been flushed",
+			function()
+				local updaterFunction
+
+				local function Component()
+					Scheduler.unstable_yieldValue("Component")
+					local state, setState = React.useState(false)
+					updaterFunction = setState
+					React.useEffect(function()
+						Scheduler.unstable_yieldValue("passive create")
+						return function()
+							Scheduler.unstable_yieldValue("passive destroy")
+						end
+					end, {})
+					return state
+				end
+
+				act(function()
+					ReactNoop.renderToRootWithID(
+						React.createElement(Component),
+						"root",
+						function()
+							Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
+				end)
 				jestExpect(Scheduler).toHaveYielded({
-					"a:passive create",
-					"b:passive create",
+					"Component",
+					"Sync effect",
+					"passive create",
 				})
 
-				-- Unmount but don't process pending passive destroy function
 				ReactNoop.unmountRootWithID("root")
-				jestExpect(Scheduler).toFlushAndYieldThrough({ "a:layout destroy" })
+				jestExpect(Scheduler).toFlushAndYield({ "passive destroy" })
 
-				-- Simulate an XHR completing in the component without a pending passive effect..
-				completePendingRequest()
-			end)
-		end)
-
-		it("does not warn if there are updates after pending passive unmount effects have been flushed", function()
-			local updaterFunction
-
-			local function Component()
-				Scheduler.unstable_yieldValue("Component")
-				local state, setState = React.useState(false)
-				updaterFunction = setState
-				React.useEffect(function()
-					Scheduler.unstable_yieldValue("passive create")
-					return function()
-						Scheduler.unstable_yieldValue("passive destroy")
-					end
-				end, {})
-				return state
-			end
-
-			act(function()
-				ReactNoop.renderToRootWithID(React.createElement(Component), "root", function()
-					Scheduler.unstable_yieldValue("Sync effect")
+				act(function()
+					updaterFunction(true)
 				end)
-			end)
-			jestExpect(Scheduler).toHaveYielded({
-				"Component",
-				"Sync effect",
-				"passive create",
-			})
-
-			ReactNoop.unmountRootWithID("root")
-			jestExpect(Scheduler).toFlushAndYield({ "passive destroy" })
-
-			act(function()
-				updaterFunction(true)
-			end)
-		end)
+			end
+		)
 
 		it(
 			"does not show a warning when a component updates its own state from within passive unmount function",
@@ -1676,9 +1773,13 @@ return function()
 				end
 
 				act(function()
-					ReactNoop.renderToRootWithID(React.createElement(Component), "root", function()
-						Scheduler.unstable_yieldValue("Sync effect")
-					end)
+					ReactNoop.renderToRootWithID(
+						React.createElement(Component),
+						"root",
+						function()
+							Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
 					jestExpect(Scheduler).toFlushAndYieldThrough({
 						"Component",
 						"Sync effect",
@@ -1704,7 +1805,10 @@ return function()
 						Scheduler.unstable_yieldValue("Parent passive create")
 						return function()
 							-- ROBLOX deviation: this is a real nil-ability issue, but Luau doesn't grok expect().never.toBe(nil) yet
-							assert(updaterRef.current ~= nil, "updaterRef was't initialized before render")
+							assert(
+								updaterRef.current ~= nil,
+								"updaterRef was't initialized before render"
+							)
 							updaterRef.current(true)
 							Scheduler.unstable_yieldValue("Parent passive destroy")
 						end
@@ -1756,7 +1860,10 @@ return function()
 				local function Parent()
 					local state, setState = React.useState(false)
 					Scheduler.unstable_yieldValue("Parent")
-					return React.createElement(Child, { setState = setState, state = state })
+					return React.createElement(
+						Child,
+						{ setState = setState, state = state }
+					)
 				end
 
 				function Child(props)
@@ -1792,7 +1899,9 @@ return function()
 			local function Counter(props)
 				local count, updateCount = useState("(empty)")
 				useEffect(function()
-					Scheduler.unstable_yieldValue(string.format("Schedule update {%d}", props.count))
+					Scheduler.unstable_yieldValue(
+						string.format("Schedule update {%d}", props.count)
+					)
 					updateCount(tostring(props.count))
 				end, {
 					props.count,
@@ -1829,7 +1938,9 @@ return function()
 			local function Counter(props)
 				local count, updateCount = useState("(empty)")
 				useEffect(function()
-					Scheduler.unstable_yieldValue(string.format("Schedule update {%d}", props.count))
+					Scheduler.unstable_yieldValue(
+						string.format("Schedule update {%d}", props.count)
+					)
 					updateCount(tostring(props.count))
 				end, {
 					props.count,
@@ -1885,7 +1996,7 @@ return function()
 				end)
 				jestExpect(Scheduler).toFlushAndYieldThrough({ "Count: 0", "Sync effect" })
 				jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 0") })
-			end).toErrorDev({"An update to Counter ran an effect"})
+			end).toErrorDev({ "An update to Counter ran an effect" })
 
 			-- A flush sync doesn't cause the passive effects to fire.
 			-- So we haven't added the other update yet.
@@ -2005,7 +2116,9 @@ return function()
 				end
 
 				act(function()
-					ReactNoop.renderLegacySyncRoot(React.createElement(Counter, { count = 0 }))
+					ReactNoop.renderLegacySyncRoot(
+						React.createElement(Counter, { count = 0 })
+					)
 					-- Even in legacy mode, effects are deferred until after paint
 					jestExpect(Scheduler).toFlushAndYieldThrough({
 						"Count: (empty)",
@@ -2031,7 +2144,9 @@ return function()
 				local count, updateCount = useState("(empty)")
 
 				useEffect(function()
-					Scheduler.unstable_yieldValue(string.format("Schedule update [%d]", props.count))
+					Scheduler.unstable_yieldValue(
+						string.format("Schedule update [%d]", props.count)
+					)
 					ReactNoop.flushSync(function()
 						updateCount(tostring(props.count))
 					end)
@@ -2049,9 +2164,12 @@ return function()
 
 			jestExpect(function()
 				return act(function()
-					ReactNoop.render(React.createElement(Counter, { count = 0 }), function()
-						return Scheduler.unstable_yieldValue("Sync effect")
-					end)
+					ReactNoop.render(
+						React.createElement(Counter, { count = 0 }),
+						function()
+							return Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
 					jestExpect(Scheduler).toFlushAndYieldThrough({
 						"Count: (empty)",
 						"Sync effect",
@@ -2069,9 +2187,13 @@ return function()
 		it("unmounts previous effect", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(string.format("Did create [%d]", props.count))
+					Scheduler.unstable_yieldValue(
+						string.format("Did create [%d]", props.count)
+					)
 					return function()
-						Scheduler.unstable_yieldValue(string.format("Did destroy [%d]", props.count))
+						Scheduler.unstable_yieldValue(
+							string.format("Did destroy [%d]", props.count)
+						)
 					end
 				end)
 				return React.createElement(Text, { text = "Count: " .. props.count })
@@ -2100,12 +2222,19 @@ return function()
 		it("unmounts on deletion", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue("Did create [" .. tostring(props.count) .. "]")
+					Scheduler.unstable_yieldValue(
+						"Did create [" .. tostring(props.count) .. "]"
+					)
 					return function()
-						Scheduler.unstable_yieldValue("Did destroy [" .. tostring(props.count) .. "]")
+						Scheduler.unstable_yieldValue(
+							"Did destroy [" .. tostring(props.count) .. "]"
+						)
 					end
 				end)
-				return React.createElement(Text, { text = "Count: " .. tostring(props.count) })
+				return React.createElement(
+					Text,
+					{ text = "Count: " .. tostring(props.count) }
+				)
 			end
 			act(function()
 				ReactNoop.render(React.createElement(Counter, { count = 0 }), function()
@@ -2125,9 +2254,13 @@ return function()
 		it("unmounts on deletion after skipped effect", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(string.format("Did create [%d]", props.count))
+					Scheduler.unstable_yieldValue(
+						string.format("Did create [%d]", props.count)
+					)
 					return function()
-						Scheduler.unstable_yieldValue(string.format("Did destroy [%d]", props.count))
+						Scheduler.unstable_yieldValue(
+							string.format("Did destroy [%d]", props.count)
+						)
 					end
 				end, {})
 				return React.createElement(Text, { text = "Count: " .. props.count })
@@ -2166,7 +2299,10 @@ return function()
 			end
 			local function Counter(props)
 				useEffect(effect)
-				return React.createElement(Text, { text = "Count: " .. tostring(props.count) })
+				return React.createElement(
+					Text,
+					{ text = "Count: " .. tostring(props.count) }
+				)
 			end
 			act(function()
 				ReactNoop.render(React.createElement(Counter, { count = 0 }), function()
@@ -2208,9 +2344,12 @@ return function()
 				return React.createElement(Text, { text = text })
 			end
 			act(function()
-				ReactNoop.render(React.createElement(Counter, { label = "Count", count = 0 }), function()
-					Scheduler.unstable_yieldValue("Sync effect")
-				end)
+				ReactNoop.render(
+					React.createElement(Counter, { label = "Count", count = 0 }),
+					function()
+						Scheduler.unstable_yieldValue("Sync effect")
+					end
+				)
 				jestExpect(Scheduler).toFlushAndYieldThrough({ "Count: 0", "Sync effect" })
 			end)
 
@@ -2218,9 +2357,12 @@ return function()
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 0") })
 
 			act(function()
-				ReactNoop.render(React.createElement(Counter, { label = "Count", count = 1 }), function()
-					Scheduler.unstable_yieldValue("Sync effect")
-				end)
+				ReactNoop.render(
+					React.createElement(Counter, { label = "Count", count = 1 }),
+					function()
+						Scheduler.unstable_yieldValue("Sync effect")
+					end
+				)
 				-- Count changed
 				jestExpect(Scheduler).toFlushAndYieldThrough({ "Count: 1", "Sync effect" })
 				jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 1") })
@@ -2232,9 +2374,12 @@ return function()
 			})
 
 			act(function()
-				ReactNoop.render(React.createElement(Counter, { label = "Count", count = 1 }), function()
-					Scheduler.unstable_yieldValue("Sync effect")
-				end)
+				ReactNoop.render(
+					React.createElement(Counter, { label = "Count", count = 1 }),
+					function()
+						Scheduler.unstable_yieldValue("Sync effect")
+					end
+				)
 				-- Nothing changed, so no effect should have fired
 				jestExpect(Scheduler).toFlushAndYieldThrough({ "Count: 1", "Sync effect" })
 			end)
@@ -2243,9 +2388,12 @@ return function()
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 1") })
 
 			act(function()
-				ReactNoop.render(React.createElement(Counter, { label = "Total", count = 1 }), function()
-					Scheduler.unstable_yieldValue("Sync effect")
-				end)
+				ReactNoop.render(
+					React.createElement(Counter, { label = "Total", count = 1 }),
+					function()
+						Scheduler.unstable_yieldValue("Sync effect")
+					end
+				)
 				-- Label changed
 				jestExpect(Scheduler).toFlushAndYieldThrough({ "Total: 1", "Sync effect" })
 				jestExpect(ReactNoop.getChildren()).toEqual({ span("Total: 1") })
@@ -2269,32 +2417,48 @@ return function()
 				useEffect(function()
 					Scheduler.unstable_yieldValue("Did create [" .. props.deps .. "]")
 					return function()
-						Scheduler.unstable_yieldValue("Did destroy [" .. props.deps .. "]")
+						Scheduler.unstable_yieldValue(
+							"Did destroy [" .. props.deps .. "]"
+						)
 					end
 				end, deps)
 				return React.createElement(Text, { text = props.deps })
 			end
 			jestExpect(function()
 				act(function()
-					ReactNoop.render(React.createElement(Counter, { deps = "A...." }), function()
-						Scheduler.unstable_yieldValue("Sync effect")
-					end)
-					jestExpect(Scheduler).toFlushAndYieldThrough({ "A....", "Sync effect" })
+					ReactNoop.render(
+						React.createElement(Counter, { deps = "A...." }),
+						function()
+							Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
+					jestExpect(Scheduler).toFlushAndYieldThrough({
+						"A....",
+						"Sync effect",
+					})
 				end)
-			end).toErrorDev({--[[no errors]]})
+			end).toErrorDev({--[[no errors]]
+			})
 
 			jestExpect(Scheduler).toHaveYielded({ "Did create [A....]" })
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("A....") })
 
 			jestExpect(function()
 				act(function()
-					ReactNoop.render(React.createElement(Counter, { deps = "A...E" }), function()
-						Scheduler.unstable_yieldValue("Sync effect")
-					end)
-					jestExpect(Scheduler).toFlushAndYieldThrough({ "A...E", "Sync effect" })
+					ReactNoop.render(
+						React.createElement(Counter, { deps = "A...E" }),
+						function()
+							Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
+					jestExpect(Scheduler).toFlushAndYieldThrough({
+						"A...E",
+						"Sync effect",
+					})
 					jestExpect(ReactNoop.getChildren()).toEqual({ span("A...E") })
 				end)
-			end).toErrorDev({--[[no errors]]})
+			end).toErrorDev({--[[no errors]]
+			})
 
 			jestExpect(Scheduler).toHaveYielded({
 				"Did destroy [A....]",
@@ -2303,13 +2467,20 @@ return function()
 
 			jestExpect(function()
 				act(function()
-					ReactNoop.render(React.createElement(Counter, { deps = "ABCDE" }), function()
-						Scheduler.unstable_yieldValue("Sync effect")
-					end)
-					jestExpect(Scheduler).toFlushAndYieldThrough({ "ABCDE", "Sync effect" })
+					ReactNoop.render(
+						React.createElement(Counter, { deps = "ABCDE" }),
+						function()
+							Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
+					jestExpect(Scheduler).toFlushAndYieldThrough({
+						"ABCDE",
+						"Sync effect",
+					})
 					jestExpect(ReactNoop.getChildren()).toEqual({ span("ABCDE") })
 				end)
-			end).toErrorDev({--[[no errors]]})
+			end).toErrorDev({--[[no errors]]
+			})
 
 			jestExpect(Scheduler).toHaveYielded({
 				"Did destroy [A...E]",
@@ -2318,13 +2489,20 @@ return function()
 
 			jestExpect(function()
 				act(function()
-					ReactNoop.render(React.createElement(Counter, { deps = "....E" }), function()
-						Scheduler.unstable_yieldValue("Sync effect")
-					end)
-					jestExpect(Scheduler).toFlushAndYieldThrough({ "....E", "Sync effect" })
+					ReactNoop.render(
+						React.createElement(Counter, { deps = "....E" }),
+						function()
+							Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
+					jestExpect(Scheduler).toFlushAndYieldThrough({
+						"....E",
+						"Sync effect",
+					})
 					jestExpect(ReactNoop.getChildren()).toEqual({ span("....E") })
 				end)
-			end).toErrorDev({--[[no errors]]})
+			end).toErrorDev({--[[no errors]]
+			})
 
 			jestExpect(Scheduler).toHaveYielded({
 				"Did destroy [ABCDE]",
@@ -2333,13 +2511,20 @@ return function()
 
 			jestExpect(function()
 				act(function()
-					ReactNoop.render(React.createElement(Counter, { deps = "..C.." }), function()
-						Scheduler.unstable_yieldValue("Sync effect")
-					end)
-					jestExpect(Scheduler).toFlushAndYieldThrough({ "..C..", "Sync effect" })
+					ReactNoop.render(
+						React.createElement(Counter, { deps = "..C.." }),
+						function()
+							Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
+					jestExpect(Scheduler).toFlushAndYieldThrough({
+						"..C..",
+						"Sync effect",
+					})
 					jestExpect(ReactNoop.getChildren()).toEqual({ span("..C..") })
 				end)
-			end).toErrorDev({--[[no errors]]})
+			end).toErrorDev({--[[no errors]]
+			})
 
 			jestExpect(Scheduler).toHaveYielded({
 				"Did destroy [....E]",
@@ -2351,12 +2536,19 @@ return function()
 		it("multiple effects", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue("Did commit 1 [" .. tostring(props.count) .. "]")
+					Scheduler.unstable_yieldValue(
+						"Did commit 1 [" .. tostring(props.count) .. "]"
+					)
 				end)
 				useEffect(function()
-					Scheduler.unstable_yieldValue("Did commit 2 [" .. tostring(props.count) .. "]")
+					Scheduler.unstable_yieldValue(
+						"Did commit 2 [" .. tostring(props.count) .. "]"
+					)
 				end)
-				return React.createElement(Text, { text = "Count: " .. tostring(props.count) })
+				return React.createElement(
+					Text,
+					{ text = "Count: " .. tostring(props.count) }
+				)
 			end
 			act(function()
 				ReactNoop.render(React.createElement(Counter, { count = 0 }), function()
@@ -2420,131 +2612,142 @@ return function()
 			})
 		end)
 
-		it("unmounts all previous effects between siblings before creating any new ones", function()
-			local function Counter(props)
-				local count, label = props.count, props.label
+		it(
+			"unmounts all previous effects between siblings before creating any new ones",
+			function()
+				local function Counter(props)
+					local count, label = props.count, props.label
 
-				useEffect(function()
-					Scheduler.unstable_yieldValue(string.format("Mount %s [%d]", label, count))
+					useEffect(function()
+						Scheduler.unstable_yieldValue(
+							string.format("Mount %s [%d]", label, count)
+						)
 
-					return function()
-						Scheduler.unstable_yieldValue(string.format("Unmount %s [%d]", label, count))
-					end
+						return function()
+							Scheduler.unstable_yieldValue(
+								string.format("Unmount %s [%d]", label, count)
+							)
+						end
+					end)
+
+					return React.createElement(Text, {
+						text = string.format("%s %d", label, count),
+					})
+				end
+
+				act(function()
+					ReactNoop.render(
+						React.createElement(
+							React.Fragment,
+							nil,
+							React.createElement(Counter, {
+								label = "A",
+								count = 0,
+							}),
+							React.createElement(Counter, {
+								label = "B",
+								count = 0,
+							})
+						),
+						function()
+							return Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
+					jestExpect(Scheduler).toFlushAndYieldThrough({
+						"A 0",
+						"B 0",
+						"Sync effect",
+					})
+					jestExpect(ReactNoop.getChildren()).toEqual({
+						span("A 0"),
+						span("B 0"),
+					})
 				end)
-
-				return React.createElement(Text, {
-					text = string.format("%s %d", label, count),
+				jestExpect(Scheduler).toHaveYielded({
+					"Mount A [0]",
+					"Mount B [0]",
+				})
+				act(function()
+					ReactNoop.render(
+						React.createElement(
+							React.Fragment,
+							nil,
+							React.createElement(Counter, {
+								label = "A",
+								count = 1,
+							}),
+							React.createElement(Counter, {
+								label = "B",
+								count = 1,
+							})
+						),
+						function()
+							return Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
+					jestExpect(Scheduler).toFlushAndYieldThrough({
+						"A 1",
+						"B 1",
+						"Sync effect",
+					})
+					jestExpect(ReactNoop.getChildren()).toEqual({
+						span("A 1"),
+						span("B 1"),
+					})
+				end)
+				jestExpect(Scheduler).toHaveYielded({
+					"Unmount A [0]",
+					"Unmount B [0]",
+					"Mount A [1]",
+					"Mount B [1]",
+				})
+				act(function()
+					ReactNoop.render(
+						React.createElement(
+							React.Fragment,
+							nil,
+							React.createElement(Counter, {
+								label = "B",
+								count = 2,
+							}),
+							React.createElement(Counter, {
+								label = "C",
+								count = 0,
+							})
+						),
+						function()
+							return Scheduler.unstable_yieldValue("Sync effect")
+						end
+					)
+					jestExpect(Scheduler).toFlushAndYieldThrough({
+						"B 2",
+						"C 0",
+						"Sync effect",
+					})
+					jestExpect(ReactNoop.getChildren()).toEqual({
+						span("B 2"),
+						span("C 0"),
+					})
+				end)
+				jestExpect(Scheduler).toHaveYielded({
+					"Unmount A [1]",
+					"Unmount B [1]",
+					"Mount B [2]",
+					"Mount C [0]",
 				})
 			end
-
-			act(function()
-				ReactNoop.render(
-					React.createElement(
-						React.Fragment,
-						nil,
-						React.createElement(Counter, {
-							label = "A",
-							count = 0,
-						}),
-						React.createElement(Counter, {
-							label = "B",
-							count = 0,
-						})
-					),
-					function()
-						return Scheduler.unstable_yieldValue("Sync effect")
-					end
-				)
-				jestExpect(Scheduler).toFlushAndYieldThrough({
-					"A 0",
-					"B 0",
-					"Sync effect",
-				})
-				jestExpect(ReactNoop.getChildren()).toEqual({
-					span("A 0"),
-					span("B 0"),
-				})
-			end)
-			jestExpect(Scheduler).toHaveYielded({
-				"Mount A [0]",
-				"Mount B [0]",
-			})
-			act(function()
-				ReactNoop.render(
-					React.createElement(
-						React.Fragment,
-						nil,
-						React.createElement(Counter, {
-							label = "A",
-							count = 1,
-						}),
-						React.createElement(Counter, {
-							label = "B",
-							count = 1,
-						})
-					),
-					function()
-						return Scheduler.unstable_yieldValue("Sync effect")
-					end
-				)
-				jestExpect(Scheduler).toFlushAndYieldThrough({
-					"A 1",
-					"B 1",
-					"Sync effect",
-				})
-				jestExpect(ReactNoop.getChildren()).toEqual({
-					span("A 1"),
-					span("B 1"),
-				})
-			end)
-			jestExpect(Scheduler).toHaveYielded({
-				"Unmount A [0]",
-				"Unmount B [0]",
-				"Mount A [1]",
-				"Mount B [1]",
-			})
-			act(function()
-				ReactNoop.render(
-					React.createElement(
-						React.Fragment,
-						nil,
-						React.createElement(Counter, {
-							label = "B",
-							count = 2,
-						}),
-						React.createElement(Counter, {
-							label = "C",
-							count = 0,
-						})
-					),
-					function()
-						return Scheduler.unstable_yieldValue("Sync effect")
-					end
-				)
-				jestExpect(Scheduler).toFlushAndYieldThrough({
-					"B 2",
-					"C 0",
-					"Sync effect",
-				})
-				jestExpect(ReactNoop.getChildren()).toEqual({
-					span("B 2"),
-					span("C 0"),
-				})
-			end)
-			jestExpect(Scheduler).toHaveYielded({
-				"Unmount A [1]",
-				"Unmount B [1]",
-				"Mount B [2]",
-				"Mount C [0]",
-			})
-		end)
+		)
 		it("handles errors in create on mount", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(string.format("Mount A [%d]", props.count))
+					Scheduler.unstable_yieldValue(
+						string.format("Mount A [%d]", props.count)
+					)
 
 					return function()
-						Scheduler.unstable_yieldValue(string.format("Unmount A [%d]", props.count))
+						Scheduler.unstable_yieldValue(
+							string.format("Unmount A [%d]", props.count)
+						)
 					end
 				end)
 				useEffect(function()
@@ -2587,10 +2790,14 @@ return function()
 		it("handles errors in create on update", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(string.format("Mount A [%d]", props.count))
+					Scheduler.unstable_yieldValue(
+						string.format("Mount A [%d]", props.count)
+					)
 
 					return function()
-						Scheduler.unstable_yieldValue(string.format("Unmount A [%d]", props.count))
+						Scheduler.unstable_yieldValue(
+							string.format("Unmount A [%d]", props.count)
+						)
 					end
 				end)
 				useEffect(function()
@@ -2599,10 +2806,14 @@ return function()
 						error("Oops!")
 					end
 
-					Scheduler.unstable_yieldValue(string.format("Mount B [%d]", props.count))
+					Scheduler.unstable_yieldValue(
+						string.format("Mount B [%d]", props.count)
+					)
 
 					return function()
-						Scheduler.unstable_yieldValue(string.format("Unmount B [%d]", props.count))
+						Scheduler.unstable_yieldValue(
+							string.format("Unmount B [%d]", props.count)
+						)
 					end
 				end)
 
@@ -2658,7 +2869,9 @@ return function()
 		it("handles errors in destroy on update", function()
 			local function Counter(props)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(string.format("Mount A [%d]", props.count))
+					Scheduler.unstable_yieldValue(
+						string.format("Mount A [%d]", props.count)
+					)
 
 					return function()
 						Scheduler.unstable_yieldValue("Oops!")
@@ -2669,10 +2882,14 @@ return function()
 					end
 				end)
 				useEffect(function()
-					Scheduler.unstable_yieldValue(string.format("Mount B [%d]", props.count))
+					Scheduler.unstable_yieldValue(
+						string.format("Mount B [%d]", props.count)
+					)
 
 					return function()
-						Scheduler.unstable_yieldValue(string.format("Unmount B [%d]", props.count))
+						Scheduler.unstable_yieldValue(
+							string.format("Unmount B [%d]", props.count)
+						)
 					end
 				end)
 
@@ -3312,7 +3529,9 @@ return function()
 
 			local function Counter(props)
 				useLayoutEffect(function()
-					Scheduler.unstable_yieldValue("Current: " .. tostring(getCommittedText()))
+					Scheduler.unstable_yieldValue(
+						"Current: " .. tostring(getCommittedText())
+					)
 				end)
 				return React.createElement(Text, { text = props.count })
 			end
@@ -3350,15 +3569,23 @@ return function()
 					-- ROBLOX TODO: js2lua should translate `x + ''` to tostring(x)
 					committedText = tostring(props.count)
 
-					Scheduler.unstable_yieldValue("Mount layout [current: " .. committedText .. "]")
+					Scheduler.unstable_yieldValue(
+						"Mount layout [current: " .. committedText .. "]"
+					)
 					return function()
-						Scheduler.unstable_yieldValue("Unmount layout [current: " .. committedText .. "]")
+						Scheduler.unstable_yieldValue(
+							"Unmount layout [current: " .. committedText .. "]"
+						)
 					end
 				end)
 				useEffect(function()
-					Scheduler.unstable_yieldValue("Mount normal [current: " .. committedText .. "]")
+					Scheduler.unstable_yieldValue(
+						"Mount normal [current: " .. committedText .. "]"
+					)
 					return function()
-						Scheduler.unstable_yieldValue("Unmount normal [current: " .. committedText .. "]")
+						Scheduler.unstable_yieldValue(
+							"Unmount normal [current: " .. committedText .. "]"
+						)
 					end
 				end)
 				return nil
@@ -3400,7 +3627,9 @@ return function()
 			end
 
 			function ErrorBoundary.getDerivedStateFromError(errorMsg)
-				Scheduler.unstable_yieldValue("ErrorBoundary static getDerivedStateFromError")
+				Scheduler.unstable_yieldValue(
+					"ErrorBoundary static getDerivedStateFromError"
+				)
 				return { error = errorMsg }
 			end
 
@@ -3429,7 +3658,9 @@ return function()
 			local function BrokenLayoutEffectDestroy()
 				useLayoutEffect(function()
 					return function()
-						Scheduler.unstable_yieldValue("BrokenLayoutEffectDestroy useLayoutEffect destroy")
+						Scheduler.unstable_yieldValue(
+							"BrokenLayoutEffectDestroy useLayoutEffect destroy"
+						)
 						error("Expected")
 					end
 				end, {})
@@ -3438,14 +3669,20 @@ return function()
 				return React.createElement(span, { prop = "broken" })
 			end
 
-			ReactNoop.render(React.createElement(ErrorBoundary, { id = "OuterBoundary", fallbackID = "OuterFallback" }, {
-				React.createElement(Component, { id = "sibling" }),
+			ReactNoop.render(
 				React.createElement(
 					ErrorBoundary,
-					{ id = "InnerBoundary", fallbackID = "InnerFallback" },
-					React.createElement(BrokenLayoutEffectDestroy)
-				),
-			}))
+					{ id = "OuterBoundary", fallbackID = "OuterFallback" },
+					{
+						React.createElement(Component, { id = "sibling" }),
+						React.createElement(
+							ErrorBoundary,
+							{ id = "InnerBoundary", fallbackID = "InnerFallback" },
+							React.createElement(BrokenLayoutEffectDestroy)
+						),
+					}
+				)
+			)
 
 			jestExpect(Scheduler).toFlushAndYield({
 				"OuterBoundary render success",
@@ -3458,11 +3695,13 @@ return function()
 				React.createElement(span, { id = "broken" }),
 			})
 
-			ReactNoop.render(React.createElement(
-				ErrorBoundary,
-				{ id = "OuterBoundary", fallbackID = "OuterFallback" },
-				React.createElement(Component, { id = "sibling" })
-			))
+			ReactNoop.render(
+				React.createElement(
+					ErrorBoundary,
+					{ id = "OuterBoundary", fallbackID = "OuterFallback" },
+					React.createElement(Component, { id = "sibling" })
+				)
+			)
 
 			-- React should skip over the unmounting boundary and find the nearest still-mounted boundary.
 			jestExpect(Scheduler).toFlushAndYield({
@@ -3582,13 +3821,17 @@ return function()
 						return c + props.incrementBy
 					end)
 				end, deps)
-				return React.createElement(React.Fragment, {},
+				return React.createElement(
+					React.Fragment,
+					{},
 					React.createElement(IncrementButton, { increment = increment }),
 					React.createElement(Text, { text = "Count: " .. count })
 				)
 			end
 
-			ReactNoop.render(React.createElement(Counter, { input = "A....", incrementBy = 1 }))
+			ReactNoop.render(
+				React.createElement(Counter, { input = "A....", incrementBy = 1 })
+			)
 			jestExpect(Scheduler).toFlushAndYield({ "Increment", "Count: 0" })
 			jestExpect(ReactNoop.getChildren()).toEqual({
 				span("Increment"),
@@ -3607,7 +3850,9 @@ return function()
 			})
 
 			-- Increase the increment amount
-			ReactNoop.render(React.createElement(Counter, { input = "A....", incrementBy = 10 }))
+			ReactNoop.render(
+				React.createElement(Counter, { input = "A....", incrementBy = 10 })
+			)
 			jestExpect(Scheduler).toFlushAndYield({
 				-- Button should not re-render, because we haven't changed input
 				-- "Increment",
@@ -3627,7 +3872,9 @@ return function()
 			})
 
 			-- Increase the increment amount
-			ReactNoop.render(React.createElement(Counter, { input = "A...E", incrementBy = 10 }))
+			ReactNoop.render(
+				React.createElement(Counter, { input = "A...E", incrementBy = 10 })
+			)
 			jestExpect(Scheduler).toFlushAndYield({
 				-- Inputs did change this time
 				"Increment",
@@ -3686,12 +3933,18 @@ return function()
 				local xMinusY, xPlusY = useMemo(function()
 					local a = x - y
 					local b = x + y
-					Scheduler.unstable_yieldValue("x - y = " .. tostring(a) .. ", x + y = " .. tostring(b))
+					Scheduler.unstable_yieldValue(
+						"x - y = " .. tostring(a) .. ", x + y = " .. tostring(b)
+					)
 					return a, b
 				end, {
-					x, y
+					x,
+					y,
 				})
-				return React.createElement(Text, { text = tostring(xMinusY) .. tostring(xPlusY) })
+				return React.createElement(
+					Text,
+					{ text = tostring(xMinusY) .. tostring(xPlusY) }
+				)
 			end
 
 			ReactNoop.render(React.createElement(Doubler, { x = 1, y = 2 }))
@@ -3741,32 +3994,41 @@ return function()
 			jestExpect(Scheduler).toFlushAndYield({ "compute B", "B" })
 		end)
 
-		it("should not invoke memoized function during re-renders unless inputs change", function()
-			local function LazyCompute(props)
-				local computed = useMemo(function()
-					return props.compute(props.input)
-				end, { props.input })
-				local count, setCount = useState(0)
-				if count < 3 then
-					setCount(count + 1)
+		it(
+			"should not invoke memoized function during re-renders unless inputs change",
+			function()
+				local function LazyCompute(props)
+					local computed = useMemo(function()
+						return props.compute(props.input)
+					end, { props.input })
+					local count, setCount = useState(0)
+					if count < 3 then
+						setCount(count + 1)
+					end
+					return React.createElement(Text, { text = computed })
 				end
-				return React.createElement(Text, { text = computed })
+
+				local function compute(val)
+					Scheduler.unstable_yieldValue("compute " .. val)
+					return val
+				end
+
+				ReactNoop.render(
+					React.createElement(LazyCompute, { compute = compute, input = "A" })
+				)
+				jestExpect(Scheduler).toFlushAndYield({ "compute A", "A" })
+
+				ReactNoop.render(
+					React.createElement(LazyCompute, { compute = compute, input = "A" })
+				)
+				jestExpect(Scheduler).toFlushAndYield({ "A" })
+
+				ReactNoop.render(
+					React.createElement(LazyCompute, { compute = compute, input = "B" })
+				)
+				jestExpect(Scheduler).toFlushAndYield({ "compute B", "B" })
 			end
-
-			local function compute(val)
-				Scheduler.unstable_yieldValue("compute " .. val)
-				return val
-			end
-
-			ReactNoop.render(React.createElement(LazyCompute, { compute = compute, input = "A" }))
-			jestExpect(Scheduler).toFlushAndYield({ "compute A", "A" })
-
-			ReactNoop.render(React.createElement(LazyCompute, { compute = compute, input = "A" }))
-			jestExpect(Scheduler).toFlushAndYield({ "A" })
-
-			ReactNoop.render(React.createElement(LazyCompute, { compute = compute, input = "B" }))
-			jestExpect(Scheduler).toFlushAndYield({ "compute B", "B" })
-		end)
+		)
 
 		-- ROBLOX deviation START: Test that deps can include nil values
 		it("correctly interprets input changes with nil values", function()
@@ -3788,19 +4050,29 @@ return function()
 				return val
 			end
 
-			ReactNoop.render(React.createElement(LazyCompute, { compute = compute, input = "A...." }))
+			ReactNoop.render(
+				React.createElement(LazyCompute, { compute = compute, input = "A...." })
+			)
 			jestExpect(Scheduler).toFlushAndYield({ "compute A....", "A...." })
 
-			ReactNoop.render(React.createElement(LazyCompute, { compute = compute, input = "A...E" }))
+			ReactNoop.render(
+				React.createElement(LazyCompute, { compute = compute, input = "A...E" })
+			)
 			jestExpect(Scheduler).toFlushAndYield({ "compute A...E", "A...E" })
 
-			ReactNoop.render(React.createElement(LazyCompute, { compute = compute, input = "ABCDE" }))
+			ReactNoop.render(
+				React.createElement(LazyCompute, { compute = compute, input = "ABCDE" })
+			)
 			jestExpect(Scheduler).toFlushAndYield({ "compute ABCDE", "ABCDE" })
 
-			ReactNoop.render(React.createElement(LazyCompute, { compute = compute, input = "....E" }))
+			ReactNoop.render(
+				React.createElement(LazyCompute, { compute = compute, input = "....E" })
+			)
 			jestExpect(Scheduler).toFlushAndYield({ "compute ....E", "....E" })
 
-			ReactNoop.render(React.createElement(LazyCompute, { compute = compute, input = "..C.." }))
+			ReactNoop.render(
+				React.createElement(LazyCompute, { compute = compute, input = "..C.." })
+			)
 			jestExpect(Scheduler).toFlushAndYield({ "compute ..C..", "..C.." })
 		end)
 		-- ROBLOX deviation END
@@ -4277,7 +4549,12 @@ return function()
 				end
 
 				return React.createElement(Text, {
-					text = string.format("A: %s, B: %s, C: %s", tostring(A), tostring(B), tostring(C)),
+					text = string.format(
+						"A: %s, B: %s, C: %s",
+						tostring(A),
+						tostring(B),
+						tostring(C)
+					),
 				})
 			end
 
@@ -4303,7 +4580,15 @@ return function()
 					jestExpect(Scheduler).toFlushAndYield({ "A: 2, B: 3, C: 0" })
 				end).toThrow("Rendered more hooks than during the previous render")
 			end).toErrorDev({
-				"Warning: React has detected a change in the order of Hooks called by App. " .. "This will lead to bugs and errors if not fixed. For more information, " .. "read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks\n\n" .. "   Previous render            Next render\n" .. "   ------------------------------------------------------\n" .. "1. useState                   useState\n" .. "2. useState                   useState\n" .. "3. undefined                  useState\n" .. "   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n",
+				"Warning: React has detected a change in the order of Hooks called by App. "
+					.. "This will lead to bugs and errors if not fixed. For more information, "
+					.. "read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks\n\n"
+					.. "   Previous render            Next render\n"
+					.. "   ------------------------------------------------------\n"
+					.. "1. useState                   useState\n"
+					.. "2. useState                   useState\n"
+					.. "3. undefined                  useState\n"
+					.. "   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n",
 			})
 
 			-- Uncomment if/when we support this again
@@ -4336,7 +4621,12 @@ return function()
 				end
 
 				return React.createElement(Text, {
-					text = string.format("A: %s, B: %s, C: %s", tostring(A), tostring(B), tostring(C)),
+					text = string.format(
+						"A: %s, B: %s, C: %s",
+						tostring(A),
+						tostring(B),
+						tostring(C)
+					),
 				})
 			end
 
@@ -4352,7 +4642,8 @@ return function()
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("A: 2, B: 3, C: 4") })
 			ReactNoop.render(React.createElement(App, { loadC = false }))
 			jestExpect(Scheduler).toFlushAndThrow(
-				"Rendered fewer hooks than expected. This may be caused by an " .. "accidental early return statement."
+				"Rendered fewer hooks than expected. This may be caused by an "
+					.. "accidental early return statement."
 			)
 		end)
 
@@ -4378,9 +4669,12 @@ return function()
 			end
 
 			act(function()
-				ReactNoop.render(React.createElement(App, { showMore = false }), function()
-					Scheduler.unstable_yieldValue("Sync effect")
-				end)
+				ReactNoop.render(
+					React.createElement(App, { showMore = false }),
+					function()
+						Scheduler.unstable_yieldValue("Sync effect")
+					end
+				)
 				jestExpect(Scheduler).toFlushAndYieldThrough({ "Sync effect" })
 			end)
 
@@ -4391,9 +4685,18 @@ return function()
 				jestExpect(function()
 					jestExpect(function()
 						jestExpect(Scheduler).toFlushAndYield({})
-					end).toThrow("Rendered more hooks than during the previous render")
+					end).toThrow(
+						"Rendered more hooks than during the previous render"
+					)
 				end).toErrorDev({
-					"Warning: React has detected a change in the order of Hooks called by App. " .. "This will lead to bugs and errors if not fixed. For more information, " .. "read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks\n\n" .. "   Previous render            Next render\n" .. "   ------------------------------------------------------\n" .. "1. useEffect                  useEffect\n" .. "2. undefined                  useEffect\n" .. "   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n",
+					"Warning: React has detected a change in the order of Hooks called by App. "
+						.. "This will lead to bugs and errors if not fixed. For more information, "
+						.. "read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks\n\n"
+						.. "   Previous render            Next render\n"
+						.. "   ------------------------------------------------------\n"
+						.. "1. useEffect                  useEffect\n"
+						.. "2. undefined                  useEffect\n"
+						.. "   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n",
 				})
 			end)
 
@@ -4409,62 +4712,65 @@ return function()
 		end)
 	end)
 
-	it("eager bailout optimization should always compare to latest rendered reducer", function()
-		-- Edge case based on a bug report
-		local counter, setCounter
+	it(
+		"eager bailout optimization should always compare to latest rendered reducer",
+		function()
+			-- Edge case based on a bug report
+			local counter, setCounter
 
-		local function Component(props)
-			-- ROBLOX deviation: can't destructure list in Lua function arguments
-			local count = props.count
-			-- ROBLOX Luau FIXME: I have to explicit add _action: nil, but it should be inferred: https://jira.rbx.com/browse/CLI-49121
-			local state, dispatch = useReducer(function(_, _action: nil)
-				-- This reducer closes over a value from props. If the reducer is not
-				-- properly updated, the eager reducer will compare to an old value
-				-- and bail out incorrectly.
-				Scheduler.unstable_yieldValue("Reducer: " .. tostring(count))
+			local function Component(props)
+				-- ROBLOX deviation: can't destructure list in Lua function arguments
+				local count = props.count
+				-- ROBLOX Luau FIXME: I have to explicit add _action: nil, but it should be inferred: https://jira.rbx.com/browse/CLI-49121
+				local state, dispatch = useReducer(function(_, _action: nil)
+					-- This reducer closes over a value from props. If the reducer is not
+					-- properly updated, the eager reducer will compare to an old value
+					-- and bail out incorrectly.
+					Scheduler.unstable_yieldValue("Reducer: " .. tostring(count))
+					return count
+				end, -1)
+				useEffect(function()
+					Scheduler.unstable_yieldValue("Effect: " .. tostring(count))
+					dispatch()
+				end, {
+					count,
+				})
+				Scheduler.unstable_yieldValue("Render: " .. state)
 				return count
-			end, -1)
-			useEffect(function()
-				Scheduler.unstable_yieldValue("Effect: " .. tostring(count))
-				dispatch()
-			end, {
-				count,
-			})
-			Scheduler.unstable_yieldValue("Render: " .. state)
-			return count
-		end
+			end
 
-		local function App()
-			counter, setCounter = useState(1)
-			return React.createElement(Component, { count = counter })
-		end
+			local function App()
+				counter, setCounter = useState(1)
+				return React.createElement(Component, { count = counter })
+			end
 
-		act(function()
-			ReactNoop.render(React.createElement(App))
-			jestExpect(Scheduler).toFlushAndYield({
-				"Render: -1",
-				"Effect: 1",
-				"Reducer: 1",
-				"Reducer: 1",
+			act(function()
+				ReactNoop.render(React.createElement(App))
+				jestExpect(Scheduler).toFlushAndYield({
+					"Render: -1",
+					"Effect: 1",
+					"Reducer: 1",
+					"Reducer: 1",
+					"Render: 1",
+				})
+
+				jestExpect(ReactNoop).toMatchRenderedOutput("1")
+			end)
+
+			act(function()
+				setCounter(2)
+			end)
+			jestExpect(Scheduler).toHaveYielded({
 				"Render: 1",
+				"Effect: 2",
+				"Reducer: 2",
+				"Reducer: 2",
+				"Render: 2",
 			})
 
-			jestExpect(ReactNoop).toMatchRenderedOutput("1")
-		end)
-
-		act(function()
-			setCounter(2)
-		end)
-		jestExpect(Scheduler).toHaveYielded({
-			"Render: 1",
-			"Effect: 2",
-			"Reducer: 2",
-			"Reducer: 2",
-			"Render: 2",
-		})
-
-		jestExpect(ReactNoop).toMatchRenderedOutput("2")
-	end)
+			jestExpect(ReactNoop).toMatchRenderedOutput("2")
+		end
+	)
 
 	-- ROBLOX FIXME: this test needs to be enabled
 	-- Regression test. Covers a case where an internal state variable
@@ -4527,43 +4833,46 @@ return function()
 	--   ])
 	-- })
 
-	it("should update latest rendered reducer when a preceding state receives a render phase update", function()
-		-- Similar to previous test, except using a preceding render phase update
-		-- instead of new props.
-		local shadow, dispatch
-		local function App()
-			local step, setStep = useState(0)
-			-- ROBLOX Luau FIXME: I have to explicit add _action: nil, but it should be inferred: https://jira.rbx.com/browse/CLI-49121
-			shadow, dispatch = useReducer(function(_, __: nil)
-				return step
-			end, step)
+	it(
+		"should update latest rendered reducer when a preceding state receives a render phase update",
+		function()
+			-- Similar to previous test, except using a preceding render phase update
+			-- instead of new props.
+			local shadow, dispatch
+			local function App()
+				local step, setStep = useState(0)
+				-- ROBLOX Luau FIXME: I have to explicit add _action: nil, but it should be inferred: https://jira.rbx.com/browse/CLI-49121
+				shadow, dispatch = useReducer(function(_, __: nil)
+					return step
+				end, step)
 
-			if step < 5 then
-				setStep(step + 1)
+				if step < 5 then
+					setStep(step + 1)
+				end
+
+				Scheduler.unstable_yieldValue("Step: " .. step .. ", Shadow: " .. shadow)
+				return shadow
 			end
 
-			Scheduler.unstable_yieldValue("Step: " .. step .. ", Shadow: " .. shadow)
-			return shadow
+			ReactNoop.render(React.createElement(App))
+			jestExpect(Scheduler).toFlushAndYield({
+				"Step: 0, Shadow: 0",
+				"Step: 1, Shadow: 0",
+				"Step: 2, Shadow: 0",
+				"Step: 3, Shadow: 0",
+				"Step: 4, Shadow: 0",
+				"Step: 5, Shadow: 0",
+			})
+
+			jestExpect(ReactNoop).toMatchRenderedOutput("0")
+
+			act(function()
+				return dispatch()
+			end)
+			jestExpect(Scheduler).toHaveYielded({ "Step: 5, Shadow: 5" })
+			jestExpect(ReactNoop).toMatchRenderedOutput("5")
 		end
-
-		ReactNoop.render(React.createElement(App))
-		jestExpect(Scheduler).toFlushAndYield({
-			"Step: 0, Shadow: 0",
-			"Step: 1, Shadow: 0",
-			"Step: 2, Shadow: 0",
-			"Step: 3, Shadow: 0",
-			"Step: 4, Shadow: 0",
-			"Step: 5, Shadow: 0",
-		})
-
-		jestExpect(ReactNoop).toMatchRenderedOutput("0")
-
-		act(function()
-			return dispatch()
-		end)
-		jestExpect(Scheduler).toHaveYielded({ "Step: 5, Shadow: 5" })
-		jestExpect(ReactNoop).toMatchRenderedOutput("5")
-	end)
+	)
 
 	it("should process the rest pending updates after a render phase update", function()
 		-- Similar to previous test, except using a preceding render phase update
@@ -4582,7 +4891,12 @@ return function()
 			local c, setC = useState(false)
 			updateA = setA
 			updateC = setC
-			return string.format("%s%s%s", a and "A" or "a", b and "B" or "b", c and "C" or "c")
+			return string.format(
+				"%s%s%s",
+				a and "A" or "a",
+				b and "B" or "b",
+				c and "C" or "c"
+			)
 		end
 
 		act(function()
@@ -4604,108 +4918,120 @@ return function()
 		local function Child(props)
 			local label = props.label
 			useLayoutEffect(function()
-				Scheduler.unstable_yieldValue('Mount layout ' .. label)
+				Scheduler.unstable_yieldValue("Mount layout " .. label)
 				return function()
-					Scheduler.unstable_yieldValue('Unmount layout ' .. label)
+					Scheduler.unstable_yieldValue("Unmount layout " .. label)
 				end
-			end, {label})
+			end, { label })
 			useEffect(function()
-				Scheduler.unstable_yieldValue('Mount passive ' .. label)
+				Scheduler.unstable_yieldValue("Mount passive " .. label)
 				return function()
-					Scheduler.unstable_yieldValue('Unmount passive ' .. label)
+					Scheduler.unstable_yieldValue("Unmount passive " .. label)
 				end
-			end, {label})
+			end, { label })
 			return label
 		end
 
 		act(function()
 			root.render(
-				React.createElement(React.Fragment, nil,
-					React.createElement(Child, {key = "A", label = "A"}),
-					React.createElement(Child, {key = "B", label = "B"})
+				React.createElement(
+					React.Fragment,
+					nil,
+					React.createElement(Child, { key = "A", label = "A" }),
+					React.createElement(Child, { key = "B", label = "B" })
 				)
 			)
 		end)
 		jestExpect(Scheduler).toHaveYielded({
-			'Mount layout A',
-			'Mount layout B',
-			'Mount passive A',
-			'Mount passive B',
+			"Mount layout A",
+			"Mount layout B",
+			"Mount passive A",
+			"Mount passive B",
 		})
 
 		-- Delete A. This should only unmount the effect on A. In the regression,
 		-- B's effect would also unmount.
 		act(function()
 			root.render(
-				React.createElement(React.Fragment, nil,
-					React.createElement(Child, {key = "B", label = "B"})
+				React.createElement(
+					React.Fragment,
+					nil,
+					React.createElement(Child, { key = "B", label = "B" })
 				)
 			)
 		end)
-		jestExpect(Scheduler).toHaveYielded({'Unmount layout A', 'Unmount passive A'})
+		jestExpect(Scheduler).toHaveYielded({ "Unmount layout A", "Unmount passive A" })
 
 		-- Now delete and unmount B.
 		act(function()
 			root.render(nil)
 		end)
-		jestExpect(Scheduler).toHaveYielded({'Unmount layout B', 'Unmount passive B'})
+		jestExpect(Scheduler).toHaveYielded({ "Unmount layout B", "Unmount passive B" })
 	end)
 
-	it("regression: deleting a tree and unmounting its effects after a reorder", function()
-		local root = ReactNoop.createRoot()
+	it(
+		"regression: deleting a tree and unmounting its effects after a reorder",
+		function()
+			local root = ReactNoop.createRoot()
 
-		local function Child(props)
-			local label = props.label
-			useEffect(function()
-				Scheduler.unstable_yieldValue('Mount ' .. label)
-				return function()
-					Scheduler.unstable_yieldValue('Unmount ' .. label)
-				end
-			end, {label})
-			return label
+			local function Child(props)
+				local label = props.label
+				useEffect(function()
+					Scheduler.unstable_yieldValue("Mount " .. label)
+					return function()
+						Scheduler.unstable_yieldValue("Unmount " .. label)
+					end
+				end, { label })
+				return label
+			end
+
+			act(function()
+				root.render(
+					React.createElement(
+						React.Fragment,
+						nil,
+						React.createElement(Child, { key = "A", label = "A" }),
+						React.createElement(Child, { key = "B", label = "B" })
+					)
+				)
+			end)
+			jestExpect(Scheduler).toHaveYielded({
+				"Mount A",
+				"Mount B",
+			})
+
+			act(function()
+				root.render(
+					React.createElement(
+						React.Fragment,
+						nil,
+						React.createElement(Child, { key = "B", label = "B" }),
+						React.createElement(Child, { key = "A", label = "A" })
+					)
+				)
+			end)
+			jestExpect(Scheduler).toHaveYielded({})
+
+			act(function()
+				root.render(nil)
+			end)
+			jestExpect(Scheduler).toHaveYielded({
+				"Unmount B",
+				-- In the regression, the reorder would cause Child A to "forget" that it
+				-- contains passive effects. Then when we deleted the tree, A's unmount
+				-- effect would not fire.
+				"Unmount A",
+			})
 		end
-
-		act(function()
-			root.render(
-				React.createElement(React.Fragment, nil,
-					React.createElement(Child, {key = "A", label = "A"}),
-					React.createElement(Child, {key = "B", label = "B"})
-				)
-			)
-		end)
-		jestExpect(Scheduler).toHaveYielded({
-			'Mount A',
-			'Mount B',
-		})
-
-		act(function()
-			root.render(
-				React.createElement(React.Fragment, nil,
-					React.createElement(Child, {key = "B", label = "B"}),
-					React.createElement(Child, {key = "A", label = "A"})
-				)
-			)
-		end)
-		jestExpect(Scheduler).toHaveYielded({})
-
-		act(function()
-			root.render(nil)
-		end)
-		jestExpect(Scheduler).toHaveYielded({
-			'Unmount B',
-			-- In the regression, the reorder would cause Child A to "forget" that it
-			-- contains passive effects. Then when we deleted the tree, A's unmount
-			-- effect would not fire.
-			'Unmount A'})
-	end)
+	)
 
 	it("effect dependencies are persisted after a render phase update", function()
 		local handleClick
 		local function Test()
 			local count, setCount = useState(0)
 			useEffect(function()
-				Scheduler.unstable_yieldValue('Effect: ' .. count)
-			end, {count})
+				Scheduler.unstable_yieldValue("Effect: " .. count)
+			end, { count })
 
 			if count > 0 then
 				setCount(0)
@@ -4715,31 +5041,34 @@ return function()
 				return setCount(2)
 			end
 
-			return React.createElement(Text, {text=string.format("Render: %d", count)})
+			return React.createElement(
+				Text,
+				{ text = string.format("Render: %d", count) }
+			)
 		end
 
 		act(function()
 			ReactNoop.render(React.createElement(Test))
 		end)
 
-		jestExpect(Scheduler).toHaveYielded({'Render: 0', 'Effect: 0'})
+		jestExpect(Scheduler).toHaveYielded({ "Render: 0", "Effect: 0" })
 
 		act(function()
 			handleClick()
 		end)
 
-		jestExpect(Scheduler).toHaveYielded({'Render: 0'})
+		jestExpect(Scheduler).toHaveYielded({ "Render: 0" })
 
 		act(function()
 			handleClick()
 		end)
 
-		jestExpect(Scheduler).toHaveYielded({'Render: 0'})
+		jestExpect(Scheduler).toHaveYielded({ "Render: 0" })
 
 		act(function()
 			handleClick()
 		end)
 
-		jestExpect(Scheduler).toHaveYielded({'Render: 0'})
+		jestExpect(Scheduler).toHaveYielded({ "Render: 0" })
 	end)
 end

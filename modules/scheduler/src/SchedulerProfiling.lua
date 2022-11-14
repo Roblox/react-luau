@@ -22,7 +22,6 @@ local enableProfiling = ScheduleFeatureFlags.enableProfiling
 local runIdCounter: number = 0
 local mainThreadIdCounter: number = 0
 
-
 -- Bytes per element is 4
 local INITIAL_EVENT_LOG_SIZE = 131072
 local MAX_EVENT_LOG_SIZE = 524288 -- Equivalent to 2 megabytes

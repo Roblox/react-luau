@@ -327,10 +327,14 @@ exports.dehydrate = function(
 	return data
 end
 
-exports.fillInPath =
-	function(object: Object, data: DehydratedData, path: Array<string | number>, value: any): ()
-		unimplemented("fillInPath")
-	end
+exports.fillInPath = function(
+	object: Object,
+	data: DehydratedData,
+	path: Array<string | number>,
+	value: any
+): ()
+	unimplemented("fillInPath")
+end
 
 exports.hydrate = function(
 	object: any,

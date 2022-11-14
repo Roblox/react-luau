@@ -118,7 +118,7 @@ local function resetModules()
 	-- Clear all modules in the override require cache
 	requiredModules = {}
 
-	for script,cleanup in moduleCleanup do
+	for script, cleanup in moduleCleanup do
 		(cleanup :: CleanupFn)()
 	end
 

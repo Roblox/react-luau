@@ -114,10 +114,8 @@ return function()
 		end)
 
 		it("does not split errors with the wrong number of sections", function()
-			local errorString = table.concat(
-				{ "a", "b", "c", "d" },
-				ErrorHandling.__ERROR_DIVIDER
-			)
+			local errorString =
+				table.concat({ "a", "b", "c", "d" }, ErrorHandling.__ERROR_DIVIDER)
 
 			local parsed, rethrow = parseReactError(errorString)
 			jestExpect(parsed.message).toBe(errorString)

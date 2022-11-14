@@ -131,15 +131,21 @@ return function()
 	it("expires work", function()
 		scheduleCallback(NormalPriority, function(didTimeout)
 			Scheduler.unstable_advanceTime(100)
-			Scheduler.unstable_yieldValue(string.format("A (did timeout: %s)", tostring(didTimeout)))
+			Scheduler.unstable_yieldValue(
+				string.format("A (did timeout: %s)", tostring(didTimeout))
+			)
 		end)
 		scheduleCallback(UserBlockingPriority, function(didTimeout)
 			Scheduler.unstable_advanceTime(100)
-			Scheduler.unstable_yieldValue(string.format("B (did timeout: %s)", tostring(didTimeout)))
+			Scheduler.unstable_yieldValue(
+				string.format("B (did timeout: %s)", tostring(didTimeout))
+			)
 		end)
 		scheduleCallback(UserBlockingPriority, function(didTimeout)
 			Scheduler.unstable_advanceTime(100)
-			Scheduler.unstable_yieldValue(string.format("C (did timeout: %s)", tostring(didTimeout)))
+			Scheduler.unstable_yieldValue(
+				string.format("C (did timeout: %s)", tostring(didTimeout))
+			)
 		end)
 
 		-- Advance time, but not by enough to expire any work
@@ -149,11 +155,15 @@ return function()
 		-- Schedule a few more callbacks
 		scheduleCallback(NormalPriority, function(didTimeout)
 			Scheduler.unstable_advanceTime(100)
-			Scheduler.unstable_yieldValue(string.format("D (did timeout: %s)", tostring(didTimeout)))
+			Scheduler.unstable_yieldValue(
+				string.format("D (did timeout: %s)", tostring(didTimeout))
+			)
 		end)
 		scheduleCallback(NormalPriority, function(didTimeout)
 			Scheduler.unstable_advanceTime(100)
-			Scheduler.unstable_yieldValue(string.format("E (did timeout: %s)", tostring(didTimeout)))
+			Scheduler.unstable_yieldValue(
+				string.format("E (did timeout: %s)", tostring(didTimeout))
+			)
 		end)
 
 		-- Advance by just a bit more to expire the user blocking callbacks
@@ -799,6 +809,5 @@ return function()
 			Scheduler.unstable_advanceTime(100)
 			jestExpect(Scheduler).toFlushAndThrow("Oops A")
 		end)
-
 	end)
 end

@@ -524,9 +524,9 @@ local function createElement<P, T>(
 				displayName = debug.info(type_, "n") or "<function>"
 			elseif type(type_) == "table" then
 				displayName = (
-						(type_ :: T & React_ComponentType<P>).displayName
-						or (type_ :: T & React_ComponentType<P>).name
-					) or "Unknown"
+					(type_ :: T & React_ComponentType<P>).displayName
+					or (type_ :: T & React_ComponentType<P>).name
+				) or "Unknown"
 			else
 				-- ROBLOX Luau FIXME: Luau should have narrowed type_ to string based on this above branches
 				displayName = type_ :: string
@@ -555,7 +555,15 @@ local function createElement<P, T>(
 	end
 
 	-- ROBLOX FIXME Luau: this cast is needed until normalization lands
-	return ReactElement(type_, key, ref, self, source, ReactCurrentOwner.current, props) :: any
+	return ReactElement(
+		type_,
+		key,
+		ref,
+		self,
+		source,
+		ReactCurrentOwner.current,
+		props
+	) :: any
 end
 exports.createElement = createElement
 

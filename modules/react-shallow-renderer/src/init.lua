@@ -304,7 +304,7 @@ function ReactShallowRenderer:_createDispatcher()
 	end
 
 	-- ROBLOX FIXME Luau: work around 'Failed to unify type packs' error: : CLI-51338
-	local function useMemo<T...>(nextCreate: () -> T..., deps: Array<any>| nil): ...any
+	local function useMemo<T...>(nextCreate: () -> T..., deps: Array<any> | nil): ...any
 		self:_validateCurrentlyRenderingComponent()
 		self:_createWorkInProgressHook()
 
@@ -603,14 +603,18 @@ function ReactShallowRenderer:render(element, maybeContext)
 		ReactDebugCurrentFrame.getCurrentStack = getStackAddendum
 	end
 	local ok, result = pcall(function()
-		if isMemo(element) and typeof(elementType) == "table" and (elementType.propTypes or elementType.validateProps) then
+		if
+			isMemo(element)
+			and typeof(elementType) == "table"
+			and (elementType.propTypes or elementType.validateProps)
+		then
 			currentlyValidatingElement = element
 			-- ROBLOX deviation: adds support for legacy Roact's validateProps()
 			checkPropTypes(
 				elementType.propTypes,
 				elementType.validateProps,
 				element.props,
-				'prop',
+				"prop",
 				getComponentName(elementType)
 			)
 		end
@@ -622,11 +626,8 @@ function ReactShallowRenderer:render(element, maybeContext)
 				-- ROBLOX deviation: we don't have 'new', so we need to enumerate the element
 				-- types we can support
 				if typeof(elementType) == "function" then
-					self._instance = elementType(
-						element.props,
-						self._context,
-						self._updater
-					)
+					self._instance =
+						elementType(element.props, self._context, self._updater)
 				else
 					if elementType.isReactComponent then
 						self._instance = elementType.__ctor(
@@ -645,27 +646,27 @@ function ReactShallowRenderer:render(element, maybeContext)
 						self._instance.state
 					)
 					if partialState ~= nil then
-						self._instance.state = Object.assign(
-							{},
-							self._instance.state,
-							partialState
-						)
+						self._instance.state =
+							Object.assign({}, self._instance.state, partialState)
 					end
 				end
 
-		if typeof(elementType) == "table" and (elementType.contextTypes or elementType.validateProps) then
-			currentlyValidatingElement = element
-			-- ROBLOX deviation: adds support for legacy Roact's validateProps()
-			checkPropTypes(
-				elementType.contextTypes,
-				elementType.validateProps,
-				self._context,
-				'context',
-				getName(elementType, self._instance)
-			)
+				if
+					typeof(elementType) == "table"
+					and (elementType.contextTypes or elementType.validateProps)
+				then
+					currentlyValidatingElement = element
+					-- ROBLOX deviation: adds support for legacy Roact's validateProps()
+					checkPropTypes(
+						elementType.contextTypes,
+						elementType.validateProps,
+						self._context,
+						"context",
+						getName(elementType, self._instance)
+					)
 
-			currentlyValidatingElement = nil
-		end
+					currentlyValidatingElement = nil
+				end
 
 				self:_mountClassComponent(elementType, element, self._context)
 			else
@@ -697,10 +698,8 @@ function ReactShallowRenderer:render(element, maybeContext)
 									)
 								)
 							end
-							self._rendered = elementType.render(
-								element.props,
-								element.ref
-							)
+							self._rendered =
+								elementType.render(element.props, element.ref)
 						else
 							self._rendered = elementType(element.props, self._context)
 						end

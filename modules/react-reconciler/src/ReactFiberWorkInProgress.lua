@@ -32,10 +32,7 @@ exports.workInProgressRootSkippedLanes = function(value: Lanes?): Lanes
 end
 
 exports.markSkippedUpdateLanes = function(lane: Lane | Lanes): ()
-	_workInProgressRootSkippedLanes = mergeLanes(
-	  lane,
-	  _workInProgressRootSkippedLanes
-	)
+	_workInProgressRootSkippedLanes = mergeLanes(lane, _workInProgressRootSkippedLanes)
 end
 
 return exports

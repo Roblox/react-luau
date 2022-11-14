@@ -78,7 +78,10 @@ local function __printTree(commitTree: CommitTree)
 					tostring((node :: CommitTreeNode).id),
 					tostring((node :: CommitTreeNode).displayName or ""),
 					if (node :: CommitTreeNode).key
-						then string.format('key:"%s"', tostring((node :: CommitTreeNode).key))
+						then string.format(
+							'key:"%s"',
+							tostring((node :: CommitTreeNode).key)
+						)
 						else "",
 					tostring((node :: CommitTreeNode).treeBaseDuration)
 				)
@@ -229,8 +232,9 @@ local function updateTree(commitTree: CommitTree, operations: Array<number>): Co
 		elseif operation == TREE_OPERATION_REORDER_CHILDREN then
 			id = operations[POSTFIX_INCREMENT()]
 			local numChildren = operations[POSTFIX_INCREMENT()]
-			local children =
-				(Array.slice(operations, i, i + numChildren) :: any) :: Array<number>
+			local children = (
+				Array.slice(operations, i, i + numChildren) :: any
+			) :: Array<number>
 			i += numChildren
 			if __DEBUG__ then
 				debug_(
@@ -285,7 +289,9 @@ local function recursivelyInitializeTree(
 			hocDisplayNames = node.hocDisplayNames,
 			key = node.key,
 			parentID = parentID,
-			treeBaseDuration = (dataForRoot.initialTreeBaseDurations:get(id) :: any) :: number,
+			treeBaseDuration = (
+					dataForRoot.initialTreeBaseDurations:get(id) :: any
+				) :: number,
 			type = node.type,
 		})
 		for _, childID in node.children do
@@ -295,13 +301,11 @@ local function recursivelyInitializeTree(
 end
 
 local rootToCommitTreeMap: Map<number, Array<CommitTree>> = Map.new()
-local function getCommitTree(
-	ref: {
-		commitIndex: number,
-		profilerStore: ProfilerStore,
-		rootID: number,
-	}
-): CommitTree
+local function getCommitTree(ref: {
+	commitIndex: number,
+	profilerStore: ProfilerStore,
+	rootID: number,
+}): CommitTree
 	local commitIndex, profilerStore, rootID =
 		ref.commitIndex, ref.profilerStore, ref.rootID
 	if not rootToCommitTreeMap:has(rootID) then
@@ -335,10 +339,8 @@ local function getCommitTree(
 			dataForRoot :: ProfilingDataForRootFrontend
 		) -- Mutate the tree
 		if operations ~= nil and commitIndex <= #operations then
-			local commitTree = updateTree(
-				{ nodes = nodes, rootID = rootID },
-				operations[commitIndex]
-			)
+			local commitTree =
+				updateTree({ nodes = nodes, rootID = rootID }, operations[commitIndex])
 			if __DEBUG__ then
 				__printTree(commitTree)
 			end

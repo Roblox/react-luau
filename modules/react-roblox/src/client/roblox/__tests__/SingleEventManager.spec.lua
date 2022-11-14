@@ -41,10 +41,9 @@ return function()
 			local manager = SingleEventManager.new(instance)
 			local eventSpy = jest.fn()
 
-			manager:connectEvent(
-				"Event",
-				function(...) eventSpy(...) end
-			)
+			manager:connectEvent("Event", function(...)
+				eventSpy(...)
+			end)
 			manager:resume()
 
 			instance:Fire("foo")
@@ -69,10 +68,9 @@ return function()
 			local manager = SingleEventManager.new(instance)
 			local eventSpy = jest.fn()
 
-			manager:connectEvent(
-				"Event",
-				function(...) eventSpy(...) end
-			)
+			manager:connectEvent("Event", function(...)
+				eventSpy(...)
+			end)
 
 			instance:Fire("foo")
 			waitForEvents()
@@ -91,10 +89,9 @@ return function()
 			local manager = SingleEventManager.new(instance)
 			local eventSpy = jest.fn()
 
-			manager:connectEvent(
-				"Event",
-				function(...) eventSpy(...) end
-			)
+			manager:connectEvent("Event", function(...)
+				eventSpy(...)
+			end)
 			manager:resume()
 
 			instance:Fire("foo")
@@ -113,89 +110,94 @@ return function()
 			jestExpect(eventSpy).toBeCalledWith(instance, "bar")
 		end)
 
-		it("should invoke events triggered during resumption in the correct order", function()
-			local instance = Instance.new("BindableEvent")
-			local manager = SingleEventManager.new(instance)
+		it(
+			"should invoke events triggered during resumption in the correct order",
+			function()
+				local instance = Instance.new("BindableEvent")
+				local manager = SingleEventManager.new(instance)
 
-			local recordedValues = {}
-			local eventSpy = jest.fn(function(_, value)
-				table.insert(recordedValues, value)
+				local recordedValues = {}
+				local eventSpy = jest.fn(function(_, value)
+					table.insert(recordedValues, value)
 
-				if value == 2 then
-					instance:Fire(3)
-				elseif value == 3 then
-					instance:Fire(4)
-				end
-			end)
+					if value == 2 then
+						instance:Fire(3)
+					elseif value == 3 then
+						instance:Fire(4)
+					end
+				end)
 
-			manager:connectEvent(
-				"Event",
-				function(...)
+				manager:connectEvent("Event", function(...)
 					eventSpy(...)
-				end
-			)
-			manager:suspend()
+				end)
+				manager:suspend()
 
-			instance:Fire(1)
-			instance:Fire(2)
-			waitForEvents()
+				instance:Fire(1)
+				instance:Fire(2)
+				waitForEvents()
 
-			manager:resume()
-			waitForEvents()
-			waitForEvents()
-			jestExpect(eventSpy).toBeCalledTimes(4)
-			jestExpect(recordedValues).toEqual({1, 2, 3, 4})
-		end)
-
-		it("should not invoke events fired during suspension but disconnected before resumption", function()
-			local instance = Instance.new("BindableEvent")
-			local manager = SingleEventManager.new(instance)
-			local eventSpy = jest.fn()
-
-			manager:connectEvent(
-				"Event",
-				function(...) eventSpy(...) end
-			)
-			manager:suspend()
-
-			instance:Fire(1)
-			waitForEvents()
-
-			manager:connectEvent("Event")
-
-			manager:resume()
-			jestExpect(eventSpy).never.toBeCalled()
-		end)
-
-		it("should not yield events through the SingleEventManager when resuming", function()
-			local instance = Instance.new("BindableEvent")
-			local manager = SingleEventManager.new(instance)
-
-			manager:connectEvent("Event", function()
-				coroutine.yield()
-			end)
-
-			manager:resume()
-
-			local co = coroutine.create(function()
-				instance:Fire(5)
-			end)
-
-			assert(coroutine.resume(co))
-			waitForEvents()
-			jestExpect(coroutine.status(co)).toBe("dead")
-
-			manager:suspend()
-			instance:Fire(5)
-			waitForEvents()
-
-			co = coroutine.create(function()
 				manager:resume()
-			end)
+				waitForEvents()
+				waitForEvents()
+				jestExpect(eventSpy).toBeCalledTimes(4)
+				jestExpect(recordedValues).toEqual({ 1, 2, 3, 4 })
+			end
+		)
 
-			assert(coroutine.resume(co))
-			jestExpect(coroutine.status(co)).toBe("dead")
-		end)
+		it(
+			"should not invoke events fired during suspension but disconnected before resumption",
+			function()
+				local instance = Instance.new("BindableEvent")
+				local manager = SingleEventManager.new(instance)
+				local eventSpy = jest.fn()
+
+				manager:connectEvent("Event", function(...)
+					eventSpy(...)
+				end)
+				manager:suspend()
+
+				instance:Fire(1)
+				waitForEvents()
+
+				manager:connectEvent("Event")
+
+				manager:resume()
+				jestExpect(eventSpy).never.toBeCalled()
+			end
+		)
+
+		it(
+			"should not yield events through the SingleEventManager when resuming",
+			function()
+				local instance = Instance.new("BindableEvent")
+				local manager = SingleEventManager.new(instance)
+
+				manager:connectEvent("Event", function()
+					coroutine.yield()
+				end)
+
+				manager:resume()
+
+				local co = coroutine.create(function()
+					instance:Fire(5)
+				end)
+
+				assert(coroutine.resume(co))
+				waitForEvents()
+				jestExpect(coroutine.status(co)).toBe("dead")
+
+				manager:suspend()
+				instance:Fire(5)
+				waitForEvents()
+
+				co = coroutine.create(function()
+					manager:resume()
+				end)
+
+				assert(coroutine.resume(co))
+				jestExpect(coroutine.status(co)).toBe("dead")
+			end
+		)
 
 		it("should not throw errors through SingleEventManager when resuming", function()
 			local errorText = "Error from SingleEventManager test"
@@ -227,35 +229,37 @@ return function()
 			-- jestExpect(logInfo.warnings[1]:find(errorText)).to.be.ok()
 		end)
 
-		it("should not overflow with events if manager:resume() is invoked when resuming a suspended event", function()
-			local instance = Instance.new("BindableEvent")
-			local manager = SingleEventManager.new(instance)
+		it(
+			"should not overflow with events if manager:resume() is invoked when resuming a suspended event",
+			function()
+				local instance = Instance.new("BindableEvent")
+				local manager = SingleEventManager.new(instance)
 
-			-- This connection emulates what happens if reconciliation is
-			-- triggered again in response to reconciliation. Without
-			-- appropriate guards, the inner resume() call will process the
-			-- Fire(1) event again, causing a nasty stack overflow.
-			local eventSpy = jest.fn(function(_, value)
-				if value == 1 then
-					manager:suspend()
-					instance:Fire(2)
-					manager:resume()
-				end
-			end)
+				-- This connection emulates what happens if reconciliation is
+				-- triggered again in response to reconciliation. Without
+				-- appropriate guards, the inner resume() call will process the
+				-- Fire(1) event again, causing a nasty stack overflow.
+				local eventSpy = jest.fn(function(_, value)
+					if value == 1 then
+						manager:suspend()
+						instance:Fire(2)
+						manager:resume()
+					end
+				end)
 
-			manager:connectEvent(
-				"Event",
-				function(...) eventSpy(...) end
-			)
+				manager:connectEvent("Event", function(...)
+					eventSpy(...)
+				end)
 
-			manager:suspend()
-			instance:Fire(1)
-			manager:resume()
-			waitForEvents()
-			waitForEvents()
+				manager:suspend()
+				instance:Fire(1)
+				manager:resume()
+				waitForEvents()
+				waitForEvents()
 
-			jestExpect(eventSpy).toBeCalledTimes(2)
-		end)
+				jestExpect(eventSpy).toBeCalledTimes(2)
+			end
+		)
 	end)
 
 	describe("connectPropertyChange", function()
@@ -267,10 +271,9 @@ return function()
 			local manager = SingleEventManager.new(instance)
 			local eventSpy = jest.fn()
 
-			manager:connectPropertyChange(
-				"Name",
-				function(...) eventSpy(...) end
-			)
+			manager:connectPropertyChange("Name", function(...)
+				eventSpy(...)
+			end)
 			manager:resume()
 
 			instance.Name = "foo"

@@ -139,9 +139,8 @@ return function()
 					)
 				)
 			end
-			local root = ReactTestRenderer.create(
-				React.createElement(Component, { x = 0 })
-			)
+			local root =
+				ReactTestRenderer.create(React.createElement(Component, { x = 0 }))
 			jestExpect(instance.props.x).toBe(0)
 			jestExpect(instance.state.y).toBe(0)
 			ReactTestRenderer.unstable_batchedUpdates(function()
@@ -451,7 +450,7 @@ return function()
 			jestExpect(numBottomRenders).toBe(1)
 		end)
 
-        -- ROBLOX FIXME: need to figure out how to make these work with test renderers
+		-- ROBLOX FIXME: need to figure out how to make these work with test renderers
 		itSKIP("should flow updates correctly", function()
 			-- 	local willUpdates = {}
 			-- 	local didUpdates = {}
@@ -1503,9 +1502,7 @@ return function()
 			jestExpect(function()
 				ReactTestRenderer.create(React.createElement(NonTerminating))
 			end).toThrow("Maximum")
-			local container = ReactTestRenderer.create(
-				React.createElement(Terminating)
-			)
+			local container = ReactTestRenderer.create(React.createElement(Terminating))
 			jestExpect(container.toJSON()).toBe("1")
 			jestExpect(function()
 				ReactTestRenderer.create(React.createElement(NonTerminating))
@@ -1674,9 +1671,7 @@ return function()
 			end
 			local container
 			ReactTestRenderer.act(function()
-				container = ReactTestRenderer.create(
-					React.createElement(Terminating)
-				)
+				container = ReactTestRenderer.create(React.createElement(Terminating))
 			end)
 			jestExpect(container.toJSON()).toBe("50")
 			ReactTestRenderer.act(function()
@@ -1702,9 +1697,7 @@ return function()
 				end
 				local container
 				ReactTestRenderer.act(function()
-					container = ReactTestRenderer.create(
-						React.createElement(Terminating)
-					)
+					container = ReactTestRenderer.create(React.createElement(Terminating))
 				end)
 				jestExpect(Scheduler).toHaveYielded({ "Done" })
 				jestExpect(container.toJSON()).toBe("10000")

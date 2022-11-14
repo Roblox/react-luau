@@ -189,7 +189,8 @@ type EventName = string -- $Keys<OutgoingEvents>
 type ElementType<T, U> = any
 
 export type Bridge<
-	OutgoingEvents, IncomingEvents -- ROBLOX deviation: Luau can't express	-- > extends EventEmitter<{|	--   ...IncomingEvents,	--   ...OutgoingEvents,	-- |}> {
+	OutgoingEvents,
+	IncomingEvents -- ROBLOX deviation: Luau can't express	-- > extends EventEmitter<{|	--   ...IncomingEvents,	--   ...OutgoingEvents,	-- |}> {
 > = EventEmitter<any> & {
 	_isShutdown: boolean,
 	_messageQueue: Array<any>,

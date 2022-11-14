@@ -49,14 +49,13 @@ local function shouldYieldToHost()
 end
 
 -- Since we yield every frame regardless, `requestPaint` has no effect.
-local function requestPaint()
-end
+local function requestPaint() end
 
 local function forceFrameRate(fps)
 	if fps < 0 or fps > 125 then
 		console.warn(
-			"forceFrameRate takes a positive int between 0 and 125, " ..
-			"forcing frame rates higher than 125 fps is not supported"
+			"forceFrameRate takes a positive int between 0 and 125, "
+				.. "forcing frame rates higher than 125 fps is not supported"
 		)
 		return
 	end
@@ -138,7 +137,7 @@ end
 local function requestHostTimeout(callback, ms)
 	taskTimeoutID = setTimeout(function()
 		callback(getCurrentTime())
-	end, ms);
+	end, ms)
 end
 
 local function cancelHostTimeout()

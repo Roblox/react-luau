@@ -17,29 +17,28 @@ local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
 type Function = (...any) -> ...any
 
-
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 
-type Object = { [string]: any };
-type Array<T> = { [number]: T };
+type Object = { [string]: any }
+type Array<T> = { [number]: T }
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
-type Fiber = ReactInternalTypes.Fiber;
-type SuspenseHydrationCallbacks = ReactInternalTypes.SuspenseHydrationCallbacks;
-type FiberRoot = ReactInternalTypes.FiberRoot;
+type Fiber = ReactInternalTypes.Fiber
+type SuspenseHydrationCallbacks = ReactInternalTypes.SuspenseHydrationCallbacks
+type FiberRoot = ReactInternalTypes.FiberRoot
 
 local ReactRootTags = require(script.Parent.ReactRootTags)
-type RootTag = ReactRootTags.RootTag;
+type RootTag = ReactRootTags.RootTag
 
 local ReactFiberFlags = require(script.Parent.ReactFiberFlags)
 
 local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
-type Instance = ReactFiberHostConfig.Instance;
-type TextInstance = ReactFiberHostConfig.TextInstance;
-type Container = ReactFiberHostConfig.Container;
-type PublicInstance = ReactFiberHostConfig.PublicInstance;
-type RendererInspectionConfig = ReactFiberHostConfig.RendererInspectionConfig;
+type Instance = ReactFiberHostConfig.Instance
+type TextInstance = ReactFiberHostConfig.TextInstance
+type Container = ReactFiberHostConfig.Container
+type PublicInstance = ReactFiberHostConfig.PublicInstance
+type RendererInspectionConfig = ReactFiberHostConfig.RendererInspectionConfig
 
 local ReactWorkTags = require(script.Parent.ReactWorkTags)
 local FundamentalComponent = ReactWorkTags.FundamentalComponent
@@ -47,14 +46,16 @@ local ReactTypes = require(Packages.Shared)
 type ReactNodeList = ReactTypes.ReactNodeList
 
 local ReactFiberLane = require(script.Parent.ReactFiberLane)
-type Lane = ReactFiberLane.Lane;
-type LanePriority = ReactFiberLane.LanePriority;
-local ReactFiberSuspenseComponent = require(script.Parent["ReactFiberSuspenseComponent.new"])
-type SuspenseState = ReactFiberSuspenseComponent.SuspenseState;
+type Lane = ReactFiberLane.Lane
+type LanePriority = ReactFiberLane.LanePriority
+local ReactFiberSuspenseComponent =
+	require(script.Parent["ReactFiberSuspenseComponent.new"])
+type SuspenseState = ReactFiberSuspenseComponent.SuspenseState
 
 local ReactFiberTreeReflection = require(script.Parent.ReactFiberTreeReflection)
 local findCurrentHostFiber = ReactFiberTreeReflection.findCurrentHostFiber
-local findCurrentHostFiberWithNoPortals = ReactFiberTreeReflection.findCurrentHostFiberWithNoPortals
+local findCurrentHostFiberWithNoPortals =
+	ReactFiberTreeReflection.findCurrentHostFiberWithNoPortals
 local getInstance = require(Packages.Shared).ReactInstanceMap.get
 local HostComponent = ReactWorkTags.HostComponent
 local ClassComponent = ReactWorkTags.ClassComponent
@@ -63,7 +64,8 @@ local SuspenseComponent = ReactWorkTags.SuspenseComponent
 local getComponentName = require(Packages.Shared).getComponentName
 local invariant = require(Packages.Shared).invariant
 local describeError = require(Packages.Shared).describeError
-local enableSchedulingProfiler = require(Packages.Shared).ReactFeatureFlags.enableSchedulingProfiler
+local enableSchedulingProfiler =
+	require(Packages.Shared).ReactFeatureFlags.enableSchedulingProfiler
 local ReactSharedInternals = require(Packages.Shared).ReactSharedInternals
 local getPublicInstance = require(script.Parent.ReactFiberHostConfig).getPublicInstance
 local ReactFiberContext = require(script.Parent["ReactFiberContext.new"])
@@ -131,7 +133,8 @@ exports.ReactWorkTags = ReactWorkTags
 exports.ReactTypeOfMode = ReactTypeOfMode
 exports.ReactFiberFlags = ReactFiberFlags
 exports.getNearestMountedFiber = ReactFiberTreeReflection.getNearestMountedFiber
-exports.findCurrentFiberUsingSlowPath = ReactFiberTreeReflection.findCurrentFiberUsingSlowPath
+exports.findCurrentFiberUsingSlowPath =
+	ReactFiberTreeReflection.findCurrentFiberUsingSlowPath
 
 -- exports.registerMutableSourceForHydration = require(script.Parent["ReactMutableSource.new"]).registerMutableSourceForHydration
 exports.createPortal = require(script.Parent.ReactPortal).createPortal
@@ -148,11 +151,11 @@ exports.createPortal = require(script.Parent.ReactPortal).createPortal
 -- exports.focusWithin = ReactTestSelectors.focusWithin
 -- exports.observeVisibleRects = ReactTestSelectors.observeVisibleRects
 
-type OpaqueRoot = FiberRoot;
+type OpaqueRoot = FiberRoot
 
 -- 0 is PROD, 1 is DEV.
 -- Might add PROFILE later.
-type BundleType = number;
+type BundleType = number
 
 type DevToolsConfig = {
 	bundleType: BundleType,
@@ -172,9 +175,7 @@ if __DEV__ then
 	didWarnAboutFindNodeInStrictMode = {}
 end
 
-local function getContextForSubtree(
-	parentComponent: any?
-): Object
+local function getContextForSubtree(parentComponent: any?): Object
 	if not parentComponent then
 		return emptyContextObject
 	end
@@ -196,11 +197,11 @@ local function findHostInstance(component: Object): PublicInstance | nil
 	local fiber = getInstance(component)
 	if fiber == nil then
 		if typeof(component.render) == "function" then
-			invariant(false, 'Unable to find node on an unmounted component.')
+			invariant(false, "Unable to find node on an unmounted component.")
 		else
 			invariant(
 				false,
-				'Argument appears to not be a ReactComponent. Keys: %s',
+				"Argument appears to not be a ReactComponent. Keys: %s",
 				-- ROBLOX deviation: explicitly coerce the array of strings into a string
 				table.concat(Object.keys(component))
 			)
@@ -221,11 +222,11 @@ local function findHostInstanceWithWarning(
 		local fiber = getInstance(component)
 		if fiber == nil then
 			if typeof(component.render) == "function" then
-				invariant(false, 'Unable to find node on an unmounted component.')
+				invariant(false, "Unable to find node on an unmounted component.")
 			else
 				invariant(
 					false,
-					'Argument appears to not be a ReactComponent. Keys: %s',
+					"Argument appears to not be a ReactComponent. Keys: %s",
 					-- ROBLOX deviation: explicitly convert array into string
 					table.concat(Object.keys(component))
 				)
@@ -245,22 +246,22 @@ local function findHostInstanceWithWarning(
 					setCurrentDebugFiberInDEV(hostFiber)
 					if bit32.band(fiber.mode, StrictMode) ~= 0 then
 						console.error(
-							"%s is deprecated in StrictMode. " ..
-								"%s was passed an instance of %s which is inside StrictMode. " ..
-								"Instead, add a ref directly to the element you want to reference. " ..
-								"Learn more about using refs safely here: " ..
-								"https://reactjs.org/link/strict-mode-find-node",
+							"%s is deprecated in StrictMode. "
+								.. "%s was passed an instance of %s which is inside StrictMode. "
+								.. "Instead, add a ref directly to the element you want to reference. "
+								.. "Learn more about using refs safely here: "
+								.. "https://reactjs.org/link/strict-mode-find-node",
 							methodName,
 							methodName,
 							componentName
 						)
 					else
 						console.error(
-							"%s is deprecated in StrictMode. " ..
-								"%s was passed an instance of %s which renders StrictMode children. " ..
-								"Instead, add a ref directly to the element you want to reference. " ..
-								"Learn more about using refs safely here: " ..
-								"https://reactjs.org/link/strict-mode-find-node",
+							"%s is deprecated in StrictMode. "
+								.. "%s was passed an instance of %s which renders StrictMode children. "
+								.. "Instead, add a ref directly to the element you want to reference. "
+								.. "Learn more about using refs safely here: "
+								.. "https://reactjs.org/link/strict-mode-find-node",
 							methodName,
 							methodName,
 							componentName
@@ -329,16 +330,16 @@ exports.updateContainer = function(
 
 	if __DEV__ then
 		if
-			ReactCurrentFiberIsRendering and
-			ReactCurrentFiber.current ~= nil and
-			not didWarnAboutNestedUpdates
+			ReactCurrentFiberIsRendering
+			and ReactCurrentFiber.current ~= nil
+			and not didWarnAboutNestedUpdates
 		then
 			didWarnAboutNestedUpdates = true
 			console.error(
-				"Render methods should be a pure function of props and state; " ..
-					"triggering nested component updates from render is not allowed. " ..
-					"If necessary, trigger nested updates in componentDidUpdate.\n\n" ..
-					"Check the render method of %s.",
+				"Render methods should be a pure function of props and state; "
+					.. "triggering nested component updates from render is not allowed. "
+					.. "If necessary, trigger nested updates in componentDidUpdate.\n\n"
+					.. "Check the render method of %s.",
 				getComponentName((ReactCurrentFiber.current :: any).type) or "Unknown"
 			)
 		end
@@ -362,8 +363,8 @@ exports.updateContainer = function(
 		if __DEV__ then
 			if typeof(callback) ~= "function" then
 				console.error(
-					"render(...): Expected the last optional `callback` argument to be a " ..
-						"function. Instead received: %s.",
+					"render(...): Expected the last optional `callback` argument to be a "
+						.. "function. Instead received: %s.",
 					tostring(callback)
 				)
 			end
@@ -390,19 +391,18 @@ exports.flushPassiveEffects = flushPassiveEffects
 exports.IsThisRendererActing = IsThisRendererActing
 exports.act = act
 
-exports.getPublicRootInstance = function(
-	container: OpaqueRoot
-): React_Component<any, any> | PublicInstance | nil
-	local containerFiber = container.current
-	if not containerFiber.child then
-		return nil
+exports.getPublicRootInstance =
+	function(container: OpaqueRoot): React_Component<any, any> | PublicInstance | nil
+		local containerFiber = container.current
+		if not containerFiber.child then
+			return nil
+		end
+		if containerFiber.child.tag == HostComponent then
+			return getPublicInstance(containerFiber.child.stateNode)
+		else
+			return containerFiber.child.stateNode
+		end
 	end
-	if containerFiber.child.tag == HostComponent then
-		return getPublicInstance(containerFiber.child.stateNode)
-	else
-		return containerFiber.child.stateNode
-	end
-end
 
 -- deviation: Declare function ahead of use
 local markRetryLaneIfNotHydrated
@@ -432,10 +432,8 @@ local function markRetryLaneImpl(fiber: Fiber, retryLane: Lane)
 	local suspenseState: SuspenseState? = fiber.memoizedState
 	if suspenseState then
 		if suspenseState ~= nil and suspenseState.dehydrated ~= nil then
-			suspenseState.retryLane = higherPriorityLane(
-				suspenseState.retryLane,
-				retryLane
-			)
+			suspenseState.retryLane =
+				higherPriorityLane(suspenseState.retryLane, retryLane)
 		end
 	end
 end
@@ -508,9 +506,7 @@ exports.findHostInstance = findHostInstance
 
 exports.findHostInstanceWithWarning = findHostInstanceWithWarning
 
-exports.findHostInstanceWithNoPortals = function(
-	fiber: Fiber
-): PublicInstance?
+exports.findHostInstanceWithNoPortals = function(fiber: Fiber): PublicInstance?
 	local hostFiber = findCurrentHostFiberWithNoPortals(fiber)
 	if hostFiber == nil then
 		return nil
@@ -577,7 +573,7 @@ if __DEV__ then
 
 	-- deviation: FIXME: obj: `Object | Array<any>`, narrowing not possible with `isArray`
 	local function copyWithRenameImpl(
-		obj: Object ,
+		obj: Object,
 		oldPath: Array<string | number>,
 		newPath: Array<string | number>,
 		index: number
@@ -624,7 +620,7 @@ if __DEV__ then
 			for i = 1, #newPath do
 				if oldPath[i] ~= newPath[i] then
 					console.warn(
-						'copyWithRename() expects paths to be the same except for the deepest key'
+						"copyWithRename() expects paths to be the same except for the deepest key"
 					)
 					return nil
 				end
@@ -676,49 +672,42 @@ if __DEV__ then
 	end
 
 	-- Support DevTools editable values for useState and useReducer.
-	overrideHookState = function(
-		fiber: Fiber,
-		id: number,
-		path: Array<string | number>,
-		value: any
-	)
-		local hook = findHook(fiber, id)
-		if hook ~= nil then
-			local newState = copyWithSet(hook.memoizedState, path, value)
-			hook.memoizedState = newState
-			hook.baseState = newState
+	overrideHookState =
+		function(fiber: Fiber, id: number, path: Array<string | number>, value: any)
+			local hook = findHook(fiber, id)
+			if hook ~= nil then
+				local newState = copyWithSet(hook.memoizedState, path, value)
+				hook.memoizedState = newState
+				hook.baseState = newState
 
-			-- We aren't actually adding an update to the queue,
-			-- because there is no update we can add for useReducer hooks that won't trigger an error.
-			-- (There's no appropriate action type for DevTools overrides.)
-			-- As a result though, React will see the scheduled update as a noop and bailout.
-			-- Shallow cloning props works as a workaround for now to bypass the bailout check.
-			fiber.memoizedProps = table.clone(fiber.memoizedProps)
+				-- We aren't actually adding an update to the queue,
+				-- because there is no update we can add for useReducer hooks that won't trigger an error.
+				-- (There's no appropriate action type for DevTools overrides.)
+				-- As a result though, React will see the scheduled update as a noop and bailout.
+				-- Shallow cloning props works as a workaround for now to bypass the bailout check.
+				fiber.memoizedProps = table.clone(fiber.memoizedProps)
 
-			scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp)
+				scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp)
+			end
 		end
-	end
-	overrideHookStateDeletePath = function(
-		fiber: Fiber,
-		id: number,
-		path: Array<string | number>
-	)
-		local hook = findHook(fiber, id)
-		if hook ~= nil then
-			local newState = copyWithDelete(hook.memoizedState, path)
-			hook.memoizedState = newState
-			hook.baseState = newState
+	overrideHookStateDeletePath =
+		function(fiber: Fiber, id: number, path: Array<string | number>)
+			local hook = findHook(fiber, id)
+			if hook ~= nil then
+				local newState = copyWithDelete(hook.memoizedState, path)
+				hook.memoizedState = newState
+				hook.baseState = newState
 
-			-- We aren't actually adding an update to the queue,
-			-- because there is no update we can add for useReducer hooks that won't trigger an error.
-			-- (There's no appropriate action type for DevTools overrides.)
-			-- As a result though, React will see the scheduled update as a noop and bailout.
-			-- Shallow cloning props works as a workaround for now to bypass the bailout check.
-			fiber.memoizedProps = table.clone(fiber.memoizedProps)
+				-- We aren't actually adding an update to the queue,
+				-- because there is no update we can add for useReducer hooks that won't trigger an error.
+				-- (There's no appropriate action type for DevTools overrides.)
+				-- As a result though, React will see the scheduled update as a noop and bailout.
+				-- Shallow cloning props works as a workaround for now to bypass the bailout check.
+				fiber.memoizedProps = table.clone(fiber.memoizedProps)
 
-			scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp)
+				scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp)
+			end
 		end
-	end
 	overrideHookStateRenamePath = function(
 		fiber: Fiber,
 		id: number,
@@ -792,9 +781,7 @@ function findHostInstanceByFiber(fiber: Fiber): Instance | TextInstance | nil
 	return hostFiber.stateNode
 end
 
-function emptyFindFiberByHostInstance(
-	instance: Instance | TextInstance
-): Fiber | nil
+function emptyFindFiberByHostInstance(instance: Instance | TextInstance): Fiber | nil
 	return nil
 end
 
@@ -824,8 +811,7 @@ exports.injectIntoDevTools = function(devToolsConfig: DevToolsConfig): boolean
 		scheduleUpdate = scheduleUpdate,
 		currentDispatcherRef = ReactCurrentDispatcher,
 		findHostInstanceByFiber = findHostInstanceByFiber,
-		findFiberByHostInstance =
-			findFiberByHostInstance or emptyFindFiberByHostInstance,
+		findFiberByHostInstance = findFiberByHostInstance or emptyFindFiberByHostInstance,
 		-- FIXME: WIP
 		-- React Refresh
 		-- findHostInstancesForRefresh = __DEV__ and findHostInstancesForRefresh or nil,
@@ -833,7 +819,7 @@ exports.injectIntoDevTools = function(devToolsConfig: DevToolsConfig): boolean
 		-- scheduleRoot = __DEV__ and scheduleRoot or nil,
 		-- setRefreshHandler = __DEV__ and setRefreshHandler or nil,
 		-- Enables DevTools to append owner stacks to error messages in DEV mode.
-		getCurrentFiber = getCurrentFiber
+		getCurrentFiber = getCurrentFiber,
 	})
 end
 

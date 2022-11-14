@@ -89,8 +89,8 @@ type Store_static = {
 	new: (bridge: FrontendBridge, config: Config?) -> Store,
 }
 local Store: Store & Store_static = (
-		setmetatable({}, { __index = EventEmitter }) :: any
-	) :: Store & Store_static
+	setmetatable({}, { __index = EventEmitter }) :: any
+) :: Store & Store_static
 local StoreMetatable = { __index = Store }
 
 function Store.new(bridge: FrontendBridge, config: Config?): Store
@@ -644,8 +644,8 @@ function Store:toggleIsCollapsed(id: number, isCollapsed: boolean): ()
 				local weightDelta = 1 - (element :: Element).weight
 				-- ROBLOX FIXME Luau: shouldn't need this annoatation, should infer correctly
 				local parentElement: Element? = (
-						self._idToElement:get(element.parentID) :: any
-					) :: Element
+					self._idToElement:get(element.parentID) :: any
+				) :: Element
 				while parentElement ~= nil do
 					-- We don't need to break on a collapsed parent in the same way as the expand case below.
 					-- That's because collapsing a node doesn't "bubble" and affect its parents.
@@ -672,8 +672,8 @@ function Store:toggleIsCollapsed(id: number, isCollapsed: boolean): ()
 					local weightDelta = newWeight - oldWeight
 					-- ROBLOX FIXME Luau: shouldn't need this annoatation, should infer correctly
 					local parentElement: Element? = (
-							self._idToElement:get(currentElement.parentID) :: any
-						) :: Element
+						self._idToElement:get(currentElement.parentID) :: any
+					) :: Element
 
 					while parentElement ~= nil do
 						parentElement.weight += weightDelta
@@ -737,12 +737,10 @@ function Store:_adjustParentTreeWeight(parentElement: Element | nil, weightDelta
 	end
 end
 
-function Store:onBridgeNativeStyleEditorSupported(
-	options: {
-		isSupported: boolean,
-		validAttributes: Array<string>,
-	}
-)
+function Store:onBridgeNativeStyleEditorSupported(options: {
+	isSupported: boolean,
+	validAttributes: Array<string>,
+})
 	local isSupported, validAttributes = options.isSupported, options.validAttributes
 
 	self._isNativeStyleEditorSupported = isSupported
@@ -805,9 +803,9 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 			if self._idToElement:has(id) then
 				error(
 					Error.new(
-						(
-							"Cannot add node %s because a node with that id is already in the Store."
-						):format(tostring(id))
+						("Cannot add node %s because a node with that id is already in the Store."):format(
+							tostring(id)
+						)
 					)
 				)
 			end
@@ -880,9 +878,10 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 				if not self._idToElement:has(parentID) then
 					error(
 						Error.new(
-							(
-								"Cannot add child %s to parent %s because parent node was not found in the Store."
-							):format(tostring(id), tostring(parentID))
+							("Cannot add child %s to parent %s because parent node was not found in the Store."):format(
+								tostring(id),
+								tostring(parentID)
+							)
 						)
 					)
 				end
@@ -892,10 +891,7 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 				table.insert(parentElement.children, id)
 
 				local displayNameWithoutHOCs, hocDisplayNames =
-					separateDisplayNameAndHOCs(
-						displayName,
-						type_
-					)
+					separateDisplayNameAndHOCs(displayName, type_)
 
 				local element = {
 					children = {},
@@ -938,9 +934,9 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 				if not self._idToElement:has(id) then
 					error(
 						Error.new(
-							(
-								"Cannot remove node %s because no matching node was found in the Store."
-							):format(tostring(id))
+							("Cannot remove node %s because no matching node was found in the Store."):format(
+								tostring(id)
+							)
 						)
 					)
 				end
@@ -994,9 +990,10 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 
 					if parentElement == nil then
 						error(
-							(
-								"Cannot remove node %s from parent %s because no matching node was found in the Store."
-							):format(tostring(id), tostring(parentID))
+							("Cannot remove node %s from parent %s because no matching node was found in the Store."):format(
+								tostring(id),
+								tostring(parentID)
+							)
 						)
 					end
 
@@ -1025,9 +1022,9 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 			if not self._idToElement:has(id) then
 				error(
 					Error.new(
-						(
-							"Cannot reorder children for node %s because no matching node was found in the Store."
-						):format(tostring(id))
+						("Cannot reorder children for node %s because no matching node was found in the Store."):format(
+							tostring(id)
+						)
 					)
 				)
 			end

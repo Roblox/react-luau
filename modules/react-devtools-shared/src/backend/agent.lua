@@ -240,9 +240,8 @@ function Agent.new(bridge: BackendBridge)
 		sessionStorageRemoveItem(SESSION_STORAGE_RELOAD_AND_PROFILE_KEY)
 	end
 
-	local persistedSelectionString = sessionStorageGetItem(
-		SESSION_STORAGE_LAST_SELECTION_KEY
-	)
+	local persistedSelectionString =
+		sessionStorageGetItem(SESSION_STORAGE_LAST_SELECTION_KEY)
 
 	if persistedSelectionString ~= nil then
 		self._persistedSelection = JSON.JSONDecode(persistedSelectionString)
@@ -705,12 +704,10 @@ function Agent:storeAsGlobal(storeAsGlobalParams: StoreAsGlobalParams)
 	end
 end
 
-function Agent:updateConsolePatchSettings(
-	_ref16: {
-		appendComponentStack: boolean,
-		breakOnConsoleErrors: boolean,
-	}
-)
+function Agent:updateConsolePatchSettings(_ref16: {
+	appendComponentStack: boolean,
+	breakOnConsoleErrors: boolean,
+})
 	local appendComponentStack, breakOnConsoleErrors =
 		_ref16.appendComponentStack, _ref16.breakOnConsoleErrors
 
@@ -797,8 +794,7 @@ function Agent:onHookOperations(operations: Array<number>)
 				console.warn(string.format('Invalid renderer id "%d"', rendererID))
 			else
 				local prevMatch = self._persistedSelectionMatch
-				local nextMatch =
-					(renderer :: RendererInterface).getBestMatchForTrackedPath()
+				local nextMatch = (renderer :: RendererInterface).getBestMatchForTrackedPath()
 
 				self._persistedSelectionMatch = nextMatch
 

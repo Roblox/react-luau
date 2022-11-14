@@ -318,53 +318,55 @@ exports.setBreakOnConsoleErrors = function(value: boolean): ()
 		JSON:JSONEncode(value)
 	)
 end
-exports.separateDisplayNameAndHOCs =
-	function(displayName: string | nil, type_: ElementType): (string | nil, Array<string> | nil)
-		if displayName == nil then
-			return nil, nil
-		end
-
-		local hocDisplayNames: Array<string>? = nil
-
-		if
-			type_ == ElementTypeClass
-			or type_ == ElementTypeForwardRef
-			or type_ == ElementTypeFunction
-			or type_ == ElementTypeMemo
-		then
-			-- ROBLOX deviation START: use find instead of indexOf and gmatch instead of /[^()]+/g
-			if string.find(displayName :: string, "(", 1, true) then
-				local hocTable: Array<string> = {}
-				for match in string.gmatch(displayName :: string, "[^()]+") do
-					table.insert(hocTable, match)
-				end
-
-				-- ROBLOX note: Pull the last one out as the displayName
-				local count = #hocTable
-				local lastMatch = hocTable[count]
-				hocTable[count] = nil
-
-				displayName = lastMatch
-				hocDisplayNames = hocTable
-			end
-			-- ROBLOX Deviation END
-		end
-
-		if type_ == ElementTypeMemo then
-			if hocDisplayNames == nil then
-				hocDisplayNames = { "Memo" }
-			else
-				Array.unshift(hocDisplayNames :: Array<string>, "Memo")
-			end
-		elseif type_ == ElementTypeForwardRef then
-			if hocDisplayNames == nil then
-				hocDisplayNames = { "ForwardRef" }
-			else
-				Array.unshift(hocDisplayNames :: Array<string>, "ForwardRef")
-			end
-		end
-		return displayName, hocDisplayNames
+exports.separateDisplayNameAndHOCs = function(
+	displayName: string | nil,
+	type_: ElementType
+): (string | nil, Array<string> | nil)
+	if displayName == nil then
+		return nil, nil
 	end
+
+	local hocDisplayNames: Array<string>? = nil
+
+	if
+		type_ == ElementTypeClass
+		or type_ == ElementTypeForwardRef
+		or type_ == ElementTypeFunction
+		or type_ == ElementTypeMemo
+	then
+		-- ROBLOX deviation START: use find instead of indexOf and gmatch instead of /[^()]+/g
+		if string.find(displayName :: string, "(", 1, true) then
+			local hocTable: Array<string> = {}
+			for match in string.gmatch(displayName :: string, "[^()]+") do
+				table.insert(hocTable, match)
+			end
+
+			-- ROBLOX note: Pull the last one out as the displayName
+			local count = #hocTable
+			local lastMatch = hocTable[count]
+			hocTable[count] = nil
+
+			displayName = lastMatch
+			hocDisplayNames = hocTable
+		end
+		-- ROBLOX Deviation END
+	end
+
+	if type_ == ElementTypeMemo then
+		if hocDisplayNames == nil then
+			hocDisplayNames = { "Memo" }
+		else
+			Array.unshift(hocDisplayNames :: Array<string>, "Memo")
+		end
+	elseif type_ == ElementTypeForwardRef then
+		if hocDisplayNames == nil then
+			hocDisplayNames = { "ForwardRef" }
+		else
+			Array.unshift(hocDisplayNames :: Array<string>, "ForwardRef")
+		end
+	end
+	return displayName, hocDisplayNames
+end
 
 -- Pulled from preact-compat
 -- https://github.com/developit/preact-compat/blob/7c5de00e7c85e2ffd011bf3af02899b63f699d3a/src/index.js#L349
@@ -408,30 +410,31 @@ exports.deletePathInObject = function(object: Object?, path: Array<string | numb
 		end
 	end
 end
-exports.renamePathInObject =
-	function(object: Object?, oldPath: Array<string | number>, newPath: Array<string | number>)
-		local length = #oldPath
+exports.renamePathInObject = function(
+	object: Object?,
+	oldPath: Array<string | number>,
+	newPath: Array<string | number>
+)
+	local length = #oldPath
 
-		if object ~= nil then
-			local parent = exports.getInObject(
-				object :: Object,
-				Array.slice(oldPath, 1, length)
-			)
+	if object ~= nil then
+		local parent =
+			exports.getInObject(object :: Object, Array.slice(oldPath, 1, length))
 
-			if parent then
-				local lastOld = oldPath[length] :: number
-				local lastNew = newPath[length] :: number
+		if parent then
+			local lastOld = oldPath[length] :: number
+			local lastNew = newPath[length] :: number
 
-				parent[lastNew] = parent[lastOld]
+			parent[lastNew] = parent[lastOld]
 
-				if Array.isArray(parent) then
-					Array.splice(parent, lastOld, 1)
-				else
-					parent[lastOld] = nil
-				end
+			if Array.isArray(parent) then
+				Array.splice(parent, lastOld, 1)
+			else
+				parent[lastOld] = nil
 			end
 		end
 	end
+end
 exports.setInObject = function(object: Object?, path: Array<string | number>, value)
 	local length = #path
 	local last = path[length]

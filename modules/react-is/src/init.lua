@@ -118,9 +118,9 @@ exports.isContextProvider = function(object: any)
 end
 exports.isElement = function(object: any)
 	return (
-			(typeof(object) == "table" and object ~= nil)
-			and object["$$typeof"] == ReactSymbols.REACT_ELEMENT_TYPE
-		)
+		(typeof(object) == "table" and object ~= nil)
+		and object["$$typeof"] == ReactSymbols.REACT_ELEMENT_TYPE
+	)
 end
 exports.isForwardRef = function(object: any)
 	return exports.typeOf(object) == ReactSymbols.REACT_FORWARD_REF_TYPE

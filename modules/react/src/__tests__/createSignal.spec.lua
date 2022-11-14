@@ -10,9 +10,9 @@ return function()
 		local subscribe, fire = createSignal()
 
 		local spy = jest.fn()
-		local disconnect = subscribe(
-			function(...) spy(...) end
-		)
+		local disconnect = subscribe(function(...)
+			spy(...)
+		end)
 
 		jestExpect(spy).never.toBeCalled()
 
@@ -37,12 +37,12 @@ return function()
 		local spyA = jest.fn()
 		local spyB = jest.fn()
 
-		local disconnectA = subscribe(
-			function(...) spyA(...) end
-		)
-		local disconnectB = subscribe(
-			function(...) spyB(...) end
-		)
+		local disconnectA = subscribe(function(...)
+			spyA(...)
+		end)
+		local disconnectB = subscribe(function(...)
+			spyB(...)
+		end)
 
 		jestExpect(spyA).never.toBeCalled()
 		jestExpect(spyB).never.toBeCalled()
@@ -87,16 +87,15 @@ return function()
 			disconnectA()
 		end)
 
-		disconnectA = subscribe(
-			function(...) spyA(...) end
-		)
-		disconnectB = subscribe(
-			function(...) spyB(...) end
-		)
+		disconnectA = subscribe(function(...)
+			spyA(...)
+		end)
+		disconnectB = subscribe(function(...)
+			spyB(...)
+		end)
 
 		fire()
 
 		jestExpect(#spyA.mock.calls + #spyB.mock.calls).toBe(1)
-
 	end)
 end

@@ -63,7 +63,7 @@ local ErrorStackParser = {
 			return {}
 		end
 		return Array.map(
-			string.split((error_.stack :: string), "\n"),
+			string.split(error_.stack :: string, "\n"),
 			function(stackTraceLine)
 				-- ROBLOX FIXME Luau: shouldn't need to explicitly provide nilable field
 				return { source = stackTraceLine, functionName = nil }
@@ -181,7 +181,9 @@ function useState<S>(initialState: (() -> S) | S): (S, Dispatch<BasicStateAction
 	local hook = nextHook()
 	local state: S = if hook ~= nil
 		then hook.memoizedState
-		else if typeof(initialState) == "function" then initialState() else initialState
+		else if typeof(initialState) == "function"
+			then initialState()
+			else initialState
 
 	table.insert(hookLog, {
 		primitive = "State",
@@ -239,16 +241,13 @@ local function useBinding<T>(initialValue: T): (ReactBinding<T>, ReactBindingUpd
 	local hook = nextHook()
 	local binding = if hook ~= nil
 		then hook.memoizedState
-		else
-			(
-				{
-					getValue = function(_self)
-						return initialValue
-					end,
-					-- FIXME Luau: I'd expect luau to complain about a lack of `map`
-					-- field, but it only complains when non-nil and incorrectly typed
-				} :: ReactBinding<T>
-			)
+		else {
+			getValue = function(_self)
+				return initialValue
+			end,
+			-- FIXME Luau: I'd expect luau to complain about a lack of `map`
+			-- field, but it only complains when non-nil and incorrectly typed
+		} :: ReactBinding<T>
 
 	table.insert(hookLog, {
 		primitive = "Binding",
@@ -614,7 +613,7 @@ local function parseCustomHookName(functionName: nil | string): string
 		return ""
 	end
 
-	local startIndex = String.lastIndexOf((functionName :: string), ".")
+	local startIndex = String.lastIndexOf(functionName :: string, ".")
 
 	if startIndex == -1 then
 		startIndex = 0

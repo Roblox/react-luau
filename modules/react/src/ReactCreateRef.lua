@@ -23,47 +23,47 @@ local exports = {}
 
 -- an immutable object with a single mutable value
 exports.createRef = function(): RefObject
-  local binding, _ = Binding.create(nil)
+	local binding, _ = Binding.create(nil)
 
-  local ref = {}
+	local ref = {}
 
-  -- ROBLOX DEVIATION: Since refs are used as bindings, they can often be
-  -- assigned to fields of other Instances; we track creation here parallel to
-  -- how we do with bindings created via `createBinding` to improve messaging
-  -- when something goes wrong
-  if _G.__DEV__ then
-    -- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for refs
-    binding._source = debug.traceback("Ref created at:", 1)
-  end
+	-- ROBLOX DEVIATION: Since refs are used as bindings, they can often be
+	-- assigned to fields of other Instances; we track creation here parallel to
+	-- how we do with bindings created via `createBinding` to improve messaging
+	-- when something goes wrong
+	if _G.__DEV__ then
+		-- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for refs
+		binding._source = debug.traceback("Ref created at:", 1)
+	end
 
-  --[[
+	--[[
     A ref is just redirected to a binding via its metatable
   ]]
-  setmetatable(ref, {
-    __index = function(self, key)
-      if key == "current" then
-        return binding:getValue()
-      else
-        return binding[key]
-      end
-    end,
-    __newindex = function(self, key, value)
-      if key == "current" then
-        -- ROBLOX FIXME: Bindings - This is not allowed in Roact, but is okay in
-        -- React. Lots of discussion at
-        -- https://github.com/DefinitelyTyped/DefinitelyTyped/issues/31065
-        -- error("Cannot assign to the 'current' property of refs", 2)
-        Binding.update(binding, value)
-      end
+	setmetatable(ref, {
+		__index = function(self, key)
+			if key == "current" then
+				return binding:getValue()
+			else
+				return binding[key]
+			end
+		end,
+		__newindex = function(self, key, value)
+			if key == "current" then
+				-- ROBLOX FIXME: Bindings - This is not allowed in Roact, but is okay in
+				-- React. Lots of discussion at
+				-- https://github.com/DefinitelyTyped/DefinitelyTyped/issues/31065
+				-- error("Cannot assign to the 'current' property of refs", 2)
+				Binding.update(binding, value)
+			end
 
-      binding[key] = value
-    end,
-    __tostring = function(self)
-      return string.format("Ref(%s)", tostring(binding:getValue()))
-    end,
-  })
+			binding[key] = value
+		end,
+		__tostring = function(self)
+			return string.format("Ref(%s)", tostring(binding:getValue()))
+		end,
+	})
 
-  return (ref :: any) :: RefObject
+	return (ref :: any) :: RefObject
 end
 
 return exports

@@ -188,9 +188,7 @@ exports.getInstanceFromNode = function(node): Fiber?
 	-- ROBLOX deviation: lazy initialize to avoid circular dependency
 	if ReactWorkTags == nil then
 		local ReactReconciler =
-			require(
-				script.Parent.Parent["ReactReconciler.roblox"]
-			) :: any
+			require(script.Parent.Parent["ReactReconciler.roblox"]) :: any
 		ReactWorkTags = ReactReconciler.ReactWorkTags
 
 		HostComponent = ReactWorkTags.HostComponent

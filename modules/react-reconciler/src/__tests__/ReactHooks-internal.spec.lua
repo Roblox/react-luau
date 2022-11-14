@@ -72,7 +72,8 @@ return function()
 				setCounter1 = _setCounter1
 				local counter2, _setCounter2 = useState(0)
 				setCounter2 = _setCounter2
-				local text = string.format("%s, %s", tostring(counter1), tostring(counter2))
+				local text =
+					string.format("%s, %s", tostring(counter1), tostring(counter2))
 				Scheduler.unstable_yieldValue(string.format("Parent: %s", text))
 				useLayoutEffect(function()
 					Scheduler.unstable_yieldValue(string.format("Effect: %s", text))
@@ -164,7 +165,8 @@ return function()
 					setCounter1 = _setCounter1
 					local counter2, _setCounter2 = useState(0)
 					setCounter2 = _setCounter2
-					local text = string.format("%s, %s (%s)",
+					local text = string.format(
+						"%s, %s (%s)",
 						tostring(counter1),
 						tostring(counter2),
 						theme
@@ -174,10 +176,8 @@ return function()
 				end
 				-- ROBLOX TODO: contribute this rename upstream, it makes the code and types sane
 				local ParentMemo = memo(Parent)
-				local root = ReactTestRenderer.create(
-					nil,
-					{ unstable_isConcurrent = true }
-				)
+				local root =
+					ReactTestRenderer.create(nil, { unstable_isConcurrent = true })
 				root.update(React.createElement(ParentMemo, { theme = "light" }))
 				jestExpect(Scheduler).toFlushAndYield({
 					"Parent: 0, 0 (light)",
@@ -227,7 +227,9 @@ return function()
 			local function Counter()
 				local counter, _setCounter = useState(0)
 				setCounter = _setCounter
-				Scheduler.unstable_yieldValue(string.format("Count: %s", tostring(counter)))
+				Scheduler.unstable_yieldValue(
+					string.format("Count: %s", tostring(counter))
+				)
 				return counter
 			end
 			local root = ReactTestRenderer.create(nil, { unstable_isConcurrent = true })
@@ -378,10 +380,8 @@ return function()
 					end)
 					return React.createElement(Child, { text = counter })
 				end
-				local root = ReactTestRenderer.create(
-					nil,
-					{ unstable_isConcurrent = true }
-				)
+				local root =
+					ReactTestRenderer.create(nil, { unstable_isConcurrent = true })
 				root.update(React.createElement(Parent))
 				jestExpect(Scheduler).toFlushAndYield({
 					"Parent: 0",
@@ -469,7 +469,8 @@ return function()
 			local function update(value)
 				setCounter(function(previous)
 					Scheduler.unstable_yieldValue(
-						string.format("Compute state (%s -> %s)",
+						string.format(
+							"Compute state (%s -> %s)",
 							tostring(previous),
 							tostring(value)
 						)
@@ -521,7 +522,8 @@ return function()
 				setCounter(function(previous)
 					local value = compute(previous)
 					Scheduler.unstable_yieldValue(
-						string.format("Compute state (%s -> %s)",
+						string.format(
+							"Compute state (%s -> %s)",
 							tostring(previous),
 							tostring(value)
 						)
@@ -631,7 +633,9 @@ return function()
 			jestExpect(function()
 				act(function()
 					-- ROBLOX TODO: upstream this hard cast, since this abuse case violates the API
-					ReactTestRenderer.create(React.createElement(App, { deps = "hello" :: any }))
+					ReactTestRenderer.create(
+						React.createElement(App, { deps = "hello" :: any })
+					)
 				end)
 			end).toErrorDev({
 				"Warning: useEffect received a final argument that is not an array (instead, received `string`). "
@@ -646,7 +650,9 @@ return function()
 			jestExpect(function()
 				act(function()
 					-- ROBLOX TODO: upstream this hard cast, since this abuse case violates the API
-					ReactTestRenderer.create(React.createElement(App, { deps = 100500 :: any}))
+					ReactTestRenderer.create(
+						React.createElement(App, { deps = 100500 :: any })
+					)
 				end)
 			end).toErrorDev({
 				"Warning: useEffect received a final argument that is not an array (instead, received `number`). "
@@ -663,12 +669,13 @@ return function()
 					-- ROBLOX deviation: empty table isn't distinguishable from an array
 					ReactTestRenderer.create(
 						-- ROBLOX TODO: upstream this hard cast, since this abuse case violates the API
-						React.createElement(App, { deps = { notempty = true } :: any})
+						React.createElement(App, { deps = { notempty = true } :: any })
 					)
 				end)
 			end).toErrorDev({
 				-- ROBLOX deviation: table type instead of object
-				"Warning: useEffect received a final argument that is not an array (instead, received `table`). " .. "When specified, the final argument must be an array.",
+				"Warning: useEffect received a final argument that is not an array (instead, received `table`). "
+					.. "When specified, the final argument must be an array.",
 				"Warning: useLayoutEffect received a final argument that is not an array (instead, received `table`). "
 					.. "When specified, the final argument must be an array.",
 				"Warning: useMemo received a final argument that is not an array (instead, received `table`). "
@@ -686,13 +693,9 @@ return function()
 		xit("warns if deps is not an array for useImperativeHandle", function()
 			local useImperativeHandle = React.useImperativeHandle
 			local App = React.forwardRef(function(props: { deps: any }, ref)
-				useImperativeHandle(
-					ref,
-					function()
-						return nil
-					end,
-					props.deps
-				)
+				useImperativeHandle(ref, function()
+					return nil
+				end, props.deps)
 				return nil
 			end)
 			jestExpect(function()
@@ -823,7 +826,8 @@ return function()
 				ReactTestRenderer.create(React.createElement(App))
 			end).toErrorDev({
 				-- ROBLOX deviation: Lua says `table` instead of `object`
-				"Expected useImperativeHandle() second argument to be a function " .. "that creates a handle. Instead received: table.",
+				"Expected useImperativeHandle() second argument to be a function "
+					.. "that creates a handle. Instead received: table.",
 			})
 		end)
 		-- 	it("works with ReactDOMServer calls inside a component", function()
@@ -906,7 +910,10 @@ return function()
 			local function App()
 				return useMemo(function()
 					-- ROBLOX TODO: this assert/invariant should be in upstream
-					assert(ReactCurrentDispatcher.current ~= nil, "current dispatcher is nil!")
+					assert(
+						ReactCurrentDispatcher.current ~= nil,
+						"current dispatcher is nil!"
+					)
 					return ReactCurrentDispatcher.current.readContext(ThemeContext)
 				end, {})
 			end
@@ -924,7 +931,10 @@ return function()
 				local firstRead, secondRead
 				local function App()
 					-- ROBLOX TODO: this assert/invariant should be in upstream
-					assert(ReactCurrentDispatcher.current ~= nil, "current dispatcher is nil!")
+					assert(
+						ReactCurrentDispatcher.current ~= nil,
+						"current dispatcher is nil!"
+					)
 					firstRead = ReactCurrentDispatcher.current.readContext(ThemeContext)
 					useMemo(function()
 						return nil
@@ -950,7 +960,10 @@ return function()
 			local function App()
 				useEffect(function()
 					-- ROBLOX TODO: this assert/invariant should be in upstream
-					assert(ReactCurrentDispatcher.current ~= nil, "current dispatcher is nil!")
+					assert(
+						ReactCurrentDispatcher.current ~= nil,
+						"current dispatcher is nil!"
+					)
 					ReactCurrentDispatcher.current.readContext(ThemeContext)
 				end)
 				return nil
@@ -970,7 +983,10 @@ return function()
 			local function App()
 				useLayoutEffect(function()
 					-- ROBLOX TODO: this assert/invariant should be in upstream
-					assert(ReactCurrentDispatcher.current ~= nil, "current dispatcher is nil!")
+					assert(
+						ReactCurrentDispatcher.current ~= nil,
+						"current dispatcher is nil!"
+					)
 					ReactCurrentDispatcher.current.readContext(ThemeContext)
 				end)
 				return nil
@@ -989,7 +1005,10 @@ return function()
 			local function App()
 				local state, dispatch = useReducer(function(s, action)
 					-- ROBLOX TODO: this assert/invariant should be in upstream
-					assert(ReactCurrentDispatcher.current ~= nil, "current dispatcher is nil!")
+					assert(
+						ReactCurrentDispatcher.current ~= nil,
+						"current dispatcher is nil!"
+					)
 					ReactCurrentDispatcher.current.readContext(ThemeContext)
 					return action
 				end, 0)
@@ -1018,7 +1037,10 @@ return function()
 			function Cls:render()
 				_setState(function()
 					-- ROBLOX TODO: this assert/invariant should be in upstream
-					assert(ReactCurrentDispatcher.current ~= nil, "current dispatcher is nil!")
+					assert(
+						ReactCurrentDispatcher.current ~= nil,
+						"current dispatcher is nil!"
+					)
 					return ReactCurrentDispatcher.current.readContext(ThemeContext)
 				end)
 				return nil
@@ -1092,7 +1114,10 @@ return function()
 			local function App()
 				React.useMemo(function()
 					-- ROBLOX TODO: this assert/invariant should be in upstream
-					assert(ReactCurrentDispatcher.current ~= nil, "current dispatcher is nil!")
+					assert(
+						ReactCurrentDispatcher.current ~= nil,
+						"current dispatcher is nil!"
+					)
 					ReactCurrentDispatcher.current.readContext(ThemeContext)
 					React.useRef(0)
 					error(Error.new("No."))
@@ -1435,7 +1460,8 @@ return function()
 				-- table.insert(hooksInList, useDeferredValueHelper)
 			end
 			local function formatHookNamesToMatchErrorMessage(hookNameA, hookNameB)
-				return string.format("use%s%s%s",
+				return string.format(
+					"use%s%s%s",
 					hookNameA,
 					string.rep(" ", 24 - string.len(hookNameA)),
 					(function()
@@ -1461,19 +1487,18 @@ return function()
 				end)()
 				-- ROBLOX deviation: functions can't have fields in Lua
 				-- local hookNameA = firstHelper.name
-				local hookNameA = debug.info(firstHelper, "n")
-					:gsub("use", "")
-					:gsub("Helper", "")
+				local hookNameA =
+					debug.info(firstHelper, "n"):gsub("use", ""):gsub("Helper", "")
 				-- ROBLOX deviation: functions can't have fields in Lua
 				-- local hookNameB = secondHelper.name
-				local hookNameB = debug.info(secondHelper, "n")
-					:gsub("use", "")
-					:gsub("Helper", "")
+				local hookNameB =
+					debug.info(secondHelper, "n"):gsub("use", ""):gsub("Helper", "")
 				-- ROBLOX FIXME: gives error about fewer hooks than expected instead
 				xit(
-					(
-						"warns on using differently ordered hooks (%s, %s) on subsequent renders"
-					):format(hookNameA, hookNameB),
+					("warns on using differently ordered hooks (%s, %s) on subsequent renders"):format(
+						hookNameA,
+						hookNameB
+					),
 					function()
 						local function App(props)
 							if props.update then
@@ -1506,7 +1531,8 @@ return function()
 								.. "read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks\n\n"
 								.. "   Previous render            Next render\n"
 								.. "   ------------------------------------------------------\n"
-								.. string.format("1. %s\n",
+								.. string.format(
+									"1. %s\n",
 									formatHookNamesToMatchErrorMessage(
 										hookNameA,
 										hookNameB
@@ -1523,7 +1549,8 @@ return function()
 					end
 				)
 				it(
-					string.format("warns when more hooks (%s, %s) are used during update than mount",
+					string.format(
+						"warns when more hooks (%s, %s) are used during update than mount",
 						hookNameA,
 						hookNameB
 					),
@@ -1557,15 +1584,16 @@ return function()
 								.. "read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks\n\n"
 								.. "   Previous render            Next render\n"
 								.. "   ------------------------------------------------------\n"
-								.. string.format("1. %s\n",
+								.. string.format(
+									"1. %s\n",
 									formatHookNamesToMatchErrorMessage(
 										hookNameA,
 										hookNameA
 									)
 								)
-								.. (
-									"2. undefined                  use%s\n"
-								):format(hookNameB)
+								.. ("2. undefined                  use%s\n"):format(
+									hookNameB
+								)
 								.. "   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n"
 								.. "    in App (at **)",
 						})
@@ -1586,17 +1614,16 @@ return function()
 				end)()
 				-- ROBLOX deviation: functions can't have fields in Lua
 				-- local hookNameA = firstHelper.name
-				local hookNameA = debug.info(firstHelper, "n")
-					:gsub("use", "")
-					:gsub("Helper", "")
+				local hookNameA =
+					debug.info(firstHelper, "n"):gsub("use", ""):gsub("Helper", "")
 				-- ROBLOX deviation: functions can't have fields in Lua
 				-- local hookNameB = secondHelper.name
-				local hookNameB = debug.info(secondHelper, "n")
-					:gsub("use", "")
-					:gsub("Helper", "")
+				local hookNameB =
+					debug.info(secondHelper, "n"):gsub("use", ""):gsub("Helper", "")
 				-- ROBLOX FIXME: it is throwing the error, but toThrowError isn't unpacking the Error object?
 				xit(
-					string.format("warns when fewer hooks (%s, %s) are used during update than mount",
+					string.format(
+						"warns when fewer hooks (%s, %s) are used during update than mount",
 						hookNameA,
 						hookNameB
 					),
@@ -1654,7 +1681,8 @@ return function()
 							.. "read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks\n\n"
 							.. "   Previous render            Next render\n"
 							.. "   ------------------------------------------------------\n"
-							.. string.format("1. %s\n",
+							.. string.format(
+								"1. %s\n",
 								formatHookNamesToMatchErrorMessage(
 									"ImperativeHandle",
 									"Memo"
@@ -1686,9 +1714,8 @@ return function()
 					end
 					return nil
 				end
-				local root = ReactTestRenderer.create(
-					React.createElement(App, { update = false })
-				)
+				local root =
+					ReactTestRenderer.create(React.createElement(App, { update = false }))
 				jestExpect(function()
 					jestExpect(function()
 						return root.update(React.createElement(App, { update = true }))

@@ -15,22 +15,22 @@ type MutableSourceGetVersionFn = ReactTypes.MutableSourceGetVersionFn
 type MutableSource<T> = ReactTypes.MutableSource<T>
 
 local function createMutableSource<Source>(
-  source: Source,
-  getVersion: MutableSourceGetVersionFn
+	source: Source,
+	getVersion: MutableSourceGetVersionFn
 ): MutableSource<Source>
-  local mutableSource: MutableSource<Source> = {
-    _getVersion = getVersion,
-    _source = source,
-    _workInProgressVersionPrimary = nil,
-    _workInProgressVersionSecondary = nil,
-  }
+	local mutableSource: MutableSource<Source> = {
+		_getVersion = getVersion,
+		_source = source,
+		_workInProgressVersionPrimary = nil,
+		_workInProgressVersionSecondary = nil,
+	}
 
-  if _G.__DEV__ then
-    mutableSource._currentPrimaryRenderer = nil
-    mutableSource._currentSecondaryRenderer = nil
-  end
+	if _G.__DEV__ then
+		mutableSource._currentPrimaryRenderer = nil
+		mutableSource._currentSecondaryRenderer = nil
+	end
 
-  return mutableSource
+	return mutableSource
 end
 
 return createMutableSource

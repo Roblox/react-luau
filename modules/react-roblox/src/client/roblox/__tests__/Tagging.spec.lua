@@ -44,10 +44,10 @@ return function()
 		beforeEach(function()
 			local tag1Mock, tag1Fn = jest.fn()
 			local tag2Mock, tag2Fn = jest.fn()
-			tag1AddedConnection =
-				CollectionService:GetInstanceAddedSignal("tag1"):Connect(tag1Fn)
-			tag2AddedConnection =
-				CollectionService:GetInstanceAddedSignal("tag2"):Connect(tag2Fn)
+			tag1AddedConnection = CollectionService:GetInstanceAddedSignal("tag1")
+				:Connect(tag1Fn)
+			tag2AddedConnection = CollectionService:GetInstanceAddedSignal("tag2")
+				:Connect(tag2Fn)
 
 			tag1AddedMock = tag1Mock
 			tag2AddedMock = tag2Mock
@@ -167,10 +167,10 @@ return function()
 		beforeEach(function()
 			local tag1Mock, tag1Fn = jest.fn()
 			local tag2Mock, tag2Fn = jest.fn()
-			tag1RemovedConnection =
-				CollectionService:GetInstanceRemovedSignal("tag1"):Connect(tag1Fn)
-			tag2RemovedConnection =
-				CollectionService:GetInstanceRemovedSignal("tag2"):Connect(tag2Fn)
+			tag1RemovedConnection = CollectionService:GetInstanceRemovedSignal("tag1")
+				:Connect(tag1Fn)
+			tag2RemovedConnection = CollectionService:GetInstanceRemovedSignal("tag2")
+				:Connect(tag2Fn)
 
 			tag1RemovedMock = tag1Mock
 			tag2RemovedMock = tag2Mock

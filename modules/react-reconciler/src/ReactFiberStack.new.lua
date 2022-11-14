@@ -13,7 +13,7 @@ local Packages = script.Parent.Parent
 local console = require(Packages.Shared).console
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
-type Fiber = ReactInternalTypes.Fiber;
+type Fiber = ReactInternalTypes.Fiber
 
 type Array<T> = { [number]: T }
 -- deviation: use this table when pushing nil values
@@ -45,7 +45,7 @@ end
 local function pop<T>(cursor: StackCursor<T>, fiber: Fiber): ()
 	if index < 1 then
 		if _G.__DEV__ then
-			console.error('Unexpected pop.')
+			console.error("Unexpected pop.")
 		end
 		return
 	end
@@ -53,7 +53,7 @@ local function pop<T>(cursor: StackCursor<T>, fiber: Fiber): ()
 	if _G.__DEV__ then
 		-- ROBLOX TODO: workaround for Luau analysis bug
 		if fiber ~= fiberStack[index] :: Fiber then
-			console.error('Unexpected Fiber popped.')
+			console.error("Unexpected Fiber popped.")
 		end
 	end
 
@@ -94,9 +94,7 @@ end
 local function checkThatStackIsEmpty()
 	if _G.__DEV__ then
 		if index ~= 0 then
-			console.error(
-				'Expected an empty stack. Something was not reset properly.'
-			)
+			console.error("Expected an empty stack. Something was not reset properly.")
 		end
 	end
 end

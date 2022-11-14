@@ -144,15 +144,17 @@ local function mapIntoArray(
 					-- traverseAllChildren used to do for objects as children
 					escapedPrefix
 						-- $FlowFixMe Flow incorrectly thinks React.Portal doesn't have a key
-						.. (if mappedChildKey
-								and (
-									not child
-									or (child :: ReactElement<Object, any>).key
-										~= mappedChildKey
-								)
-							-- $FlowFixMe Flow incorrectly thinks existing element's key can be a number
-							then escapeUserProvidedKey(tostring(mappedChildKey)) .. "/"
-							else "")
+						.. (
+							if mappedChildKey
+									and (
+										not child
+										or (child :: ReactElement<Object, any>).key
+											~= mappedChildKey
+									)
+								-- $FlowFixMe Flow incorrectly thinks existing element's key can be a number
+								then escapeUserProvidedKey(tostring(mappedChildKey)) .. "/"
+								else ""
+						)
 						.. childKey
 				)
 			end
@@ -180,7 +182,7 @@ local function mapIntoArray(
 		if typeof(iteratorFn) == "function" then
 			local iterableChildren: Object & {
 				entries: any,
-			} = (children :: any)
+			} = children :: any
 
 			-- ROBLOX DEVIATION: No equivalent for checking if iterableChildren is a Map
 			-- if _G.__DEV__ then

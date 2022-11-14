@@ -14,12 +14,9 @@
 -- Forks can return `false` if this isn't desirable.
 local exports = {}
 
-exports.showErrorDialog =  function(
-  boundary,
-  errorInfo
-): boolean
-  -- ROBLOX TODO: we may replace this with something that sends telemetry LUAFDN-222
-  return true
+exports.showErrorDialog = function(boundary, errorInfo): boolean
+	-- ROBLOX TODO: we may replace this with something that sends telemetry LUAFDN-222
+	return true
 end
 
 return exports

@@ -101,7 +101,11 @@ return function()
 			local function Bar()
 				Scheduler.unstable_yieldValue("Bar")
 
-				return React.createElement("span", nil, React.createElement("div", nil, "Hello World"))
+				return React.createElement(
+					"span",
+					nil,
+					React.createElement("div", nil, "Hello World")
+				)
 			end
 			local function Foo()
 				Scheduler.unstable_yieldValue("Foo")
@@ -158,14 +162,23 @@ return function()
 			local function Foo(props)
 				Scheduler.unstable_yieldValue("Foo")
 
-				return React.createElement("div", nil, header, React.createElement(Content, nil, props.text), footer)
+				return React.createElement(
+					"div",
+					nil,
+					header,
+					React.createElement(Content, nil, props.text),
+					footer
+				)
 			end
 
-			ReactNoop.render(React.createElement(Foo, {
-				text = "foo",
-			}), function()
-				return Scheduler.unstable_yieldValue("renderCallbackCalled")
-			end)
+			ReactNoop.render(
+				React.createElement(Foo, {
+					text = "foo",
+				}),
+				function()
+					return Scheduler.unstable_yieldValue("renderCallbackCalled")
+				end
+			)
 			jestExpect(Scheduler).toFlushAndYield({
 				"Foo",
 				"Header",
@@ -173,16 +186,22 @@ return function()
 				"Footer",
 				"renderCallbackCalled",
 			})
-			ReactNoop.render(React.createElement(Foo, {
-				text = "bar",
-			}), function()
-				return Scheduler.unstable_yieldValue("firstRenderCallbackCalled")
-			end)
-			ReactNoop.render(React.createElement(Foo, {
-				text = "bar",
-			}), function()
-				return Scheduler.unstable_yieldValue("secondRenderCallbackCalled")
-			end)
+			ReactNoop.render(
+				React.createElement(Foo, {
+					text = "bar",
+				}),
+				function()
+					return Scheduler.unstable_yieldValue("firstRenderCallbackCalled")
+				end
+			)
+			ReactNoop.render(
+				React.createElement(Foo, {
+					text = "bar",
+				}),
+				function()
+					return Scheduler.unstable_yieldValue("secondRenderCallbackCalled")
+				end
+			)
 
 			-- TODO: Test bail out of host components. This is currently unobservable.
 
@@ -332,7 +351,11 @@ return function()
 						React.createElement(Middle, nil, props.text)
 					),
 					React.createElement(Bar, nil, props.text),
-					React.createElement(LegacyHiddenDiv, { mode = "hidden" }, React.createElement(Middle, nil, "Footer"))
+					React.createElement(
+						LegacyHiddenDiv,
+						{ mode = "hidden" },
+						React.createElement(Middle, nil, "Footer")
+					)
 				)
 			end
 
@@ -385,19 +408,11 @@ return function()
 					React.createElement(Bar, nil, props.text),
 					React.createElement(LegacyHiddenDiv, {
 						mode = "hidden",
-					}, React.createElement(
-						Middle,
-						nil,
-						props.text
-					)),
+					}, React.createElement(Middle, nil, props.text)),
 					React.createElement(Bar, nil, props.text),
 					React.createElement(LegacyHiddenDiv, {
 						mode = "hidden",
-					}, React.createElement(
-						Middle,
-						nil,
-						"Footer"
-					))
+					}, React.createElement(Middle, nil, "Footer"))
 				)
 			end
 
@@ -967,7 +982,9 @@ return function()
 				-- every update except the first one.
 				local shouldUpdate = self.props.step ~= 1
 
-				Scheduler.unstable_yieldValue("shouldComponentUpdate: " .. tostring(shouldUpdate))
+				Scheduler.unstable_yieldValue(
+					"shouldComponentUpdate: " .. tostring(shouldUpdate)
+				)
 
 				return shouldUpdate
 			end
@@ -1076,12 +1093,16 @@ return function()
 			end
 
 			local function Foo(ref)
-				return React.createElement("div", nil, React.createElement(Bar, { multiplier = ref.multiplier }))
+				return React.createElement(
+					"div",
+					nil,
+					React.createElement(Bar, { multiplier = ref.multiplier })
+				)
 			end
 
 			-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
 			local function updater(state: { num: number }, props)
-			-- ROBLOX deviation END
+				-- ROBLOX deviation END
 				return {
 					num = state.num * props.multiplier,
 				}
@@ -1113,12 +1134,16 @@ return function()
 			local function Foo(_ref3)
 				local multiplier = _ref3.multiplier
 
-				return React.createElement("div", nil, React.createElement(Bar, { multiplier = multiplier }))
+				return React.createElement(
+					"div",
+					nil,
+					React.createElement(Bar, { multiplier = multiplier })
+				)
 			end
 
 			-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
 			local function updater(state: { num: number }, props)
-			-- ROBLOX deviation END
+				-- ROBLOX deviation END
 				return {
 					num = state.num * props.multiplier,
 				}
@@ -1607,52 +1632,55 @@ return function()
 				foo = "foo",
 			})
 		end)
-		it("does not call getDerivedStateFromProps if neither state nor props have changed", function()
-			local Child = React.Component:extend("Child")
+		it(
+			"does not call getDerivedStateFromProps if neither state nor props have changed",
+			function()
+				local Child = React.Component:extend("Child")
 
-			function Child:render()
-				Scheduler.unstable_yieldValue("Child")
+				function Child:render()
+					Scheduler.unstable_yieldValue("Child")
 
-				return self.props.parentRenders
-			end
+					return self.props.parentRenders
+				end
 
-			local child = React.createRef()
+				local child = React.createRef()
 
-			local Parent = React.Component:extend("Parent")
+				local Parent = React.Component:extend("Parent")
 
-			function Parent:init()
-				self.state = { parentRenders = 0 }
-			end
+				function Parent:init()
+					self.state = { parentRenders = 0 }
+				end
 
-			function Parent.getDerivedStateFromProps(props, prevState)
-				Scheduler.unstable_yieldValue("getDerivedStateFromProps")
+				function Parent.getDerivedStateFromProps(props, prevState)
+					Scheduler.unstable_yieldValue("getDerivedStateFromProps")
 
-				return {
-					parentRenders = prevState.parentRenders .. 1
-				}
-			end
-			function Parent:render()
-				Scheduler.unstable_yieldValue("Parent")
+					return {
+						parentRenders = prevState.parentRenders .. 1,
+					}
+				end
+				function Parent:render()
+					Scheduler.unstable_yieldValue("Parent")
 
-				return React.createElement(Child, {
-					parentRenders = self.state.parentRenders,
-					ref = child,
+					return React.createElement(Child, {
+						parentRenders = self.state.parentRenders,
+						ref = child,
+					})
+				end
+
+				ReactNoop.render(React.createElement(Parent))
+				jestExpect(Scheduler).toFlushAndYield({
+					"getDerivedStateFromProps",
+					"Parent",
+					"Child",
+				})
+
+				-- Schedule an update on the child. The parent should not re-render.
+				child.current:setState({})
+				jestExpect(Scheduler).toFlushAndYield({
+					"Child",
 				})
 			end
-
-			ReactNoop.render(React.createElement(Parent))
-			jestExpect(Scheduler).toFlushAndYield({
-				"getDerivedStateFromProps",
-				"Parent",
-				"Child",
-			})
-
-			-- Schedule an update on the child. The parent should not re-render.
-			child.current:setState({})
-			jestExpect(Scheduler).toFlushAndYield({
-				"Child",
-			})
-		end)
+		)
 		-- ROBLOX deviation: xited upstream, so leave commented out
 		-- xit('does not call componentWillReceiveProps for state-only updates', function()
 		--     local instances = {}
@@ -1924,7 +1952,7 @@ return function()
 			jestExpect(Scheduler).toFlushWithoutYielding()
 
 			-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
-			local function updater(prevState: { n: number})
+			local function updater(prevState: { n: number })
 				local n = prevState.n
 
 				return {
@@ -1995,7 +2023,9 @@ return function()
 			local ShowLocale = React.Component:extend("ShowLocale")
 
 			function ShowLocale:render()
-				Scheduler.unstable_yieldValue("ShowLocale " .. JSONStringify(self.context))
+				Scheduler.unstable_yieldValue(
+					"ShowLocale " .. JSONStringify(self.context)
+				)
 
 				return self.context.locale
 			end
@@ -2031,11 +2061,12 @@ return function()
 			-- 	route = PropTypes.string,
 			-- }
 
-
 			local ShowNeither = React.Component:extend("ShowNeither")
 
 			function ShowNeither:render()
-				Scheduler.unstable_yieldValue("ShowNeither " .. JSONStringify(self.context))
+				Scheduler.unstable_yieldValue(
+					"ShowNeither " .. JSONStringify(self.context)
+				)
 
 				return nil
 			end
@@ -2043,7 +2074,9 @@ return function()
 			local Indirection = React.Component:extend("Indirection")
 
 			function Indirection:render()
-				Scheduler.unstable_yieldValue("Indirection " .. JSONStringify(self.context))
+				Scheduler.unstable_yieldValue(
+					"Indirection " .. JSONStringify(self.context)
+				)
 
 				return {
 					React.createElement(ShowLocale, {
@@ -2058,24 +2091,23 @@ return function()
 					React.createElement(Intl, {
 						key = "d",
 						locale = "ru",
-					}, React.createElement(
-						ShowBoth,
-						nil
-					)),
+					}, React.createElement(ShowBoth, nil)),
 					React.createElement(ShowBoth, {
 						key = "e",
 					}),
 				}
 			end
 
-			ReactNoop.render(React.createElement(
-				Intl,
-				{
-					locale = "fr",
-				},
-				React.createElement(ShowLocale),
-				React.createElement("div", nil, React.createElement(ShowBoth))
-			))
+			ReactNoop.render(
+				React.createElement(
+					Intl,
+					{
+						locale = "fr",
+					},
+					React.createElement(ShowLocale),
+					React.createElement("div", nil, React.createElement(ShowBoth))
+				)
+			)
 			jestExpect(function()
 				return jestExpect(Scheduler).toFlushAndYield({
 					"Intl {}",
@@ -2090,27 +2122,31 @@ return function()
 					-- .. "Please update the following components: Intl, ShowBoth, ShowLocale"
 					.. "Please update the following components: Intl, ShowLocale"
 			)
-			ReactNoop.render(React.createElement(
-				Intl,
-				{
-					locale = "de",
-				},
-				React.createElement(ShowLocale),
-				React.createElement("div", nil, React.createElement(ShowBoth))
-			))
+			ReactNoop.render(
+				React.createElement(
+					Intl,
+					{
+						locale = "de",
+					},
+					React.createElement(ShowLocale),
+					React.createElement("div", nil, React.createElement(ShowBoth))
+				)
+			)
 			jestExpect(Scheduler).toFlushAndYield({
 				"Intl {}",
 				'ShowLocale {"locale":"de"}',
 				'ShowBoth {"locale":"de"}',
 			})
-			ReactNoop.render(React.createElement(
-				Intl,
-				{
-					locale = "sv",
-				},
-				React.createElement(ShowLocale),
-				React.createElement("div", nil, React.createElement(ShowBoth))
-			))
+			ReactNoop.render(
+				React.createElement(
+					Intl,
+					{
+						locale = "sv",
+					},
+					React.createElement(ShowLocale),
+					React.createElement("div", nil, React.createElement(ShowBoth))
+				)
+			)
 			jestExpect(Scheduler).toFlushAndYieldThrough({
 				"Intl {}",
 			})
@@ -2193,49 +2229,61 @@ return function()
 
 		if not ReactFeatureFlags.disableModulePatternComponents then
 			-- ROBLOX TODO: PropTypes
-			xit("does not leak own context into context provider (factory components)", function()
-				local function Recurse(props, context)
-					return {
-						getChildContext = function()
-							return {
-								n = (context.n or 3) - 1,
-							}
-						end,
-						-- ROBLOX FIXME Luau: should infer this as nil | ReactElement<Recurse>
-						render = function(): any
-							Scheduler.unstable_yieldValue("Recurse " .. JSONStringify(context))
+			xit(
+				"does not leak own context into context provider (factory components)",
+				function()
+					local function Recurse(props, context)
+						return {
+							getChildContext = function()
+								return {
+									n = (context.n or 3) - 1,
+								}
+							end,
+							-- ROBLOX FIXME Luau: should infer this as nil | ReactElement<Recurse>
+							render = function(): any
+								Scheduler.unstable_yieldValue(
+									"Recurse " .. JSONStringify(context)
+								)
 
-							if context.n == 0 then
-								return nil
-							end
+								if context.n == 0 then
+									return nil
+								end
 
-							return React.createElement(Recurse)
-						end,
-					}
-				end
-				-- ROBLOX TODO: indexing into function?
-				-- Recurse.contextTypes = {
-				--     n = PropTypes.number,
-				-- }
+								return React.createElement(Recurse)
+							end,
+						}
+					end
+					-- ROBLOX TODO: indexing into function?
+					-- Recurse.contextTypes = {
+					--     n = PropTypes.number,
+					-- }
 
-				-- ROBLOX TODO: indexing into function?
-				-- Recurse.childContextTypes = {
-				--     n = PropTypes.number,
-				-- }
+					-- ROBLOX TODO: indexing into function?
+					-- Recurse.childContextTypes = {
+					--     n = PropTypes.number,
+					-- }
 
-				ReactNoop.render(React.createElement(Recurse))
-				jestExpect(function()
-					return jestExpect(Scheduler).toFlushAndYield({
-						"Recurse {}",
-						'Recurse {"n":2}',
-						'Recurse {"n":1}',
-						'Recurse {"n":0}',
+					ReactNoop.render(React.createElement(Recurse))
+					jestExpect(function()
+						return jestExpect(Scheduler).toFlushAndYield({
+							"Recurse {}",
+							'Recurse {"n":2}',
+							'Recurse {"n":1}',
+							'Recurse {"n":0}',
+						})
+					end).toErrorDev({
+						"Warning: The <Recurse /> component appears to be a function component that returns a class instance. "
+							.. "Change Recurse to a class that extends React.Component instead. "
+							.. "If you can't use a class try assigning the prototype on the function as a workaround. "
+							.. "`Recurse.prototype = React.Component.prototype`. "
+							.. "Don't use an arrow function since it cannot be called with `new` by React.",
+						"Legacy context API has been detected within a strict-mode tree.\n\n"
+							.. "The old API will be supported in all 16.x releases, but applications "
+							.. "using it should migrate to the new version.\n\n"
+							.. "Please update the following components: Recurse",
 					})
-				end).toErrorDev({
-					"Warning: The <Recurse /> component appears to be a function component that returns a class instance. " .. "Change Recurse to a class that extends React.Component instead. " .. "If you can't use a class try assigning the prototype on the function as a workaround. " .. "`Recurse.prototype = React.Component.prototype`. " .. "Don't use an arrow function since it cannot be called with `new` by React.",
-					"Legacy context API has been detected within a strict-mode tree.\n\n" .. "The old API will be supported in all 16.x releases, but applications " .. "using it should migrate to the new version.\n\n" .. "Please update the following components: Recurse",
-				})
-			end)
+				end
+			)
 		end
 
 		-- @gate experimental
@@ -2260,7 +2308,9 @@ return function()
 			local ShowLocale = React.Component:extend("ShowLocale")
 
 			function ShowLocale:render()
-				Scheduler.unstable_yieldValue("ShowLocale " .. JSONStringify(self.context))
+				Scheduler.unstable_yieldValue(
+					"ShowLocale " .. JSONStringify(self.context)
+				)
 
 				return self.context.locale
 			end
@@ -2282,8 +2332,8 @@ return function()
 					},
 					React.createElement(ShowLocale),
 					React.createElement(Intl, {
-							locale = "ru",
-						}, React.createElement(ShowLocale))
+						locale = "ru",
+					}, React.createElement(ShowLocale))
 				),
 				React.createElement(ShowLocale)
 			))
@@ -2315,7 +2365,9 @@ return function()
 					locale = self.props.locale,
 				}
 
-				Scheduler.unstable_yieldValue("Intl:provide " .. JSONStringify(childContext))
+				Scheduler.unstable_yieldValue(
+					"Intl:provide " .. JSONStringify(childContext)
+				)
 
 				return childContext
 			end
@@ -2333,7 +2385,9 @@ return function()
 			local ShowLocaleClass = React.Component:extend("ShowLocaleClass")
 
 			function ShowLocaleClass:render()
-				Scheduler.unstable_yieldValue("ShowLocaleClass:read " .. JSONStringify(self.context))
+				Scheduler.unstable_yieldValue(
+					"ShowLocaleClass:read " .. JSONStringify(self.context)
+				)
 
 				return self.context.locale
 			end
@@ -2346,7 +2400,9 @@ return function()
 			local function ShowLocaleFn(props, context)
 				-- deviation: PropTypes workaround
 				context.locale = context.locale or ""
-				Scheduler.unstable_yieldValue("ShowLocaleFn:read " .. JSONStringify(context))
+				Scheduler.unstable_yieldValue(
+					"ShowLocaleFn:read " .. JSONStringify(context)
+				)
 
 				return context.locale
 			end
@@ -2368,31 +2424,35 @@ return function()
 			local IndirectionClass = React.Component:extend("IndirectionClass")
 
 			function IndirectionClass:render()
-				Scheduler.unstable_yieldValue("IndirectionClass " .. JSONStringify(self.context))
+				Scheduler.unstable_yieldValue(
+					"IndirectionClass " .. JSONStringify(self.context)
+				)
 
 				return self.props.children
 			end
 
-			ReactNoop.render(React.createElement(
-				Intl,
-				{
-					locale = "fr",
-				},
+			ReactNoop.render(
 				React.createElement(
-					IndirectionFn,
-					nil,
+					Intl,
+					{
+						locale = "fr",
+					},
 					React.createElement(
-						IndirectionClass,
+						IndirectionFn,
 						nil,
 						React.createElement(
-							Stateful,
+							IndirectionClass,
 							nil,
-							React.createElement(ShowLocaleClass),
-							React.createElement(ShowLocaleFn)
+							React.createElement(
+								Stateful,
+								nil,
+								React.createElement(ShowLocaleClass),
+								React.createElement(ShowLocaleFn)
+							)
 						)
 					)
 				)
-			))
+			)
 			jestExpect(function()
 				return jestExpect(Scheduler).toFlushAndYield({
 					"Intl:read {}",
@@ -2425,7 +2485,9 @@ return function()
 					locale = self.props.locale,
 				}
 
-				Scheduler.unstable_yieldValue("Intl:provide " .. JSONStringify(childContext))
+				Scheduler.unstable_yieldValue(
+					"Intl:provide " .. JSONStringify(childContext)
+				)
 
 				return childContext
 			end
@@ -2443,7 +2505,9 @@ return function()
 			local ShowLocaleClass = React.Component:extend("ShowLocaleClass")
 
 			function ShowLocaleClass:render()
-				Scheduler.unstable_yieldValue("ShowLocaleClass:read " .. JSONStringify(self.context))
+				Scheduler.unstable_yieldValue(
+					"ShowLocaleClass:read " .. JSONStringify(self.context)
+				)
 
 				return self.context.locale
 			end
@@ -2455,7 +2519,9 @@ return function()
 
 			local function ShowLocaleFn(props, context)
 				context.locale = context.locale or ""
-				Scheduler.unstable_yieldValue("ShowLocaleFn:read " .. JSONStringify(context))
+				Scheduler.unstable_yieldValue(
+					"ShowLocaleFn:read " .. JSONStringify(context)
+				)
 
 				return context.locale
 			end
@@ -2474,7 +2540,9 @@ return function()
 			local IndirectionClass = React.Component:extend("IndirectionClass")
 
 			function IndirectionClass:render()
-				Scheduler.unstable_yieldValue("IndirectionClass " .. JSONStringify(self.context))
+				Scheduler.unstable_yieldValue(
+					"IndirectionClass " .. JSONStringify(self.context)
+				)
 
 				return self.props.children
 			end
@@ -2491,20 +2559,22 @@ return function()
 				}, self.props.children)
 			end
 
-			ReactNoop.render(React.createElement(
-				Stateful,
-				nil,
+			ReactNoop.render(
 				React.createElement(
-					IndirectionFn,
+					Stateful,
 					nil,
 					React.createElement(
-						IndirectionClass,
+						IndirectionFn,
 						nil,
-						React.createElement(ShowLocaleClass),
-						React.createElement(ShowLocaleFn)
+						React.createElement(
+							IndirectionClass,
+							nil,
+							React.createElement(ShowLocaleClass),
+							React.createElement(ShowLocaleFn)
+						)
 					)
 				)
-			))
+			)
 			jestExpect(function()
 				return jestExpect(Scheduler).toFlushAndYield({
 					"Intl:read {}",
@@ -2538,118 +2608,126 @@ return function()
 				'ShowLocaleFn:read {"locale":"gr"}',
 			})
 		end)
-		it("maintains the correct context when providers bail out due to low priority", function()
-			-- Child must be a context provider to trigger the bug
-			local Child = React.Component:extend("Child")
-			function Child:getChildContext()
-				return {}
-			end
-			function Child:render()
-				return React.createElement("div")
-			end
+		it(
+			"maintains the correct context when providers bail out due to low priority",
+			function()
+				-- Child must be a context provider to trigger the bug
+				local Child = React.Component:extend("Child")
+				function Child:getChildContext()
+					return {}
+				end
+				function Child:render()
+					return React.createElement("div")
+				end
 
-			local instance
-			local Middle = React.Component:extend("Middle")
+				local instance
+				local Middle = React.Component:extend("Middle")
 
-			function Middle:init(props, context)
-				instance = self
-			end
-
-			function Middle:shouldComponentUpdate()
-				-- Return false so that our child will get a NoWork priority (and get bailed out)
-				return false
-			end
-			function Middle:render()
-				return React.createElement(Child)
-			end
-
-			local Root = React.Component:extend("Root")
-
-			function Root:render()
-				return React.createElement(Middle, self.props)
-			end
-
-			Child.childContextTypes = {}
-
-			-- Init
-			ReactNoop.render(React.createElement(Root))
-			jestExpect(function()
-				return jestExpect(Scheduler).toFlushWithoutYielding()
-			end).toErrorDev(
-				"Legacy context API has been detected within a strict-mode tree.\n\n"
-					.. "The old API will be supported in all 16.x releases, but applications "
-					.. "using it should migrate to the new version.\n\n"
-					.. "Please update the following components: Child"
-			)
-
-			-- Trigger an update in the middle of the tree
-			instance:setState({})
-			jestExpect(Scheduler).toFlushWithoutYielding()
-		end)
-
-		it("maintains the correct context when unwinding due to an error in render", function()
-			-- ROBLOX deviation: hoist declaration so correct value is captured
-			local ContextProvider = React.Component:extend("ContextProvider")
-			local Root = React.Component:extend("Root")
-
-			function Root:componentDidCatch(_error)
-				-- If context is pushed/popped correctly,
-				-- This method will be used to handle the intentionally-thrown Error.
-			end
-
-			function Root:render()
-				return React.createElement(ContextProvider, { depth = 1 })
-			end
-
-			local instance
-
-			function ContextProvider:init(props, context)
-				self.state = {}
-
-				if props.depth == 1 then
+				function Middle:init(props, context)
 					instance = self
 				end
-			end
-			ContextProvider.childContextTypes = {}
-			function ContextProvider:getChildContext()
-				return {}
-			end
-			function ContextProvider:render()
-				if self.state.throwError then
-					error(Error.new())
+
+				function Middle:shouldComponentUpdate()
+					-- Return false so that our child will get a NoWork priority (and get bailed out)
+					return false
+				end
+				function Middle:render()
+					return React.createElement(Child)
 				end
 
-				return (function()
-					if self.props.depth < 4 then
-						return React.createElement(ContextProvider, {
-							depth = self.props.depth + 1,
-						})
+				local Root = React.Component:extend("Root")
+
+				function Root:render()
+					return React.createElement(Middle, self.props)
+				end
+
+				Child.childContextTypes = {}
+
+				-- Init
+				ReactNoop.render(React.createElement(Root))
+				jestExpect(function()
+					return jestExpect(Scheduler).toFlushWithoutYielding()
+				end).toErrorDev(
+					"Legacy context API has been detected within a strict-mode tree.\n\n"
+						.. "The old API will be supported in all 16.x releases, but applications "
+						.. "using it should migrate to the new version.\n\n"
+						.. "Please update the following components: Child"
+				)
+
+				-- Trigger an update in the middle of the tree
+				instance:setState({})
+				jestExpect(Scheduler).toFlushWithoutYielding()
+			end
+		)
+
+		it(
+			"maintains the correct context when unwinding due to an error in render",
+			function()
+				-- ROBLOX deviation: hoist declaration so correct value is captured
+				local ContextProvider = React.Component:extend("ContextProvider")
+				local Root = React.Component:extend("Root")
+
+				function Root:componentDidCatch(_error)
+					-- If context is pushed/popped correctly,
+					-- This method will be used to handle the intentionally-thrown Error.
+				end
+
+				function Root:render()
+					return React.createElement(ContextProvider, { depth = 1 })
+				end
+
+				local instance
+
+				function ContextProvider:init(props, context)
+					self.state = {}
+
+					if props.depth == 1 then
+						instance = self
+					end
+				end
+				ContextProvider.childContextTypes = {}
+				function ContextProvider:getChildContext()
+					return {}
+				end
+				function ContextProvider:render()
+					if self.state.throwError then
+						error(Error.new())
 					end
 
-					return React.createElement(function()
-						return nil
-					end)
-				end)()
+					return (function()
+						if self.props.depth < 4 then
+							return React.createElement(ContextProvider, {
+								depth = self.props.depth + 1,
+							})
+						end
+
+						return React.createElement(function()
+							return nil
+						end)
+					end)()
+				end
+
+				-- Init
+				ReactNoop.render(React.createElement(Root))
+				jestExpect(function()
+					return jestExpect(Scheduler).toFlushWithoutYielding()
+				end).toErrorDev(
+					"Legacy context API has been detected within a strict-mode tree.\n\n"
+						.. "The old API will be supported in all 16.x releases, but applications "
+						.. "using it should migrate to the new version.\n\n"
+						.. "Please update the following components: ContextProvider"
+				)
+
+				-- Trigger an update in the middle of the tree
+				-- This is necessary to reproduce the error as it currently exists.
+				instance:setState({ throwError = true })
+				jestExpect(function()
+					return jestExpect(Scheduler).toFlushWithoutYielding()
+				end).toErrorDev(
+					"Error boundaries should implement getDerivedStateFromError()"
+				)
 			end
-
-			-- Init
-			ReactNoop.render(React.createElement(Root))
-			jestExpect(function()
-				return jestExpect(Scheduler).toFlushWithoutYielding()
-			end).toErrorDev(
-				"Legacy context API has been detected within a strict-mode tree.\n\n"
-					.. "The old API will be supported in all 16.x releases, but applications "
-					.. "using it should migrate to the new version.\n\n"
-					.. "Please update the following components: ContextProvider"
-			)
-
-			-- Trigger an update in the middle of the tree
-			-- This is necessary to reproduce the error as it currently exists.
-			instance:setState({ throwError = true })
-			jestExpect(function()
-				return jestExpect(Scheduler).toFlushWithoutYielding()
-			end).toErrorDev("Error boundaries should implement getDerivedStateFromError()")
-		end)
+		)
 
 		it("should not recreate masked context unless inputs have changed", function()
 			local scuCounter = 0
@@ -2698,9 +2776,9 @@ return function()
 			end).toErrorDev({
 				"Using UNSAFE_componentWillReceiveProps in strict mode is not recommended",
 				"Legacy context API has been detected within a strict-mode tree.\n\n"
-				.. "The old API will be supported in all 16.x releases, but applications "
-				.. "using it should migrate to the new version.\n\n"
-				.. "Please update the following components: MyComponent",
+					.. "The old API will be supported in all 16.x releases, but applications "
+					.. "using it should migrate to the new version.\n\n"
+					.. "Please update the following components: MyComponent",
 			}, {
 				withoutStack = 1,
 			})
@@ -2812,7 +2890,7 @@ return function()
 				self.updateCount = function()
 					-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
 					return self:setState(function(state: { count: number })
-					-- ROBLOX deviation END
+						-- ROBLOX deviation END
 						return {
 							count = state.count + 1,
 						}
@@ -2834,11 +2912,13 @@ return function()
 				count = PropTypes.number,
 			}
 
-			ReactNoop.render(React.createElement(
-				TopContextProvider,
-				nil,
-				React.createElement(Middle, nil, React.createElement(Child))
-			))
+			ReactNoop.render(
+				React.createElement(
+					TopContextProvider,
+					nil,
+					React.createElement(Middle, nil, React.createElement(Child))
+				)
+			)
 			jestExpect(function()
 				return jestExpect(Scheduler).toFlushAndYield({
 					"count:0",
@@ -2855,139 +2935,159 @@ return function()
 			})
 		end)
 		-- ROBLOX TODO: PropTypes
-		xit("updates descendants with multiple context-providing ancestors with new context values", function()
-			local instance
-			local TopContextProvider = React.Component:extend("TopContextProvider")
+		xit(
+			"updates descendants with multiple context-providing ancestors with new context values",
+			function()
+				local instance
+				local TopContextProvider = React.Component:extend("TopContextProvider")
 
-			function TopContextProvider:init()
-				self.getChildContext = function()
-					return {
-						count = self.state.count,
-					}
-				end
-				self.render = function()
-					return self.props.children
-				end
-				self.updateCount = function()
-					-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
-					return self:setState(function(state: { count: number })
-					-- ROBLOX deviation END
+				function TopContextProvider:init()
+					self.getChildContext = function()
 						return {
-							count = state.count + 1,
+							count = self.state.count,
 						}
-					end)
+					end
+					self.render = function()
+						return self.props.children
+					end
+					self.updateCount = function()
+						-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
+						return self:setState(function(state: { count: number })
+							-- ROBLOX deviation END
+							return {
+								count = state.count + 1,
+							}
+						end)
+					end
+					self.state = { count = 0 }
+					instance = self
 				end
-				self.state = { count = 0 }
-				instance = self
-			end
 
-			TopContextProvider.childContextTypes = {
-				count = PropTypes.number,
-			}
+				TopContextProvider.childContextTypes = {
+					count = PropTypes.number,
+				}
 
-			local MiddleContextProvider = React.Component:extend("MiddleContextProvider")
+				local MiddleContextProvider =
+					React.Component:extend("MiddleContextProvider")
 
-			MiddleContextProvider.childContextTypes = {
-				name = PropTypes.string,
-			}
+				MiddleContextProvider.childContextTypes = {
+					name = PropTypes.string,
+				}
 
-			local Child = React.Component:extend("Child")
+				local Child = React.Component:extend("Child")
 
-			Child.contextTypes = {
-				count = PropTypes.number,
-			}
+				Child.contextTypes = {
+					count = PropTypes.number,
+				}
 
-			ReactNoop.render(React.createElement(
-				TopContextProvider,
-				nil,
-				React.createElement(MiddleContextProvider, nil, React.createElement(Child))
-			))
-			jestExpect(function()
-				return jestExpect(Scheduler).toFlushAndYield({
-					"count:0",
-				})
-			end).toErrorDev(
-				"Legacy context API has been detected within a strict-mode tree.\n\n"
-					.. "The old API will be supported in all 16.x releases, but applications "
-					.. "using it should migrate to the new version.\n\n"
-					.. "Please update the following components: Child, MiddleContextProvider, TopContextProvider"
-			)
-			instance.updateCount()
-			jestExpect(Scheduler).toFlushAndYield({
-				"count:1",
-			})
-		end)
-		-- ROBLOX TODO: PropTypes
-		xit("should not update descendants with new context values if shouldComponentUpdate returns false", function()
-			local instance
-			local TopContextProvider = React.Component:extend("TopContextProvider")
-
-			function TopContextProvider:init()
-				self.getChildContext = function()
-					return {
-						count = self.state.count,
-					}
-				end
-				self.render = function()
-					return self.props.children
-				end
-				self.updateCount = function()
-					-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
-					return self:setState(function(state: { count: number })
-					-- ROBLOX deviation END
-						return {
-							count = state.count + 1,
-						}
-					end)
-				end
-				self.state = { count = 0 }
-				instance = self
-			end
-
-			TopContextProvider.childContextTypes = {
-				count = PropTypes.number,
-			}
-
-			local MiddleScu = React.Component:extend("MiddleScu")
-
-			function MiddleScu:shouldComponentUpdate()
-				return false
-			end
-
-			local MiddleContextProvider = React.Component:extend("MiddleContextProvider")
-
-			MiddleContextProvider.childContextTypes = {
-				name = PropTypes.string,
-			}
-
-			local Child = React.Component:extend("Child")
-
-			Child.contextTypes = {
-				count = PropTypes.number,
-			}
-
-			ReactNoop.render(React.createElement(
-				TopContextProvider,
-				nil,
-				React.createElement(
-					MiddleScu,
-					nil,
-					React.createElement(MiddleContextProvider, nil, React.createElement(Child))
+				ReactNoop.render(
+					React.createElement(
+						TopContextProvider,
+						nil,
+						React.createElement(
+							MiddleContextProvider,
+							nil,
+							React.createElement(Child)
+						)
+					)
 				)
-			))
-			jestExpect(function()
-				return jestExpect(Scheduler).toFlushAndYield({
-					"count:0",
+				jestExpect(function()
+					return jestExpect(Scheduler).toFlushAndYield({
+						"count:0",
+					})
+				end).toErrorDev(
+					"Legacy context API has been detected within a strict-mode tree.\n\n"
+						.. "The old API will be supported in all 16.x releases, but applications "
+						.. "using it should migrate to the new version.\n\n"
+						.. "Please update the following components: Child, MiddleContextProvider, TopContextProvider"
+				)
+				instance.updateCount()
+				jestExpect(Scheduler).toFlushAndYield({
+					"count:1",
 				})
-			end).toErrorDev(
-				"Legacy context API has been detected within a strict-mode tree.\n\n"
-					.. "The old API will be supported in all 16.x releases, but applications "
-					.. "using it should migrate to the new version.\n\n"
-					.. "Please update the following components: Child, MiddleContextProvider, TopContextProvider"
-			)
-			instance.updateCount()
-			jestExpect(Scheduler).toFlushWithoutYielding()
-		end)
+			end
+		)
+		-- ROBLOX TODO: PropTypes
+		xit(
+			"should not update descendants with new context values if shouldComponentUpdate returns false",
+			function()
+				local instance
+				local TopContextProvider = React.Component:extend("TopContextProvider")
+
+				function TopContextProvider:init()
+					self.getChildContext = function()
+						return {
+							count = self.state.count,
+						}
+					end
+					self.render = function()
+						return self.props.children
+					end
+					self.updateCount = function()
+						-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
+						return self:setState(function(state: { count: number })
+							-- ROBLOX deviation END
+							return {
+								count = state.count + 1,
+							}
+						end)
+					end
+					self.state = { count = 0 }
+					instance = self
+				end
+
+				TopContextProvider.childContextTypes = {
+					count = PropTypes.number,
+				}
+
+				local MiddleScu = React.Component:extend("MiddleScu")
+
+				function MiddleScu:shouldComponentUpdate()
+					return false
+				end
+
+				local MiddleContextProvider =
+					React.Component:extend("MiddleContextProvider")
+
+				MiddleContextProvider.childContextTypes = {
+					name = PropTypes.string,
+				}
+
+				local Child = React.Component:extend("Child")
+
+				Child.contextTypes = {
+					count = PropTypes.number,
+				}
+
+				ReactNoop.render(
+					React.createElement(
+						TopContextProvider,
+						nil,
+						React.createElement(
+							MiddleScu,
+							nil,
+							React.createElement(
+								MiddleContextProvider,
+								nil,
+								React.createElement(Child)
+							)
+						)
+					)
+				)
+				jestExpect(function()
+					return jestExpect(Scheduler).toFlushAndYield({
+						"count:0",
+					})
+				end).toErrorDev(
+					"Legacy context API has been detected within a strict-mode tree.\n\n"
+						.. "The old API will be supported in all 16.x releases, but applications "
+						.. "using it should migrate to the new version.\n\n"
+						.. "Please update the following components: Child, MiddleContextProvider, TopContextProvider"
+				)
+				instance.updateCount()
+				jestExpect(Scheduler).toFlushWithoutYielding()
+			end
+		)
 		-- ROBLOX TODO: PropTypes
 		xit(
 			"should update descendants with new context values if setState() is called in the middle of the tree",
@@ -3008,7 +3108,7 @@ return function()
 					self.updateCount = function()
 						-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
 						return self:setState(function(state: { count: number })
-						-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
+							-- ROBLOX deviation START: Luau requires annotation here to know * opeator is safe
 							return {
 								count = state.count + 1,
 							}
@@ -3028,7 +3128,8 @@ return function()
 					return false
 				end
 
-				local MiddleContextProvider = React.Component:extend("MiddleContextProvider")
+				local MiddleContextProvider =
+					React.Component:extend("MiddleContextProvider")
 
 				function MiddleContextProvider:init()
 					self.getChildContext = function()
@@ -3059,15 +3160,21 @@ return function()
 					name = PropTypes.string,
 				}
 
-				ReactNoop.render(React.createElement(
-					TopContextProvider,
-					nil,
+				ReactNoop.render(
 					React.createElement(
-						MiddleScu,
+						TopContextProvider,
 						nil,
-						React.createElement(MiddleContextProvider, nil, React.createElement(Child))
+						React.createElement(
+							MiddleScu,
+							nil,
+							React.createElement(
+								MiddleContextProvider,
+								nil,
+								React.createElement(Child)
+							)
+						)
 					)
-				))
+				)
 				jestExpect(function()
 					return jestExpect(Scheduler).toFlushAndYield({
 						"count:0, name:brian",

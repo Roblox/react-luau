@@ -51,11 +51,8 @@ return function()
 			React.Children.forEach(instance.props.children, callback, context)
 			expect(callback).toHaveBeenCalledWith(simpleKid, 1)
 			callback.mockClear()
-			local mappedChildren = React.Children.map(
-				instance.props.children,
-				callback,
-				context
-			)
+			local mappedChildren =
+				React.Children.map(instance.props.children, callback, context)
 			expect(callback).toHaveBeenCalledWith(simpleKid, 1)
 			expect(mappedChildren[1]).toEqual(
 				React.createElement("span", { key = ".$simple" })
@@ -76,11 +73,8 @@ return function()
 			React.Children.forEach(parentInstance.props.children, callback, context)
 			expect(callback).toHaveBeenCalledWith(reactPortal, 1)
 			callback.mockClear()
-			local mappedChildren = React.Children.map(
-				parentInstance.props.children,
-				callback,
-				context
-			)
+			local mappedChildren =
+				React.Children.map(parentInstance.props.children, callback, context)
 			expect(callback).toHaveBeenCalledWith(reactPortal, 1)
 			expect(mappedChildren[1]).toEqual(reactPortal)
 		end)
@@ -96,11 +90,8 @@ return function()
 			React.Children.forEach(instance.props.children, callback, context)
 			expect(callback).toHaveBeenCalledWith(simpleKid, 1)
 			callback.mockClear()
-			local mappedChildren = React.Children.map(
-				instance.props.children,
-				callback,
-				context
-			)
+			local mappedChildren =
+				React.Children.map(instance.props.children, callback, context)
 			expect(callback).toHaveBeenCalledWith(simpleKid, 1)
 			expect(mappedChildren[1]).toEqual(React.createElement("span", { key = ".1" }))
 		end)
@@ -116,11 +107,8 @@ return function()
 			React.Children.forEach(instance.props.children, callback, context)
 			expect(callback).toHaveBeenCalledWith(simpleKid, 1)
 			callback.mockClear()
-			local mappedChildren = React.Children.map(
-				instance.props.children,
-				callback,
-				context
-			)
+			local mappedChildren =
+				React.Children.map(instance.props.children, callback, context)
 			expect(callback).toHaveBeenCalledWith(simpleKid, 1)
 			expect(mappedChildren[1]).toEqual(
 				React.createElement("span", { key = ".$simple" })
@@ -151,11 +139,8 @@ return function()
 			end
 			React.Children.forEach(instance.props.children, callback, context)
 			assertCalls()
-			local mappedChildren = React.Children.map(
-				instance.props.children,
-				callback,
-				context
-			)
+			local mappedChildren =
+				React.Children.map(instance.props.children, callback, context)
 			assertCalls()
 			expect(mappedChildren).toEqual({
 				React.createElement("div", { key = ".$keyZero" }),
@@ -202,11 +187,8 @@ return function()
 			end
 			React.Children.forEach(instance.props.children, callback, context)
 			assertCalls()
-			local mappedChildren = React.Children.map(
-				instance.props.children,
-				callback,
-				context
-			)
+			local mappedChildren =
+				React.Children.map(instance.props.children, callback, context)
 			assertCalls()
 			expect(mappedChildren).toEqual({
 				React.createElement("div", { key = ".$divNode" }),
@@ -246,11 +228,8 @@ return function()
 			end
 			React.Children.forEach(instance.props.children, callback, context)
 			assertCalls()
-			local mappedChildren = React.Children.map(
-				instance.props.children,
-				callback,
-				context
-			)
+			local mappedChildren =
+				React.Children.map(instance.props.children, callback, context)
 			assertCalls()
 			expect(mappedChildren).toEqual({
 				React.createElement("div", { key = ".1:$keyZero" }),
@@ -276,11 +255,8 @@ return function()
 			end
 			React.Children.forEach(forcedKeys.props.children, callback, context)
 			assertCalls()
-			local mappedChildren = React.Children.map(
-				forcedKeys.props.children,
-				callback,
-				context
-			)
+			local mappedChildren =
+				React.Children.map(forcedKeys.props.children, callback, context)
 			assertCalls()
 			expect(mappedChildren).toEqual({
 				React.createElement("div", { key = ".$keyZero" }),
@@ -335,11 +311,8 @@ return function()
 			end
 			React.Children.forEach(instance.props.children, callback, context)
 			assertCalls()
-			local mappedChildren = React.Children.map(
-				instance.props.children,
-				callback,
-				context
-			)
+			local mappedChildren =
+				React.Children.map(instance.props.children, callback, context)
 			assertCalls()
 			expect(mappedChildren).toEqual({
 				React.createElement("div", { key = ".0" }),
@@ -401,11 +374,8 @@ return function()
 			end
 			React.Children.forEach(instance.props.children, callback, context)
 			assertCalls()
-			local mappedChildren = React.Children.map(
-				instance.props.children,
-				callback,
-				context
-			)
+			local mappedChildren =
+				React.Children.map(instance.props.children, callback, context)
 			assertCalls()
 			expect(mappedChildren).toEqual({
 				React.createElement("div", { key = ".$#1" }),
@@ -478,11 +448,8 @@ return function()
 			end
 			React.Children.forEach(instance.props.children, callback, context)
 			assertCalls()
-			local mappedChildren = React.Children.map(
-				instance.props.children,
-				callback,
-				context
-			)
+			local mappedChildren =
+				React.Children.map(instance.props.children, callback, context)
 			assertCalls()
 			expect(mappedChildren).toEqual({ "a", 13 })
 			-- String.prototype.key = nil
@@ -495,15 +462,10 @@ return function()
 			end
 			local simpleKid = React.createElement("span", { key = "simple" })
 			local instance = React.createElement("div", nil, simpleKid)
-			local mappedChildren =
-				React.Children.map(instance.props.children, mapFn)
+			local mappedChildren = React.Children.map(instance.props.children, mapFn)
 			expect(React.Children.count(mappedChildren)).toBe(1)
 			expect(mappedChildren[1]).never.toBe(simpleKid)
-			expect(
-				(
-					(mappedChildren[1]).props
-				).children
-			).toBe(simpleKid)
+			expect(((mappedChildren[1]).props).children).toBe(simpleKid)
 			expect((mappedChildren[1]).key).toBe(".$simple")
 		end)
 
@@ -554,11 +516,7 @@ return function()
 			expect(callback).toHaveBeenCalledWith(nil, 4)
 			expect(callback).toHaveBeenCalledWith(four, 5)
 			callback.mockClear()
-			local mappedChildren =
-				React.Children.map(
-					instance.props.children,
-					callback
-				)
+			local mappedChildren = React.Children.map(instance.props.children, callback)
 			expect(callback).toHaveBeenCalledTimes(5)
 			expect(React.Children.count(mappedChildren)).toBe(4) -- Keys default to indices.
 			expect({
@@ -638,11 +596,7 @@ return function()
 			expect(callback).toHaveBeenCalledWith(four, 5)
 			expect(callback).toHaveBeenCalledWith(five, 6)
 			callback.mockClear()
-			local mappedChildren =
-				React.Children.map(
-					instance.props.children,
-					callback
-				)
+			local mappedChildren = React.Children.map(instance.props.children, callback)
 			expect(callback).toHaveBeenCalledTimes(6)
 			expect(callback).toHaveBeenCalledWith(zero, 1)
 			-- ROBLOX DEVIATION: React.None gets treated as nil for callback
@@ -693,10 +647,8 @@ return function()
 			end
 			local forcedKeys = React.createElement("div", nil, zeroForceKey, oneForceKey)
 			local expectedForcedKeys = { "giraffe/.$keyZero", ".$keyOne" }
-			local mappedChildrenForcedKeys = React.Children.map(
-				forcedKeys.props.children,
-				mapFn
-			)
+			local mappedChildrenForcedKeys =
+				React.Children.map(forcedKeys.props.children, mapFn)
 			local mappedForcedKeys = Array.map(mappedChildrenForcedKeys, function(c)
 				return c.key
 			end)
@@ -705,10 +657,8 @@ return function()
 				"giraffe/.$giraffe/.$keyZero",
 				".$.$keyOne",
 			}
-			local remappedChildrenForcedKeys = React.Children.map(
-				mappedChildrenForcedKeys,
-				mapFn
-			)
+			local remappedChildrenForcedKeys =
+				React.Children.map(mappedChildrenForcedKeys, mapFn)
 			expect(Array.map(remappedChildrenForcedKeys, function(c)
 				return c.key
 			end)).toEqual(expectedRemappedForcedKeys)
@@ -727,11 +677,8 @@ return function()
 		end)
 
 		it("should use the same key for a cloned element", function()
-			local instance = React.createElement(
-				"div",
-				nil,
-				React.createElement("div", nil)
-			)
+			local instance =
+				React.createElement("div", nil, React.createElement("div", nil))
 			local mapped = React.Children.map(instance.props.children, function(element)
 				return element
 			end)
@@ -756,10 +703,7 @@ return function()
 			local mappedWithClone = React.Children.map(
 				instance.props.children,
 				function(element)
-					return React.cloneElement(
-						element,
-						{ key = "unique" }
-					)
+					return React.cloneElement(element, { key = "unique" })
 				end
 			)
 			expect(mapped[1].key).toBe(mappedWithClone[1].key)
@@ -814,20 +758,10 @@ return function()
 			expect(React.Children.toArray(nil)).toEqual({})
 			-- ROBLOX DEVIATION: React.None is omitted
 			expect(React.Children.toArray(React.None)).toEqual({})
-			expect(
-				#(React.Children.toArray(React.createElement("div", nil)))
-			).toBe(1)
-			expect(
-				#(React.Children.toArray({ React.createElement("div", nil) }))
-			).toBe(1)
-			expect(
-				(
-					React.Children.toArray(React.createElement("div", nil))
-				)[1].key
-			).toBe(
-				(
-					React.Children.toArray({ React.createElement("div", nil) })
-				)[1].key
+			expect(#(React.Children.toArray(React.createElement("div", nil)))).toBe(1)
+			expect(#(React.Children.toArray({ React.createElement("div", nil) }))).toBe(1)
+			expect((React.Children.toArray(React.createElement("div", nil)))[1].key).toBe(
+				(React.Children.toArray({ React.createElement("div", nil) }))[1].key
 			)
 			local flattened = React.Children.toArray({
 				{
@@ -865,9 +799,7 @@ return function()
 			expect(flattened[6].key).toBe(reversed[4].key)
 			-- null/undefined/bool are all omitted
 			-- ROBLOX DEVIATION: React.None is omitted
-			expect(
-				React.Children.toArray({ 1, "two", nil, React.None, true })
-			).toEqual({
+			expect(React.Children.toArray({ 1, "two", nil, React.None, true })).toEqual({
 				1,
 				"two",
 			})
@@ -909,10 +841,7 @@ return function()
 						-- ROBLOX DEVIATION: use React.None instead of nil
 						kid or React.None,
 						if kid and kid ~= React.None
-							then React.cloneElement(
-								kid,
-								{ key = "z" }
-							)
+							then React.cloneElement(kid, { key = "z" })
 							else React.None,
 						React.createElement("hr", nil),
 					}
@@ -1079,11 +1008,8 @@ return function()
 					c = c,
 				})
 
-				local mappedChildren = React.Children.map(
-					instance.props.children,
-					callback,
-					{}
-				)
+				local mappedChildren =
+					React.Children.map(instance.props.children, callback, {})
 				local function assertCalls()
 					expect(callback).toHaveBeenCalledTimes(3)
 					expect(#mappedChildren).toEqual(3)
@@ -1099,9 +1025,8 @@ return function()
 
 		describe("with fragments enabled", function()
 			it("warns for keys for arrays of elements in a fragment", function()
-				local ComponentReturningArray = React.Component:extend(
-					"ComponentReturningArray"
-				)
+				local ComponentReturningArray =
+					React.Component:extend("ComponentReturningArray")
 				function ComponentReturningArray:render()
 					return {
 						React.createElement("Frame", nil),
@@ -1121,9 +1046,8 @@ return function()
 			end)
 
 			it("does not warn when there are keys on  elements in a fragment", function()
-				local ComponentReturningArray = React.Component:extend(
-					"ComponentReturningArray"
-				)
+				local ComponentReturningArray =
+					React.Component:extend("ComponentReturningArray")
 
 				function ComponentReturningArray:render()
 					return {

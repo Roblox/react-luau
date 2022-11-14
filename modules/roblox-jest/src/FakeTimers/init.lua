@@ -151,7 +151,9 @@ return {
 	advanceTimersByTime = advanceTimersByTime,
 	getTimerCount = getTimerCount,
 	reset = reset,
-	now = function() return now end,
+	now = function()
+		return now
+	end,
 	mockOsClock = function(mockFn)
 		osClockOverride.__call = function(_, ...)
 			return mockFn(...)

@@ -94,7 +94,7 @@ function lazyInitializer<T>(payload: Payload<T>): T
 					end
 				end
 				-- Transition to the next state.
-				local resolved: ResolvedPayload<T> = (payload :: any)
+				local resolved: ResolvedPayload<T> = payload :: any
 				resolved._status = Resolved
 				resolved._result = defaultExport
 			end
@@ -116,70 +116,71 @@ end
 
 local exports = {}
 
-exports.lazy =
-	function<T>(ctor: () -> Thenable<{ default: T, [string]: any }>): LazyComponent<T, Payload<T>>
-		local payload: Payload<T> = {
-			-- We use these fields to store the result.
-			_status = -1,
-			_result = ctor,
-		}
+exports.lazy = function<T>(
+	ctor: () -> Thenable<{ default: T, [string]: any }>
+): LazyComponent<T, Payload<T>>
+	local payload: Payload<T> = {
+		-- We use these fields to store the result.
+		_status = -1,
+		_result = ctor,
+	}
 
-		local lazyType: LazyComponent<T, Payload<T>> = {
-			["$$typeof"] = REACT_LAZY_TYPE,
-			_payload = payload,
-			-- ROBLOX FIXME Luau: needs something even beyond normalization to avoid Property '_init' is not compatible. Type '<T>(Payload<T>) -> T?' could not be converted into '(Payload<T>) -> T?'; different number of generic type parameters
-			_init = lazyInitializer :: any,
-		}
+	local lazyType: LazyComponent<T, Payload<T>> = {
+		["$$typeof"] = REACT_LAZY_TYPE,
+		_payload = payload,
+		-- ROBLOX FIXME Luau: needs something even beyond normalization to avoid Property '_init' is not compatible. Type '<T>(Payload<T>) -> T?' could not be converted into '(Payload<T>) -> T?'; different number of generic type parameters
+		_init = lazyInitializer :: any,
+	}
 
-		if _G.__DEV__ then
-			-- In production, this would just set it on the object.
-			local defaultProps
-			local propTypes
-			-- $FlowFixMe
-			setmetatable(lazyType, {
-				__index = function(self, key)
-					if key == "defaultProps" then
-						return defaultProps
-					end
-					if key == "propTypes" then
-						return propTypes
-					end
-					return
-				end,
-				__newindex = function(self, key, value)
-					if key == "defaultProps" then
-						console.error(
-							"React.lazy(...): It is not supported to assign `defaultProps` to "
-								.. "a lazy component import. Either specify them where the component "
-								.. "is defined, or create a wrapping component around it."
-						)
-						defaultProps = value
-						-- Match production behavior more closely:
-						-- $FlowFixMe
-						setmetatable(self, {
-							__index = function() end,
-							__newindex = function() end,
-						})
-					end
-					if key == "propTypes" then
-						console.error(
-							"React.lazy(...): It is not supported to assign `propTypes` to "
-								.. "a lazy component import. Either specify them where the component "
-								.. "is defined, or create a wrapping component around it."
-						)
-						propTypes = value
-						-- Match production behavior more closely:
-						-- $FlowFixMe
-						setmetatable(self, {
-							__index = function() end,
-							__newindex = function() end,
-						})
-					end
-				end,
-			})
-		end
-
-		return lazyType
+	if _G.__DEV__ then
+		-- In production, this would just set it on the object.
+		local defaultProps
+		local propTypes
+		-- $FlowFixMe
+		setmetatable(lazyType, {
+			__index = function(self, key)
+				if key == "defaultProps" then
+					return defaultProps
+				end
+				if key == "propTypes" then
+					return propTypes
+				end
+				return
+			end,
+			__newindex = function(self, key, value)
+				if key == "defaultProps" then
+					console.error(
+						"React.lazy(...): It is not supported to assign `defaultProps` to "
+							.. "a lazy component import. Either specify them where the component "
+							.. "is defined, or create a wrapping component around it."
+					)
+					defaultProps = value
+					-- Match production behavior more closely:
+					-- $FlowFixMe
+					setmetatable(self, {
+						__index = function() end,
+						__newindex = function() end,
+					})
+				end
+				if key == "propTypes" then
+					console.error(
+						"React.lazy(...): It is not supported to assign `propTypes` to "
+							.. "a lazy component import. Either specify them where the component "
+							.. "is defined, or create a wrapping component around it."
+					)
+					propTypes = value
+					-- Match production behavior more closely:
+					-- $FlowFixMe
+					setmetatable(self, {
+						__index = function() end,
+						__newindex = function() end,
+					})
+				end
+			end,
+		})
 	end
+
+	return lazyType
+end
 
 return exports

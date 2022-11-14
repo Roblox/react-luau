@@ -40,14 +40,17 @@ return function()
 			jestExpect(ReactNoop).toMatchRenderedOutput("foo")
 		end)
 
-		it("should render a component returning numbers directly from renderß", function()
-			local Text = function(props)
-				return props.value
-			end
-			ReactNoop.render(React.createElement(Text, { value = 10 }))
-			jestExpect(Scheduler).toFlushWithoutYielding()
+		it(
+			"should render a component returning numbers directly from renderß",
+			function()
+				local Text = function(props)
+					return props.value
+				end
+				ReactNoop.render(React.createElement(Text, { value = 10 }))
+				jestExpect(Scheduler).toFlushWithoutYielding()
 
-			jestExpect(ReactNoop).toMatchRenderedOutput("10")
-		end)
+				jestExpect(ReactNoop).toMatchRenderedOutput("10")
+			end
+		)
 	end)
 end

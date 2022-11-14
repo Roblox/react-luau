@@ -146,7 +146,7 @@ return function()
 				frameRef = useRef(nil)
 
 				return React.createElement("Frame", {
-					Size= UDim2.new(1, 0, 1, 0),
+					Size = UDim2.new(1, 0, 1, 0),
 					ref = frameRef,
 				})
 			end

@@ -13,7 +13,7 @@ type Object = { [any]: any }
 
 local function resolveDefaultProps(Component: any, baseProps: Object): Object
 	-- ROBLOX deviation: check if type is table before checking defaultProps to prevent non-table index
-	if Component and typeof(Component) == 'table' and Component.defaultProps then
+	if Component and typeof(Component) == "table" and Component.defaultProps then
 		-- Resolve default props. Taken from ReactElement
 		-- ROBLOX FIXME Luau: hard cast to object until we can model this better in Luau. avoids Expected type table, got 'Object & any & any & { [any]: any }' instead
 		local props = table.clone(baseProps) :: Object

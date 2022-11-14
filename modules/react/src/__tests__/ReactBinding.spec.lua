@@ -29,11 +29,13 @@ return function()
 
 		it("should allow mapping a mapped binding", function()
 			local binding, update = Binding.create(1)
-			local asPercent = binding:map(function(value)
-				return value * 100
-			end):map(function(value)
-				return tostring(value) .. "%"
-			end)
+			local asPercent = binding
+				:map(function(value)
+					return value * 100
+				end)
+				:map(function(value)
+					return tostring(value) .. "%"
+				end)
 
 			jestExpect(asPercent:getValue()).toEqual("100%")
 
@@ -71,10 +73,9 @@ return function()
 			local binding, update = Binding.create(1)
 
 			local spy = jest.fn()
-			local disconnect = Binding.subscribe(
-				binding,
-				function(...) spy(...) end
-			)
+			local disconnect = Binding.subscribe(binding, function(...)
+				spy(...)
+			end)
 
 			jestExpect(spy).never.toBeCalled()
 			update(2)
@@ -114,19 +115,17 @@ return function()
 			local word, updateWord = Binding.create("hi")
 
 			local wordSpy = jest.fn()
-			local disconnectWord = Binding.subscribe(
-				word,
-				function(...) wordSpy(...) end
-			)
+			local disconnectWord = Binding.subscribe(word, function(...)
+				wordSpy(...)
+			end)
 
 			-- binding -> base binding
 			local length = word:map(string.len) :: Binding<number>
 
 			local lengthSpy = jest.fn()
-			local disconnectLength = Binding.subscribe(
-				length,
-				function(...) lengthSpy(...) end
-			)
+			local disconnectLength = Binding.subscribe(length, function(...)
+				lengthSpy(...)
+			end)
 
 			-- binding -> binding -> base binding
 			local isEvenLength = length:map(function(value)
@@ -134,10 +133,9 @@ return function()
 			end)
 
 			local isEvenLengthSpy = jest.fn()
-			local disconnectIsEvenLength = Binding.subscribe(
-				isEvenLength,
-				function(...) isEvenLengthSpy(...) end
-			)
+			local disconnectIsEvenLength = Binding.subscribe(isEvenLength, function(...)
+				isEvenLengthSpy(...)
+			end)
 
 			jestExpect(wordSpy).never.toBeCalled()
 			jestExpect(lengthSpy).never.toBeCalled()
@@ -204,7 +202,7 @@ return function()
 			jestExpect(bindingValue).toEqual({
 				[1] = 1,
 				[2] = 2,
-				foo = 3
+				foo = 3,
 			})
 		end)
 
@@ -220,10 +218,9 @@ return function()
 			})
 
 			local spy = jest.fn()
-			Binding.subscribe(
-				joinedBinding,
-				function(...) spy(...) end
-			)
+			Binding.subscribe(joinedBinding, function(...)
+				spy(...)
+			end)
 
 			jestExpect(spy).never.toBeCalled()
 
@@ -233,7 +230,7 @@ return function()
 			jestExpect(spy).toBeCalledWith({
 				[1] = 3,
 				[2] = 2,
-				["foo"] = 3
+				["foo"] = 3,
 			})
 
 			update2(4)
@@ -242,7 +239,7 @@ return function()
 			jestExpect(spy).toBeCalledWith({
 				[1] = 3,
 				[2] = 4,
-				["foo"] = 3
+				["foo"] = 3,
 			})
 
 			update3(8)
@@ -251,7 +248,7 @@ return function()
 			jestExpect(spy).toBeCalledWith({
 				[1] = 3,
 				[2] = 4,
-				["foo"] = 8
+				["foo"] = 8,
 			})
 		end)
 
@@ -259,13 +256,12 @@ return function()
 			local binding1, update1 = Binding.create(1)
 			local binding2, update2 = Binding.create(2)
 
-			local joined = Binding.join({binding1, binding2})
+			local joined = Binding.join({ binding1, binding2 })
 
 			local spy = jest.fn()
-			local disconnect = Binding.subscribe(
-				joined,
-				function(...) spy(...) end
-			)
+			local disconnect = Binding.subscribe(joined, function(...)
+				spy(...)
+			end)
 
 			jestExpect(spy).never.toBeCalled()
 
@@ -323,7 +319,7 @@ return function()
 			it("should include a stack in DEV mode", function()
 				local binding1, _ = Binding.create(1)
 				local binding2, _ = Binding.create(2)
-				local joinedBinding = Binding.join({binding1, binding2})
+				local joinedBinding = Binding.join({ binding1, binding2 })
 				jestExpect(joinedBinding._source).toContain(script.Name)
 				jestExpect(joinedBinding._source).toContain("Joined binding created")
 			end)

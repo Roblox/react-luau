@@ -38,11 +38,7 @@ local function setInitialTags(
 	end
 end
 
-local function updateTags(
-	hostInstance: any,
-	newProps: Object,
-	lastProps: Object
-)
+local function updateTags(hostInstance: any, newProps: Object, lastProps: Object)
 	for propKey, newValue in newProps do
 		if propKey == Tag then
 			local rootTagManager = TagManagers[hostInstance.rootContainerInstance]
@@ -95,7 +91,6 @@ local function removeTags(hostInstance)
 		end
 	end
 end
-
 
 local function getInstancesForTag(rootContainerElement, tag)
 	local rootTagManager = TagManagers[rootContainerElement] or {}

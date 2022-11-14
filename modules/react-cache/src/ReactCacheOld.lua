@@ -180,52 +180,54 @@ end
 --     fetch: (I) -> Thenable<V, any>,
 --     maybeHashInput: ((I) -> K)?
 --  ): Resource<I, V>
-exports.unstable_createResource =
-	function(fetch: (any) -> Thenable<any>, maybeHashInput: ((any) -> any)?): Resource<any, any>
-		local hashInput: (any) -> any
-		if maybeHashInput ~= nil then
-			-- ROBLOX TODO: remove recast once Luau understands nil check
-			hashInput = maybeHashInput :: (any) -> any
-		else
-			hashInput = identityHashFn :: any
-		end
-
-		local resource
-		resource = {
-			-- ROBLOX TODO: function generics and constraints
-			read = function(input: any): any
-				-- react-cache currently doesn't rely on context, but it may in the
-				-- future, so we read anyway to prevent access outside of render.
-				readContext(CacheContext)
-				local key = hashInput(input)
-				-- ROBLOX TODO: function generics and constraints
-				local result: Result<any> = accessResult(resource, fetch, input, key)
-				if result.status == Pending then
-					local suspender = result.value
-					error(suspender)
-				elseif result.status == Resolved then
-					local value = result.value
-					return value
-				elseif result.status == Rejected then
-					local error_ = result.value
-					error(error_)
-				else
-					-- Should be unreachable
-					return nil :: any
-				end
-			end,
-
-			-- ROBLOX TODO: function generics and constraints
-			preload = function(input: any): ()
-				-- react-cache currently doesn't rely on context, but it may in the
-				-- future, so we read anyway to prevent access outside of render.
-				readContext(CacheContext)
-				local key = hashInput(input)
-				accessResult(resource, fetch, input, key)
-			end,
-		}
-		return resource
+exports.unstable_createResource = function(
+	fetch: (any) -> Thenable<any>,
+	maybeHashInput: ((any) -> any)?
+): Resource<any, any>
+	local hashInput: (any) -> any
+	if maybeHashInput ~= nil then
+		-- ROBLOX TODO: remove recast once Luau understands nil check
+		hashInput = maybeHashInput :: (any) -> any
+	else
+		hashInput = identityHashFn :: any
 	end
+
+	local resource
+	resource = {
+		-- ROBLOX TODO: function generics and constraints
+		read = function(input: any): any
+			-- react-cache currently doesn't rely on context, but it may in the
+			-- future, so we read anyway to prevent access outside of render.
+			readContext(CacheContext)
+			local key = hashInput(input)
+			-- ROBLOX TODO: function generics and constraints
+			local result: Result<any> = accessResult(resource, fetch, input, key)
+			if result.status == Pending then
+				local suspender = result.value
+				error(suspender)
+			elseif result.status == Resolved then
+				local value = result.value
+				return value
+			elseif result.status == Rejected then
+				local error_ = result.value
+				error(error_)
+			else
+				-- Should be unreachable
+				return nil :: any
+			end
+		end,
+
+		-- ROBLOX TODO: function generics and constraints
+		preload = function(input: any): ()
+			-- react-cache currently doesn't rely on context, but it may in the
+			-- future, so we read anyway to prevent access outside of render.
+			readContext(CacheContext)
+			local key = hashInput(input)
+			accessResult(resource, fetch, input, key)
+		end,
+	}
+	return resource
+end
 
 exports.unstable_setGlobalCacheLimit = function(limit: number)
 	lru.setLimit(limit)

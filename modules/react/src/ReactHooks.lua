@@ -20,10 +20,14 @@ local ReactTypes = require(Packages.Shared)
 -- ROBLOX TODO: we only pull in Dispatcher here for the typecheck, remove once Luau narrowing improves
 type Dispatcher = ReactTypes.Dispatcher
 type MutableSource<T> = ReactTypes.MutableSource<T>
-type MutableSourceGetSnapshotFn<Source, Snapshot> =
-	ReactTypes.MutableSourceGetSnapshotFn<Source, Snapshot>
-type MutableSourceSubscribeFn<Source, Snapshot> =
-	ReactTypes.MutableSourceSubscribeFn<Source, Snapshot>
+type MutableSourceGetSnapshotFn<Source, Snapshot> = ReactTypes.MutableSourceGetSnapshotFn<
+	Source,
+	Snapshot
+>
+type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscribeFn<
+	Source,
+	Snapshot
+>
 type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
 type ReactContext<T> = ReactTypes.ReactContext<T>
 local ReactFiberHostConfig = require(Packages.Shared)
@@ -31,7 +35,8 @@ type OpaqueIDType = ReactFiberHostConfig.OpaqueIDType
 
 -- local invariant = require(Packages.Shared).invariant
 
-local ReactCurrentDispatcher = require(Packages.Shared).ReactSharedInternals.ReactCurrentDispatcher
+local ReactCurrentDispatcher =
+	require(Packages.Shared).ReactSharedInternals.ReactCurrentDispatcher
 
 type BasicStateAction<S> = ((S) -> S) | S
 type Dispatch<A> = (A) -> ()
@@ -43,12 +48,12 @@ local function resolveDispatcher(): Dispatcher
 	if _G.__DEV__ then
 		if dispatcher == nil then
 			console.error(
-				'Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for' ..
-				' one of the following reasons:\n' ..
-				'1. You might have mismatching versions of React and the renderer (such as React DOM)\n' ..
-				'2. You might be breaking the Rules of Hooks\n' ..
-				'3. You might have more than one copy of React in the same app\n' ..
-				'See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.'
+				"Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for"
+					.. " one of the following reasons:\n"
+					.. "1. You might have mismatching versions of React and the renderer (such as React DOM)\n"
+					.. "2. You might be breaking the Rules of Hooks\n"
+					.. "3. You might have more than one copy of React in the same app\n"
+					.. "See https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem."
 			)
 		end
 	end
@@ -69,15 +74,13 @@ exports.useContext = function<T>(
 	if _G.__DEV__ then
 		if unstable_observedBits ~= nil then
 			console.error(
-				'useContext() second argument is reserved for future ' ..
-					'use in React. Passing it is not supported. ' ..
-					'You passed: %s.%s',
+				"useContext() second argument is reserved for future "
+					.. "use in React. Passing it is not supported. "
+					.. "You passed: %s.%s",
 				unstable_observedBits,
-				(typeof(unstable_observedBits) == 'number' and Array.isArray({...})) and
-					'\n\nDid you call Array.map(useContext)? ' ..
-						'Calling Hooks inside a loop is not supported. ' ..
-						'Learn more at https://reactjs.org/link/rules-of-hooks' or
-					''
+				(typeof(unstable_observedBits) == "number" and Array.isArray({ ... }))
+						and "\n\nDid you call Array.map(useContext)? " .. "Calling Hooks inside a loop is not supported. " .. "Learn more at https://reactjs.org/link/rules-of-hooks"
+					or ""
 			)
 		end
 
@@ -88,13 +91,13 @@ exports.useContext = function<T>(
 			-- and nobody should be using this in existing code.
 			if realContext.Consumer == Context then
 				console.error(
-					'Calling useContext(Context.Consumer) is not supported, may cause bugs, and will be ' ..
-						'removed in a future major release. Did you mean to call useContext(Context) instead?'
+					"Calling useContext(Context.Consumer) is not supported, may cause bugs, and will be "
+						.. "removed in a future major release. Did you mean to call useContext(Context) instead?"
 				)
 			elseif realContext.Provider == Context then
 				console.error(
-					'Calling useContext(Context.Provider) is not supported. ' ..
-						'Did you mean to call useContext(Context) instead?'
+					"Calling useContext(Context.Provider) is not supported. "
+						.. "Did you mean to call useContext(Context) instead?"
 				)
 			end
 		end
@@ -102,12 +105,11 @@ exports.useContext = function<T>(
 	return dispatcher.useContext(Context, unstable_observedBits)
 end
 
-exports.useState = function<S>(
-	initialState: (() -> S) | S
-): (S, Dispatch<BasicStateAction<S>>)
-	local dispatcher = resolveDispatcher()
-	return dispatcher.useState(initialState)
-end
+exports.useState =
+	function<S>(initialState: (() -> S) | S): (S, Dispatch<BasicStateAction<S>>)
+		local dispatcher = resolveDispatcher()
+		return dispatcher.useState(initialState)
+	end
 
 exports.useReducer = function<S, I, A>(
 	reducer: (S, A) -> S,
@@ -121,14 +123,14 @@ end
 -- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
 -- ROBLOX TODO: reconciling this with bindings and sharing any relevant Ref types (there may be different ones depending on whether it's just a loose ref, vs one being assigned to the ref prop
 exports.useRef = function<T>(initialValue: T): { current: T | nil }
--- ROBLOX deviation END
+	-- ROBLOX deviation END
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useRef(initialValue)
 end
 
 -- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
 exports.useBinding = function<T>(initialValue: T): (any, any)
--- ROBLOX deviation END
+	-- ROBLOX deviation END
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useBinding(initialValue)
 end
@@ -151,18 +153,12 @@ exports.useLayoutEffect = function(
 	return dispatcher.useLayoutEffect(create, deps)
 end
 
-exports.useCallback = function<T>(
-	callback: T,
-	deps: Array<any> | nil
-): T
+exports.useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useCallback(callback, deps)
 end
 
-exports.useMemo = function<T...>(
-	create: () -> T...,
-	deps: Array<any> | nil
-): T...
+exports.useMemo = function<T...>(create: () -> T..., deps: Array<any> | nil): T...
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useMemo(create, deps)
 end
@@ -176,10 +172,7 @@ exports.useImperativeHandle = function<T>(
 	return dispatcher.useImperativeHandle(ref, create, deps)
 end
 
-exports.useDebugValue = function<T>(
-	value: T,
-	formatterFn: ((value: T) -> any)?
-): ()
+exports.useDebugValue = function<T>(value: T, formatterFn: ((value: T) -> any)?): ()
 	if _G.__DEV__ then
 		local dispatcher = resolveDispatcher()
 		return dispatcher.useDebugValue(value, formatterFn)
@@ -197,7 +190,6 @@ exports.emptyObject = {}
 -- 	return dispatcher.useTransition()
 -- end
 
-
 -- ROBLOX TODO: enable useDeferredValue later
 -- exports.useDeferredValue = function<T>(value: T): T
 -- 	local dispatcher = resolveDispatcher()
@@ -209,13 +201,14 @@ exports.useOpaqueIdentifier = function(): OpaqueIDType | nil
 	return dispatcher.useOpaqueIdentifier()
 end
 
-exports.useMutableSource = function<Source, Snapshot>(
-	source: MutableSource<Source>,
-	getSnapshot: MutableSourceGetSnapshotFn<Source, Snapshot>,
-	subscribe: MutableSourceSubscribeFn<Source, Snapshot>
-): Snapshot
-	local dispatcher = resolveDispatcher()
-	return dispatcher.useMutableSource(source, getSnapshot, subscribe)
-end
+exports.useMutableSource =
+	function<Source, Snapshot>(
+		source: MutableSource<Source>,
+		getSnapshot: MutableSourceGetSnapshotFn<Source, Snapshot>,
+		subscribe: MutableSourceSubscribeFn<Source, Snapshot>
+	): Snapshot
+		local dispatcher = resolveDispatcher()
+		return dispatcher.useMutableSource(source, getSnapshot, subscribe)
+	end
 
 return exports

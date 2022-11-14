@@ -55,8 +55,8 @@ type ProfilerStore_statics = {
 local ProfilingCache = require(script.Parent.ProfilingCache)
 
 local ProfilerStore: ProfilerStore & ProfilerStore_statics = (
-		setmetatable({}, { __index = EventEmitter }) :: any
-	) :: ProfilerStore & ProfilerStore_statics
+	setmetatable({}, { __index = EventEmitter }) :: any
+) :: ProfilerStore & ProfilerStore_statics
 ProfilerStore.__index = ProfilerStore
 
 function ProfilerStore.new(
@@ -64,10 +64,8 @@ function ProfilerStore.new(
 	store: Store,
 	defaultIsProfiling: boolean
 ): ProfilerStore
-	local profilerStore: ProfilerStore = setmetatable(
-		EventEmitter.new() :: any,
-		ProfilerStore
-	)
+	local profilerStore: ProfilerStore =
+		setmetatable(EventEmitter.new() :: any, ProfilerStore)
 	profilerStore._dataBackends = {}
 	profilerStore._dataFrontend = nil
 	profilerStore._initialRendererIDs = Set.new()

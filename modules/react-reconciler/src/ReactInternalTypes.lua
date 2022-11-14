@@ -26,8 +26,14 @@ type RefObject = ReactTypes.RefObject
 type ReactContext<T> = ReactTypes.ReactContext<T>
 type MutableSourceVersion = ReactTypes.MutableSourceVersion
 type MutableSource<Source> = ReactTypes.MutableSource<Source>
-type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscribeFn<Source, Snapshot>
-type MutableSourceGetSnapshotFn<Source, Snapshot> = ReactTypes.MutableSourceGetSnapshotFn<Source, Snapshot>
+type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscribeFn<
+	Source,
+	Snapshot
+>
+type MutableSourceGetSnapshotFn<Source, Snapshot> = ReactTypes.MutableSourceGetSnapshotFn<
+	Source,
+	Snapshot
+>
 
 -- ROBLOX deviation START: These are 'mixed' by default, and specialized by the renderer, need complicated dynamic resolution to do this properly
 -- local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
@@ -293,7 +299,10 @@ export type FiberRoot = {
 	current: Fiber,
 
 	-- ROBLOX deviation START: we use a lightweight unordered set for performance
-	pingCache: SimpleMap<Wakeable, (SimpleSet<any> | SimpleMap<Wakeable, SimpleSet<any>>)> | nil,
+	pingCache: SimpleMap<
+		Wakeable,
+		(SimpleSet<any> | SimpleMap<Wakeable, SimpleSet<any>>)
+	> | nil,
 	-- ROBLOX deviation END
 
 	-- A finished work-in-progress HostRoot that's ready to be committed.

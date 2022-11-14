@@ -308,19 +308,16 @@ local function enqueueUpdate<State>(fiber: Fiber, update: Update<State>)
 end
 exports.enqueueUpdate = enqueueUpdate
 
-local function enqueueCapturedUpdate<State>(
-	workInProgress: Fiber,
-	capturedUpdate: Update<State>
-)
+local function enqueueCapturedUpdate<State>(workInProgress: Fiber, capturedUpdate: Update<State>)
 	-- Captured updates are updates that are thrown by a child during the render
 	-- phase. They should be discarded if the render is aborted. Therefore,
 	-- we should only put them on the work-in-progress queue, not the current one.
-	local queue: UpdateQueue<State> = (workInProgress.updateQueue :: any)
+	local queue: UpdateQueue<State> = workInProgress.updateQueue :: any
 
 	-- Check if the work-in-progress queue is a clone.
 	local current = workInProgress.alternate
 	if current ~= nil then
-		local currentQueue: UpdateQueue<State> = (current.updateQueue :: any)
+		local currentQueue: UpdateQueue<State> = current.updateQueue :: any
 		if queue == currentQueue then
 			-- The work-in-progress queue is the same as current. This happens when
 			-- we bail out on a parent fiber that then captures an error thrown by
@@ -545,7 +542,7 @@ local function processUpdateQueue<State>(
 		local current = workInProgress.alternate
 		if current ~= nil then
 			-- This is always non-null on a ClassComponent or HostRoot
-			local currentQueue: UpdateQueue<State> = (current.updateQueue :: any)
+			local currentQueue: UpdateQueue<State> = current.updateQueue :: any
 			local currentLastBaseUpdate = currentQueue.lastBaseUpdate
 			if currentLastBaseUpdate ~= lastBaseUpdate then
 				if currentLastBaseUpdate == nil then
@@ -657,8 +654,8 @@ local function processUpdateQueue<State>(
 					-- Intentionally unsound. Pending updates form a circular list, but we
 					-- unravel them when transferring them to the base queue.
 					local firstPendingUpdate = (
-							(lastPendingUpdate.next :: any) :: Update<State>
-						)
+						lastPendingUpdate.next :: any
+					) :: Update<State>
 					lastPendingUpdate.next = nil
 					update = firstPendingUpdate
 					queue.lastBaseUpdate = lastPendingUpdate
@@ -671,7 +668,7 @@ local function processUpdateQueue<State>(
 			newBaseState = newState
 		end
 
-		queue.baseState = ((newBaseState :: any) :: State)
+		queue.baseState = (newBaseState :: any) :: State
 		queue.firstBaseUpdate = newFirstBaseUpdate
 		queue.lastBaseUpdate = newLastBaseUpdate
 

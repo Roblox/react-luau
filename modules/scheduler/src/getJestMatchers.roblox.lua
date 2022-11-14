@@ -46,7 +46,11 @@ return function(jestExpect)
 	end
 
 	-- ROBLOX FIXME Luau: Array<any> annotation here is so we don't have to put the annotation in many places due to mixed arrays
-	local function expectToFlushAndYield(_matcherContext, scheduler, expectedYields: Array<any>)
+	local function expectToFlushAndYield(
+		_matcherContext,
+		scheduler,
+		expectedYields: Array<any>
+	)
 		assertYieldsWereCleared(scheduler)
 		scheduler.unstable_flushAllWithoutAsserting()
 		local actualYields = scheduler.unstable_clearYields()
@@ -72,7 +76,11 @@ return function(jestExpect)
 	end
 
 	-- ROBLOX FIXME Luau: Array<any> annotation here is so we don't have to put the annotation in many places due to mixed arrays
-	local function toFlushUntilNextPaint(_matcherContext, Scheduler, expectedYields: Array<any>)
+	local function toFlushUntilNextPaint(
+		_matcherContext,
+		Scheduler,
+		expectedYields: Array<any>
+	)
 		assertYieldsWereCleared(Scheduler)
 		Scheduler.unstable_flushUntilNextPaint()
 		local actualYields = Scheduler.unstable_clearYields()
@@ -81,12 +89,16 @@ return function(jestExpect)
 		end)
 	end
 
-		  local function expectToFlushWithoutYielding(_matcherContext, scheduler)
+	local function expectToFlushWithoutYielding(_matcherContext, scheduler)
 		return expectToFlushAndYield(_matcherContext, scheduler, {})
 	end
 
 	-- ROBLOX FIXME Luau: Array<any> annotation here is so we don't have to put the annotation in many places due to mixed arrays
-	local function expectToFlushExpired(_matcherContext, scheduler, expectedYields: Array<any>)
+	local function expectToFlushExpired(
+		_matcherContext,
+		scheduler,
+		expectedYields: Array<any>
+	)
 		assertYieldsWereCleared(scheduler)
 		scheduler.unstable_flushExpired()
 		local actualYields = scheduler.unstable_clearYields()
@@ -97,7 +109,11 @@ return function(jestExpect)
 	end
 
 	-- ROBLOX FIXME Luau: Array<any> annotation here is so we don't have to put the annotation in many places due to mixed arrays
-	local function expectToHaveYielded(_matcherContext, scheduler, expectedYields: Array<any>)
+	local function expectToHaveYielded(
+		_matcherContext,
+		scheduler,
+		expectedYields: Array<any>
+	)
 		local actualYields = scheduler.unstable_clearYields()
 
 		return captureAssertion(function()

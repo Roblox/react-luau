@@ -10,7 +10,8 @@ return function()
 		beforeEach(function()
 			RobloxJest.resetModules()
 
-			ReactFiberSuspenseComponent = require(Reconciler["ReactFiberSuspenseComponent.new"])
+			ReactFiberSuspenseComponent =
+				require(Reconciler["ReactFiberSuspenseComponent.new"])
 		end)
 
 		describe("shouldCaptureSuspense", function()
@@ -31,21 +32,22 @@ return function()
 					generateTest(expected, true, it)
 					generateTest(expected, false, it)
 				else
-					local testName = string.format("is %s if it %s invisible parent",
+					local testName = string.format(
+						"is %s if it %s invisible parent",
 						tostring(expected),
 						hasInvisibleParent and "does not have" or "has"
 					)
 					it(testName, function()
-						jestExpect(
-							shouldCaptureSuspense(fiber, hasInvisibleParent)
-						).toBe(expected)
+						jestExpect(shouldCaptureSuspense(fiber, hasInvisibleParent)).toBe(
+							expected
+						)
 					end)
 				end
 			end
 
 			describe("with a memoizedState", function()
 				beforeEach(function()
-					fiber.memoizedState = {dehydrated = nil}
+					fiber.memoizedState = { dehydrated = nil }
 				end)
 				describe("memoizedState.dehydrated is not null", function()
 					beforeEach(function()

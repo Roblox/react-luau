@@ -14,27 +14,26 @@ local ReactTypes = require(Packages.Shared)
 type ReactNodeList = ReactTypes.ReactNodeList
 
 local ReactFiberLanes = require(script.Parent.ReactFiberLane)
-type Lanes = ReactFiberLanes.Lanes;
-
+type Lanes = ReactFiberLanes.Lanes
 
 export type OffscreenProps = {
-  -- TODO: Pick an API before exposing the Offscreen type. I've chosen an enum
-  -- for now, since we might have multiple variants. For example, hiding the
-  -- content without changing the layout.
-  --
-  -- Default mode is visible. Kind of a weird default for a component
-  -- called "Offscreen." Possible alt: <Visibility />?
-  mode: string | nil,
-  children: ReactNodeList,
+	-- TODO: Pick an API before exposing the Offscreen type. I've chosen an enum
+	-- for now, since we might have multiple variants. For example, hiding the
+	-- content without changing the layout.
+	--
+	-- Default mode is visible. Kind of a weird default for a component
+	-- called "Offscreen." Possible alt: <Visibility />?
+	mode: string | nil,
+	children: ReactNodeList,
 }
 
 -- We use the existence of the state object as an indicator that the component
 -- is hidden.
 export type OffscreenState = {
-  -- TODO: This doesn't do anything, yet. It's always NoLanes. But eventually it
-  -- will represent the pending work that must be included in the render in
-  -- order to unhide the component.
-  baseLanes: Lanes
+	-- TODO: This doesn't do anything, yet. It's always NoLanes. But eventually it
+	-- will represent the pending work that must be included in the render in
+	-- order to unhide the component.
+	baseLanes: Lanes,
 }
 
 return {}

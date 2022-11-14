@@ -13,7 +13,7 @@
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
 
-local ReactFiberStack = require(script.Parent['ReactFiberStack.new'])
+local ReactFiberStack = require(script.Parent["ReactFiberStack.new"])
 type StackCursor<T> = ReactFiberStack.StackCursor<T>
 
 local createCursor = ReactFiberStack.createCursor
@@ -52,9 +52,8 @@ exports.InvisibleParentSuspenseContext = InvisibleParentSuspenseContext
 local ForceSuspenseFallback: ShallowSuspenseContext = 0b10
 exports.ForceSuspenseFallback = ForceSuspenseFallback
 
-local suspenseStackCursor: StackCursor<SuspenseContext> = createCursor(
-	DefaultSuspenseContext
-)
+local suspenseStackCursor: StackCursor<SuspenseContext> =
+	createCursor(DefaultSuspenseContext)
 exports.suspenseStackCursor = suspenseStackCursor
 
 function exports.hasSuspenseContext(
@@ -74,7 +73,10 @@ function exports.setShallowSuspenseContext(
 	parentContext: SuspenseContext,
 	shallowContext: ShallowSuspenseContext
 ): SuspenseContext
-	return bit32.bor(bit32.band(parentContext, SubtreeSuspenseContextMask), shallowContext)
+	return bit32.bor(
+		bit32.band(parentContext, SubtreeSuspenseContextMask),
+		shallowContext
+	)
 end
 
 function exports.addSubtreeSuspenseContext(
@@ -84,10 +86,7 @@ function exports.addSubtreeSuspenseContext(
 	return bit32.bor(parentContext, subtreeContext)
 end
 
-function exports.pushSuspenseContext(
-	fiber: Fiber,
-	newContext: SuspenseContext
-)
+function exports.pushSuspenseContext(fiber: Fiber, newContext: SuspenseContext)
 	push(suspenseStackCursor, newContext, fiber)
 end
 

@@ -24,7 +24,7 @@ return function()
 			local root = ReactRoblox.createLegacyRoot(instance)
 			root:render(element)
 			return root
-		end
+		end,
 	}
 
 	describe("ReactElementValidator", function()
@@ -73,9 +73,9 @@ return function()
 			jestExpect(function()
 				ReactTestUtils.renderIntoDocument(React.createElement(ComponentWrapper))
 			end).toErrorDev(
-				'Each child in a list should have a unique "key" prop.' ..
-					"\n\nCheck the render method of `InnerClass`. " ..
-					"It was passed a child from ComponentWrapper. "
+				'Each child in a list should have a unique "key" prop.'
+					.. "\n\nCheck the render method of `InnerClass`. "
+					.. "It was passed a child from ComponentWrapper. "
 			)
 		end)
 
@@ -92,15 +92,13 @@ return function()
 			}
 
 			jestExpect(function()
-				ReactTestUtils.renderIntoDocument(React.createElement(
-					function() return React.createElement("Frame") end,
-					nil,
-					divs)
-				)
+				ReactTestUtils.renderIntoDocument(React.createElement(function()
+					return React.createElement("Frame")
+				end, nil, divs))
 			end).toErrorDev(
-				"Warning: Each child in a list should have a unique " ..
-					'"key" prop. See https://reactjs.org/link/warning-keys for more information.\n' ..
-					"    in Frame (at **)"
+				"Warning: Each child in a list should have a unique "
+					.. '"key" prop. See https://reactjs.org/link/warning-keys for more information.\n'
+					.. "    in Frame (at **)"
 			)
 		end)
 
@@ -113,10 +111,10 @@ return function()
 			jestExpect(function()
 				ReactTestUtils.renderIntoDocument(React.createElement("Frame", nil, divs))
 			end).toErrorDev(
-				"Warning: Each child in a list should have a unique " ..
-					'"key" prop.\n\nCheck the top-level render call using <Frame>. See ' ..
-					"https://reactjs.org/link/warning-keys for more information.\n" ..
-					"    in Frame (at **)"
+				"Warning: Each child in a list should have a unique "
+					.. '"key" prop.\n\nCheck the top-level render call using <Frame>. See '
+					.. "https://reactjs.org/link/warning-keys for more information.\n"
+					.. "    in Frame (at **)"
 			)
 		end)
 
@@ -139,13 +137,13 @@ return function()
 			jestExpect(function()
 				ReactTestUtils.renderIntoDocument(React.createElement(GrandParent))
 			end).toErrorDev(
-				"Warning: Each child in a list should have a unique " ..
-					'"key" prop.\n\nCheck the render method of `Component`. See ' ..
-					"https://reactjs.org/link/warning-keys for more information.\n" ..
-					"    in Frame (at **)\n" ..
-					"    in Component (at **)\n" ..
-					"    in Parent (at **)\n" ..
-					"    in GrandParent (at **)"
+				"Warning: Each child in a list should have a unique "
+					.. '"key" prop.\n\nCheck the render method of `Component`. See '
+					.. "https://reactjs.org/link/warning-keys for more information.\n"
+					.. "    in Frame (at **)\n"
+					.. "    in Component (at **)\n"
+					.. "    in Parent (at **)\n"
+					.. "    in GrandParent (at **)"
 			)
 		end)
 
@@ -178,12 +176,10 @@ return function()
 		it("does not warn for keys when providing keys via children tables", function()
 			-- ROBLOX FIXME: Expect coercion
 			jestExpect(function()
-				ReactTestUtils.renderIntoDocument(
-					React.createElement("Frame", nil, {
-						ChildA = React.createElement("Frame"),
-						ChildB = React.createElement("Frame"),
-					})
-				)
+				ReactTestUtils.renderIntoDocument(React.createElement("Frame", nil, {
+					ChildA = React.createElement("Frame"),
+					ChildB = React.createElement("Frame"),
+				}))
 			end).toErrorDev({})
 		end)
 
@@ -216,8 +212,8 @@ return function()
 
 		it("does not warns for arrays of elements with keys", function()
 			React.createElement(ComponentClass, nil, {
-				React.createElement(ComponentClass, {key = "#1"}),
-				React.createElement(ComponentClass, {key = "#2"}),
+				React.createElement(ComponentClass, { key = "#1" }),
+				React.createElement(ComponentClass, { key = "#2" }),
 			})
 		end)
 
@@ -231,9 +227,10 @@ return function()
 							i = i + 1
 							local done = i > 2
 							return {
-								value = (not done) and
-									React.createElement(ComponentClass, {key = '#' .. i}) or
-									nil,
+								value = not done and React.createElement(
+									ComponentClass,
+									{ key = "#" .. i }
+								) or nil,
 								done = done,
 							}
 						end,
@@ -254,7 +251,7 @@ return function()
 		end)
 
 		it("does not warn when the array contains a non-element", function()
-			React.createElement(ComponentClass, nil, {{}, {}})
+			React.createElement(ComponentClass, nil, { {}, {} })
 		end)
 
 		-- ROBLOX TODO: implement PropTypes support
@@ -264,23 +261,27 @@ return function()
 			-- // component as per warnings about key usage in ReactElementValidator.
 			local MyComp = React.Component:extend("MyComp")
 			function MyComp:render()
-				return React.createElement("Frame", nil, "My color is " .. self.props.color)
+				return React.createElement(
+					"Frame",
+					nil,
+					"My color is " .. self.props.color
+				)
 			end
 			MyComp.propTypes = {
 				color = PropTypes.string,
 			}
 			local function ParentComp()
-				return React.createElement(MyComp, {color = 123})
+				return React.createElement(MyComp, { color = 123 })
 			end
 
 			jestExpect(function()
 				ReactTestUtils.renderIntoDocument(React.createElement(ParentComp))
 			end).toErrorDev(
-				"Warning: Failed prop type: " ..
-					"Invalid prop `color` of type `number` supplied to `MyComp`, " ..
-					"expected `string`.\n" ..
-					"    in MyComp (at **)\n" ..
-					"    in ParentComp (at **)"
+				"Warning: Failed prop type: "
+					.. "Invalid prop `color` of type `number` supplied to `MyComp`, "
+					.. "expected `string`.\n"
+					.. "    in MyComp (at **)\n"
+					.. "    in ParentComp (at **)"
 			)
 		end)
 
@@ -290,76 +291,80 @@ return function()
 			jestExpect(function()
 				React.createElement(nil)
 				React.createElement(true)
-				React.createElement({x = 17})
+				React.createElement({ x = 17 })
 				React.createElement({})
 				React.createElement(React.createElement("Frame"))
 				React.createElement(React.createElement(Foo))
 				React.createElement(React.createElement(React.createContext().Consumer))
-				React.createElement({["$$typeof"] = "non-react-thing"})
-			end).toErrorDev(
-				{
-					"Warning: React.createElement: type is invalid -- expected a string " ..
-						"(for built-in components) or a class/function (for composite " ..
-						"components) but got: nil.",
-					"Warning: React.createElement: type is invalid -- expected a string " ..
-						"(for built-in components) or a class/function (for composite " ..
-						"components) but got: boolean.",
-					"Warning: React.createElement: type is invalid -- expected a string " ..
-						"(for built-in components) or a class/function (for composite " ..
-						"components) but got: table.",
-					"Warning: React.createElement: type is invalid -- expected a string " ..
-						"(for built-in components) or a class/function (for composite " ..
-						"components) but got: array. You likely forgot to export your " ..
-						"component from the file it's defined in, or you might have mixed up " ..
-						"default and named imports.",
-					"Warning: React.createElement: type is invalid -- expected a string " ..
-						"(for built-in components) or a class/function (for composite " ..
-						"components) but got: <Frame />. Did you accidentally export a JSX literal " ..
-						"or Element instead of a component?",
-					"Warning: React.createElement: type is invalid -- expected a string " ..
-						"(for built-in components) or a class/function (for composite " ..
-						"components) but got: <Foo />. Did you accidentally export a JSX literal " ..
-						"or Element instead of a component?",
-					"Warning: React.createElement: type is invalid -- expected a string " ..
-						"(for built-in components) or a class/function (for composite " ..
-						"components) but got: <Context.Consumer />. Did you accidentally " ..
-						"export a JSX literal or Element instead of a component?",
-					"Warning: React.createElement: type is invalid -- expected a string " ..
-						"(for built-in components) or a class/function (for composite " ..
-						"components) but got: table.\n{",
-				},
-				{withoutStack = true}
-			)
+				React.createElement({ ["$$typeof"] = "non-react-thing" })
+			end).toErrorDev({
+				"Warning: React.createElement: type is invalid -- expected a string "
+					.. "(for built-in components) or a class/function (for composite "
+					.. "components) but got: nil.",
+				"Warning: React.createElement: type is invalid -- expected a string "
+					.. "(for built-in components) or a class/function (for composite "
+					.. "components) but got: boolean.",
+				"Warning: React.createElement: type is invalid -- expected a string "
+					.. "(for built-in components) or a class/function (for composite "
+					.. "components) but got: table.",
+				"Warning: React.createElement: type is invalid -- expected a string "
+					.. "(for built-in components) or a class/function (for composite "
+					.. "components) but got: array. You likely forgot to export your "
+					.. "component from the file it's defined in, or you might have mixed up "
+					.. "default and named imports.",
+				"Warning: React.createElement: type is invalid -- expected a string "
+					.. "(for built-in components) or a class/function (for composite "
+					.. "components) but got: <Frame />. Did you accidentally export a JSX literal "
+					.. "or Element instead of a component?",
+				"Warning: React.createElement: type is invalid -- expected a string "
+					.. "(for built-in components) or a class/function (for composite "
+					.. "components) but got: <Foo />. Did you accidentally export a JSX literal "
+					.. "or Element instead of a component?",
+				"Warning: React.createElement: type is invalid -- expected a string "
+					.. "(for built-in components) or a class/function (for composite "
+					.. "components) but got: <Context.Consumer />. Did you accidentally "
+					.. "export a JSX literal or Element instead of a component?",
+				"Warning: React.createElement: type is invalid -- expected a string "
+					.. "(for built-in components) or a class/function (for composite "
+					.. "components) but got: table.\n{",
+			}, { withoutStack = true })
 
 			-- // Should not log any additional warnings
 			React.createElement("Frame")
 		end)
 
-		it("includes the owner name when passing null, undefined, boolean, or number", function()
-			local function ParentComp()
-				-- ROBLOX DEVIATION: The test says "null, undefined, boolean, or
-				-- number", but uses `null`, which it treats differently from
-				-- `undefined`. Here, we're passing a number, which should have
-				-- behavior identical to upstream
-				return React.createElement(1)
-			end
+		it(
+			"includes the owner name when passing null, undefined, boolean, or number",
+			function()
+				local function ParentComp()
+					-- ROBLOX DEVIATION: The test says "null, undefined, boolean, or
+					-- number", but uses `null`, which it treats differently from
+					-- `undefined`. Here, we're passing a number, which should have
+					-- behavior identical to upstream
+					return React.createElement(1)
+				end
 
-			jestExpect(function()
 				jestExpect(function()
-					ReactTestUtils.renderIntoDocument(React.createElement(ParentComp))
-				end).toThrowError(
-					"Element type is invalid: expected a string (for built-in components) " ..
-						"or a class/function (for composite components) but got: number." ..
-						(_G.__DEV__ and "\n\nCheck the render method of `ParentComp`." or "")
-				)
-			end).toErrorDev(
-				"Warning: React.createElement: type is invalid -- expected a string " ..
-					"(for built-in components) or a class/function (for composite " ..
-					"components) but got: number."
+					jestExpect(function()
+						ReactTestUtils.renderIntoDocument(React.createElement(ParentComp))
+					end).toThrowError(
+						"Element type is invalid: expected a string (for built-in components) "
+							.. "or a class/function (for composite components) but got: number."
+							.. (
+								_G.__DEV__
+									and "\n\nCheck the render method of `ParentComp`."
+								or ""
+							)
+					)
+				end).toErrorDev(
+					"Warning: React.createElement: type is invalid -- expected a string "
+						.. "(for built-in components) or a class/function (for composite "
+						.. "components) but got: number."
 					-- ROBLOX FIXME: Error output differs
 					-- "\n\nCheck the render method of `ParentComp`.\n    in ParentComp",
-			)
-		end)
+				)
+			end
+		)
 
 		-- ROBLOX deviation: Regression test for error output issue
 		it("includes the owner name of a PureComponent", function()
@@ -372,16 +377,20 @@ return function()
 				jestExpect(function()
 					ReactTestUtils.renderIntoDocument(React.createElement(ParentPureComp))
 				end).toThrowError(
-					"Element type is invalid: expected a string (for built-in components) " ..
-						"or a class/function (for composite components) but got: number." ..
-						(_G.__DEV__ and "\n\nCheck the render method of `ParentPureComp`." or "")
+					"Element type is invalid: expected a string (for built-in components) "
+						.. "or a class/function (for composite components) but got: number."
+						.. (
+							_G.__DEV__
+								and "\n\nCheck the render method of `ParentPureComp`."
+							or ""
+						)
 				)
 			end).toErrorDev(
-				"Warning: React.createElement: type is invalid -- expected a string " ..
-					"(for built-in components) or a class/function (for composite " ..
-					"components) but got: number."
-					-- ROBLOX FIXME: Error output differs
-					-- "\n\nCheck the render method of `ParentPureComp`.\n    in ParentPureComp"
+				"Warning: React.createElement: type is invalid -- expected a string "
+					.. "(for built-in components) or a class/function (for composite "
+					.. "components) but got: number."
+				-- ROBLOX FIXME: Error output differs
+				-- "\n\nCheck the render method of `ParentPureComp`.\n    in ParentPureComp"
 			)
 		end)
 
@@ -394,14 +403,14 @@ return function()
 			Component.propTypes = {
 				prop = PropTypes.string.isRequired,
 			}
-			Component.defaultProps = {prop = nil}
+			Component.defaultProps = { prop = nil }
 
 			jestExpect(function()
 				return ReactTestUtils.renderIntoDocument(React.createElement(Component))
 			end).toErrorDev(
-				"Warning: Failed prop type: The prop `prop` is marked as required in " ..
-					"`Component`, but its value is `null`.\n" ..
-					"    in Component"
+				"Warning: Failed prop type: The prop `prop` is marked as required in "
+					.. "`Component`, but its value is `null`.\n"
+					.. "    in Component"
 			)
 		end)
 
@@ -419,11 +428,13 @@ return function()
 			}
 
 			jestExpect(function()
-				ReactTestUtils.renderIntoDocument(React.createElement(Component, {prop = nil}))
+				ReactTestUtils.renderIntoDocument(
+					React.createElement(Component, { prop = nil })
+				)
 			end).toErrorDev(
-				"Warning: Failed prop type: The prop `prop` is marked as required in " ..
-					"`Component`, but its value is `null`.\n" ..
-					"    in Component"
+				"Warning: Failed prop type: The prop `prop` is marked as required in "
+					.. "`Component`, but its value is `null`.\n"
+					.. "    in Component"
 			)
 		end)
 
@@ -440,17 +451,17 @@ return function()
 			jestExpect(function()
 				ReactTestUtils.renderIntoDocument(React.createElement(Component))
 				ReactTestUtils.renderIntoDocument(
-					React.createElement(Component, {prop = 42})
+					React.createElement(Component, { prop = 42 })
 				)
 			end).toErrorDev({
-				"Warning: Failed prop type: " ..
-					"The prop `prop` is marked as required in `Component`, but its value " ..
-					"is `undefined`.\n" ..
-					"    in Component",
-				"Warning: Failed prop type: " ..
-					"Invalid prop `prop` of type `number` supplied to " ..
-					"`Component`, expected `string`.\n" ..
-					"    in Component",
+				"Warning: Failed prop type: "
+					.. "The prop `prop` is marked as required in `Component`, but its value "
+					.. "is `undefined`.\n"
+					.. "    in Component",
+				"Warning: Failed prop type: "
+					.. "Invalid prop `prop` of type `number` supplied to "
+					.. "`Component`, expected `string`.\n"
+					.. "    in Component",
 			})
 
 			-- // Should not error for strings
@@ -471,50 +482,58 @@ return function()
 
 			jestExpect(function()
 				ReactTestUtils.renderIntoDocument(
-					React.createElement(Component, {myProp = {value = "hi"}})
+					React.createElement(Component, { myProp = { value = "hi" } })
 				)
 			end).toErrorDev(
-				"Warning: Component: type specification of prop `myProp` is invalid; " ..
-					"the type checker function must return `null` or an `Error` but " ..
-					"returned a function. You may have forgotten to pass an argument to " ..
-					"the type checker creator (arrayOf, instanceOf, objectOf, oneOf, " ..
-					"oneOfType, and shape all require an argument)."
+				"Warning: Component: type specification of prop `myProp` is invalid; "
+					.. "the type checker function must return `null` or an `Error` but "
+					.. "returned a function. You may have forgotten to pass an argument to "
+					.. "the type checker creator (arrayOf, instanceOf, objectOf, oneOf, "
+					.. "oneOfType, and shape all require an argument)."
 			)
 		end)
 
 		-- ROBLOX TODO: implement PropTypes
-		itSKIP("should warn if component declares PropTypes instead of propTypes", function()
-			local MisspelledPropTypesComponent = React.Component:extend("MisspelledPropTypesComponent")
-			function MisspelledPropTypesComponent:render()
-				return React.createElement("Frame", nil, self.props.prop)
-			end
-			MisspelledPropTypesComponent.PropTypes = {
-				prop = PropTypes.string,
-			}
+		itSKIP(
+			"should warn if component declares PropTypes instead of propTypes",
+			function()
+				local MisspelledPropTypesComponent =
+					React.Component:extend("MisspelledPropTypesComponent")
+				function MisspelledPropTypesComponent:render()
+					return React.createElement("Frame", nil, self.props.prop)
+				end
+				MisspelledPropTypesComponent.PropTypes = {
+					prop = PropTypes.string,
+				}
 
-			jestExpect(function()
-				ReactTestUtils.renderIntoDocument(
-					React.createElement(MisspelledPropTypesComponent, {prop = "Hi"})
+				jestExpect(function()
+					ReactTestUtils.renderIntoDocument(
+						React.createElement(MisspelledPropTypesComponent, { prop = "Hi" })
+					)
+				end).toErrorDev(
+					"Warning: Component MisspelledPropTypesComponent declared `PropTypes` "
+						.. "instead of `propTypes`. Did you misspell the property assignment?",
+					{ withoutStack = true }
 				)
-			end).toErrorDev(
-				"Warning: Component MisspelledPropTypesComponent declared `PropTypes` " ..
-					"instead of `propTypes`. Did you misspell the property assignment?",
-				{withoutStack = true}
-			)
-		end)
+			end
+		)
 
 		it("warns for fragments with illegal attributes", function()
 			local Foo = React.Component:extend("Foo")
 			function Foo:render()
 				-- ROBLOX deviation: Use an actual child element instead of a
 				-- text instance, which is unsupported in ReactRoblox
-				return React.createElement(React.Fragment, {a = 1}, React.createElement("Frame"))
+				return React.createElement(
+					React.Fragment,
+					{ a = 1 },
+					React.createElement("Frame")
+				)
 			end
 			jestExpect(function()
 				ReactTestUtils.renderIntoDocument(React.createElement(Foo))
 			end).toErrorDev(
-				"Invalid prop `a` supplied to `React.Fragment`. React.Fragment " ..
-					"can only have `key` and `children` props."
+				"Invalid prop `a` supplied to `React.Fragment`. React.Fragment "
+					.. "can only have `key` and `children` props."
 			)
 		end)
 
@@ -522,7 +541,7 @@ return function()
 			-- ROBLOX deviation: createFactory is deprecated in React so it is removed in
 			-- the Lua version
 			itSKIP("should warn when accessing .type on an element factory", function()
-					local function TestComponent()
+				local function TestComponent()
 					return React.createElement("Frame")
 				end
 
@@ -531,17 +550,17 @@ return function()
 				jestExpect(function()
 					TestFactory = React.createFactory(TestComponent)
 				end).toWarnDev(
-					"Warning: React.createFactory() is deprecated and will be removed in a " ..
-						"future major release. Consider using JSX or use React.createElement() " ..
-						"directly instead.",
-					{withoutStack = true}
+					"Warning: React.createFactory() is deprecated and will be removed in a "
+						.. "future major release. Consider using JSX or use React.createElement() "
+						.. "directly instead.",
+					{ withoutStack = true }
 				)
 				jestExpect(function()
 					return TestFactory.type
 				end).toWarnDev(
-					"Warning: Factory.type is deprecated. Access the class directly before " ..
-						"passing it to createFactory.",
-					{withoutStack = true}
+					"Warning: Factory.type is deprecated. Access the class directly before "
+						.. "passing it to createFactory.",
+					{ withoutStack = true }
 				)
 
 				-- // Warn once, not again
@@ -567,7 +586,7 @@ return function()
 		end)
 
 		-- ROBLOX deviation: not applicable in Lua
-		itSKIP('should not enumerate enumerable numbers (#4776)', function()
+		itSKIP("should not enumerate enumerable numbers (#4776)", function()
 			-- Number.prototype['@@iterator'] = function()
 			-- 	error("number iterator called")
 			-- end
@@ -586,7 +605,7 @@ return function()
 				_owner = nil,
 			}
 
-			React.createElement("Frame", nil, {child})
+			React.createElement("Frame", nil, { child })
 		end)
 
 		it("does not blow up on key warning with undefined type", function()
@@ -598,14 +617,14 @@ return function()
 						fileName = "fileName.lua",
 						lineNumber = 100,
 					},
-				}, {React.createElement("Frame")})
+				}, { React.createElement("Frame") })
 			end).toErrorDev(
-				"Warning: React.createElement: type is invalid -- expected a string " ..
-					"(for built-in components) or a class/function (for composite " ..
-					"components) but got: nil. You likely forgot to export your " ..
-					"component from the file it's defined in, or you might have mixed up " ..
-					"default and named imports.\n\nCheck your code at **.",
-				{withoutStack = true}
+				"Warning: React.createElement: type is invalid -- expected a string "
+					.. "(for built-in components) or a class/function (for composite "
+					.. "components) but got: nil. You likely forgot to export your "
+					.. "component from the file it's defined in, or you might have mixed up "
+					.. "default and named imports.\n\nCheck your code at **.",
+				{ withoutStack = true }
 			)
 		end)
 
@@ -621,25 +640,29 @@ return function()
 
 		-- ROBLOX deviation: validate extra warning when using table keys as the
 		-- keys provided to child elements
-		it("warns when keys are provided via both the 'key' prop AND table keys", function()
-			local Component = React.Component:extend("Component")
-			function Component:render()
-				return React.createElement("Frame", nil, {
-					a1 = React.createElement("Frame", {key="a2"}),
-					b = React.createElement("Frame", {key="b"}),
-				})
-			end
+		it(
+			"warns when keys are provided via both the 'key' prop AND table keys",
+			function()
+				local Component = React.Component:extend("Component")
+				function Component:render()
+					return React.createElement("Frame", nil, {
+						a1 = React.createElement("Frame", { key = "a2" }),
+						b = React.createElement("Frame", { key = "b" }),
+					})
+				end
 
-			jestExpect(function()
-				ReactTestUtils.renderIntoDocument(React.createElement(Component))
-			end).toErrorDev('Child element received a "key" prop ("a2") in addition to a key in ' ..
-				'the "children" table of its parent ("a1"). Please provide only ' ..
-				'one key definition. When both are present, the "key" prop ' ..
-				'will take precedence.\n\nCheck the render method of `Component`. ' ..
-				'See https://reactjs.org/link/warning-keys for more information.\n' ..
-				'    in Frame (at **)\n' ..
-				'    in Component (at **)'
-			)
-		end)
+				jestExpect(function()
+					ReactTestUtils.renderIntoDocument(React.createElement(Component))
+				end).toErrorDev(
+					'Child element received a "key" prop ("a2") in addition to a key in '
+						.. 'the "children" table of its parent ("a1"). Please provide only '
+						.. 'one key definition. When both are present, the "key" prop '
+						.. "will take precedence.\n\nCheck the render method of `Component`. "
+						.. "See https://reactjs.org/link/warning-keys for more information.\n"
+						.. "    in Frame (at **)\n"
+						.. "    in Component (at **)"
+				)
+			end
+		)
 	end)
 end

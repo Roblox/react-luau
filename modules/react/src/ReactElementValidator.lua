@@ -21,7 +21,9 @@ type Function = (...any) -> ...any
 
 -- ROBLOX deviation START: import extra types
 local ReactTypes = require(Packages.Shared)
-type React_StatelessFunctionalComponent<P> = ReactTypes.React_StatelessFunctionalComponent<P>
+type React_StatelessFunctionalComponent<P> = ReactTypes.React_StatelessFunctionalComponent<
+	P
+>
 type React_ComponentType<P> = ReactTypes.React_ComponentType<P>
 type React_Element<ElementType> = ReactTypes.React_Element<ElementType>
 type React_ElementProps<ElementType> = ReactTypes.React_ElementProps<ElementType>
@@ -39,7 +41,8 @@ local _REACT_MEMO_TYPE = ReactSymbols.REACT_MEMO_TYPE
 local REACT_FRAGMENT_TYPE = ReactSymbols.REACT_FRAGMENT_TYPE
 local REACT_ELEMENT_TYPE = ReactSymbols.REACT_ELEMENT_TYPE
 
-local warnAboutSpreadingKeyToJSX = require(Packages.Shared).ReactFeatureFlags.warnAboutSpreadingKeyToJSX
+local warnAboutSpreadingKeyToJSX =
+	require(Packages.Shared).ReactFeatureFlags.warnAboutSpreadingKeyToJSX
 local checkPropTypes = require(Packages.Shared).checkPropTypes
 local ReactCurrentOwner = require(Packages.Shared).ReactSharedInternals.ReactCurrentOwner
 
@@ -49,9 +52,10 @@ local createElement = ReactElement.createElement
 local cloneElement = ReactElement.cloneElement
 local jsxDEV = ReactElement.jsxDEV
 
-local setExtraStackFrame = require(Packages.Shared).ReactSharedInternals.ReactDebugCurrentFrame.setExtraStackFrame
-local describeUnknownElementTypeFrameInDEV = require(Packages.Shared).ReactComponentStackFrame
-	.describeUnknownElementTypeFrameInDEV
+local setExtraStackFrame =
+	require(Packages.Shared).ReactSharedInternals.ReactDebugCurrentFrame.setExtraStackFrame
+local describeUnknownElementTypeFrameInDEV =
+	require(Packages.Shared).ReactComponentStackFrame.describeUnknownElementTypeFrameInDEV
 
 local exports = {}
 
@@ -88,7 +92,7 @@ local function hasOwnProperty(object, key)
 	return object[key] ~= nil
 end
 
-local function getDeclarationErrorAddendum():string
+local function getDeclarationErrorAddendum(): string
 	if ReactCurrentOwner.current then
 		local name = getComponentName(ReactCurrentOwner.current.type)
 		if name then
@@ -109,7 +113,9 @@ local function getSourceInfoErrorAddendum(source: Source | nil): string
 end
 
 -- ROBLOX FIXME Luau: needs explicit annotation, even though call site and nil check should be enough
-local function getSourceInfoErrorAddendumForProps(elementProps: React_ElementProps<any>?): string
+local function getSourceInfoErrorAddendumForProps(
+	elementProps: React_ElementProps<any>?
+): string
 	if elementProps ~= nil then
 		return getSourceInfoErrorAddendum(elementProps.__source)
 	end
@@ -124,7 +130,9 @@ end
 local ownerHasKeyUseWarning = {}
 
 -- ROBLOX FIXME Luau: shouldn't need this annotation on parentType
-local function getCurrentComponentErrorInfo(parentType: React_ComponentType<any> | string | Function): string
+local function getCurrentComponentErrorInfo(
+	parentType: React_ComponentType<any> | string | Function
+): string
 	local info = getDeclarationErrorAddendum()
 
 	if not Boolean.toJSBoolean(info) then
@@ -142,7 +150,10 @@ local function getCurrentComponentErrorInfo(parentType: React_ComponentType<any>
 		end
 
 		if parentName then
-			info = string.format("\n\nCheck the top-level render call using <%s>.", parentName)
+			info = string.format(
+				"\n\nCheck the top-level render call using <%s>.",
+				parentName
+			)
 		end
 	end
 	return info
@@ -161,7 +172,11 @@ end
 --  * @param {*} tableKey ROBLOX deviation: key provided by the children table
 --  */
 -- ROBLOX deviation START: add explicit optional table key parameter, move key check to after we mark it validated, since we may not have an explicit key (and will use tableKey to validate)
-local function validateExplicitKey<P>(element: ReactElement<P, any>, parentType, tableKey: any?)
+local function validateExplicitKey<P>(
+	element: ReactElement<P, any>,
+	parentType,
+	tableKey: any?
+)
 	if element._store == nil or element._store.validated then
 		return
 	end
@@ -172,7 +187,7 @@ local function validateExplicitKey<P>(element: ReactElement<P, any>, parentType,
 	if (element.key ~= nil) ~= (tableKey ~= nil) then
 		return
 	end
--- ROBLOX deviation END
+	-- ROBLOX deviation END
 	local currentComponentErrorInfo = getCurrentComponentErrorInfo(parentType)
 	if ownerHasKeyUseWarning[currentComponentErrorInfo] then
 		return
@@ -183,12 +198,10 @@ local function validateExplicitKey<P>(element: ReactElement<P, any>, parentType,
 	-- // property, it may be the creator of the child that's responsible for
 	-- // assigning it a key.
 	local childOwner = ""
-	if element
-		and element._owner
-		and element._owner ~= ReactCurrentOwner.current
-	then
+	if element and element._owner and element._owner ~= ReactCurrentOwner.current then
 		-- // Give the component that originally created this child.
-		childOwner = string.format(" It was passed a child from %s.",
+		childOwner = string.format(
+			" It was passed a child from %s.",
 			tostring(getComponentName(element._owner.type))
 		)
 	end
@@ -201,11 +214,11 @@ local function validateExplicitKey<P>(element: ReactElement<P, any>, parentType,
 			-- ROBLOX TODO: Link to special Roact documentation that accounts
 			-- for deviation instead of react docs
 			console.error(
-				'Child element received a "key" prop ("%s") in addition to a key in ' ..
-					'the "children" table of its parent ("%s"). Please provide only ' ..
-					'one key definition. When both are present, the "key" prop ' ..
-					'will take precedence.' ..
-					'%s%s See https://reactjs.org/link/warning-keys for more information.',
+				'Child element received a "key" prop ("%s") in addition to a key in '
+					.. 'the "children" table of its parent ("%s"). Please provide only '
+					.. 'one key definition. When both are present, the "key" prop '
+					.. "will take precedence."
+					.. "%s%s See https://reactjs.org/link/warning-keys for more information.",
 				tostring(element.key),
 				tostring(tableKey),
 				currentComponentErrorInfo,
@@ -214,8 +227,8 @@ local function validateExplicitKey<P>(element: ReactElement<P, any>, parentType,
 		-- No key was provided at all
 		else
 			console.error(
-				'Each child in a list should have a unique "key" prop.' ..
-					"%s%s See https://reactjs.org/link/warning-keys for more information.",
+				'Each child in a list should have a unique "key" prop.'
+					.. "%s%s See https://reactjs.org/link/warning-keys for more information.",
 				currentComponentErrorInfo,
 				childOwner
 			)
@@ -316,8 +329,8 @@ local function validatePropTypes<P>(element: ReactElement<P, any>)
 		-- ROBLOX deviation: we simplify this check since we never supported this in the first place
 		if (type :: any).getDefaultProps ~= nil then
 			console.error(
-				"getDefaultProps is only used on classic React.createClass " ..
-					"definitions. Use a static property named `defaultProps` instead."
+				"getDefaultProps is only used on classic React.createClass "
+					.. "definitions. Use a static property named `defaultProps` instead."
 			)
 		end
 	end
@@ -335,8 +348,8 @@ local function validateFragmentProps<P>(fragment: ReactElement<P & Object, any>)
 			if key ~= "children" and key ~= "key" then
 				setCurrentlyValidatingElement(fragment)
 				console.error(
-					"Invalid prop `%s` supplied to `React.Fragment`. " ..
-						"React.Fragment can only have `key` and `children` props.",
+					"Invalid prop `%s` supplied to `React.Fragment`. "
+						.. "React.Fragment can only have `key` and `children` props.",
 					key
 				)
 				setCurrentlyValidatingElement(nil)
@@ -361,21 +374,15 @@ local function jsxWithValidation<P, T>(
 	source: Source?,
 	self: any?
 )
--- ROBLOX deviation END
+	-- ROBLOX deviation END
 	local validType = isValidElementType(type)
 
 	-- // We warn in this case but don't throw. We expect the element creation to
 	-- // succeed and there will likely be errors in render.
 	if not validType then
 		local info = ""
-		if type == nil or
-			(typeof(type) == "table" and
-				#Object.keys(type) == 0)
-		then
-			info ..= (
-				" You likely forgot to export your component from the file " ..
-					"it's defined in, or you might have mixed up default and named imports."
-			)
+		if type == nil or (typeof(type) == "table" and #Object.keys(type) == 0) then
+			info ..= (" You likely forgot to export your component from the file " .. "it's defined in, or you might have mixed up default and named imports.")
 		end
 
 		local sourceInfo = getSourceInfoErrorAddendum(source)
@@ -400,9 +407,9 @@ local function jsxWithValidation<P, T>(
 
 		if _G.__DEV__ then
 			console.error(
-				"React.jsx: type is invalid -- expected a string (for " ..
-					"built-in components) or a class/function (for composite " ..
-					"components) but got: %s.%s",
+				"React.jsx: type is invalid -- expected a string (for "
+					.. "built-in components) or a class/function (for composite "
+					.. "components) but got: %s.%s",
 				typeString,
 				info
 			)
@@ -440,9 +447,9 @@ local function jsxWithValidation<P, T>(
 				else
 					if _G.__DEV__ then
 						console.error(
-							"React.jsx: Static children should always be an array. " ..
-								"You are likely explicitly calling React.jsxs or React.jsxDEV. " ..
-								"Use the Babel transform instead."
+							"React.jsx: Static children should always be an array. "
+								.. "You are likely explicitly calling React.jsxs or React.jsxDEV. "
+								.. "Use the Babel transform instead."
 						)
 					end
 				end
@@ -457,9 +464,9 @@ local function jsxWithValidation<P, T>(
 		if warnAboutSpreadingKeyToJSX then
 			if hasOwnProperty(props, "key") then
 				console.error(
-					"React.jsx: Spreading a key to JSX is a deprecated pattern. " ..
-						"Explicitly pass a key after spreading props in your JSX call. " ..
-						"E.g. <%s {...props} key={key} />",
+					"React.jsx: Spreading a key to JSX is a deprecated pattern. "
+						.. "Explicitly pass a key after spreading props in your JSX call. "
+						.. "E.g. <%s {...props} key={key} />",
 					getComponentName(type) or "ComponentName"
 				)
 			end
@@ -491,26 +498,21 @@ end
 
 -- ROBLOX deviation START: add strong types based on definitely-typed approach on createElement
 local function createElementWithValidation<P, T>(
-	type_: React_StatelessFunctionalComponent<P> | React_ComponentType<P> | string,
+	type_: React_StatelessFunctionalComponent<
+		P
+	> | React_ComponentType<P> | string,
 	props: (P & React_ElementProps<T>)?,
 	...: React_Node
 ): ReactElement<P, T>
--- ROBLOX deviation END
+	-- ROBLOX deviation END
 	local validType = isValidElementType(type_)
 
 	-- // We warn in this case but don't throw. We expect the element creation to
 	-- // succeed and there will likely be errors in render.
 	if not validType then
 		local info = ""
-		if
-			type_ == nil or
-			(typeof(type_) == "table" and
-				#Object.keys(type_) == 0)
-		then
-			info ..= (
-				" You likely forgot to export your component from the file " ..
-					"it's defined in, or you might have mixed up default and named imports."
-			)
+		if type_ == nil or (typeof(type_) == "table" and #Object.keys(type_) == 0) then
+			info ..= (" You likely forgot to export your component from the file " .. "it's defined in, or you might have mixed up default and named imports.")
 		end
 
 		local sourceInfo = getSourceInfoErrorAddendumForProps(props)
@@ -525,8 +527,15 @@ local function createElementWithValidation<P, T>(
 			typeString = "nil"
 		elseif Array.isArray(type_) then
 			typeString = "array"
-		elseif type_ ~= nil and typeof(type_) == "table" and type_["$$typeof"] == REACT_ELEMENT_TYPE then
-			typeString = string.format("<%s />", getComponentName((type_ :: any).type) or "Unknown")
+		elseif
+			type_ ~= nil
+			and typeof(type_) == "table"
+			and type_["$$typeof"] == REACT_ELEMENT_TYPE
+		then
+			typeString = string.format(
+				"<%s />",
+				getComponentName((type_ :: any).type) or "Unknown"
+			)
 			info ..= " Did you accidentally export a JSX literal or Element instead of a component?"
 		else
 			typeString = typeof(type_)
@@ -538,9 +547,9 @@ local function createElementWithValidation<P, T>(
 
 		if _G.__DEV__ then
 			console.error(
-				"React.createElement: type is invalid -- expected a string (for " ..
-					"built-in components) or a class/function (for composite " ..
-					"components) but got: %s.%s",
+				"React.createElement: type is invalid -- expected a string (for "
+					.. "built-in components) or a class/function (for composite "
+					.. "components) but got: %s.%s",
 				typeString,
 				info
 			)
@@ -563,7 +572,7 @@ local function createElementWithValidation<P, T>(
 	-- // fixed, the key warnings will appear.)
 	if validType then
 		-- ROBLOX deviation: skips (1) type and (2) props - starts from 3 to the end varargs (iterate through children)
-		for i=1, select('#', ...) do
+		for i = 1, select("#", ...) do
 			-- ROBLOX deviation: selects the ith child from this function's arguments to validate
 			-- ROBLOX FIXME Luau: hard cast to any, needs normalization to avoid 'React_ComponentType<P>' could not be converted into 'React_ComponentType<P>'
 			validateChildKeys(select(i, ...), type_ :: any)
@@ -626,10 +635,10 @@ exports.cloneElementWithValidation = function<P, T>(
 	props: (P & React_ElementProps<T>)?,
 	...: React_Node
 ): ReactElement<P, T>
--- ROBLOX deviation END
+	-- ROBLOX deviation END
 	local arguments = { element, props, ... } :: Array<any>
 	local newElement = cloneElement(element, props, ...)
-	for i=3, #arguments do
+	for i = 3, #arguments do
 		validateChildKeys(arguments[i], newElement.type)
 	end
 	validatePropTypes(newElement)

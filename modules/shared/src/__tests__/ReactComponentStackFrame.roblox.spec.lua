@@ -22,9 +22,8 @@ return function()
 		beforeEach(function()
 			RobloxJest.resetModules()
 
-			ReactComponentStackFrame = require(
-				script.Parent.Parent.ReactComponentStackFrame
-			)
+			ReactComponentStackFrame =
+				require(script.Parent.Parent.ReactComponentStackFrame)
 			describeNativeComponentFrame =
 				ReactComponentStackFrame.describeNativeComponentFrame
 		end)
@@ -58,17 +57,15 @@ return function()
 				})
 			end)
 
-			ReactComponentStackFrame = require(
-				script.Parent.Parent.ReactComponentStackFrame
-			)
+			ReactComponentStackFrame =
+				require(script.Parent.Parent.ReactComponentStackFrame)
 		end)
 
 		describe("describeBuiltInComponentFrame", function()
 			it("shows only the component name if there is no source", function()
 				local componentName = "SomeComponent"
-				local frame = ReactComponentStackFrame.describeBuiltInComponentFrame(
-					componentName
-				)
+				local frame =
+					ReactComponentStackFrame.describeBuiltInComponentFrame(componentName)
 				assertStringContains(frame, componentName)
 			end)
 
@@ -174,9 +171,8 @@ return function()
 				})
 			end)
 
-			ReactComponentStackFrame = require(
-				script.Parent.Parent.ReactComponentStackFrame
-			)
+			ReactComponentStackFrame =
+				require(script.Parent.Parent.ReactComponentStackFrame)
 			describeBuiltInComponentFrame =
 				ReactComponentStackFrame.describeBuiltInComponentFrame
 		end)
@@ -209,9 +205,8 @@ return function()
 		it(
 			"should accept class component to describeUnknownElementTypeFrameInDev",
 			function()
-				local TestDevStackComponent = React.Component:extend(
-					"TestDevStackComponent"
-				)
+				local TestDevStackComponent =
+					React.Component:extend("TestDevStackComponent")
 
 				function TestDevStackComponent:render()
 					return if self.state.isFrame

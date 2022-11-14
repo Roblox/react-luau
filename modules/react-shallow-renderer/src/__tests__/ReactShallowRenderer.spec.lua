@@ -60,7 +60,7 @@ return function()
 		end,
 		string_isRequired = function(props, typeSpecName)
 			return propTypes(props[typeSpecName], "string", true)
-		end
+		end,
 	}
 	-- ROBLOX deviation END
 
@@ -76,9 +76,8 @@ return function()
 		local SomeComponent = React.Component:extend("SomeComponent")
 		SomeComponent.UNSAFE_componentWillMount = logger("componentWillMount")
 		SomeComponent.componentDidMount = logger("componentDidMount")
-		SomeComponent.UNSAFE_componentWillReceiveProps = logger(
-			"componentWillReceiveProps"
-		)
+		SomeComponent.UNSAFE_componentWillReceiveProps =
+			logger("componentWillReceiveProps")
 		SomeComponent.shouldComponentUpdate = logger("shouldComponentUpdate")
 		SomeComponent.UNSAFE_componentWillUpdate = logger("componentWillUpdate")
 		SomeComponent.componentDidUpdate = logger("componentDidUpdate")
@@ -469,12 +468,14 @@ return function()
 
 	it("should shallow render a function component", function()
 		local SomeComponent = function(props, context)
-			return (React.createElement("Frame", nil, {
-				ChildFoo = React.createElement("TextLabel", { Text = props.foo }),
-				ChildBar = React.createElement("TextLabel", { Text = context.bar }),
-				Child1 = React.createElement("Frame", { Value = "child1" }),
-				Child2 = React.createElement("Frame", { Value = "child2" }),
-			}))
+			return (
+				React.createElement("Frame", nil, {
+					ChildFoo = React.createElement("TextLabel", { Text = props.foo }),
+					ChildBar = React.createElement("TextLabel", { Text = context.bar }),
+					Child1 = React.createElement("Frame", { Value = "child1" }),
+					Child2 = React.createElement("Frame", { Value = "child2" }),
+				})
+			)
 		end
 		-- ROBLOX deviation: we don't support contextTypes on function components
 		--     SomeComponent.contextTypes = {
@@ -504,9 +505,8 @@ return function()
 			end
 
 			local shallowRenderer = createRenderer()
-			local result = shallowRenderer:render(
-				React.createElement(Text, { value = "foo" })
-			)
+			local result =
+				shallowRenderer:render(React.createElement(Text, { value = "foo" }))
 			jestExpect(result).toEqual("foo")
 		end
 	)
@@ -519,9 +519,8 @@ return function()
 			end
 
 			local shallowRenderer = createRenderer()
-			local result = shallowRenderer:render(
-				React.createElement(Text, { value = 10 })
-			)
+			local result =
+				shallowRenderer:render(React.createElement(Text, { value = 10 }))
 			jestExpect(result).toEqual(10)
 		end
 	)
@@ -563,7 +562,9 @@ return function()
 
 		local Fragment = React.Component:extend("Fragment")
 		function Fragment:render()
-			return React.createElement(React.Fragment, nil,
+			return React.createElement(
+				React.Fragment,
+				nil,
 				React.createElement("Text"),
 				React.createElement("Frame"),
 				React.createElement(SomeComponent)
@@ -580,7 +581,9 @@ return function()
 		jestExpect(result.props.children[2]).toEqual(
 			validateElement(React.createElement("Frame"))
 		)
-		React.createElement(React.Fragment, nil,
+		React.createElement(
+			React.Fragment,
+			nil,
 			React.createElement("Text"),
 			React.createElement("Frame"),
 			React.createElement(SomeComponent)
@@ -680,7 +683,9 @@ return function()
 					className = className,
 				})
 			else
-				return React.createElement("TextLabel", nil,
+				return React.createElement(
+					"TextLabel",
+					nil,
 					React.createElement("Frame", { className = "child1" }),
 					React.createElement("Frame", { className = "child2" })
 				)
@@ -695,9 +700,8 @@ return function()
 			React.createElement("Frame", { className = "child2" }),
 		}))
 
-		local updatedResult = shallowRenderer:render(
-			React.createElement(SomeComponent, { aNew = "prop" })
-		)
+		local updatedResult =
+			shallowRenderer:render(React.createElement(SomeComponent, { aNew = "prop" }))
 		jestExpect(updatedResult.type).toEqual("Button")
 
 		updatedResult.props:onClick()
@@ -1604,11 +1608,12 @@ return function()
 			jestExpect(function()
 				jestExpect(function()
 					shallowRenderer:render(React.createElement(Component))
-				end)
-				.toErrorDev(
-					"React.createElement: type is invalid -- expected a string " ..
-						"(for built-in components) or a class/function (for composite components) " ..
-						"but got: " .. typeString .. "."
+				end).toErrorDev(
+					"React.createElement: type is invalid -- expected a string "
+						.. "(for built-in components) or a class/function (for composite components) "
+						.. "but got: "
+						.. typeString
+						.. "."
 				)
 			end).toThrow(
 				"ReactShallowRenderer render(): Shallow rendering works only with custom "
@@ -1652,9 +1657,8 @@ return function()
 		Component.componentWillReceiveProps = logger("componentWillReceiveProps")
 		Component.componentWillUpdate = logger("componentWillUpdate")
 		Component.UNSAFE_componentWillMount = logger("UNSAFE_componentWillMount")
-		Component.UNSAFE_componentWillReceiveProps = logger(
-			"UNSAFE_componentWillReceiveProps"
-		)
+		Component.UNSAFE_componentWillReceiveProps =
+			logger("UNSAFE_componentWillReceiveProps")
 		Component.UNSAFE_componentWillUpdate = logger("UNSAFE_componentWillUpdate")
 
 		function Component:render()
@@ -1799,7 +1803,9 @@ return function()
 		local testRef = React.createRef()
 		local SomeComponent = React.forwardRef(function(props, ref)
 			jestExpect(ref).toEqual(testRef)
-			return React.createElement("Frame", nil,
+			return React.createElement(
+				"Frame",
+				nil,
 				React.createElement("Text", { className = "child1" }),
 				React.createElement("Text", { className = "child2" })
 			)
@@ -1828,11 +1834,13 @@ return function()
 		jestExpect(function()
 			jestExpect(function()
 				local SomeComponent = React.forwardRef(SomeMemoComponent)
-				shallowRenderer:render(React.createElement(SomeComponent, { ref = testRef }))
+				shallowRenderer:render(
+					React.createElement(SomeComponent, { ref = testRef })
+				)
 			end).toErrorDev(
-				"Warning: forwardRef requires a render function but received " ..
-					"a `memo` component. Instead of forwardRef(memo(...)), use " ..
-					"memo(forwardRef(...))",
+				"Warning: forwardRef requires a render function but received "
+					.. "a `memo` component. Instead of forwardRef(memo(...)), use "
+					.. "memo(forwardRef(...))",
 				{ withoutStack = true }
 			)
 		end).toThrow(

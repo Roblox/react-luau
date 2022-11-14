@@ -37,5 +37,5 @@ local function createPortal(
 end
 
 return {
-	createPortal = createPortal
+	createPortal = createPortal,
 }

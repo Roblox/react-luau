@@ -52,9 +52,8 @@ return function()
 			"should create an orphaned instance to mount under if none is provided",
 			function()
 				local ref = RoactCompat.createRef()
-				local tree = RoactCompat.mount(
-					RoactCompat.createElement("Frame", { ref = ref })
-				)
+				local tree =
+					RoactCompat.mount(RoactCompat.createElement("Frame", { ref = ref }))
 
 				jestExpect(ref.current).never.toBeNil()
 				jestExpect(ref.current.Parent).never.toBeNil()
@@ -68,11 +67,8 @@ return function()
 
 		it("should name children using the key", function()
 			local legacyTarget = Instance.new("Folder")
-			local legacyTree = Roact.mount(
-				Roact.createElement("Frame"),
-				legacyTarget,
-				"SameNameTree"
-			)
+			local legacyTree =
+				Roact.mount(Roact.createElement("Frame"), legacyTarget, "SameNameTree")
 
 			local compatTarget = Instance.new("Folder")
 			local compatTree = RoactCompat.mount(
@@ -95,11 +91,8 @@ return function()
 
 		it("keeps the same root name on update", function()
 			local legacyTarget = Instance.new("Folder")
-			local legacyTree = Roact.mount(
-				Roact.createElement("Frame"),
-				legacyTarget,
-				"SameNameTree"
-			)
+			local legacyTree =
+				Roact.mount(Roact.createElement("Frame"), legacyTarget, "SameNameTree")
 
 			local compatTarget = Instance.new("Folder")
 			local compatTree = RoactCompat.mount(
@@ -166,9 +159,8 @@ return function()
 			"should create an orphaned instance to mount under if none is provided",
 			function()
 				local ref = RoactCompat.createRef()
-				local tree = RoactCompat.mount(
-					RoactCompat.createElement("Frame", { ref = ref })
-				)
+				local tree =
+					RoactCompat.mount(RoactCompat.createElement("Frame", { ref = ref }))
 
 				jestExpect(ref.current).never.toBeNil()
 				jestExpect(ref.current.Parent).never.toBeNil()

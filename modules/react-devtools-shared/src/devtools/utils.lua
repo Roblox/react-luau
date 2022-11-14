@@ -104,9 +104,10 @@ exports.printStore = function(store: Store, includeWeight: boolean?)
 	-- Make sure the pretty-printed test align with the Store's reported number of total rows.
 	if rootWeight ~= store:getNumElements() then
 		error(
-			(
-				"Inconsistent Store state. Individual root weights (%s) do not match total weight (%s)"
-			):format(tostring(rootWeight), tostring(store:getNumElements()))
+			("Inconsistent Store state. Individual root weights (%s) do not match total weight (%s)"):format(
+				tostring(rootWeight),
+				tostring(store:getNumElements())
+			)
 		)
 	end
 
