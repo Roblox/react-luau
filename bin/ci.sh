@@ -7,7 +7,7 @@ rotrieve install
 echo "Remove .robloxrc from dependencies"
 find Packages/_Index -name "*.robloxrc" | xargs rm -f
 
-roblox-cli analyze tests.project.json
+roblox-cli analyze --project tests.project.json
 selene --version
 selene --config selene.toml modules/
 stylua --version

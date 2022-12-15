@@ -1271,7 +1271,11 @@ return function()
 					local baseStep = baseState.step
 					table.insert(
 						ops,
-						string.format("base: %s, memoized: %s", baseStep, memoizedStep)
+						string.format(
+							"base: %s, memoized: %s",
+							tostring(baseStep),
+							memoizedStep
+						)
 					)
 					return baseStep == 0 and { step = 1 } or nil
 				end)
