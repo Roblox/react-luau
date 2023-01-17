@@ -1,4 +1,4 @@
--- upstream: https://github.com/facebook/react/blob/cdbfa6b5dd692220e5996ec453d46fc10aff046a/packages/shared/__tests__/ReactSymbols-test.internal.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/cdbfa6b5dd692220e5996ec453d46fc10aff046a/packages/shared/__tests__/ReactSymbols-test.internal.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *

@@ -1,5 +1,5 @@
 --!strict
--- upstream: https://github.com/facebook/react/blob/60ba723bf78b9a28f60dce854e88e206fab52301/packages/react-is/src/ReactIs.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/60ba723bf78b9a28f60dce854e88e206fab52301/packages/react-is/src/ReactIs.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *

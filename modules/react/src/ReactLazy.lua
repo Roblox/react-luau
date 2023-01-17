@@ -1,5 +1,5 @@
 --!nonstrict
--- upstream: https://github.com/facebook/react/blob/v17.0.2/packages/react/src/ReactLazy.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.2/packages/react/src/ReactLazy.js
 --[[
  * Copyright (c) Facebook, Inc. and its affiliates.
  *

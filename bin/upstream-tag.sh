@@ -33,7 +33,7 @@ do
     continue
   fi
 
-  if [[ `head -n 1 $file` == "-- upstream:"* ]]; then
+  if [[ `head -n 1 $file` == "-- ROBLOX upstream:"* ]]; then
     echo "SKIP: $file already has 'upstream' comment"
     continue
   fi
@@ -51,7 +51,7 @@ do
   pushd $REACT_PATH > /dev/null
   COMMIT=`git log -- $targetFile | head -n 1 | sed "s/commit //g"`
   REPO_PATH=`realpath --relative-to=$REACT_PATH $targetFile`
-  PREFIX="-- upstream: https://github.com/facebook/react/blob/$COMMIT/$REPO_PATH"
+  PREFIX="-- ROBLOX upstream: https://github.com/facebook/react/blob/$COMMIT/$REPO_PATH"
   if [[ "$COMMIT" == "" ]]; then
     echo "SKIP: Could not find commit for $targetFile -> $file"
     continue
