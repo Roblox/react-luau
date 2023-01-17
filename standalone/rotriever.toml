@@ -1,0 +1,10 @@
+[package]
+name = "Roact17"
+version = "17.0.1-rc.18"
+content_root = "src"
+
+[dependencies]
+RoactCompat = "github.com/roblox/roact-alignment@17.0.1-rc.18"
+React = "github.com/roblox/roact-alignment@17.0.1-rc.18"
+ReactRoblox = "github.com/roblox/roact-alignment@17.0.1-rc.18"
+ReactIs = "github.com/roblox/roact-alignment@17.0.1-rc.18"

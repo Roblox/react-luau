@@ -4,6 +4,7 @@ Packages/*
 !Packages/_Workspace/
 Packages/_Workspace/*
 !Packages/_Workspace/.robloxrc
+standalone/Packages
 **/*.rbx[lm]*
 .DS_Store
 .vscode
