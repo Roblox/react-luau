@@ -29,189 +29,81 @@
 -- 	originalObjects = nil
 -- end
 
-return function()
-	local Packages = script.Parent.Parent.Parent
-	local RobloxJest = require(Packages.Dev.RobloxJest)
-	local JestGlobals = require(Packages.Dev.JestGlobals)
-	local jestExpect = JestGlobals.expect
-	local console = require(Packages.Shared).console
-	local Promise = require(Packages.Promise)
+local Packages = script.Parent.Parent.Parent
+local JestGlobals = require(Packages.Dev.JestGlobals)
+local describe = JestGlobals.describe
+local beforeEach = JestGlobals.beforeEach
+local jest = JestGlobals.jest
+local it = JestGlobals.it
+local xit = JestGlobals.xit
+local jestExpect = JestGlobals.expect
+local console = require(Packages.Shared).console
+local Promise = require(Packages.Promise)
 
-	-- ROBLOX Test Noise: jest capabilities needed to spy on console
-	describe("DebugTracing", function()
-		local React
-		local ReactTestRenderer
-		local Scheduler
-		beforeEach(function()
-			RobloxJest.resetModules()
+-- ROBLOX Test Noise: jest capabilities needed to spy on console
+describe("DebugTracing", function()
+	local React
+	local ReactTestRenderer
+	local Scheduler
+	beforeEach(function()
+		jest.resetModules()
 
-			-- ROBLOX deviation: upstream uses special comments to know which flags to flip. we do it manually.
-			local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
-			ReactFeatureFlags.enableDebugTracing = true
-			ReactFeatureFlags.enableSchedulingProfiler = true
-			ReactFeatureFlags.enableProfilerTimer = true
-			ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback = true
-			ReactFeatureFlags.enableSuspenseServerRenderer = true
-			ReactFeatureFlags.decoupleUpdatePriorityFromScheduler = true
-			React = require(Packages.React)
-			ReactTestRenderer = require(Packages.Dev.ReactTestRenderer)
-			Scheduler = require(Packages.Scheduler)
+		-- ROBLOX deviation: upstream uses special comments to know which flags to flip. we do it manually.
+		local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
+		ReactFeatureFlags.enableDebugTracing = true
+		ReactFeatureFlags.enableSchedulingProfiler = true
+		ReactFeatureFlags.enableProfilerTimer = true
+		ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback = true
+		ReactFeatureFlags.enableSuspenseServerRenderer = true
+		ReactFeatureFlags.decoupleUpdatePriorityFromScheduler = true
+		React = require(Packages.React)
+		ReactTestRenderer = require(Packages.Dev.ReactTestRenderer)
+		Scheduler = require(Packages.Scheduler)
 
-			-- local groups = {}
+		-- local groups = {}
 
-			-- ROBLOX deviation: we currently don't have a good way to intercept
-			-- console.log, group, or groupEnd in a reasonably-aligned way
+		-- ROBLOX deviation: we currently don't have a good way to intercept
+		-- console.log, group, or groupEnd in a reasonably-aligned way
 
-			-- spyOnDevAndProd(console, "log", function(message)
-			-- 	table.insert(logs, "log: " .. message)
-			-- end)
-			-- spyOnDevAndProd(console, "group", function(message)
-			-- 	table.insert(logs, "group: " .. message)
-			-- 	table.insert(groups, message)
-			-- end)
-			-- spyOnDevAndProd(console, "groupEnd", function()
-			-- 	local message = table.remove(groups, 1)
-			-- 	table.insert(logs, "groupEnd: " .. message)
-			-- end)
-		end)
+		-- spyOnDevAndProd(console, "log", function(message)
+		-- 	table.insert(logs, "log: " .. message)
+		-- end)
+		-- spyOnDevAndProd(console, "group", function(message)
+		-- 	table.insert(logs, "group: " .. message)
+		-- 	table.insert(groups, message)
+		-- end)
+		-- spyOnDevAndProd(console, "groupEnd", function()
+		-- 	local message = table.remove(groups, 1)
+		-- 	table.insert(logs, "groupEnd: " .. message)
+		-- end)
+	end)
 
-		-- @gate experimental
-		it(
-			"should not log anything for sync render without suspends or state updates",
-			function()
-				jestExpect(function()
-					ReactTestRenderer.create(
-						React.createElement(
-							React.unstable_DebugTracingMode,
-							nil,
-							React.createElement("div")
-						)
-					)
-				end).toLogDev({})
-			end
-		)
-
-		-- @gate experimental
-		it(
-			"should not log anything for concurrent render without suspends or state updates",
-			function()
-				jestExpect(function()
-					ReactTestRenderer.create(
-						React.createElement(
-							React.unstable_DebugTracingMode,
-							nil,
-							React.createElement("div")
-						),
-						{ unstable_isConcurrent = true }
-					)
-				end).toLogDev({})
-
-				jestExpect(function()
-					jestExpect(Scheduler).toFlushUntilNextPaint({})
-				end).toLogDev({})
-			end
-		)
-
-		-- ROBLOX FIXME: we never receive "Example resolved", might be a Promise emulation issue
-		-- @gate experimental && build === 'development' && enableDebugTracing
-		xit("should log sync render with suspense", function()
-			-- ROBLOX deviation: evaera Prosmise.resolve doesn't match JS Promise, so we delay(0) to match
-			local fakeSuspensePromise = Promise.delay(0):andThen(function()
-				return true
-			end)
-			local function Example()
-				error(fakeSuspensePromise)
-			end
-
+	-- @gate experimental
+	it(
+		"should not log anything for sync render without suspends or state updates",
+		function()
 			jestExpect(function()
 				ReactTestRenderer.create(
 					React.createElement(
 						React.unstable_DebugTracingMode,
 						nil,
-						React.createElement(
-							React.Suspense,
-							{ fallback = {} },
-							React.createElement(Example)
-						)
+						React.createElement("div")
 					)
 				)
-			end).toLogDev({
-				-- "* render (0b0000000000000000000000000000001)",
-				"* Example suspended",
-				-- "* render (0b0000000000000000000000000000001)"
-			}, { withoutStack = true })
+			end).toLogDev({})
+		end
+	)
 
-			jestExpect(function()
-				fakeSuspensePromise:await()
-			end).toLogDev({
-				"* Example resolved",
-			}, { withoutStack = true })
-		end)
-
-		-- @gate experimental && build === 'development' && enableDebugTracing
-		itSKIP("should log sync render with CPU suspense", function()
-			local function Example()
-				console.log("<Example/>")
-				return nil
-			end
-
-			local function Wrapper(props)
-				local children = props.children
-				console.log("<Wrapper/>")
-				return children
-			end
-
+	-- @gate experimental
+	it(
+		"should not log anything for concurrent render without suspends or state updates",
+		function()
 			jestExpect(function()
 				ReactTestRenderer.create(
 					React.createElement(
 						React.unstable_DebugTracingMode,
 						nil,
-						React.createElement(
-							Wrapper,
-							nil,
-							React.createElement(
-								React.Suspense,
-								{ fallback = {}, unstable_expectedLoadTime = 1 },
-								React.createElement(Example)
-							)
-						)
-					)
-				)
-			end).toLogDev({
-				-- 	"group: * render (0b0000000000000000000000000000001)",
-				"<Wrapper/>",
-				-- 	"groupEnd: * render (0b0000000000000000000000000000001)",
-			}, { withoutStack = true })
-
-			jestExpect(function()
-				jestExpect(Scheduler).toFlushUntilNextPaint({})
-			end).toLogDev({
-				-- 	"group: * render (0b0000010000000000000000000000000)",
-				"<Example/>",
-				-- 	"groupEnd: * render (0b0000010000000000000000000000000)",
-			}, { withoutStack = true })
-		end)
-
-		-- @gate experimental && build === 'development' && enableDebugTracing
-		xit("should log concurrent render with suspense", function()
-			-- ROBLOX deviation: evaera Prosmise.resolve doesn't match JS Promise, so we delay(0) to match
-			local fakeSuspensePromise = Promise.delay(0):andThen(function()
-				return true
-			end)
-			local function Example()
-				error(fakeSuspensePromise)
-			end
-
-			jestExpect(function()
-				ReactTestRenderer.create(
-					React.createElement(
-						React.unstable_DebugTracingMode,
-						nil,
-						React.createElement(
-							React.Suspense,
-							{ fallback = {} },
-							React.createElement(Example)
-						)
+						React.createElement("div")
 					),
 					{ unstable_isConcurrent = true }
 				)
@@ -219,80 +111,291 @@ return function()
 
 			jestExpect(function()
 				jestExpect(Scheduler).toFlushUntilNextPaint({})
-			end).toLogDev({
-				-- 	"group: * render (0b0000000000000000000001000000000)",
-				"* Example suspended",
-				-- 	"groupEnd: * render (0b0000000000000000000001000000000)",
-			}, { withoutStack = true })
+			end).toLogDev({})
+		end
+	)
 
-			jestExpect(function()
-				fakeSuspensePromise:await()
-			end).toLogDev({ "* Example resolved" }, { withoutStack = true })
+	-- ROBLOX FIXME: we never receive "Example resolved", might be a Promise emulation issue
+	-- @gate experimental && build === 'development' && enableDebugTracing
+	xit("should log sync render with suspense", function()
+		-- ROBLOX deviation: evaera Prosmise.resolve doesn't match JS Promise, so we delay(0) to match
+		local fakeSuspensePromise = Promise.delay(0):andThen(function()
+			return true
 		end)
+		local function Example()
+			error(fakeSuspensePromise)
+		end
 
-		-- @gate experimental && build === 'development' && enableDebugTracing
-		xit("should log concurrent render with CPU suspense", function()
-			local function Example()
-				console.log("<Example/>")
-				return nil
-			end
-
-			local function Wrapper(props)
-				local children = props.children
-				console.log("<Wrapper/>")
-				return children
-			end
-
-			jestExpect(function()
-				ReactTestRenderer.create(
+		jestExpect(function()
+			ReactTestRenderer.create(
+				React.createElement(
+					React.unstable_DebugTracingMode,
+					nil,
 					React.createElement(
-						React.unstable_DebugTracingMode,
+						React.Suspense,
+						{ fallback = {} },
+						React.createElement(Example)
+					)
+				)
+			)
+		end).toLogDev({
+			-- "* render (0b0000000000000000000000000000001)",
+			"* Example suspended",
+			-- "* render (0b0000000000000000000000000000001)"
+		}, { withoutStack = true })
+
+		jestExpect(function()
+			fakeSuspensePromise:await()
+		end).toLogDev({
+			"* Example resolved",
+		}, { withoutStack = true })
+	end)
+
+	-- @gate experimental && build === 'development' && enableDebugTracing
+	it.skip("should log sync render with CPU suspense", function()
+		local function Example()
+			console.log("<Example/>")
+			return nil
+		end
+
+		local function Wrapper(props)
+			local children = props.children
+			console.log("<Wrapper/>")
+			return children
+		end
+
+		jestExpect(function()
+			ReactTestRenderer.create(
+				React.createElement(
+					React.unstable_DebugTracingMode,
+					nil,
+					React.createElement(
+						Wrapper,
 						nil,
 						React.createElement(
-							Wrapper,
-							nil,
-							React.createElement(
-								React.Suspense,
-								{ fallback = {}, unstable_expectedLoadTime = 1 },
-								React.createElement(Example)
-							)
+							React.Suspense,
+							{ fallback = {}, unstable_expectedLoadTime = 1 },
+							React.createElement(Example)
 						)
-					),
-					{ unstable_isConcurrent = true }
+					)
 				)
-			end).toLogDev({})
+			)
+		end).toLogDev({
+			-- 	"group: * render (0b0000000000000000000000000000001)",
+			"<Wrapper/>",
+			-- 	"groupEnd: * render (0b0000000000000000000000000000001)",
+		}, { withoutStack = true })
 
-			jestExpect(function()
-				jestExpect(Scheduler).toFlushUntilNextPaint({})
-			end).toLogDev({
-				-- 	"group: * render (0b0000000000000000000001000000000)",
-				"<Wrapper/>",
-				-- 	"groupEnd: * render (0b0000000000000000000001000000000)",
-			}, { withoutStack = true })
+		jestExpect(function()
+			jestExpect(Scheduler).toFlushUntilNextPaint({})
+		end).toLogDev({
+			-- 	"group: * render (0b0000010000000000000000000000000)",
+			"<Example/>",
+			-- 	"groupEnd: * render (0b0000010000000000000000000000000)",
+		}, { withoutStack = true })
+	end)
 
-			jestExpect(function()
-				jestExpect(Scheduler).toFlushUntilNextPaint({})
-			end).toLogDev({
-				-- 	"group: * render (0b0000010000000000000000000000000)",
-				"<Example/>",
-				-- 	"groupEnd: * render (0b0000010000000000000000000000000)",
-			}, { withoutStack = true })
+	-- @gate experimental && build === 'development' && enableDebugTracing
+	xit("should log concurrent render with suspense", function()
+		-- ROBLOX deviation: evaera Prosmise.resolve doesn't match JS Promise, so we delay(0) to match
+		local fakeSuspensePromise = Promise.delay(0):andThen(function()
+			return true
 		end)
+		local function Example()
+			error(fakeSuspensePromise)
+		end
 
-		-- @gate experimental && build === 'development' && enableDebugTracing
-		it("should log cascading class component updates", function()
-			local Example = React.Component:extend("Example")
-			function Example:init()
-				self.state = { didMount = false }
-			end
-			function Example:componentDidMount()
-				self:setState({ didMount = true })
-			end
-			function Example:render()
-				return nil
-			end
+		jestExpect(function()
+			ReactTestRenderer.create(
+				React.createElement(
+					React.unstable_DebugTracingMode,
+					nil,
+					React.createElement(
+						React.Suspense,
+						{ fallback = {} },
+						React.createElement(Example)
+					)
+				),
+				{ unstable_isConcurrent = true }
+			)
+		end).toLogDev({})
 
+		jestExpect(function()
+			jestExpect(Scheduler).toFlushUntilNextPaint({})
+		end).toLogDev({
+			-- 	"group: * render (0b0000000000000000000001000000000)",
+			"* Example suspended",
+			-- 	"groupEnd: * render (0b0000000000000000000001000000000)",
+		}, { withoutStack = true })
+
+		jestExpect(function()
+			fakeSuspensePromise:await()
+		end).toLogDev({ "* Example resolved" }, { withoutStack = true })
+	end)
+
+	-- @gate experimental && build === 'development' && enableDebugTracing
+	xit("should log concurrent render with CPU suspense", function()
+		local function Example()
+			console.log("<Example/>")
+			return nil
+		end
+
+		local function Wrapper(props)
+			local children = props.children
+			console.log("<Wrapper/>")
+			return children
+		end
+
+		jestExpect(function()
+			ReactTestRenderer.create(
+				React.createElement(
+					React.unstable_DebugTracingMode,
+					nil,
+					React.createElement(
+						Wrapper,
+						nil,
+						React.createElement(
+							React.Suspense,
+							{ fallback = {}, unstable_expectedLoadTime = 1 },
+							React.createElement(Example)
+						)
+					)
+				),
+				{ unstable_isConcurrent = true }
+			)
+		end).toLogDev({})
+
+		jestExpect(function()
+			jestExpect(Scheduler).toFlushUntilNextPaint({})
+		end).toLogDev({
+			-- 	"group: * render (0b0000000000000000000001000000000)",
+			"<Wrapper/>",
+			-- 	"groupEnd: * render (0b0000000000000000000001000000000)",
+		}, { withoutStack = true })
+
+		jestExpect(function()
+			jestExpect(Scheduler).toFlushUntilNextPaint({})
+		end).toLogDev({
+			-- 	"group: * render (0b0000010000000000000000000000000)",
+			"<Example/>",
+			-- 	"groupEnd: * render (0b0000010000000000000000000000000)",
+		}, { withoutStack = true })
+	end)
+
+	-- @gate experimental && build === 'development' && enableDebugTracing
+	it("should log cascading class component updates", function()
+		local Example = React.Component:extend("Example")
+		function Example:init()
+			self.state = { didMount = false }
+		end
+		function Example:componentDidMount()
+			self:setState({ didMount = true })
+		end
+		function Example:render()
+			return nil
+		end
+
+		jestExpect(function()
+			ReactTestRenderer.create(
+				React.createElement(
+					React.unstable_DebugTracingMode,
+					nil,
+					React.createElement(Example)
+				),
+				{ unstable_isConcurrent = true }
+			)
+		end).toLogDev({})
+
+		jestExpect(function()
+			jestExpect(Scheduler).toFlushUntilNextPaint({})
+		end).toLogDev({
+			-- 	"group: * commit (0b0000000000000000000001000000000)",
+			-- 	"group: * layout effects (0b0000000000000000000001000000000)",
+			"* Example updated state (0b0000000000000000000000000000001)",
+			-- 	"groupEnd: * layout effects (0b0000000000000000000001000000000)",
+			-- 	"groupEnd: * commit (0b0000000000000000000001000000000)",
+		}, { withoutStack = true })
+	end)
+
+	-- @gate experimental && build === 'development' && enableDebugTracing
+	it("should log render phase state updates for class component", function()
+		local Example = React.Component:extend("Example")
+		function Example:init()
+			self.state = { didRender = false }
+		end
+		function Example:render()
+			if self.state.didRender == false then
+				self:setState({ didRender = true })
+			end
+			return nil
+		end
+
+		jestExpect(function()
+			ReactTestRenderer.create(
+				React.createElement(
+					React.unstable_DebugTracingMode,
+					nil,
+					React.createElement(Example)
+				),
+				{ unstable_isConcurrent = true }
+			)
+		end).toLogDev({})
+
+		jestExpect(function()
 			jestExpect(function()
+				jestExpect(Scheduler).toFlushUntilNextPaint({})
+			end).toErrorDev("Cannot update during an existing state transition")
+		end).toLogDev({
+			-- 	"group: * render (0b0000000000000000000001000000000)",
+			"* Example updated state (0b0000000000000000000001000000000)",
+			"* Example updated state (0b0000000000000000000001000000000)",
+		}, { withoutStack = true })
+	end)
+
+	-- @gate experimental && build === 'development' && enableDebugTracing
+	it("should log cascading layout updates", function()
+		local function Example()
+			local didMount, setDidMount = React.useState(false)
+			React.useLayoutEffect(function()
+				setDidMount(true)
+			end, {})
+			return didMount
+		end
+
+		jestExpect(function()
+			ReactTestRenderer.create(
+				React.createElement(
+					React.unstable_DebugTracingMode,
+					nil,
+					React.createElement(Example)
+				),
+				{ unstable_isConcurrent = true }
+			)
+		end).toLogDev({})
+
+		jestExpect(function()
+			jestExpect(Scheduler).toFlushUntilNextPaint({})
+		end).toLogDev({
+			-- 	"group: * commit (0b0000000000000000000001000000000)",
+			-- 	"group: * layout effects (0b0000000000000000000001000000000)",
+			"* Example updated state (0b0000000000000000000000000000001)",
+			-- 	"groupEnd: * layout effects (0b0000000000000000000001000000000)",
+			-- 	"groupEnd: * commit (0b0000000000000000000001000000000)",
+		}, { withoutStack = true })
+	end)
+
+	-- @gate experimental && build === 'development' && enableDebugTracing
+	it("should log cascading passive updates", function()
+		local function Example()
+			local didMount, setDidMount = React.useState(false)
+			React.useEffect(function()
+				setDidMount(true)
+			end, {})
+			return didMount
+		end
+
+		jestExpect(function()
+			ReactTestRenderer.act(function()
 				ReactTestRenderer.create(
 					React.createElement(
 						React.unstable_DebugTracingMode,
@@ -301,33 +404,26 @@ return function()
 					),
 					{ unstable_isConcurrent = true }
 				)
-			end).toLogDev({})
+			end)
+		end).toLogDev({
+			-- 	"group: * passive effects (0b0000000000000000000001000000000)",
+			"* Example updated state (0b0000000000000000000010000000000)",
+			-- 	"groupEnd: * passive effects (0b0000000000000000000001000000000)",
+		}, { withoutStack = true })
+	end)
 
-			jestExpect(function()
-				jestExpect(Scheduler).toFlushUntilNextPaint({})
-			end).toLogDev({
-				-- 	"group: * commit (0b0000000000000000000001000000000)",
-				-- 	"group: * layout effects (0b0000000000000000000001000000000)",
-				"* Example updated state (0b0000000000000000000000000000001)",
-				-- 	"groupEnd: * layout effects (0b0000000000000000000001000000000)",
-				-- 	"groupEnd: * commit (0b0000000000000000000001000000000)",
-			}, { withoutStack = true })
-		end)
-
-		-- @gate experimental && build === 'development' && enableDebugTracing
-		it("should log render phase state updates for class component", function()
-			local Example = React.Component:extend("Example")
-			function Example:init()
-				self.state = { didRender = false }
+	-- @gate experimental && build === 'development' && enableDebugTracing
+	it("should log render phase updates", function()
+		local function Example()
+			local didRender, setDidRender = React.useState(false)
+			if not didRender then
+				setDidRender(true)
 			end
-			function Example:render()
-				if self.state.didRender == false then
-					self:setState({ didRender = true })
-				end
-				return nil
-			end
+			return didRender
+		end
 
-			jestExpect(function()
+		jestExpect(function()
+			ReactTestRenderer.act(function()
 				ReactTestRenderer.create(
 					React.createElement(
 						React.unstable_DebugTracingMode,
@@ -336,22 +432,62 @@ return function()
 					),
 					{ unstable_isConcurrent = true }
 				)
-			end).toLogDev({})
+			end)
+		end).toLogDev({
+			-- 	"group: * render (0b0000000000000000000001000000000)",
+			"* Example updated state (0b0000000000000000000001000000000)",
+			"* Example updated state (0b0000000000000000000001000000000)",
+			-- 	"groupEnd: * render (0b0000000000000000000001000000000)",
+		}, { withoutStack = true })
 
-			jestExpect(function()
-				jestExpect(function()
-					jestExpect(Scheduler).toFlushUntilNextPaint({})
-				end).toErrorDev("Cannot update during an existing state transition")
-			end).toLogDev({
-				-- 	"group: * render (0b0000000000000000000001000000000)",
-				"* Example updated state (0b0000000000000000000001000000000)",
-				"* Example updated state (0b0000000000000000000001000000000)",
-			}, { withoutStack = true })
-		end)
+		-- ROBLOX deviation: we don't have build-time gating like upstream
+		-- gate(function(flags)
+		-- 	if flags.new then
+		-- jestExpect(logs).toEqual({
+		-- })
+		-- 	else
+		-- 		jestExpect(logs).toEqual({
+		-- 			"group: * render (0b0000000000000000000001000000000)",
+		-- 			"log: * Example updated state (0b0000000000000000000010000000000)",
+		-- 			"log: * Example updated state (0b0000000000000000000010000000000)",
+		-- 			"groupEnd: * render (0b0000000000000000000001000000000)",
+		-- 		})
+		-- 	end
+		-- end)
+	end)
 
-		-- @gate experimental && build === 'development' && enableDebugTracing
-		it("should log cascading layout updates", function()
-			local function Example()
+	-- @gate experimental && build === 'development' && enableDebugTracing
+	xit("should log when user code logs", function()
+		local function Example()
+			console.log("Hello from user code")
+			return nil
+		end
+
+		jestExpect(function()
+			ReactTestRenderer.create(
+				React.createElement(
+					React.unstable_DebugTracingMode,
+					nil,
+					React.createElement(Example)
+				),
+				{ unstable_isConcurrent = true }
+			)
+		end).toLogDev({})
+
+		jestExpect(function()
+			jestExpect(Scheduler).toFlushUntilNextPaint({})
+		end).toLogDev({
+			-- 	"group: * render (0b0000000000000000000001000000000)",
+			"Hello from user code",
+			-- 	"groupEnd: * render (0b0000000000000000000001000000000)",
+		})
+	end)
+
+	-- @gate experimental
+	it(
+		"should not log anything outside of a unstable_DebugTracingMode subtree",
+		function()
+			local function ExampleThatCascades()
 				local didMount, setDidMount = React.useState(false)
 				React.useLayoutEffect(function()
 					setDidMount(true)
@@ -359,171 +495,37 @@ return function()
 				return didMount
 			end
 
-			jestExpect(function()
-				ReactTestRenderer.create(
-					React.createElement(
-						React.unstable_DebugTracingMode,
-						nil,
-						React.createElement(Example)
-					),
-					{ unstable_isConcurrent = true }
-				)
-			end).toLogDev({})
-
-			jestExpect(function()
-				jestExpect(Scheduler).toFlushUntilNextPaint({})
-			end).toLogDev({
-				-- 	"group: * commit (0b0000000000000000000001000000000)",
-				-- 	"group: * layout effects (0b0000000000000000000001000000000)",
-				"* Example updated state (0b0000000000000000000000000000001)",
-				-- 	"groupEnd: * layout effects (0b0000000000000000000001000000000)",
-				-- 	"groupEnd: * commit (0b0000000000000000000001000000000)",
-			}, { withoutStack = true })
-		end)
-
-		-- @gate experimental && build === 'development' && enableDebugTracing
-		it("should log cascading passive updates", function()
-			local function Example()
-				local didMount, setDidMount = React.useState(false)
-				React.useEffect(function()
-					setDidMount(true)
-				end, {})
-				return didMount
+			local fakeSuspensePromise = Promise.new(function()
+				return {}
+			end)
+			local function ExampleThatSuspends()
+				error(fakeSuspensePromise)
 			end
 
-			jestExpect(function()
-				ReactTestRenderer.act(function()
-					ReactTestRenderer.create(
-						React.createElement(
-							React.unstable_DebugTracingMode,
-							nil,
-							React.createElement(Example)
-						),
-						{ unstable_isConcurrent = true }
-					)
-				end)
-			end).toLogDev({
-				-- 	"group: * passive effects (0b0000000000000000000001000000000)",
-				"* Example updated state (0b0000000000000000000010000000000)",
-				-- 	"groupEnd: * passive effects (0b0000000000000000000001000000000)",
-			}, { withoutStack = true })
-		end)
-
-		-- @gate experimental && build === 'development' && enableDebugTracing
-		it("should log render phase updates", function()
 			local function Example()
-				local didRender, setDidRender = React.useState(false)
-				if not didRender then
-					setDidRender(true)
-				end
-				return didRender
-			end
-
-			jestExpect(function()
-				ReactTestRenderer.act(function()
-					ReactTestRenderer.create(
-						React.createElement(
-							React.unstable_DebugTracingMode,
-							nil,
-							React.createElement(Example)
-						),
-						{ unstable_isConcurrent = true }
-					)
-				end)
-			end).toLogDev({
-				-- 	"group: * render (0b0000000000000000000001000000000)",
-				"* Example updated state (0b0000000000000000000001000000000)",
-				"* Example updated state (0b0000000000000000000001000000000)",
-				-- 	"groupEnd: * render (0b0000000000000000000001000000000)",
-			}, { withoutStack = true })
-
-			-- ROBLOX deviation: we don't have build-time gating like upstream
-			-- gate(function(flags)
-			-- 	if flags.new then
-			-- jestExpect(logs).toEqual({
-			-- })
-			-- 	else
-			-- 		jestExpect(logs).toEqual({
-			-- 			"group: * render (0b0000000000000000000001000000000)",
-			-- 			"log: * Example updated state (0b0000000000000000000010000000000)",
-			-- 			"log: * Example updated state (0b0000000000000000000010000000000)",
-			-- 			"groupEnd: * render (0b0000000000000000000001000000000)",
-			-- 		})
-			-- 	end
-			-- end)
-		end)
-
-		-- @gate experimental && build === 'development' && enableDebugTracing
-		xit("should log when user code logs", function()
-			local function Example()
-				console.log("Hello from user code")
 				return nil
 			end
 
 			jestExpect(function()
 				ReactTestRenderer.create(
 					React.createElement(
-						React.unstable_DebugTracingMode,
+						React.Fragment,
 						nil,
-						React.createElement(Example)
-					),
-					{ unstable_isConcurrent = true }
-				)
-			end).toLogDev({})
-
-			jestExpect(function()
-				jestExpect(Scheduler).toFlushUntilNextPaint({})
-			end).toLogDev({
-				-- 	"group: * render (0b0000000000000000000001000000000)",
-				"Hello from user code",
-				-- 	"groupEnd: * render (0b0000000000000000000001000000000)",
-			})
-		end)
-
-		-- @gate experimental
-		it(
-			"should not log anything outside of a unstable_DebugTracingMode subtree",
-			function()
-				local function ExampleThatCascades()
-					local didMount, setDidMount = React.useState(false)
-					React.useLayoutEffect(function()
-						setDidMount(true)
-					end, {})
-					return didMount
-				end
-
-				local fakeSuspensePromise = Promise.new(function()
-					return {}
-				end)
-				local function ExampleThatSuspends()
-					error(fakeSuspensePromise)
-				end
-
-				local function Example()
-					return nil
-				end
-
-				jestExpect(function()
-					ReactTestRenderer.create(
+						React.createElement(ExampleThatCascades),
 						React.createElement(
-							React.Fragment,
+							React.Suspense,
+							{ fallback = {} },
 							nil,
-							React.createElement(ExampleThatCascades),
-							React.createElement(
-								React.Suspense,
-								{ fallback = {} },
-								nil,
-								React.createElement(ExampleThatSuspends)
-							),
-							React.createElement(
-								React.unstable_DebugTracingMode,
-								nil,
-								React.createElement(Example)
-							)
+							React.createElement(ExampleThatSuspends)
+						),
+						React.createElement(
+							React.unstable_DebugTracingMode,
+							nil,
+							React.createElement(Example)
 						)
 					)
-				end).toLogDev({})
-			end
-		)
-	end)
-end
+				)
+			end).toLogDev({})
+		end
+	)
+end)

@@ -11,5 +11,4 @@ LuauPolyfill = { workspace = true }
 Scheduler = { path = "../scheduler" }
 Shared = { path = "../shared" }
 ReactReconciler = { path = "../react-reconciler" }
-# For mock timer playback
-RobloxJest = { path = "../roblox-jest" }
+JestGlobals = { workspace = true }

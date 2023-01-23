@@ -32,7 +32,7 @@ if _G.__ROACT_17_MOCK_SCHEDULER__ then
 end
 
 local exports = {
-	getJestMatchers = Scheduler.getJestMatcher,
+	getJestMatchers = Scheduler.getJestMatchers,
 	unstable_ImmediatePriority = Scheduler.unstable_ImmediatePriority,
 	unstable_UserBlockingPriority = Scheduler.unstable_UserBlockingPriority,
 	unstable_NormalPriority = Scheduler.unstable_NormalPriority,

@@ -1,7 +1,5 @@
 -- Jest Roblox Snapshot v1, http://roblox.github.io/jest-roblox/snapshot-testing
-
 local exports = {}
-
 exports[ [=[Store component filters should filter HOCs: 1: mount 1]=] ] = [=[
 
 "[root]

@@ -13,7 +13,6 @@ ReactRoblox = { path = "../react-roblox" }
 Shared = { path = "../shared" }
 
 [dev_dependencies]
-RobloxJest = { path = "../roblox-jest" }
 Roact = "github.com/roblox/roact@1.4.0"
 JestGlobals ={ workspace = true }
 Scheduler = { path = "../scheduler" }

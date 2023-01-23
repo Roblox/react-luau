@@ -12,24 +12,25 @@
 	* See the License for the specific language governing permissions and
 	* limitations under the License.
 ]]
-return function()
-	local Packages = script.Parent.Parent.Parent.Parent
-	local jestExpect = require(Packages.Dev.JestGlobals).expect
 
-	local Type = require(script.Parent.Parent.Parent["Type.roblox"])
-	local Event = require(script.Parent.Parent.Event)
+local Packages = script.Parent.Parent.Parent.Parent
+local JestGlobals = require(Packages.Dev.JestGlobals)
+local jestExpect = JestGlobals.expect
+local it = JestGlobals.it
 
-	it("should yield event objects when indexed", function()
-		jestExpect(Type.of(Event.MouseButton1Click)).toBe(Type.HostEvent)
-		jestExpect(Type.of(Event.Touched)).toBe(Type.HostEvent)
-	end)
+local Type = require(script.Parent.Parent.Parent["Type.roblox"])
+local Event = require(script.Parent.Parent.Event)
 
-	it("should yield the same object when indexed again", function()
-		local a = Event.MouseButton1Click
-		local b = Event.MouseButton1Click
-		local c = Event.Touched
+it("should yield event objects when indexed", function()
+	jestExpect(Type.of(Event.MouseButton1Click)).toBe(Type.HostEvent)
+	jestExpect(Type.of(Event.Touched)).toBe(Type.HostEvent)
+end)
 
-		jestExpect(a).toBe(b)
-		jestExpect(a).never.toBe(c)
-	end)
-end
+it("should yield the same object when indexed again", function()
+	local a = Event.MouseButton1Click
+	local b = Event.MouseButton1Click
+	local c = Event.Touched
+
+	jestExpect(a).toBe(b)
+	jestExpect(a).never.toBe(c)
+end)

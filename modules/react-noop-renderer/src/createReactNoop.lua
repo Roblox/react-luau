@@ -17,7 +17,6 @@
 ]]
 
 local Packages = script.Parent.Parent
-local RobloxJest = require(Packages.RobloxJest)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 
 local Array = LuauPolyfill.Array
@@ -27,6 +26,7 @@ type Function = (...any) -> ...any
 local setTimeout = LuauPolyfill.setTimeout
 local clearTimeout = LuauPolyfill.clearTimeout
 local console = require(Packages.Shared).console
+local jest = require(Packages.JestGlobals).jest
 
 local ReactReconciler = require(Packages.ReactReconciler)
 type Fiber = ReactReconciler.Fiber
@@ -1257,11 +1257,8 @@ local function createReactNoop(reconciler, useMutation: boolean)
 	flushActWork = function(resolve, reject)
 		-- Flush suspended fallbacks
 
-		-- deviation: FIXME: figure out the difference between runAllTimers and
-		-- runOnlyPendingTimers
-		RobloxJest.runAllTimers()
 		-- $FlowFixMe: Flow doesn't know about global Jest object
-		-- jest.runOnlyPendingTimers()
+		jest.runOnlyPendingTimers()
 
 		enqueueTask(function()
 			local ok, result = pcall(function()

@@ -15,4 +15,4 @@ Scheduler = { path = "../scheduler" }
 
 [dev_dependencies]
 JestGlobals ={ workspace = true }
-RobloxJest = { path = "../roblox-jest" }
+Promise = { workspace = true }

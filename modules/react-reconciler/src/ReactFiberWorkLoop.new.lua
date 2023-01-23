@@ -467,7 +467,8 @@ end
 
 exports.requestEventTime = function()
 	if
-		bit32.band(executionContext, bit32.bor(RenderContext, CommitContext)) ~= NoContext
+		bit32.band(executionContext, bit32.bor(RenderContext, CommitContext))
+		~= NoContext
 	then
 		-- We're inside React, so it's fine to read the actual time.
 		return now()
@@ -1155,7 +1156,8 @@ exports.flushRoot = function(root: FiberRoot, lanes: Lanes)
 	markRootExpired(root, lanes)
 	ensureRootIsScheduled(root, now())
 	if
-		bit32.band(executionContext, bit32.bor(RenderContext, CommitContext)) == NoContext
+		bit32.band(executionContext, bit32.bor(RenderContext, CommitContext))
+		== NoContext
 	then
 		resetRenderTimer()
 		flushSyncCallbackQueue()
@@ -3627,9 +3629,9 @@ exports.warnIfUnmockedScheduler = function(fiber: Fiber)
 				console.error(
 					"In Concurrent or Sync modes, the 'scheduler' module needs to be mocked "
 						.. "to guarantee consistent behaviour across tests and client application. "
-						.. "For example, with RobloxJest: \n"
+						.. "For example, with Jest: \n"
 						-- Break up requires to avoid accidentally parsing them as dependencies.
-						.. "RobloxJest.mock('scheduler', function() return require(Packages.Scheduler).unstable_mock end)\n\n"
+						.. "jest.mock('scheduler', function() return require(Packages.Scheduler).unstable_mock end)\n\n"
 						.. "For more info, visit https://reactjs.org/link/mock-scheduler"
 				)
 			elseif ReactFeatureFlags.warnAboutUnmockedScheduler == true then
@@ -3642,9 +3644,9 @@ exports.warnIfUnmockedScheduler = function(fiber: Fiber)
 				console.error(
 					"Starting from React v18, the 'scheduler' module will need to be mocked "
 						.. "to guarantee consistent behaviour across tests and client applications. "
-						.. "For example, with RobloxJest: \n"
+						.. "For example, with Jest: \n"
 						-- Break up requires to avoid accidentally parsing them as dependencies.
-						.. "RobloxJest.mock('scheduler', function() return require(Packages.Scheduler).unstable_mock end)\n\n"
+						.. "jest.mock('scheduler', function() return require(Packages.Scheduler).unstable_mock end)\n\n"
 						.. "For more info, visit https://reactjs.org/link/mock-scheduler"
 				)
 			end

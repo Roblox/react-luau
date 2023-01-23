@@ -14,4 +14,3 @@ Shared = { path = "../shared" }
 
 [dev_dependencies]
 JestGlobals = { workspace = true }
-RobloxJest = { path = "../roblox-jest" }

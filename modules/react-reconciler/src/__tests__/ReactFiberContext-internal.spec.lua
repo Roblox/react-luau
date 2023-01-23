@@ -9,50 +9,49 @@
  * @jest-environment node
 ]]
 
-return function()
-	local Packages = script.Parent.Parent.Parent
-	local jestExpect = require(Packages.Dev.JestGlobals).expect
-	local RobloxJest = require(Packages.Dev.RobloxJest)
+local Packages = script.Parent.Parent.Parent
+local JestGlobals = require(Packages.Dev.JestGlobals)
+local jestExpect = JestGlobals.expect
+local jest = JestGlobals.jest
+local beforeEach = JestGlobals.beforeEach
+local describe = JestGlobals.describe
+local it = JestGlobals.it
 
-	local ReactFiberContext
-	local ReactFiber
-	local ReactRootTags
-	local ReactFeatureFlags
+local ReactFiberContext
+local ReactFiber
+local ReactRootTags
+local ReactFeatureFlags
 
-	beforeEach(function()
-		RobloxJest.resetModules()
+beforeEach(function()
+	jest.resetModules()
 
-		ReactFiberContext = require(script.Parent.Parent["ReactFiberContext.new"])
-		ReactFiber = require(script.Parent.Parent["ReactFiber.new"])
-		ReactRootTags = require(script.Parent.Parent.ReactRootTags)
-		ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
-		ReactFeatureFlags.disableLegacyContext = false
-	end)
+	ReactFiberContext = require(script.Parent.Parent["ReactFiberContext.new"])
+	ReactFiber = require(script.Parent.Parent["ReactFiber.new"])
+	ReactRootTags = require(script.Parent.Parent.ReactRootTags)
+	ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
+	ReactFeatureFlags.disableLegacyContext = false
+end)
 
-	describe("Context stack", function()
-		it("should throw when pushing to top level of non-empty stack", function()
-			local fiber = ReactFiber.createHostRootFiber(ReactRootTags.BlockingRoot)
-			local context = {
-				foo = 1,
+describe("Context stack", function()
+	it("should throw when pushing to top level of non-empty stack", function()
+		local fiber = ReactFiber.createHostRootFiber(ReactRootTags.BlockingRoot)
+		local context = {
+			foo = 1,
+		}
+		-- The first call here is a valid use of pushTopLevelContextObject
+		ReactFiberContext.pushTopLevelContextObject(fiber, context, true)
+		jestExpect(function()
+			local moreContext = {
+				bar = 2,
 			}
-			-- The first call here is a valid use of pushTopLevelContextObject
-			ReactFiberContext.pushTopLevelContextObject(fiber, context, true)
-			jestExpect(function()
-				local moreContext = {
-					bar = 2,
-				}
-				ReactFiberContext.pushTopLevelContextObject(fiber, moreContext, true)
-			end).toThrow("Unexpected context found on stack.")
-		end)
-
-		it(
-			"should throw if when invalidating a provider that isn't initialized",
-			function()
-				local fiber = ReactFiber.createHostRootFiber(ReactRootTags.BlockingRoot)
-				jestExpect(function()
-					ReactFiberContext.invalidateContextProvider(fiber, nil, true)
-				end).toThrow("Expected to have an instance by this point.")
-			end
-		)
+			ReactFiberContext.pushTopLevelContextObject(fiber, moreContext, true)
+		end).toThrow("Unexpected context found on stack.")
 	end)
-end
+
+	it("should throw if when invalidating a provider that isn't initialized", function()
+		local fiber = ReactFiber.createHostRootFiber(ReactRootTags.BlockingRoot)
+		jestExpect(function()
+			ReactFiberContext.invalidateContextProvider(fiber, nil, true)
+		end).toThrow("Expected to have an instance by this point.")
+	end)
+end)

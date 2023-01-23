@@ -9,26 +9,27 @@
  * @jest-environment node
 ]]
 
-return function()
-	local Packages = script.Parent.Parent.Parent
-	local jestExpect = require(Packages.Dev.JestGlobals).expect
-	local RobloxJest = require(Packages.Dev.RobloxJest)
+local Packages = script.Parent.Parent.Parent
+local JestGlobals = require(Packages.Dev.JestGlobals)
+local jestExpect = JestGlobals.expect
+local jest = JestGlobals.jest
+local beforeEach = JestGlobals.beforeEach
+local it = JestGlobals.it
 
-	local ReactFiberRoot
-	local ReactRootTags
+local ReactFiberRoot
+local ReactRootTags
 
-	beforeEach(function()
-		RobloxJest.resetModules()
+beforeEach(function()
+	jest.resetModules()
 
-		ReactFiberRoot = require(script.Parent.Parent["ReactFiberRoot.new"])
-		ReactRootTags = require(script.Parent.Parent.ReactRootTags)
-	end)
+	ReactFiberRoot = require(script.Parent.Parent["ReactFiberRoot.new"])
+	ReactRootTags = require(script.Parent.Parent.ReactRootTags)
+end)
 
-	it("should properly initialize a fiber created with createFiberRoot", function()
-		local fiberRoot =
-			ReactFiberRoot.createFiberRoot({}, ReactRootTags.BlockingRoot, false)
+it("should properly initialize a fiber created with createFiberRoot", function()
+	local fiberRoot =
+		ReactFiberRoot.createFiberRoot({}, ReactRootTags.BlockingRoot, false)
 
-		jestExpect(fiberRoot.current).toBeDefined()
-		jestExpect(fiberRoot.current.updateQueue).toBeDefined()
-	end)
-end
+	jestExpect(fiberRoot.current).toBeDefined()
+	jestExpect(fiberRoot.current.updateQueue).toBeDefined()
+end)

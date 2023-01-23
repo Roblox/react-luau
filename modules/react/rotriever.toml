@@ -15,7 +15,6 @@ PerformanceBenchmarks = { git = "https://github.com/Roblox/roact-performance-ben
 JestReact = { path = "../jest-react" }
 JestGlobals = { workspace = true }
 Promise = { workspace = true}
-RobloxJest = { path = "../roblox-jest" }
 ReactCache = { path = "../react-cache" }
 ReactNoopRenderer = { path = "../react-noop-renderer" }
 ReactRoblox = { path = "../react-roblox" }

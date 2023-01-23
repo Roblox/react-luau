@@ -16,4 +16,3 @@ JestGlobals = { workspace = true }
 Promise = { workspace = true }
 JestReact = { path = "../jest-react" }
 ReactTestRenderer = { path = "../react-test-renderer" }
-RobloxJest = { path = "../roblox-jest" }

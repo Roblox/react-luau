@@ -9,125 +9,127 @@
  * @jest-environment node
  ]]
 
-return function()
-	describe("ReactFiberHostContext", function()
-		local Packages = script.Parent.Parent.Parent
-		local jestExpect = require(Packages.Dev.JestGlobals).expect
-		local RobloxJest = require(Packages.Dev.RobloxJest)
+local Packages = script.Parent.Parent.Parent
+local JestGlobals = require(Packages.Dev.JestGlobals)
+local jestExpect = JestGlobals.expect
+local jest = JestGlobals.jest
+local describe = JestGlobals.describe
+local beforeEach = JestGlobals.beforeEach
+local it = JestGlobals.it
 
-		local ReactFiberReconciler
-		local ConcurrentRoot
-		local React
+describe("ReactFiberHostContext", function()
+	local ReactFiberReconciler
+	local ConcurrentRoot
+	local React
 
-		beforeEach(function()
-			RobloxJest.resetModules()
-			React = require(Packages.React)
-			ReactFiberReconciler = require(script.Parent.Parent)
-			ConcurrentRoot = require(script.Parent.Parent.ReactRootTags)
-		end)
-
-		it("works with nil host context", function()
-			local creates = 0
-			local Renderer = ReactFiberReconciler({
-				prepareForCommit = function()
-					return nil
-				end,
-				resetAfterCommit = function() end,
-				getRootHostContext = function()
-					return nil
-				end,
-				getChildHostContext = function()
-					return nil
-				end,
-				shouldSetTextContent = function()
-					return false
-				end,
-				createInstance = function()
-					creates += 1
-				end,
-				finalizeInitialChildren = function()
-					return nil
-				end,
-				appendInitialChild = function()
-					return nil
-				end,
-				now = function()
-					return 0
-				end,
-				appendChildToContainer = function()
-					return nil
-				end,
-				clearContainer = function() end,
-				supportsMutation = true,
-			})
-
-			local container = Renderer.createContainer(
-				--[[ root: ]]
-				nil,
-				ConcurrentRoot,
-				false,
-				nil
-			)
-			Renderer.updateContainer(
-				React.createElement("a", nil, React.createElement("b")),
-				container,
-				--[[ parentComponent: ]]
-				nil,
-				--[[ callback: ]]
-				nil
-			)
-
-			jestExpect(creates).toBe(2)
-		end)
-
-		it("should send the context to prepareForCommit and resetAfterCommit", function()
-			local rootContext = {}
-			local Renderer = ReactFiberReconciler({
-				prepareForCommit = function(hostContext)
-					jestExpect(hostContext).toBe(rootContext)
-					return nil
-				end,
-				resetAfterCommit = function(hostContext)
-					jestExpect(hostContext).toBe(rootContext)
-				end,
-				getRootHostContext = function()
-					return nil
-				end,
-				getChildHostContext = function()
-					return nil
-				end,
-				shouldSetTextContent = function()
-					return false
-				end,
-				createInstance = function()
-					return nil
-				end,
-				finalizeInitialChildren = function()
-					return nil
-				end,
-				appendInitialChild = function()
-					return nil
-				end,
-				now = function()
-					return 0
-				end,
-				appendChildToContainer = function()
-					return nil
-				end,
-				clearContainer = function() end,
-				supportsMutation = true,
-			})
-
-			local container =
-				Renderer.createContainer(rootContext, ConcurrentRoot, false, nil)
-			Renderer.updateContainer(
-				React.createElement("a", nil, React.createElement("b")),
-				container,
-				--[[ parentComponent= ]]
-				nil,
-				--[[ callback= ]]
-				nil
-			)
-		end)
+	beforeEach(function()
+		jest.resetModules()
+		React = require(Packages.React)
+		ReactFiberReconciler = require(script.Parent.Parent)
+		ConcurrentRoot = require(script.Parent.Parent.ReactRootTags)
 	end)
-end
+
+	it("works with nil host context", function()
+		local creates = 0
+		local Renderer = ReactFiberReconciler({
+			prepareForCommit = function()
+				return nil
+			end,
+			resetAfterCommit = function() end,
+			getRootHostContext = function()
+				return nil
+			end,
+			getChildHostContext = function()
+				return nil
+			end,
+			shouldSetTextContent = function()
+				return false
+			end,
+			createInstance = function()
+				creates += 1
+			end,
+			finalizeInitialChildren = function()
+				return nil
+			end,
+			appendInitialChild = function()
+				return nil
+			end,
+			now = function()
+				return 0
+			end,
+			appendChildToContainer = function()
+				return nil
+			end,
+			clearContainer = function() end,
+			supportsMutation = true,
+		})
+
+		local container = Renderer.createContainer(
+			--[[ root: ]]
+			nil,
+			ConcurrentRoot,
+			false,
+			nil
+		)
+		Renderer.updateContainer(
+			React.createElement("a", nil, React.createElement("b")),
+			container,
+			--[[ parentComponent: ]]
+			nil,
+			--[[ callback: ]]
+			nil
+		)
+
+		jestExpect(creates).toBe(2)
+	end)
+
+	it("should send the context to prepareForCommit and resetAfterCommit", function()
+		local rootContext = {}
+		local Renderer = ReactFiberReconciler({
+			prepareForCommit = function(hostContext)
+				jestExpect(hostContext).toBe(rootContext)
+				return nil
+			end,
+			resetAfterCommit = function(hostContext)
+				jestExpect(hostContext).toBe(rootContext)
+			end,
+			getRootHostContext = function()
+				return nil
+			end,
+			getChildHostContext = function()
+				return nil
+			end,
+			shouldSetTextContent = function()
+				return false
+			end,
+			createInstance = function()
+				return nil
+			end,
+			finalizeInitialChildren = function()
+				return nil
+			end,
+			appendInitialChild = function()
+				return nil
+			end,
+			now = function()
+				return 0
+			end,
+			appendChildToContainer = function()
+				return nil
+			end,
+			clearContainer = function() end,
+			supportsMutation = true,
+		})
+
+		local container =
+			Renderer.createContainer(rootContext, ConcurrentRoot, false, nil)
+		Renderer.updateContainer(
+			React.createElement("a", nil, React.createElement("b")),
+			container,
+			--[[ parentComponent= ]]
+			nil,
+			--[[ callback= ]]
+			nil
+		)
+	end)
+end)

@@ -14,7 +14,6 @@ ReactRoblox = { path = "../react-roblox" }
 
 [dev_dependencies]
 JestGlobals ={ workspace = true }
-RobloxJest = { path = "../roblox-jest" }
 # FIXME: Version 0.2.4 breaks the test "can connect to a Roact tree and inspect
 # its children and child branch nodes" in devtools-integration.roblox.spec.lua
 DeveloperTools = "github.com/Roblox/developer-tools@=0.2.3"

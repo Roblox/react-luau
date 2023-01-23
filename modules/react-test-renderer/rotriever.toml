@@ -17,5 +17,4 @@ Shared = { path = "../shared" }
 Promise = { workspace = true }
 JestGlobals ={ workspace = true }
 ReactRoblox = { path = "../react-roblox" }
-RobloxJest = { path = "../roblox-jest" }
 JestReact = { path = "../jest-react" }

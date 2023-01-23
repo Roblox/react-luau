@@ -8,92 +8,93 @@
 * @emails react-core
 ]]
 
-return function()
-	local Packages = script.Parent.Parent.Parent
-	local jestExpect = require(Packages.Dev.JestGlobals).expect
-	local RobloxJest = require(Packages.Dev.RobloxJest)
+local Packages = script.Parent.Parent.Parent
+local JestGlobals = require(Packages.Dev.JestGlobals)
+local beforeEach = JestGlobals.beforeEach
+local jestExpect = JestGlobals.expect
+local it = JestGlobals.it
+local jest = JestGlobals.jest
 
-	local scheduleCallback
-	local ImmediatePriority
-	local UserBlockingPriority
-	local NormalPriority
+local scheduleCallback
+local ImmediatePriority
+local UserBlockingPriority
+local NormalPriority
 
-	beforeEach(function()
-		RobloxJest.resetModules()
-		RobloxJest.useFakeTimers()
-		local Scheduler = require(script.Parent.Parent.Scheduler)()
+beforeEach(function()
+	jest.resetModules()
+	jest.useFakeTimers()
+	local Scheduler = require(script.Parent.Parent.Scheduler)()
 
-		scheduleCallback = Scheduler.unstable_scheduleCallback
-		ImmediatePriority = Scheduler.unstable_ImmediatePriority
-		UserBlockingPriority = Scheduler.unstable_UserBlockingPriority
-		NormalPriority = Scheduler.unstable_NormalPriority
+	scheduleCallback = Scheduler.unstable_scheduleCallback
+	ImmediatePriority = Scheduler.unstable_ImmediatePriority
+	UserBlockingPriority = Scheduler.unstable_UserBlockingPriority
+	NormalPriority = Scheduler.unstable_NormalPriority
+end)
+
+it("runAllTimers flushes all scheduled callbacks", function()
+	local log = {}
+	scheduleCallback(NormalPriority, function()
+		table.insert(log, "A")
+	end)
+	scheduleCallback(NormalPriority, function()
+		table.insert(log, "B")
+	end)
+	scheduleCallback(NormalPriority, function()
+		table.insert(log, "C")
 	end)
 
-	it("runAllTimers flushes all scheduled callbacks", function()
-		local log = {}
-		scheduleCallback(NormalPriority, function()
-			table.insert(log, "A")
-		end)
-		scheduleCallback(NormalPriority, function()
-			table.insert(log, "B")
-		end)
-		scheduleCallback(NormalPriority, function()
-			table.insert(log, "C")
-		end)
+	jestExpect(log).toEqual({})
 
-		jestExpect(log).toEqual({})
+	jest.runAllTimers()
 
-		RobloxJest.runAllTimers()
+	jestExpect(log).toEqual({ "A", "B", "C" })
+end)
 
-		jestExpect(log).toEqual({ "A", "B", "C" })
+it("executes callbacks in order of priority", function()
+	local log = {}
+
+	scheduleCallback(NormalPriority, function()
+		table.insert(log, "A")
+	end)
+	scheduleCallback(NormalPriority, function()
+		table.insert(log, "B")
+	end)
+	scheduleCallback(UserBlockingPriority, function()
+		table.insert(log, "C")
+	end)
+	scheduleCallback(UserBlockingPriority, function()
+		table.insert(log, "D")
 	end)
 
-	it("executes callbacks in order of priority", function()
-		local log = {}
+	jestExpect(log).toEqual({})
+	jest.runAllTimers()
+	jestExpect(log).toEqual({ "C", "D", "A", "B" })
+end)
 
-		scheduleCallback(NormalPriority, function()
-			table.insert(log, "A")
-		end)
-		scheduleCallback(NormalPriority, function()
-			table.insert(log, "B")
-		end)
-		scheduleCallback(UserBlockingPriority, function()
-			table.insert(log, "C")
-		end)
-		scheduleCallback(UserBlockingPriority, function()
-			table.insert(log, "D")
-		end)
+it("handles errors", function()
+	local log = {}
 
-		jestExpect(log).toEqual({})
-		RobloxJest.runAllTimers()
-		jestExpect(log).toEqual({ "C", "D", "A", "B" })
+	scheduleCallback(ImmediatePriority, function()
+		table.insert(log, "A")
+		error("Oops A")
+	end)
+	scheduleCallback(ImmediatePriority, function()
+		table.insert(log, "B")
+	end)
+	scheduleCallback(ImmediatePriority, function()
+		table.insert(log, "C")
+		error("Oops C")
 	end)
 
-	it("handles errors", function()
-		local log = {}
+	jestExpect(jest.runAllTimers).toThrow("Oops A")
+	jestExpect(log).toEqual({ "A" })
 
-		scheduleCallback(ImmediatePriority, function()
-			table.insert(log, "A")
-			error("Oops A")
-		end)
-		scheduleCallback(ImmediatePriority, function()
-			table.insert(log, "B")
-		end)
-		scheduleCallback(ImmediatePriority, function()
-			table.insert(log, "C")
-			error("Oops C")
-		end)
+	log = {}
 
-		jestExpect(RobloxJest.runAllTimers).toThrow("Oops A")
-		jestExpect(log).toEqual({ "A" })
-
-		log = {}
-
-		-- B and C flush in a subsequent event. That way, the second error is not
-		-- swallowed.
-		jestExpect(function()
-			RobloxJest.runAllTimers()
-		end).toThrow("Oops C")
-		jestExpect(log).toEqual({ "B", "C" })
-	end)
-end
+	-- B and C flush in a subsequent event. That way, the second error is not
+	-- swallowed.
+	jestExpect(function()
+		jest.runAllTimers()
+	end).toThrow("Oops C")
+	jestExpect(log).toEqual({ "B", "C" })
+end)

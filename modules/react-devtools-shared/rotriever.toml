@@ -17,7 +17,6 @@ ReactDebugTools = { path = "../react-debug-tools" }
 
 [dev_dependencies]
 JestGlobals ={ workspace = true }
-RobloxJest = { path = "../roblox-jest" }
 Scheduler = { path = "../scheduler" }
 Promise = { workspace = true }
 ReactTestRenderer = { path = "../react-test-renderer" }

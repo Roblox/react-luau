@@ -1,7 +1,7 @@
 -- ROBLOX upstream https://github.com/facebook/react/blob/v17.0.1/scripts/jest/matchers/interactionTracingMatchers.js
-local Packages = script.Parent.Parent.Parent
-local JestDiff = require(Packages.JestDiff)
-local LuauPolyfill = require(Packages.LuauPolyfill)
+local Packages = script.Parent.Parent.Parent.TestRunner
+local JestDiff = require(Packages.Dev.JestDiff)
+local LuauPolyfill = require(Packages.Dev.LuauPolyfill)
 local Object = LuauPolyfill.Object
 -- ROBLOX deviation: hoist and pre-declare functions
 local toContainNoInteractions, toHaveBeenLastNotifiedOfWork, toHaveBeenLastNotifiedOfInteraction, toMatchInteraction, toMatchInteractions

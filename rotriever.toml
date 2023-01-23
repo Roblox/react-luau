@@ -12,6 +12,7 @@ authors = [
 ]
 
 [workspace.dependencies]
-Promise = "github.com/roblox/roblox-lua-promise@3"
-JestGlobals = "github.com/roblox/jest-roblox@2.4.1"
+Promise = "github.com/roblox/roblox-lua-promise@~3.3.0"
+Jest = "github.com/roblox/jest-roblox@3"
+JestGlobals = "github.com/roblox/jest-roblox@3"
 LuauPolyfill = "github.com/roblox/luau-polyfill@1"

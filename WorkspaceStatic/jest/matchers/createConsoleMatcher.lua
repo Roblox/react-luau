@@ -1,6 +1,6 @@
 -- ROBLOX upstream: https://github.com/facebook/react/blob/6d50a9d090a2a672fc3dea5ce77a3a05332a6caa/fixtures/legacy-jsx-runtimes/setupTests.js
-local Packages = script.Parent.Parent.Parent
-local JestDiff = require(Packages.JestDiff)
+local Packages = script.Parent.Parent.Parent.TestRunner
+local JestDiff = require(Packages.Dev.JestDiff)
 
 local function shouldIgnoreConsoleError(format, args)
 	-- deviation: instead of checking if `process.env.NODE_ENV ~= "production"`
@@ -66,7 +66,7 @@ end
 
 return function(consoleMethod, matcherName)
 	return function(_matcherContext, callback, expectedMessages, options, ...)
-		local LuauPolyfill = require(Packages.LuauPolyfill)
+		local LuauPolyfill = require(Packages.Dev.LuauPolyfill)
 		local Array = LuauPolyfill.Array
 		local console = LuauPolyfill.console
 

@@ -16,7 +16,6 @@ React = { path = "../react" }
 [dev_dependencies]
 JestGlobals ={ workspace = true }
 JestReact = { path = "../jest-react" }
-RobloxJest = { path = "../roblox-jest" }
 ReactCache = { path = "../react-cache" }
 ReactNoopRenderer = { path = "../react-noop-renderer" }
 ReactTestRenderer = { path = "../react-test-renderer" }

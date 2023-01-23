@@ -9,61 +9,63 @@
 --  */
 
 local Packages = script.Parent.Parent.Parent
-local RobloxJest = require(Packages.Dev.RobloxJest)
+local JestGlobals = require(Packages.Dev.JestGlobals)
+local beforeEach = JestGlobals.beforeEach
+local describe = JestGlobals.describe
+local it = JestGlobals.it
+local jest = JestGlobals.jest
 
-return function()
-	describe("Tracing", function()
-		local JestGlobals = require(Packages.Dev.JestGlobals)
-		local jestExpect = JestGlobals.expect
+describe("Tracing", function()
+	local JestGlobals = require(Packages.Dev.JestGlobals)
+	local jestExpect = JestGlobals.expect
 
-		local SchedulerTracing
+	local SchedulerTracing
 
-		beforeEach(function()
-			RobloxJest.resetModules()
+	beforeEach(function()
+		jest.resetModules()
 
-			SchedulerTracing = require(Packages.Scheduler).tracing
-		end)
-
-		it("should return the value of a traced function", function()
-			jestExpect(SchedulerTracing.unstable_trace("arbitrary", 0, function()
-				return 123
-			end)).toBe(123)
-		end)
-
-		it("should return the value of a wrapped function", function()
-			local wrapped
-			SchedulerTracing.unstable_trace("arbitrary", 0, function()
-				wrapped = SchedulerTracing.unstable_wrap(function()
-					return 123
-				end)
-			end)
-			jestExpect(wrapped()).toBe(123)
-		end)
-
-		it("should execute traced callbacks", function()
-			local done = false
-
-			SchedulerTracing.unstable_trace("some event", 0, function()
-				done = true
-			end)
-
-			jestExpect(done).toBe(true)
-		end)
-
-		it("should return the value of a clear function", function()
-			jestExpect(SchedulerTracing.unstable_clear(function()
-				return 123
-			end)).toBe(123)
-		end)
-
-		it("should execute wrapped callbacks", function()
-			local done = false
-			local wrappedCallback = SchedulerTracing.unstable_wrap(function()
-				done = true
-			end)
-
-			wrappedCallback()
-			jestExpect(done).toBe(true)
-		end)
+		SchedulerTracing = require(Packages.Scheduler).tracing
 	end)
-end
+
+	it("should return the value of a traced function", function()
+		jestExpect(SchedulerTracing.unstable_trace("arbitrary", 0, function()
+			return 123
+		end)).toBe(123)
+	end)
+
+	it("should return the value of a wrapped function", function()
+		local wrapped
+		SchedulerTracing.unstable_trace("arbitrary", 0, function()
+			wrapped = SchedulerTracing.unstable_wrap(function()
+				return 123
+			end)
+		end)
+		jestExpect(wrapped()).toBe(123)
+	end)
+
+	it("should execute traced callbacks", function()
+		local done = false
+
+		SchedulerTracing.unstable_trace("some event", 0, function()
+			done = true
+		end)
+
+		jestExpect(done).toBe(true)
+	end)
+
+	it("should return the value of a clear function", function()
+		jestExpect(SchedulerTracing.unstable_clear(function()
+			return 123
+		end)).toBe(123)
+	end)
+
+	it("should execute wrapped callbacks", function()
+		local done = false
+		local wrappedCallback = SchedulerTracing.unstable_wrap(function()
+			done = true
+		end)
+
+		wrappedCallback()
+		jestExpect(done).toBe(true)
+	end)
+end)

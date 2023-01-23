@@ -8,23 +8,24 @@
  * @flow
  ]]
 
-return function()
-	local Packages = script.Parent.Parent.Parent
-	local JestGlobals = require(Packages.Dev.JestGlobals)
-	local jestExpect = JestGlobals.expect
+local Packages = script.Parent.Parent.Parent
+local JestGlobals = require(Packages.Dev.JestGlobals)
+local jestExpect = JestGlobals.expect
+local describe = JestGlobals.describe
+local it = JestGlobals.it
+local beforeEach = JestGlobals.beforeEach
 
-	describe("profiling utils", function()
-		local utils
-		beforeEach(function()
-			utils = require(script.Parent.Parent.devtools.views.Profiler.utils)
-		end)
-		it("should throw if importing older/unsupported data", function()
-			jestExpect(function()
-				return utils.prepareProfilingDataFrontendFromExport({
-					version = 0,
-					dataForRoots = {},
-				})
-			end).toThrow('Unsupported profiler export version "0"')
-		end)
+describe("profiling utils", function()
+	local utils
+	beforeEach(function()
+		utils = require(script.Parent.Parent.devtools.views.Profiler.utils)
 	end)
-end
+	it("should throw if importing older/unsupported data", function()
+		jestExpect(function()
+			return utils.prepareProfilingDataFrontendFromExport({
+				version = 0,
+				dataForRoots = {},
+			})
+		end).toThrow('Unsupported profiler export version "0"')
+	end)
+end)

@@ -1,89 +1,90 @@
-return function()
-	local Reconciler = script.Parent.Parent
-	local Packages = script.Parent.Parent.Parent
-	local jestExpect = require(Packages.Dev.JestGlobals).expect
-	local RobloxJest = require(Packages.Dev.RobloxJest)
+local Reconciler = script.Parent.Parent
+local Packages = script.Parent.Parent.Parent
+local JestGlobals = require(Packages.Dev.JestGlobals)
+local jestExpect = JestGlobals.expect
+local jest = JestGlobals.jest
+local beforeEach = JestGlobals.beforeEach
+local describe = JestGlobals.describe
+local it = JestGlobals.it
 
-	local ReactFiberSuspenseComponent
+local ReactFiberSuspenseComponent
 
-	describe("ReactFiberSuspenseComponent", function()
+describe("ReactFiberSuspenseComponent", function()
+	beforeEach(function()
+		jest.resetModules()
+
+		ReactFiberSuspenseComponent =
+			require(Reconciler["ReactFiberSuspenseComponent.new"])
+	end)
+
+	describe("shouldCaptureSuspense", function()
+		local shouldCaptureSuspense
+		local fiber
+
 		beforeEach(function()
-			RobloxJest.resetModules()
-
-			ReactFiberSuspenseComponent =
-				require(Reconciler["ReactFiberSuspenseComponent.new"])
+			shouldCaptureSuspense = ReactFiberSuspenseComponent.shouldCaptureSuspense
+			fiber = {
+				memoizedState = nil,
+				memoizedProps = {},
+			}
 		end)
 
-		describe("shouldCaptureSuspense", function()
-			local shouldCaptureSuspense
-			local fiber
+		local function generateTest(expected, hasInvisibleParent)
+			if hasInvisibleParent == nil then
+				generateTest(expected, true)
+				generateTest(expected, false)
+			else
+				local testName = string.format(
+					"is %s if it %s invisible parent",
+					tostring(expected),
+					hasInvisibleParent and "does not have" or "has"
+				)
+				it(testName, function()
+					jestExpect(shouldCaptureSuspense(fiber, hasInvisibleParent)).toBe(
+						expected
+					)
+				end)
+			end
+		end
 
+		describe("with a memoizedState", function()
 			beforeEach(function()
-				shouldCaptureSuspense = ReactFiberSuspenseComponent.shouldCaptureSuspense
-				fiber = {
-					memoizedState = nil,
-					memoizedProps = {},
-				}
+				fiber.memoizedState = { dehydrated = nil }
+			end)
+			describe("memoizedState.dehydrated is not null", function()
+				beforeEach(function()
+					fiber.memoizedState.dehydrated = {}
+				end)
+				generateTest(true)
 			end)
 
-			local function generateTest(expected, hasInvisibleParent, it)
-				it = it or getfenv(2).it
-				if hasInvisibleParent == nil then
-					generateTest(expected, true, it)
-					generateTest(expected, false, it)
-				else
-					local testName = string.format(
-						"is %s if it %s invisible parent",
-						tostring(expected),
-						hasInvisibleParent and "does not have" or "has"
-					)
-					it(testName, function()
-						jestExpect(shouldCaptureSuspense(fiber, hasInvisibleParent)).toBe(
-							expected
-						)
-					end)
-				end
-			end
+			describe("memoizedState.dehydrated is null", function()
+				generateTest(false)
+			end)
+		end)
 
-			describe("with a memoizedState", function()
+		describe("with no memoizedState", function()
+			describe("without fallback prop", function()
+				generateTest(false)
+			end)
+
+			describe("with fallback prop", function()
 				beforeEach(function()
-					fiber.memoizedState = { dehydrated = nil }
+					fiber.memoizedProps.fallback = {}
 				end)
-				describe("memoizedState.dehydrated is not null", function()
-					beforeEach(function()
-						fiber.memoizedState.dehydrated = {}
-					end)
+
+				describe("without flag unstable_avoidThisFallback", function()
 					generateTest(true)
 				end)
 
-				describe("memoizedState.dehydrated is null", function()
-					generateTest(false)
-				end)
-			end)
-
-			describe("with no memoizedState", function()
-				describe("without fallback prop", function()
-					generateTest(false)
-				end)
-
-				describe("with fallback prop", function()
+				describe("with flag unstable_avoidThisFallback", function()
 					beforeEach(function()
-						fiber.memoizedProps.fallback = {}
+						fiber.memoizedProps.unstable_avoidThisFallback = true
 					end)
-
-					describe("without flag unstable_avoidThisFallback", function()
-						generateTest(true)
-					end)
-
-					describe("with flag unstable_avoidThisFallback", function()
-						beforeEach(function()
-							fiber.memoizedProps.unstable_avoidThisFallback = true
-						end)
-						generateTest(false, true)
-						generateTest(true, false)
-					end)
+					generateTest(false, true)
+					generateTest(true, false)
 				end)
 			end)
 		end)
 	end)
-end
+end)

@@ -1,0 +1,8 @@
+{
+    "name": "TestRunner",
+    "tree": {
+        "Src": {
+            "$path": "src"
+        }
+    }
+}

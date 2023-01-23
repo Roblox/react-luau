@@ -17,40 +17,39 @@ local Scheduler
 
 -- This is a new feature in Fiber so I put it in its own test file. It could
 -- probably move to one of the other test files once it is official.
-return function()
-	local RobloxJest = require(Packages.Dev.RobloxJest)
-	local jestExpect = require(Packages.Dev.JestGlobals).expect
+local JestGlobals = require(Packages.Dev.JestGlobals)
+local jestExpect = JestGlobals.expect
+local beforeEach = JestGlobals.beforeEach
+local it = JestGlobals.it
+local jest = JestGlobals.jest
+local describe = JestGlobals.describe
 
-	describe("ReactTopLevelText", function()
-		beforeEach(function()
-			RobloxJest.resetModules()
+describe("ReactTopLevelText", function()
+	beforeEach(function()
+		jest.resetModules()
 
-			React = require(Packages.React)
-			ReactNoop = require(Packages.Dev.ReactNoopRenderer)
-			Scheduler = require(Packages.Scheduler)
-		end)
-
-		it("should render a component returning strings directly from render", function()
-			local Text = function(props)
-				return props.value
-			end
-			ReactNoop.render(React.createElement(Text, { value = "foo" }))
-			jestExpect(Scheduler).toFlushWithoutYielding()
-
-			jestExpect(ReactNoop).toMatchRenderedOutput("foo")
-		end)
-
-		it(
-			"should render a component returning numbers directly from renderß",
-			function()
-				local Text = function(props)
-					return props.value
-				end
-				ReactNoop.render(React.createElement(Text, { value = 10 }))
-				jestExpect(Scheduler).toFlushWithoutYielding()
-
-				jestExpect(ReactNoop).toMatchRenderedOutput("10")
-			end
-		)
+		React = require(Packages.React)
+		ReactNoop = require(Packages.Dev.ReactNoopRenderer)
+		Scheduler = require(Packages.Scheduler)
 	end)
-end
+
+	it("should render a component returning strings directly from render", function()
+		local Text = function(props)
+			return props.value
+		end
+		ReactNoop.render(React.createElement(Text, { value = "foo" }))
+		jestExpect(Scheduler).toFlushWithoutYielding()
+
+		jestExpect(ReactNoop).toMatchRenderedOutput("foo")
+	end)
+
+	it("should render a component returning numbers directly from renderß", function()
+		local Text = function(props)
+			return props.value
+		end
+		ReactNoop.render(React.createElement(Text, { value = 10 }))
+		jestExpect(Scheduler).toFlushWithoutYielding()
+
+		jestExpect(ReactNoop).toMatchRenderedOutput("10")
+	end)
+end)

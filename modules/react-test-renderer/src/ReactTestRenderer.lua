@@ -9,7 +9,6 @@
 --  */
 
 local Packages = script.Parent.Parent
--- local jest = require(Packages.RobloxJest)
 local Scheduler = require(Packages.Scheduler)
 local console = require(Packages.Shared).console
 local LuauPolyfill = require(Packages.LuauPolyfill)

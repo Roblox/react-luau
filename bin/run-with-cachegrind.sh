@@ -45,7 +45,7 @@ valgrind \
     --D1=32768,8,64 \
     --LL=52428800,25,64 \
     "$1" run \
-        --load.model model.rbxmx \
+        --load.model model.rbxm \
         --run "$2" \
         --headlessRenderer 1 \
         --lua.globals minSamples=$ITERATION_COUNT \

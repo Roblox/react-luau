@@ -9,7 +9,6 @@ local HttpService = game:GetService("HttpService")
 ]]
 
 local Packages = script.Parent.Parent.Parent
-local RobloxJest = require(Packages.Dev.RobloxJest)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jest = JestGlobals.jest
 local jestExpect = JestGlobals.expect
@@ -46,10 +45,10 @@ exports.act = function(callback: () -> ()): ()
 		-- end)
 	end)
 
-	while RobloxJest.getTimerCount() > 0 do
+	while jest.getTimerCount() > 0 do
 		actDOM(function()
 			-- actTestRenderer(function()
-			RobloxJest.runAllTimers()
+			jest.runAllTimers()
 			-- end)
 		end)
 	end
@@ -89,7 +88,7 @@ end
 exports.beforeEachProfiling = function(): ()
 	-- ROBLOX deviation BEGIN: we handle this differently until jest-roblox 27.5 is available
 	-- Mock React's timing information so that test runs are predictable.
-	RobloxJest.mock(Packages.Dev.Scheduler, function()
+	jest.mock(Packages.Dev.Scheduler, function()
 		return require(Packages.Parent.Scheduler.Scheduler.unstable_mock)
 	end)
 	-- DevTools itself uses performance.now() to offset commit times
@@ -98,7 +97,7 @@ exports.beforeEachProfiling = function(): ()
 	-- ROBLOX TODO: Can you actually spy on os.clock?
 	-- ROBLOX deviation BEGIN: We need to do slightly more targeted mocking until
 	local Scheduler = require(Packages.Dev.Scheduler)
-	RobloxJest.mockOsClock(Scheduler.unstable_now)
+	jest.mockOsClock(Scheduler.unstable_now)
 	-- jest.spyOn(os, "clock").mockImplementation(
 	-- 	jest.requireActual("scheduler/unstable_mock").unstable_now
 	-- )

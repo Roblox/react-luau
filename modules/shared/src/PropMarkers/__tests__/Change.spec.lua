@@ -12,24 +12,25 @@
 	* See the License for the specific language governing permissions and
 	* limitations under the License.
 ]]
-return function()
-	local Packages = script.Parent.Parent.Parent.Parent
-	local jestExpect = require(Packages.Dev.JestGlobals).expect
 
-	local Type = require(script.Parent.Parent.Parent["Type.roblox"])
-	local Change = require(script.Parent.Parent.Change)
+local Packages = script.Parent.Parent.Parent.Parent
+local JestGlobals = require(Packages.Dev.JestGlobals)
+local jestExpect = JestGlobals.expect
+local it = JestGlobals.it
 
-	it("should yield change listener objects when indexed", function()
-		jestExpect(Type.of(Change.Text)).toBe(Type.HostChangeEvent)
-		jestExpect(Type.of(Change.Selected)).toBe(Type.HostChangeEvent)
-	end)
+local Type = require(script.Parent.Parent.Parent["Type.roblox"])
+local Change = require(script.Parent.Parent.Change)
 
-	it("should yield the same object when indexed again", function()
-		local a = Change.Text
-		local b = Change.Text
-		local c = Change.Selected
+it("should yield change listener objects when indexed", function()
+	jestExpect(Type.of(Change.Text)).toBe(Type.HostChangeEvent)
+	jestExpect(Type.of(Change.Selected)).toBe(Type.HostChangeEvent)
+end)
 
-		jestExpect(a).toBe(b)
-		jestExpect(a).never.toBe(c)
-	end)
-end
+it("should yield the same object when indexed again", function()
+	local a = Change.Text
+	local b = Change.Text
+	local c = Change.Selected
+
+	jestExpect(a).toBe(b)
+	jestExpect(a).never.toBe(c)
+end)

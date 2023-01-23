@@ -58,7 +58,6 @@ Projects not in the upstream React repo:
 | Project | Description | Notes |
 | - | - | - |
 | 📌`react-shallow-renderer` | Shallow renderer used in tests for some older React features. Re-exported alongside `react-test-renderer`, source of truth [here](https://github.com/NMinhNguyen/react-shallow-renderer). |  ✔️ Ported - with tests that are helping us exercise functionality in the `react` package |
-| `roblox-jest` | Custom matchers and timer logic for Jest-Roblox| A rough approximation of what will eventually be provided in the [`jest` alignment effort](https://github.com/Roblox/jest-roblox) |
 | `react-roblox` | Based on react-dom renderer, shares much of its code and public interface.| Also exports [`act()`](https://github.com/threepointone/react-act-examples/blob/master/sync.md) functionality, which is *required* for testing components that are asynchronously rendered (the default). |
 | `roact-compat` | A comaptibility layer that emulates some deprecated behaviors of legacy Roact | Meant to ease initial adoption of Roact 17, using React APIs directly is encouraged and necessary for newer functonality (eg Hooks) |
 
