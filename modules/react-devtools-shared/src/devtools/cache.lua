@@ -132,7 +132,10 @@ local function accessResult<Input, Key, Value>(
 				resolvedResult.status = Resolved
 				resolvedResult.value = value
 			end
-		end, function(error_)
+			-- ROBLOX deviation START: explicit return type
+			-- end, function(error_)
+		end, function(error_): ()
+			-- ROBLOX deviation END
 			if newResult.status == Pending then
 				local rejectedResult: RejectedResult = newResult :: any
 
@@ -143,7 +146,10 @@ local function accessResult<Input, Key, Value>(
 
 		newResult = {
 			status = Pending,
-			value = thenable,
+			-- ROBLOX deviation START: needs cast
+			-- value = thenable,
+			value = thenable :: any,
+			-- ROBLOX deviation END
 		}
 		entriesForResource:set(key, newResult)
 		return newResult

@@ -242,16 +242,16 @@ export type Wakeable = {
 export type _Thenable<R> = {
 	andThen: <U>(
 		self: _Thenable<R>,
-		onFulfill: (R) -> () | U,
-		onReject: (error: any) -> () | U
+		onFulfill: (R) -> ...U,
+		onReject: (error: any) -> ...U
 	) -> (),
 }
 
 export type Thenable<R> = {
 	andThen: <U>(
 		self: Thenable<R>,
-		onFulfill: (R) -> () | _Thenable<U> | U,
-		onReject: (error: any) -> () | _Thenable<U> | U
+		onFulfill: (R) -> ...(_Thenable<U> | U),
+		onReject: (error: any) -> ...(_Thenable<U> | U)
 		-- ROBLOX FIXME Luau: need union type packs to parse () | Thenable<U>: CLI-49836
 	) -> nil | _Thenable<U>,
 }
