@@ -1,50 +1,119 @@
 --!strict
--- ROBLOX upstream: https://github.com/facebook/react/blob/60ba723bf78b9a28f60dce854e88e206fab52301/packages/react-is/src/ReactIs.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.2/packages/react-is/src/ReactIs.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  *
- *
+ * @flow
  ]]
-
 local Packages = script.Parent
--- ROBLOX: use patched console from shared
+-- ROBLOX deviation START: not used
+-- local LuauPolyfill = require(Packages.LuauPolyfill)
+-- local Boolean = LuauPolyfill.Boolean
+-- ROBLOX deviation END
+-- ROBLOX deviation START: use patched console from shared
+-- local console = LuauPolyfill.console
 local console = require(Packages.Shared).console
-local ReactSymbols = require(Packages.Shared).ReactSymbols
-local isValidElementType = require(Packages.Shared).isValidElementType
-
+-- ROBLOX deviation END
 local exports = {}
-
-exports.typeOf = function(object: any)
+-- ROBLOX deviation START: fix import
+-- local sharedReactSymbolsModule = require(Packages.shared.ReactSymbols)
+local sharedReactSymbolsModule = require(Packages.Shared).ReactSymbols
+-- ROBLOX deviation END
+local REACT_CONTEXT_TYPE = sharedReactSymbolsModule.REACT_CONTEXT_TYPE
+local REACT_ELEMENT_TYPE = sharedReactSymbolsModule.REACT_ELEMENT_TYPE
+local REACT_FORWARD_REF_TYPE = sharedReactSymbolsModule.REACT_FORWARD_REF_TYPE
+local REACT_FRAGMENT_TYPE = sharedReactSymbolsModule.REACT_FRAGMENT_TYPE
+local REACT_LAZY_TYPE = sharedReactSymbolsModule.REACT_LAZY_TYPE
+local REACT_MEMO_TYPE = sharedReactSymbolsModule.REACT_MEMO_TYPE
+local REACT_PORTAL_TYPE = sharedReactSymbolsModule.REACT_PORTAL_TYPE
+local REACT_PROFILER_TYPE = sharedReactSymbolsModule.REACT_PROFILER_TYPE
+local REACT_PROVIDER_TYPE = sharedReactSymbolsModule.REACT_PROVIDER_TYPE
+local REACT_STRICT_MODE_TYPE = sharedReactSymbolsModule.REACT_STRICT_MODE_TYPE
+local REACT_SUSPENSE_TYPE = sharedReactSymbolsModule.REACT_SUSPENSE_TYPE
+local REACT_SUSPENSE_LIST_TYPE = sharedReactSymbolsModule.REACT_SUSPENSE_LIST_TYPE
+-- ROBLOX deviation START: fix import
+-- local isValidElementType = require(Packages.shared.isValidElementType).default
+local isValidElementType = require(Packages.Shared).isValidElementType
+-- ROBLOX deviation END
+-- ROBLOX deviation START: additional imports
+local REACT_BINDING_TYPE = sharedReactSymbolsModule.REACT_BINDING_TYPE
+-- ROBLOX deviation END
+local function typeOf(object: any)
 	if typeof(object) == "table" and object ~= nil then
-		local __typeof = object["$$typeof"]
-
-		if __typeof == ReactSymbols.REACT_ELEMENT_TYPE then
+		local __typeof --[[ ROBLOX CHECK: replaced unhandled characters in identifier. Original identifier: $$typeof ]] =
+			object["$$typeof"]
+		-- ROBLOX deviation START: simplified switch statement conversion, adds Binding type check
+		-- repeat --[[ ROBLOX comment: switch statement conversion ]]
+		-- 	local entered_, break_ = false, false
+		-- 	local condition_ = __typeof --[[ ROBLOX CHECK: replaced unhandled characters in identifier. Original identifier: $$typeof ]]
+		-- 	for _, v in ipairs({ REACT_ELEMENT_TYPE, REACT_PORTAL_TYPE }) do
+		-- 		if condition_ == v then
+		-- 			if v == REACT_ELEMENT_TYPE then
+		-- 				entered_ = true
+		-- 				local type_ = object.type
+		-- 				local condition_ = type_
+		-- 				if
+		-- 					condition_ == REACT_FRAGMENT_TYPE
+		-- 					or condition_ == REACT_PROFILER_TYPE
+		-- 					or condition_ == REACT_STRICT_MODE_TYPE
+		-- 					or condition_ == REACT_SUSPENSE_TYPE
+		-- 					or condition_ == REACT_SUSPENSE_LIST_TYPE
+		-- 				then
+		-- 					return type_
+		-- 				else
+		-- 					local __typeofType --[[ ROBLOX CHECK: replaced unhandled characters in identifier. Original identifier: $$typeofType ]] = if Boolean.toJSBoolean(
+		-- 							type_
+		-- 						)
+		-- 						then type_["$$typeof"]
+		-- 						else type_
+		-- 					local condition_ = __typeofType --[[ ROBLOX CHECK: replaced unhandled characters in identifier. Original identifier: $$typeofType ]]
+		-- 					if
+		-- 						condition_ == REACT_CONTEXT_TYPE
+		-- 						or condition_ == REACT_FORWARD_REF_TYPE
+		-- 						or condition_ == REACT_LAZY_TYPE
+		-- 						or condition_ == REACT_MEMO_TYPE
+		-- 						or condition_ == REACT_PROVIDER_TYPE
+		-- 					then
+		-- 						return __typeofType --[[ ROBLOX CHECK: replaced unhandled characters in identifier. Original identifier: $$typeofType ]]
+		-- 					else
+		-- 						return __typeof --[[ ROBLOX CHECK: replaced unhandled characters in identifier. Original identifier: $$typeof ]]
+		-- 					end
+		-- 				end
+		-- 			end
+		-- 			if v == REACT_PORTAL_TYPE or entered_ then
+		-- 				entered_ = true
+		-- 				return __typeof --[[ ROBLOX CHECK: replaced unhandled characters in identifier. Original identifier: $$typeof ]]
+		-- 			end
+		-- 		end
+		-- 	end
+		-- until true
+		if __typeof == REACT_ELEMENT_TYPE then
 			local __type = object.type
 
 			if
-				__type == ReactSymbols.REACT_FRAGMENT_TYPE
-				or __type == ReactSymbols.REACT_PROFILER_TYPE
-				or __type == ReactSymbols.REACT_STRICT_MODE_TYPE
-				or __type == ReactSymbols.REACT_SUSPENSE_TYPE
-				or __type == ReactSymbols.REACT_SUSPENSE_LIST_TYPE
+				__type == REACT_FRAGMENT_TYPE
+				or __type == REACT_PROFILER_TYPE
+				or __type == REACT_STRICT_MODE_TYPE
+				or __type == REACT_SUSPENSE_TYPE
+				or __type == REACT_SUSPENSE_LIST_TYPE
 			then
 				return __type
 			else
-				-- deviation: We need to check that __type is a table before we
+				-- ROBLOX note: We need to check that __type is a table before we
 				-- index into it, or Luau will throw errors
 				local __typeofType = __type
 					and typeof(__type) == "table"
 					and __type["$$typeof"]
 
 				if
-					__typeofType == ReactSymbols.REACT_CONTEXT_TYPE
-					or __typeofType == ReactSymbols.REACT_FORWARD_REF_TYPE
-					or __typeofType == ReactSymbols.REACT_LAZY_TYPE
-					or __typeofType == ReactSymbols.REACT_MEMO_TYPE
-					or __typeofType == ReactSymbols.REACT_PROVIDER_TYPE
+					__typeofType == REACT_CONTEXT_TYPE
+					or __typeofType == REACT_FORWARD_REF_TYPE
+					or __typeofType == REACT_LAZY_TYPE
+					or __typeofType == REACT_MEMO_TYPE
+					or __typeofType == REACT_PROVIDER_TYPE
 				then
 					return __typeofType
 				else
@@ -52,103 +121,128 @@ exports.typeOf = function(object: any)
 				end
 			end
 		elseif
-			__typeof == ReactSymbols.REACT_PORTAL_TYPE
-			-- ROBLOX deviation: Bindings are a feature migrated from Roact
-			or __typeof == ReactSymbols.REACT_BINDING_TYPE
+			__typeof == REACT_PORTAL_TYPE
+			-- ROBLOX note: Bindings are a feature migrated from Roact
+			or __typeof == REACT_BINDING_TYPE
 		then
 			return __typeof
 		end
+		-- ROBLOX deviation END
 	end
-
 	return nil
 end
-
-exports.ContextConsumer = ReactSymbols.REACT_CONTEXT_TYPE
-exports.ContextProvider = ReactSymbols.REACT_PROVIDER_TYPE
-exports.Element = ReactSymbols.REACT_ELEMENT_TYPE
-exports.ForwardRef = ReactSymbols.REACT_FORWARD_REF_TYPE
-exports.Fragment = ReactSymbols.REACT_FRAGMENT_TYPE
-exports.Lazy = ReactSymbols.REACT_LAZY_TYPE
-exports.Memo = ReactSymbols.REACT_MEMO_TYPE
-exports.Portal = ReactSymbols.REACT_PORTAL_TYPE
-exports.Profiler = ReactSymbols.REACT_PROFILER_TYPE
-exports.StrictMode = ReactSymbols.REACT_STRICT_MODE_TYPE
-exports.Suspense = ReactSymbols.REACT_SUSPENSE_TYPE
-exports.Binding = ReactSymbols.REACT_BINDING_TYPE
+exports.typeOf = typeOf
+local ContextConsumer = REACT_CONTEXT_TYPE
+exports.ContextConsumer = ContextConsumer
+local ContextProvider = REACT_PROVIDER_TYPE
+exports.ContextProvider = ContextProvider
+local Element = REACT_ELEMENT_TYPE
+exports.Element = Element
+local ForwardRef = REACT_FORWARD_REF_TYPE
+exports.ForwardRef = ForwardRef
+local Fragment = REACT_FRAGMENT_TYPE
+exports.Fragment = Fragment
+local Lazy = REACT_LAZY_TYPE
+exports.Lazy = Lazy
+local Memo = REACT_MEMO_TYPE
+exports.Memo = Memo
+local Portal = REACT_PORTAL_TYPE
+exports.Portal = Portal
+local Profiler = REACT_PROFILER_TYPE
+exports.Profiler = Profiler
+local StrictMode = REACT_STRICT_MODE_TYPE
+exports.StrictMode = StrictMode
+local Suspense = REACT_SUSPENSE_TYPE
+exports.Suspense = Suspense
+-- ROBLOX deviation START: export Roblox Only type
+exports.Binding = sharedReactSymbolsModule.REACT_BINDING_TYPE
+-- ROBLOX deviation END
 exports.isValidElementType = isValidElementType
 local hasWarnedAboutDeprecatedIsAsyncMode = false
 local hasWarnedAboutDeprecatedIsConcurrentMode = false -- AsyncMode should be deprecated
-exports.isAsyncMode = function(object: any)
+local function isAsyncMode(object: any)
+	-- ROBLOX deviation START: remove toJSBoolean, use _G.__DEV__
+	-- if Boolean.toJSBoolean(__DEV__) then
+	-- 	if not Boolean.toJSBoolean(hasWarnedAboutDeprecatedIsAsyncMode) then
 	if _G.__DEV__ then
 		if not hasWarnedAboutDeprecatedIsAsyncMode then
-			hasWarnedAboutDeprecatedIsAsyncMode = true
-			-- Using console['warn'] to evade Babel and ESLint
-
+			-- ROBLOX deviation END
+			hasWarnedAboutDeprecatedIsAsyncMode = true -- Using console['warn'] to evade Babel and ESLint
 			console["warn"](
 				"The ReactIs.isAsyncMode() alias has been deprecated, "
 					.. "and will be removed in React 18+."
 			)
 		end
 	end
-
 	return false
 end
-
-exports.isConcurrentMode = function(object: any)
+exports.isAsyncMode = isAsyncMode
+local function isConcurrentMode(object: any)
+	-- ROBLOX deviation START: remove toJSBoolean, use _G.__DEV__
+	-- if Boolean.toJSBoolean(__DEV__) then
+	-- 	if not Boolean.toJSBoolean(hasWarnedAboutDeprecatedIsConcurrentMode) then
 	if _G.__DEV__ then
 		if not hasWarnedAboutDeprecatedIsConcurrentMode then
-			hasWarnedAboutDeprecatedIsConcurrentMode = true
-			-- Using console['warn'] to evade Babel and ESLint
-
+			-- ROBLOX deviation END
+			hasWarnedAboutDeprecatedIsConcurrentMode = true -- Using console['warn'] to evade Babel and ESLint
 			console["warn"](
 				"The ReactIs.isConcurrentMode() alias has been deprecated, "
 					.. "and will be removed in React 18+."
 			)
 		end
 	end
-
 	return false
 end
-
-exports.isContextConsumer = function(object: any)
-	return exports.typeOf(object) == ReactSymbols.REACT_CONTEXT_TYPE
+exports.isConcurrentMode = isConcurrentMode
+local function isContextConsumer(object: any)
+	return typeOf(object) == REACT_CONTEXT_TYPE
 end
-exports.isContextProvider = function(object: any)
-	return exports.typeOf(object) == ReactSymbols.REACT_PROVIDER_TYPE
+exports.isContextConsumer = isContextConsumer
+local function isContextProvider(object: any)
+	return typeOf(object) == REACT_PROVIDER_TYPE
 end
-exports.isElement = function(object: any)
-	return (
-		(typeof(object) == "table" and object ~= nil)
-		and object["$$typeof"] == ReactSymbols.REACT_ELEMENT_TYPE
-	)
+exports.isContextProvider = isContextProvider
+local function isElement(object: any)
+	return typeof(object) == "table"
+		and object ~= nil
+		and object["$$typeof"] == REACT_ELEMENT_TYPE
 end
-exports.isForwardRef = function(object: any)
-	return exports.typeOf(object) == ReactSymbols.REACT_FORWARD_REF_TYPE
+exports.isElement = isElement
+local function isForwardRef(object: any)
+	return typeOf(object) == REACT_FORWARD_REF_TYPE
 end
-exports.isFragment = function(object: any)
-	return exports.typeOf(object) == ReactSymbols.REACT_FRAGMENT_TYPE
+exports.isForwardRef = isForwardRef
+local function isFragment(object: any)
+	return typeOf(object) == REACT_FRAGMENT_TYPE
 end
-exports.isLazy = function(object: any)
-	return exports.typeOf(object) == ReactSymbols.REACT_LAZY_TYPE
+exports.isFragment = isFragment
+local function isLazy(object: any)
+	return typeOf(object) == REACT_LAZY_TYPE
 end
-exports.isMemo = function(object: any)
-	return exports.typeOf(object) == ReactSymbols.REACT_MEMO_TYPE
+exports.isLazy = isLazy
+local function isMemo(object: any)
+	return typeOf(object) == REACT_MEMO_TYPE
 end
-exports.isPortal = function(object: any)
-	return exports.typeOf(object) == ReactSymbols.REACT_PORTAL_TYPE
+exports.isMemo = isMemo
+local function isPortal(object: any)
+	return typeOf(object) == REACT_PORTAL_TYPE
 end
-exports.isProfiler = function(object: any)
-	return exports.typeOf(object) == ReactSymbols.REACT_PROFILER_TYPE
+exports.isPortal = isPortal
+local function isProfiler(object: any)
+	return typeOf(object) == REACT_PROFILER_TYPE
 end
-exports.isStrictMode = function(object: any)
-	return exports.typeOf(object) == ReactSymbols.REACT_STRICT_MODE_TYPE
+exports.isProfiler = isProfiler
+local function isStrictMode(object: any)
+	return typeOf(object) == REACT_STRICT_MODE_TYPE
 end
-exports.isSuspense = function(object: any)
-	return exports.typeOf(object) == ReactSymbols.REACT_SUSPENSE_TYPE
+exports.isStrictMode = isStrictMode
+local function isSuspense(object: any)
+	return typeOf(object) == REACT_SUSPENSE_TYPE
 end
--- ROBLOX deviation: Bindings are a feature migrated from Roact
+exports.isSuspense = isSuspense
+-- ROBLOX deviation START: Bindings are a feature migrated from Roact
 exports.isBinding = function(object: any)
-	return exports.typeOf(object) == ReactSymbols.REACT_BINDING_TYPE
+	return typeOf(object) == REACT_BINDING_TYPE
 end
-
+-- ROBLOX deviation END
 return exports

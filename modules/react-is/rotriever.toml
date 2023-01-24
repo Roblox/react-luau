@@ -11,6 +11,7 @@ Shared = { path = "../shared" }
 
 [dev_dependencies]
 JestGlobals = { workspace = true }
+LuauPolyfill = { workspace = true }
 Promise = { workspace = true }
 React = { path = "../react" }
 ReactRoblox = { path = "../react-roblox" }
