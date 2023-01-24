@@ -10,7 +10,7 @@ find Packages/_Index -name "*.robloxrc" | xargs rm -f
 echo "Run static analysis"
 roblox-cli analyze tests.project.json
 selene --version
-selene --config selene.toml modules/
+selene --config selene.toml modules/ WorkspaceStatic/
 stylua --version
 stylua -c modules bin WorkspaceStatic
 

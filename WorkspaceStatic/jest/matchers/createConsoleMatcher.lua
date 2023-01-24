@@ -1,3 +1,4 @@
+--!nonstrict
 -- ROBLOX upstream: https://github.com/facebook/react/blob/6d50a9d090a2a672fc3dea5ce77a3a05332a6caa/fixtures/legacy-jsx-runtimes/setupTests.js
 local Packages = script.Parent.Parent.Parent.TestRunner
 local JestDiff = require(Packages.Dev.JestDiff)

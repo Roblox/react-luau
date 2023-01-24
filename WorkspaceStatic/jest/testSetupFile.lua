@@ -6,13 +6,10 @@ local Packages = script.Parent.Parent.TestRunner
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
 
-local getTestRendererJestMatchers = require(Packages.Dev.JestReact).getJestMatchers
-local getSchedulerJestMatchers = require(Packages.Dev.Scheduler).getJestMatchers
 local InteractionTracingMatchers =
 	require(script.Parent.matchers.interactionTracingMatchers)
 
-jestExpect.extend(getTestRendererJestMatchers(jestExpect))
-jestExpect.extend(getSchedulerJestMatchers(jestExpect))
+jestExpect.extend(require(script.Parent.matchers.reactTestMatchers))
 jestExpect.extend({
 	toErrorDev = require(script.Parent.matchers.toErrorDev),
 	toWarnDev = require(script.Parent.matchers.toWarnDev),

@@ -554,7 +554,6 @@ return function(hostConfig)
 	local unstable_requestPaint = requestPaint
 
 	return {
-		getJestMatchers = require(script.Parent["getJestMatchers.roblox"]),
 		unstable_ImmediatePriority = ImmediatePriority,
 		unstable_UserBlockingPriority = UserBlockingPriority,
 		unstable_NormalPriority = NormalPriority,

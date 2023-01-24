@@ -1,3 +1,4 @@
+--!nonstrict
 -- ROBLOX upstream https://github.com/facebook/react/blob/v17.0.1/scripts/jest/matchers/interactionTracingMatchers.js
 local Packages = script.Parent.Parent.Parent.TestRunner
 local JestDiff = require(Packages.Dev.JestDiff)
