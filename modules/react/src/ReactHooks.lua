@@ -65,7 +65,7 @@ end
 
 local exports = {}
 
-exports.useContext = function<T>(
+local function useContext<T>(
 	Context: ReactContext<T>,
 	unstable_observedBits: number | boolean | nil,
 	... -- ROBLOX deviation: Lua must specify ... here to capture additional args
@@ -104,14 +104,18 @@ exports.useContext = function<T>(
 	end
 	return dispatcher.useContext(Context, unstable_observedBits)
 end
+exports.useContext = useContext
 
-exports.useState =
-	function<S>(initialState: (() -> S) | S): (S, Dispatch<BasicStateAction<S>>)
-		local dispatcher = resolveDispatcher()
-		return dispatcher.useState(initialState)
-	end
+local function useState<S>(
+	initialState: (() -> S) | S,
+	...
+): (S, Dispatch<BasicStateAction<S>>)
+	local dispatcher = resolveDispatcher()
+	return dispatcher.useState(initialState, ...)
+end
+exports.useState = useState
 
-exports.useReducer = function<S, I, A>(
+local function useReducer<S, I, A>(
 	reducer: (S, A) -> S,
 	initialArg: I,
 	init: ((I) -> S)?
@@ -119,23 +123,26 @@ exports.useReducer = function<S, I, A>(
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useReducer(reducer, initialArg, init)
 end
+exports.useReducer = useReducer
 
 -- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
 -- ROBLOX TODO: reconciling this with bindings and sharing any relevant Ref types (there may be different ones depending on whether it's just a loose ref, vs one being assigned to the ref prop
-exports.useRef = function<T>(initialValue: T): { current: T | nil }
+local function useRef<T>(initialValue: T): { current: T | nil }
 	-- ROBLOX deviation END
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useRef(initialValue)
 end
+exports.useRef = useRef
 
 -- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
-exports.useBinding = function<T>(initialValue: T): (any, any)
+local function useBinding<T>(initialValue: T): (any, any)
 	-- ROBLOX deviation END
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useBinding(initialValue)
 end
+exports.useBinding = useBinding
 
-exports.useEffect = function(
+local function useEffect(
 	-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
 	create: (() -> ()) | (() -> (() -> ())),
 	deps: Array<any> | nil
@@ -143,8 +150,9 @@ exports.useEffect = function(
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useEffect(create, deps)
 end
+exports.useEffect = useEffect
 
-exports.useLayoutEffect = function(
+local function useLayoutEffect(
 	-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
 	create: (() -> ()) | (() -> (() -> ())),
 	deps: Array<any> | nil
@@ -152,18 +160,21 @@ exports.useLayoutEffect = function(
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useLayoutEffect(create, deps)
 end
+exports.useLayoutEffect = useLayoutEffect
 
-exports.useCallback = function<T>(callback: T, deps: Array<any> | nil): T
+local function useCallback<T>(callback: T, deps: Array<any> | nil): T
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useCallback(callback, deps)
 end
+exports.useCallback = useCallback
 
-exports.useMemo = function<T...>(create: () -> T..., deps: Array<any> | nil): T...
+local function useMemo<T...>(create: () -> T..., deps: Array<any> | nil): T...
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useMemo(create, deps)
 end
+exports.useMemo = useMemo
 
-exports.useImperativeHandle = function<T>(
+local function useImperativeHandle<T>(
 	ref: { current: T | nil } | ((inst: T | nil) -> any) | nil,
 	create: () -> T,
 	deps: Array<any> | nil
@@ -171,8 +182,9 @@ exports.useImperativeHandle = function<T>(
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useImperativeHandle(ref, create, deps)
 end
+exports.useImperativeHandle = useImperativeHandle
 
-exports.useDebugValue = function<T>(value: T, formatterFn: ((value: T) -> any)?): ()
+local function useDebugValue<T>(value: T, formatterFn: ((value: T) -> any)?): ()
 	if _G.__DEV__ then
 		local dispatcher = resolveDispatcher()
 		return dispatcher.useDebugValue(value, formatterFn)
@@ -181,6 +193,7 @@ exports.useDebugValue = function<T>(value: T, formatterFn: ((value: T) -> any)?)
 	-- deviation: return nil explicitly for safety
 	return nil
 end
+exports.useDebugValue = useDebugValue
 
 exports.emptyObject = {}
 

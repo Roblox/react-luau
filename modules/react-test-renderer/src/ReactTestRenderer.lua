@@ -748,7 +748,7 @@ local function unstable_concurrentAct(scope: () -> () | Thenable<any>)
 	-- TODO: This would be way simpler if 1) we required a promise to be
 	-- returned and 2) we could use async/await. Since it's only our used in
 	-- our test suite, we should be able to.
-	local ok, _ = pcall(function()
+	local ok, error_ = pcall(function()
 		local thenable = batchedUpdates(scope)
 		if
 			typeof(thenable) == "table"
@@ -785,7 +785,7 @@ local function unstable_concurrentAct(scope: () -> () | Thenable<any>)
 	end)
 	if not ok then
 		unwind()
-		error("")
+		error(error_)
 	end
 end
 

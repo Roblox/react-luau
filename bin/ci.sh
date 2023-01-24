@@ -12,7 +12,7 @@ roblox-cli analyze tests.project.json
 selene --version
 selene --config selene.toml modules/
 stylua --version
-stylua -c modules bin
+stylua -c modules bin WorkspaceStatic
 
 echo "Run tests in DEV"
 robloxdev-cli run --load.model tests.project.json \

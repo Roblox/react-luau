@@ -9,3 +9,11 @@ content_root = "src"
 LuauPolyfill = { workspace = true }
 Shared = { path = "../shared" }
 ReactReconciler = { path = "../react-reconciler" }
+
+[dev_dependencies]
+JestGlobals = { workspace = true }
+Promise = { workspace = true }
+React = { path = "../react" }
+ReactTestRenderer = { path = "../react-test-renderer" }
+Scheduler = { path = "../scheduler" }
+

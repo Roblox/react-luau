@@ -636,7 +636,7 @@ if __DEV__ then
 		index: number,
 		value: any
 	)
-		if index >= #path then
+		if index >= (#path + 1) then
 			return value
 		end
 		local key = path[index]
@@ -647,7 +647,7 @@ if __DEV__ then
 			updated = table.clone(obj)
 		end
 		-- $FlowFixMe number or string is fine here
-		updated[key] = copyWithSetImpl(obj[key], path, index + 1, value)
+		updated[key] = copyWithSetImpl(obj[key], path, index + 2, value)
 		return updated
 	end
 
@@ -657,14 +657,14 @@ if __DEV__ then
 		path: Array<string | number>,
 		value: any
 	): Object | Array<any>
-		return copyWithSetImpl(obj, path, 0, value)
+		return copyWithSetImpl(obj, path, 1, value)
 	end
 
 	local function findHook(fiber: Fiber, id: number)
 		-- For now, the "id" of stateful hooks is just the stateful hook index.
 		-- This may change in the future with e.g. nested hooks.
 		local currentHook = fiber.memoizedState
-		while currentHook ~= nil and id > 0 do
+		while currentHook ~= nil and id > 1 do
 			currentHook = currentHook.next
 			id -= 1
 		end
