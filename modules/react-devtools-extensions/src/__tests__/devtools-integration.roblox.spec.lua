@@ -32,6 +32,7 @@ describe("Devtools Integration", function()
 	afterEach(function()
 		jest.resetModules()
 		jest.useRealTimers()
+		_G.__REACT_DEVTOOLS_GLOBAL_HOOK__ = nil
 	end)
 
 	-- Devtools naturally relies on using DEV mode, so this test only makes

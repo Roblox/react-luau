@@ -82,7 +82,8 @@ function EventEmitter:emit(event: string, ...: ElementType<string, string>): ()
 				end
 			end
 			if didThrow then
-				error(caughtError)
+				-- ROBLOX note: stringify error to avoid "nil output from lua" error
+				error(tostring(caughtError))
 			end
 		end
 	end
