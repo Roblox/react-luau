@@ -135,7 +135,12 @@ end
 exports.useRef = useRef
 
 -- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
-local function useBinding<T>(initialValue: T): (any, any)
+local function useBinding<T>(
+	initialValue: T
+): (
+	ReactTypes.ReactBinding<T>,
+	ReactTypes.ReactBindingUpdater<T>
+)
 	-- ROBLOX deviation END
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useBinding(initialValue)

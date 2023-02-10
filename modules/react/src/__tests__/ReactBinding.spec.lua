@@ -31,7 +31,7 @@ describe("Binding.create", function()
 	it("should allow mapping a mapped binding", function()
 		local binding, update = Binding.create(1)
 		local asPercent = binding
-			:map(function(value)
+			:map(function(value: number)
 				return value * 100
 			end)
 			:map(function(value)
@@ -95,8 +95,8 @@ describe("Mapped bindings", function()
 	it("should be composable", function()
 		local word, updateWord = Binding.create("hi")
 
-		local wordLength = word:map(string.len) :: Binding<number>
-		local isEvenLength = wordLength:map(function(value)
+		local wordLength = word:map(string.len)
+		local isEvenLength = wordLength:map(function(value: number)
 			return value % 2 == 0
 		end)
 
@@ -121,7 +121,7 @@ describe("Mapped bindings", function()
 		end)
 
 		-- binding -> base binding
-		local length = word:map(string.len) :: Binding<number>
+		local length = word:map(string.len)
 
 		local lengthSpy = jest.fn()
 		local disconnectLength = Binding.subscribe(length, function(...)
@@ -129,7 +129,7 @@ describe("Mapped bindings", function()
 		end)
 
 		-- binding -> binding -> base binding
-		local isEvenLength = length:map(function(value)
+		local isEvenLength = length:map(function(value: number)
 			return value % 2 == 0
 		end)
 
@@ -180,7 +180,7 @@ describe("Mapped bindings", function()
 			local binding, _ = Binding.create(1)
 			local mappedBinding = binding:map(function(value)
 				return value
-			end) :: Binding<number>
+			end)
 			jestExpect(mappedBinding._source).toContain(script.Name)
 			jestExpect(mappedBinding._source).toContain("Mapped binding created")
 		end)

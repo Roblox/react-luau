@@ -44,7 +44,7 @@ exports.createRef = function(): RefObject
 			if key == "current" then
 				return binding:getValue()
 			else
-				return binding[key]
+				return (binding :: any)[key]
 			end
 		end,
 		__newindex = function(self, key, value)
@@ -56,7 +56,7 @@ exports.createRef = function(): RefObject
 				Binding.update(binding, value)
 			end
 
-			binding[key] = value
+			(binding :: any)[key] = value
 		end,
 		__tostring = function(self)
 			return string.format("Ref(%s)", tostring(binding:getValue()))

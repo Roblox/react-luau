@@ -160,7 +160,7 @@ function BindingInternalApi.join<T>(
 		for key, value in upstreamBindings do
 			if
 				typeof(value) ~= "table"
-				or value["$$typeof"] ~= ReactSymbols.REACT_BINDING_TYPE
+				or (value :: any)["$$typeof"] ~= ReactSymbols.REACT_BINDING_TYPE
 			then
 				local message = ("Expected arg #1 to contain only bindings, but key %q had a non-binding value"):format(
 					tostring(key)

@@ -51,6 +51,11 @@ export type PureComponent<Props, State = nil> = ReactTypes.React_PureComponent<
 	Props,
 	State
 >
+-- ROBLOX deviation START: bindings support
+export type ReactBinding<T> = ReactTypes.ReactBinding<T>
+export type ReactBindingUpdater<T> = ReactTypes.ReactBindingUpdater<T>
+-- ROBLOX deviation END
+
 type createElementFn = <P, T>(
 	type_: React_StatelessFunctionalComponent<P>
 		| React_ComponentType<P>
