@@ -15,6 +15,10 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 type Object = LuauPolyfill.Object
 
 local React = require(script.React)
+-- ROBLOX deviation START: bindings support
+export type Binding<T> = React.ReactBinding<T>
+export type BindingUpdater<T> = React.ReactBindingUpdater<T>
+-- ROBLOX deviation END
 
 local ReactLazy = require(script.ReactLazy)
 export type LazyComponent<T, P> = ReactLazy.LazyComponent<T, P>
