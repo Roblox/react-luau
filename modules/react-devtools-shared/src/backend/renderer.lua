@@ -1012,17 +1012,30 @@ exports.attach = function(
 		end
 		return nil
 	end
-	local function areHookInputsEqual(nextDeps: Array<any>, prevDeps: Array<any> | nil)
-		if prevDeps == nil then
+	local function getHighestIndex(array: Array<any>)
+		local highestIndex = 0
+		for k, v in array do
+			highestIndex = if k > highestIndex then k else highestIndex
+		end
+		return highestIndex
+	end
+	local function areHookInputsEqual(nextDeps: Array<any>, prevDeps_: Array<any>?)
+		if prevDeps_ == nil then
+			return false
+		end
+		local prevDeps = prevDeps_ :: Array<any>
+
+		local prevDepLength = getHighestIndex(prevDeps)
+		local nextDepLength = getHighestIndex(nextDeps)
+
+		if prevDepLength ~= nextDepLength then
 			return false
 		end
 
-		local i = 1
-		while i < #(prevDeps :: Array<any>) and i < #nextDeps do
-			if is(nextDeps[i], (prevDeps :: Array<any>)[i]) then
-				continue
+		for i = 1, prevDepLength do
+			if not is(nextDeps[i], prevDeps[i]) then
+				return false
 			end
-			return false
 		end
 		return true
 	end
@@ -1061,7 +1074,9 @@ exports.attach = function(
 			and next_["queue"]
 		then
 			while next_ ~= nil do
+				-- ROBLOX deviation START: use didHookChange instead of equality check
 				if didHookChange(prev, next_) then
+					-- ROBLOX deviation END
 					return true
 				else
 					next_ = next_.next
