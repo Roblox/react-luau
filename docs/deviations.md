@@ -186,6 +186,10 @@ When used in a constructor, `setState` will treat the `updater` argument exactly
 !!! caution
 	When using `setState` in a constructor, the optional `callback` argument will not be used. Instead, consider putting the desired behavior in a `componentDidMount` implementation.
 
+### Error Boundaries
+
+Error boundaries are not yet fully supported due to a limitation in Luau around recursive `pcall` depth. Future updates to React will unravel the recursive traversal and enable these features.
+
 ### Property Validation
 The legacy api `validateProps` is still present and has a backwards-compatible API.
 
