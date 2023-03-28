@@ -2570,13 +2570,13 @@ exports.attach = function(
 			context = { value = context }
 		end
 
-		local owners = nil
+		local owners: Array<Owner>? = nil
 
 		if _debugOwner then
 			owners = {}
 			local owner: Fiber? = _debugOwner
 			while owner ~= nil do
-				table.insert(owners, {
+				table.insert(owners :: Array<Owner>, {
 					displayName = getDisplayNameForFiber(owner :: Fiber) or "Anonymous",
 					id = getFiberID(getPrimaryFiber(owner :: Fiber)),
 					type = getElementTypeForFiber(owner :: Fiber),
@@ -2604,7 +2604,7 @@ exports.attach = function(
 				hooks = inspectHooksOfFiber(fiber :: Fiber, renderer.currentDispatcherRef)
 			end)
 
-			-- Restore originl console functionality.
+			-- Restore original console functionality.
 			for method, _ in console do
 				pcall(function()
 					console[method] = originalConsoleMethods[method]
@@ -2612,7 +2612,7 @@ exports.attach = function(
 			end
 		end
 
-		local rootType = nil
+		local rootType: string? = nil
 		local current = fiber :: Fiber
 
 		while current.return_ ~= nil do
@@ -2659,7 +2659,8 @@ exports.attach = function(
 			-- Inspectable properties.
 			-- TODO Review sanitization approach for the below inspectable values.
 			context = context,
-			hooks = hooks,
+			-- ROBLOX deviation: Luau won't coerce HooksTree to Object
+			hooks = hooks :: any,
 			props = memoizedProps,
 			state = if usesHooks then nil else memoizedState,
 
@@ -2672,7 +2673,7 @@ exports.attach = function(
 			rootType = rootType,
 			rendererPackageName = renderer.rendererPackageName,
 			rendererVersion = renderer.version,
-		} :: InspectedElement
+		}
 	end
 
 	isMostRecentlyInspectedElementCurrent = function(id: number): boolean

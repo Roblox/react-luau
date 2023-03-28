@@ -20,3 +20,4 @@ ReactCache = { path = "../react-cache" }
 ReactNoopRenderer = { path = "../react-noop-renderer" }
 ReactTestRenderer = { path = "../react-test-renderer" }
 ReactRoblox = { path = "../react-roblox" }
+ReactDevtoolsShared = { path = "../react-devtools-shared" }

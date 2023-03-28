@@ -241,7 +241,9 @@ describe("ReactHooksInspectionIntegration", function()
 				id = 1,
 				-- ROBLOX deviation END
 				name = "State",
-				value = "a",
+				-- ROBLOX deviation START: tell Luau to type this field loosely
+				value = "a" :: any,
+				-- ROBLOX deviation END
 				subHooks = {},
 			},
 			{
@@ -326,7 +328,9 @@ describe("ReactHooksInspectionIntegration", function()
 				id = 1,
 				-- ROBLOX deviation END
 				name = "State",
-				value = "A",
+				-- ROBLOX deviation START: tell Luau to type this field loosely
+				value = "A" :: any,
+				-- ROBLOX deviation END
 				subHooks = {},
 			},
 			{
@@ -563,7 +567,9 @@ describe("ReactHooksInspectionIntegration", function()
 				-- ROBLOX deviation END
 				isStateEditable = false,
 				name = "Transition",
-				value = nil,
+				-- ROBLOX deviation START: tell Luau to type this field loosely
+				value = nil :: any,
+				-- ROBLOX deviation END
 				subHooks = {},
 			},
 			{
@@ -691,7 +697,8 @@ describe("ReactHooksInspectionIntegration", function()
 		function()
 			-- ROBLOX deviation END
 			local function Foo(props)
-				local id = React.unstable_useOpaqueIdentifier()
+				-- ROBLOX FIXME: type this correctly when this is supported
+				local id = (React :: any).unstable_useOpaqueIdentifier()
 				local state = React.useState(function()
 					return "hello"
 					-- ROBLOX deviation START: useState returns 2 values
@@ -779,7 +786,9 @@ describe("ReactHooksInspectionIntegration", function()
 			expect(tree).toEqual({
 				{
 					isStateEditable = false,
-					id = nil,
+					-- ROBLOX deviation START: tell Luau to type this field loosely
+					id = nil :: number?,
+					-- ROBLOX deviation END
 					name = "LabeledValue",
 					-- ROBLOX deviation START: use _G.__DEV__ and cast
 					-- value = if Boolean.toJSBoolean(__DEV__)

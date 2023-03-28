@@ -310,13 +310,11 @@ local function useBinding<T>(initialValue: T): (ReactBinding<T>, ReactBindingUpd
 	local hook = nextHook()
 	local binding = if hook ~= nil
 		then hook.memoizedState
-		else {
+		else ({
 			getValue = function(_self)
 				return initialValue
 			end,
-			-- FIXME Luau: I'd expect luau to complain about a lack of `map`
-			-- field, but it only complains when non-nil and incorrectly typed
-		} :: ReactBinding<T>
+		} :: any) :: ReactBinding<T>
 
 	table.insert(hookLog, {
 		primitive = "Binding",

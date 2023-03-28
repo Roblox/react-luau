@@ -19,12 +19,15 @@ local beforeAll = JestGlobals.beforeAll
 local afterAll = JestGlobals.afterAll
 local it = JestGlobals.it
 
-local ReactFiberDevToolsHook
+local Map = require(Packages.LuauPolyfill).Map
+
+local ReactFiberDevToolsHook, ReactDevtoolsShared
 
 beforeEach(function()
 	jest.resetModules()
 
 	ReactFiberDevToolsHook = require(script.Parent.Parent["ReactFiberDevToolsHook.new"])
+	ReactDevtoolsShared = require(Packages.Dev.ReactDevtoolsShared)
 end)
 
 describe("DevTools hook detection", function()
@@ -37,7 +40,7 @@ describe("DevTools hook detection", function()
 		_G.__REACT_DEVTOOLS_GLOBAL_HOOK__ = originalDevtoolsState
 	end)
 
-	local itIfDev = _G.DEV and it or it.skip :: any
+	local itIfDev = if _G.__DEV__ then it else it.skip :: any
 	itIfDev("should log an error when fibers aren't supported", function()
 		_G.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
 			isDisabled = false,
@@ -53,4 +56,44 @@ describe("DevTools hook detection", function()
 			{ withoutStack = true }
 		)
 	end)
+
+	-- ROBLOX deviation START: verify that renderers are attached correctly
+	it("attaches renderers", function()
+		local renderer123 = {
+			findFiberByHostInstance = function() end,
+		}
+		local renderer456 = {
+			findFiberByHostInstance = function() end,
+		}
+		local hook = {
+			renderers = Map.new({
+				{ 123, renderer123 },
+				{ 456, renderer456 },
+			}),
+			rendererInterfaces = Map.new(),
+			emit = jest.fn(),
+			sub = jest.fn(),
+		}
+		local agent = {
+			addListener = jest.fn(),
+		}
+		_G.__REACT_DEVTOOLS_GLOBAL_HOOK__ = hook
+
+		ReactDevtoolsShared.backend.initBackend(hook, agent, {})
+
+		jestExpect(hook.emit).toHaveBeenCalledTimes(3)
+
+		jestExpect(hook.emit).toHaveBeenNthCalledWith(1, "renderer-attached", {
+			id = 123,
+			renderer = renderer123,
+			rendererInterface = jestExpect.anything(),
+		})
+		jestExpect(hook.emit).toHaveBeenNthCalledWith(2, "renderer-attached", {
+			id = 456,
+			renderer = renderer456,
+			rendererInterface = jestExpect.anything(),
+		})
+		jestExpect(hook.emit).toHaveBeenNthCalledWith(3, "react-devtools", agent)
+	end)
+	-- ROBLOX deviation END
 end)

@@ -129,7 +129,9 @@ describe("ReactHooksInspection", function()
 						-- ROBLOX deviation END
 						name = "State",
 						subHooks = {},
-						value = "hello",
+						-- ROBLOX deviation START: tell Luau to type this field loosely
+						value = "hello" :: any,
+						-- ROBLOX deviation END
 					},
 					{
 						isStateEditable = false,
@@ -210,7 +212,9 @@ describe("ReactHooksInspection", function()
 		expect(tree).toEqual({
 			{
 				isStateEditable = false,
-				id = nil,
+				-- ROBLOX deviation START: tell Luau to type this field loosely
+				id = nil :: number?,
+				-- ROBLOX deviation END
 				name = "Bar",
 				value = nil,
 				subHooks = {
@@ -273,7 +277,7 @@ describe("ReactHooksInspection", function()
 						isStateEditable = false,
 						-- ROBLOX deviation START: adjust for 1-based indexing
 						-- id = 3,
-						id = 4,
+						id = 4 :: number?,
 						-- ROBLOX deviation END
 						name = "LayoutEffect",
 						-- ROBLOX deviation START: Luau doesn't support mixed arrays

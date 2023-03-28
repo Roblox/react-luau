@@ -59,7 +59,7 @@ local function initBackend(hook: DevToolsHook, agent: Agent, global: Object): ()
 		-- ROBLOX deviation: require attach lazily to avoid the require of renderer causing Roact to initialize prematurely.
 		local attach = require(script.renderer).attach
 
-		local rendererInterface = hook.rendererInterfaces[id]
+		local rendererInterface = hook.rendererInterfaces:get(id)
 
 		-- Inject any not-yet-injected renderers (if we didn't reload-and-profile)
 		if rendererInterface == nil then
@@ -74,7 +74,7 @@ local function initBackend(hook: DevToolsHook, agent: Agent, global: Object): ()
 				-- Older react-dom or other unsupported renderer version
 			end
 			if rendererInterface ~= nil then
-				hook.rendererInterfaces[id] = rendererInterface
+				hook.rendererInterfaces:set(id, rendererInterface)
 			end
 		end
 
@@ -92,9 +92,9 @@ local function initBackend(hook: DevToolsHook, agent: Agent, global: Object): ()
 	end
 
 	-- Connect renderers that have already injected themselves.
-	for id, renderer in hook.renderers do
+	hook.renderers:forEach(function(renderer, id)
 		attachRenderer(id, renderer)
-	end
+	end)
 
 	-- Connect any new renderers that injected themselves.
 	table.insert(
