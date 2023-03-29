@@ -683,6 +683,46 @@ describe("ReactHooks", function()
 			ReactTestRenderer.create(React.createElement(App, { deps = nil }))
 		end)
 	end)
+	-- ROBLOX deviation START: regresses an issue where valid use of dependencies arrays with nils would result in warnings
+	it("does not warn for sparse dep arrays", function()
+		local useEffect, useLayoutEffect, useMemo, useCallback =
+			React.useEffect, React.useLayoutEffect, React.useMemo, React.useCallback
+		local function App(props)
+			useEffect(function() end, props.deps)
+			useLayoutEffect(function() end, props.deps)
+			-- ROBLOX TODO: upstream this type safety fix
+			useMemo(function()
+				return nil
+			end, props.deps)
+			useCallback(function() end, props.deps)
+			return nil
+		end
+		jestExpect(function()
+			act(function()
+				ReactTestRenderer.create(
+					React.createElement(App, { deps = { nil, "world", "!" } :: { any } })
+				)
+			end)
+		end).toErrorDev({})
+		jestExpect(function()
+			act(function()
+				ReactTestRenderer.create(
+					React.createElement(
+						App,
+						{ deps = { "hello", "world", "!" } :: { any } }
+					)
+				)
+			end)
+		end).toErrorDev({})
+		jestExpect(function()
+			act(function()
+				ReactTestRenderer.create(
+					React.createElement(App, { deps = { "hello", nil, "!" } :: { any } })
+				)
+			end)
+		end).toErrorDev({})
+	end)
+	-- ROBLOX deviation END
 	-- ROBLOX FIXME: this test depends on fix in https://github.com/Roblox/luau-polyfill/pull/112
 	xit("warns if deps is not an array for useImperativeHandle", function()
 		local useImperativeHandle = React.useImperativeHandle

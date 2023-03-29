@@ -256,13 +256,27 @@ local InvalidNestedHooksDispatcherOnMountInDEV: Dispatcher | nil = nil
 local InvalidNestedHooksDispatcherOnUpdateInDEV: Dispatcher | nil = nil
 local InvalidNestedHooksDispatcherOnRerenderInDEV: Dispatcher | nil = nil
 
--- ROBLOX deviation: Used to better approximate arrays with gaps
+-- ROBLOX deviation: Used to better compare dependency arrays with gaps
 local function getHighestIndex(array: Array<any>)
 	local highestIndex = 0
 	for k, v in array do
 		highestIndex = if k > highestIndex then k else highestIndex
 	end
 	return highestIndex
+end
+
+-- ROBLOX deviation: Used to better detect dependency arrays with gaps, to be
+-- used in place of Array.isArray
+local function isArrayOrSparseArray(deps: any)
+	if type(deps) ~= "table" then
+		return false
+	end
+	for k, _v in deps do
+		if type(k) ~= "number" then
+			return false
+		end
+	end
+	return true
 end
 
 local function mountHookTypesDev()
@@ -294,7 +308,7 @@ end
 
 local function checkDepsAreArrayDev(deps: any)
 	if __DEV__ then
-		if deps ~= nil and not Array.isArray(deps) then
+		if deps ~= nil and not isArrayOrSparseArray(deps) then
 			-- Verify deps, but only on mount to avoid extra checks.
 			-- It's unlikely their type would change as usually you define them inline.
 			console.error(
