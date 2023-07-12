@@ -63,8 +63,9 @@ local function mount(element: any, parent: any, key: string?): RoactHandle
 		root = ReactRoblox.createRoot(Instance.new("Folder"))
 	end
 	if parent == nil then
-		parent = Instance.new("Folder")
-		parent.Name = "Target"
+		local newParent = Instance.new("Folder")
+		newParent.Name = "Target"
+		parent = newParent
 	end
 	if key == nil then
 		if _G.__ROACT_17_COMPAT_LEGACY_ROOT__ then
