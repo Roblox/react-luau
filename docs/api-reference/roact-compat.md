@@ -135,11 +135,11 @@ Re-exports [React.None](react.md#reactnone).
 
 ## RoactCompat.Event
 
-Re-exports [React.Event](react.md#reactrobloxevent).
+Re-exports [React.Event](react.md#reactevent).
 
 ## RoactCompat.Change
 
-Re-exports [React.Change](react.md#reactrobloxchange).
+Re-exports [React.Change](react.md#reactchange).
 
 ## RoactCompat.createBinding
 Re-exports [ReactRoblox.createBinding](react.md#reactcreatebinding).
