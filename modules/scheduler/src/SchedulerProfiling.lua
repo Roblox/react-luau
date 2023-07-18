@@ -26,9 +26,12 @@ local mainThreadIdCounter: number = 0
 local INITIAL_EVENT_LOG_SIZE = 131072
 local MAX_EVENT_LOG_SIZE = 524288 -- Equivalent to 2 megabytes
 
+-- Strictly speaking, only the first element of an EventLog can be a reference to another EventLog.
+type EventLog = { EventLog | { number } }
+
 local eventLogSize = 0
 local eventLogBuffer = nil
-local eventLog = nil
+local eventLog: EventLog? = nil
 local eventLogIndex = 1
 
 local TaskStartEvent = 1
