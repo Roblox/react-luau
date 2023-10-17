@@ -130,7 +130,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 		parentInstance: Instance,
 		child: Instance | TextInstance
 	): ()
-		if typeof(parentInstance.rootID) == "string" then
+		if typeof((parentInstance :: any).rootID) == "string" then
 			-- Some calls to this aren't typesafe.
 			-- This helps surface mistakes in tests.
 			error(Error("appendChild() first argument is not an instance."))
@@ -172,7 +172,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 		child: Instance | TextInstance,
 		beforeChild: Instance | TextInstance
 	)
-		if typeof(parentInstance.rootID) ~= "string" then
+		if typeof((parentInstance :: any).rootID) ~= "string" then
 			-- Some calls to this aren't typesafe.
 			-- This helps surface mistakes in tests.
 			error(Error("insertBefore() first argument is not an instance."))
@@ -211,7 +211,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 	end
 
 	local function removeChild(parentInstance: Instance, child: Instance | TextInstance)
-		if typeof(parentInstance.rootID) == "string" then
+		if typeof((parentInstance :: any).rootID) == "string" then
 			-- Some calls to this aren't typesafe.
 			-- This helps surface mistakes in tests.
 			error(Error("removeChild() first argument is not an instance."))
