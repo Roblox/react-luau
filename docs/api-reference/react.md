@@ -353,7 +353,7 @@ end)
 <a href='https://beta.reactjs.org/reference/react/Suspense' target="_blank"><img alt='React' src='../../images/reactjs.svg'/></a> <img alt='Deviation' src='../../images/deviation.svg'/>
 
 !!! warning
-	**While `React.Suspense` is technically implemented, it should be considered unusable as of version `17.0.1-rc.19`.** This is due to a limitation in Luau around recursive `pcall` depth. Future updates to React will unravel the recursive traversal and enable these features.
+	**While `React.Suspense` is technically implemented, it should be considered unusable as of version `17.0.1`.** This is due to a limitation in Luau around recursive `pcall` depth. Future updates to React will unravel the recursive traversal and enable these features.
 	Future version of React eliminate this recursive structure and should enable full use of `Suspense` and error boundaries.
 
 Renders a subtree of children that can yield. If the children suspend while rendering, the `fallback` field provided will be used until the children have resolved their render.
