@@ -9,7 +9,7 @@ The following list attempts to comprehensively describe all of the differences b
 
 ## JSX
 
-The Luau ecosystem does not yet have the tooling to support JSX. Instead, use `React.createElement` as your primary tool for building UIs with Roact 17. Element construction in Roact is exactly like [using React with JSX](https://reactjs.org/docs/react-without-jsx.html).
+The Luau ecosystem does not yet have the tooling to support JSX. Instead, use `React.createElement` as your primary tool for building UIs with Roact 17. Element construction in Roact is exactly like [using React without JSX](https://react.dev/reference/react/createElement#creating-an-element-without-jsx).
 
 !!! info
 	Future support for a JSX-equivalent feature for Luau has been proposed, and will be considered as Roact 17+ is adopted.
