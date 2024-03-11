@@ -12,7 +12,7 @@ A comprehensive, but not exhaustive, translation of upstream ReactJS 17.x into R
 * If you have legacy Roact code, use the roact-compat library instead
   * `RoactCompat = "github.com/roblox/roact-alignment@17.0.1"`
 * Make sure you are using the latest [rotriever](https://github.com/Roblox/rotriever/releases) 0.5 (or later) release
-  * you can download the release binary, or add it to your `foreman.toml`: ```rotrieve = { source = "roblox/rotriever", version = "=0.5.6" }```
+  * you can download the release binary, or add it to your `foreman.toml`: ```rotrieve = { source = "roblox/rotriever", version = "=0.5.12" }```
 * For unit testing components and trees of components, you'll want to use the [`act()`](https://github.com/threepointone/react-act-examples/blob/master/sync.md) API exported from the react-roblox package.
 
 ## Status
@@ -22,38 +22,38 @@ The [react repo](https://github.com/facebook/react) is a monorepo with a number 
 
 | Project | Description | Status | Plan | Notes |
 | - | - | - | - | - |
-| `create-subscription` | Used for subscribing to external data | ❌ Not ported | ❔ Not yet assessed | |
-| `dom-event-testing-library` | Dom event simulation for tests | ❌ Not ported | ❔ Not yet assessed | May inspire Rhodium improvements |
-| `eslint-plugin-react-hooks` | Linting plugin for hooks rules | ❌ Not ported | ❔ Not yet assessed | Depends on future linting tools |
-| `jest-mock-scheduler` | Reexports scheduler testing utilities | ❌ Not ported | ❔ Not yet assessed | |
-| 📌`jest-react` | Jest matchers and utilities | ✔️ Ported | | Used for internal framework tests, but could be useful for client developer testing as well. |
+| `create-subscription` | Used for subscribing to external data | ❌ Not ported | ➖ Unlikely to be ported | Intended to help transition from pre-React 17 |
+| `dom-event-testing-library` | Dom event simulation for tests | ❌ Not ported | ➖ Unlikely to be ported | Obviated by [ReactTestingLibrary](https://github.com/roblox/dom-testing-library-lua) |
+| `eslint-plugin-react-hooks` | Linting plugin for hooks rules | ❌ Not ported | 🔁 Revisit if needed | Should be a reference for future linting tools |
+| `jest-mock-scheduler` | Reexports scheduler testing utilities | ❌ Not ported | ➖ Unlikely to be ported | Exports internal utilities for mocking scheduler, not as useful as `act()` |
+| 📌`jest-react` | Jest matchers and utilities | ✔️ Ported | | Used for internal framework tests |
 | 📌`react` | Base react interface | ✔️ Ported |  | Defines basic shape of internals like Components and Elements. We added added Roblox-specifics like Bindings, but otherwise comply with upstream ReactJS. |
-| `react-art` | For drawing vector graphics | ❌ Not ported | ➖ Unlikely to be ported | |
-| `react-cache` | Basic cache for use with experimental React features | ✔️ Ported | ❔  | API is flagged as unstable, is stable in React 18, used in advanced Suspense cases |
-| `react-client` | Experimental package for consuming React streaming models | ❌ Not ported | ❔ Not yet assessed | API considered unstable. Might be worth investigating if it stabilizes |
+| `react-art` | For drawing vector graphics | ❌ Not ported | ➖ Unlikely to be ported | No vector graphics on Roblox |
+| `react-cache` | Basic cache for use with experimental React features | ✔️ Ported |  | API is flagged as unstable, is stable in React 18, used in advanced Suspense cases |
+| `react-client` | Experimental package for consuming React streaming models | ❌ Not ported | 🔁 Revisit if needed | API considered unstable. Might be worth investigating if it stabilizes |
 | `react-debug-tools` | Experimental debugger package | ✔️ Ported |  | Used by DevTools and Roblox Studio Inspector |
 | `react-devtools` | Top-level app for react devtools | ❌ Not ported | ➕ Likely to be ported | Devtools needs to be addressed as a whole to see where/how it translates |
 | `react-devtools-core` | Standalone devtools impl | ❌ Not ported | ➕ Likely to be ported | Devtools needs to be addressed as a whole to see where/how it translates |
-| `react-devtools-extensions` | Devtools browser extension | ❌ Not ported | ➖ Unlikely to be ported | |
+| `react-devtools-extensions` | Devtools browser extension | ❌ Not ported | ➖ Unlikely to be ported | Devtools needs to be addressed as a whole to see where/how it translates |
 | `react-devtools-inline` | Impl for embedding in browser-based IDEs | ❌ Not ported | ➕ Likely to be ported | Devtools needs to be addressed as a whole to see where/how it translates |
-| `react-devtools-scheduling-profiler` | Experimental concurrent mode profiler | ❌ Not ported | ❔ Not yet assessed | |
+| `react-devtools-scheduling-profiler` | Experimental concurrent mode profiler | ❌ Not ported | 🔁 Revisit if needed | Supplanted in React 18 by `react-devtools-timeline` package |
 | `react-devtools-shared` | Private shared utilities for devtools | ✔️ Ported |  | Used by Roblox Studio Inspector |
-| `react-devtools-shell` | Harness for testing other devtools packages | ❌ Not ported | ❔ Not yet assessed | Devtools needs to be addressed as a whole to see where/how it translates |
-| `react-dom` | Entrypoint for DOM and server renderers | ❌ Not ported | ➖ Unlikely to be ported | Heavily inspired the top-level interface of the React-Roblox Renderer |
-| `react-fetch` | For use with experimental React features | ❌ Not ported | ❔ Not yet assessed | API considered unstable |
-| `react-interactions` | For use with experimental React features | ❌ Not ported | ❔ Not yet assessed | |
+| `react-devtools-shell` | Harness for testing other devtools packages | ❌ Not ported | ➖ Unlikely to be ported | Devtools needs to be addressed as a whole to see where/how it translates |
+| `react-dom` | Entrypoint for DOM and server renderers | ❌ Not ported | ➖ Unlikely to be ported | Not ported directly, but it heavily inspired the React-Roblox renderer interface and implementation |
+| `react-fetch` | For use with experimental React features | ❌ Not ported | ➖ Unlikely to be ported | API considered unstable, [removed in React 18](https://github.com/facebook/react/pull/25577) |
+| `react-interactions` | For use with experimental React features | ❌ Not ported | ➖ Unlikely to be ported | API unstable, used only with internal features |
 | 📌`react-is` | Runtime type checks for React elements | ✔️ Ported | | |
-| `react-native-renderer` | Renderer interface for react-native | ❌ Not ported | ❔ Not yet assessed | This package has no readme, so it's hard to understand its scope |
+| `react-native-renderer` | Renderer interface for react-native | ❌ Not ported | ➖ Unlikely to be ported | Not well documented, likely does not apply to Roblox |
 | 📌`react-noop-renderer` | Renderer used for debugging Fiber | ✔️ Ported |  | Used heavily for internal framework testing |
 | 📌`react-reconciler` | Reconciler implementation used with various renderers | ✔️ Ported |  | Bulk of React's complicated logic lives here |
-| `react-refresh` | Wiring for Fast Refresh | ❌ Not ported | ❔ Not yet assessed, depend on applicability | Officially supported successor to "hot reloading" |
-| `react-server` | Experimental package for creating React streaming server renderers | ❌ Not ported | ❔ Not yet assessed | |
+| `react-refresh` | Wiring for Fast Refresh | ❌ Not ported | 🔁 Revisit if needed | Successor to "hot reloading", but relies on bundler step |
+| `react-server` | Experimental package for creating React streaming server renderers | ❌ Not ported | 🔁 Revisit if needed  | API considered unstable. Might be worth investigating if it stabilizes |
 | `react-test-renderer` | Test renderer helpful utilities and snapshot support | ✔️ Ported | | Used for testing much of React's internals, can be used by client developers |
-| `react-transport-dom-delay` | Internal package, likely for testing | ❌ Not ported | ➖ Unlikely to be ported | No readme in package |
-| `react-transport-dom-webpack` | Related to above | ❌ Not ported | ➖ Unlikely to be ported | Appears to be webpack-specific |
+| `react-transport-dom-delay` | Internal package, likely for testing | ❌ Not ported | ➖ Unlikely to be ported | Internal library for experimental React Flight feature |
+| `react-transport-dom-webpack` | Related to above | ❌ Not ported | ➖ Unlikely to be ported | Webpack-specific bindings for experimental React Flight feature |
 | 📌`scheduler` | Cooperative scheduling implementation | ✔️ Ported | | Includes Tracing and Profiling features, which are enabled through ReactFeatureFlags |
 | 📌`shared` | Loose collection of shared utilities and definitions | ✔️ Ported | | We pushed many things into this leaf node module to fix circular dependencies. Working with upstream to clean this up. |
-| `use-subscription` | Hook for managing subscriptions in concurrent mode | ❌ Not ported | ❔ Not yet assessed | Not sure if/how this will apply to Roblox |
+| `use-subscription` | Hook for managing subscriptions in concurrent mode | ❌ Not ported | 🔁 Revisit if needed | Supplanted by [use-sync-external-store](https://github.com/facebook/react/tree/main/packages/use-sync-external-store) in upstream |
 
 Projects not in the upstream React repo:
 | Project | Description | Notes |
@@ -67,9 +67,9 @@ This repo is meant to supplant the `Roact` project, which is an open-source proj
 
 With that in mind, however, there will still be a small number of behavioral deviations that make the transition from existing Roact smoother, or account for nuances of the Roblox ecosystem:
 * Stable Keys: Aligned Roact will allow table keys to be used as stable keys for child elements, equivalent to the behavior relied upon in Roact today
-* Context: Current Roact's deprecated `_context` feature will not be present in aligned Roact; users will have to switch to the `createContext` feature, which is present in both current and aligned Roact and is semantically equivalent
+* Context: Legacy Roact's deprecated `_context` feature will not be present in aligned Roact; users will have to switch to the `createContext` feature, which is present in both current and aligned Roact and is semantically equivalent
 * Class Component Refs: Aligned Roact will allow refs provided to class components (referred to in Roact documentation as "stateful components") to point to the actual component instance. This is not supported in current Roact, and there may be changes around the `Roact.Ref` prop key to support this with minimal disruption
-* Bindings: We intend to keep `createBindings` and `joinBindings`, a feature unique to Roact and [documented here](https://roblox.github.io/roact/api-reference#roactcreatebinding)
+* Bindings: We intend to keep `createBinding` and `joinBindings`, a feature unique to Roact and [documented here](https://roblox.github.io/roact/api-reference#roactcreatebinding)
 
 See [this document](DEVIATIONS.md) for details about any deviations and the design and refactoring efforts being proposed to address them.
 
