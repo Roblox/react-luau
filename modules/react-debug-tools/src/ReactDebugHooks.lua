@@ -292,10 +292,7 @@ local function useReducer<S, I, A>(
 	return state, function(action: A) end
 	-- ROBLOX deviation END
 end
--- ROBLOX deviation START: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
--- local function useRef<T>(initialValue: T): { current: T }
-local function useRef<T>(initialValue: T): { current: T | nil }
-	-- ROBLOX deviation END
+local function useRef<T>(initialValue: T): { current: T }
 	local hook = nextHook()
 	local ref = if hook ~= nil then hook.memoizedState else { current = initialValue }
 	table.insert(

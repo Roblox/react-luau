@@ -125,27 +125,25 @@ local function useReducer<S, I, A>(
 end
 exports.useReducer = useReducer
 
--- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
 -- ROBLOX TODO: reconciling this with bindings and sharing any relevant Ref types (there may be different ones depending on whether it's just a loose ref, vs one being assigned to the ref prop
-local function useRef<T>(initialValue: T): { current: T | nil }
-	-- ROBLOX deviation END
+local function useRef<T>(initialValue: T): { current: T }
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useRef(initialValue)
 end
 exports.useRef = useRef
 
--- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
+-- ROBLOX deviation START: Bindings are a feature unique to Roact
 local function useBinding<T>(
 	initialValue: T
 ): (
 	ReactTypes.ReactBinding<T>,
 	ReactTypes.ReactBindingUpdater<T>
 )
-	-- ROBLOX deviation END
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useBinding(initialValue)
 end
 exports.useBinding = useBinding
+-- ROBLOX deviation END
 
 local function useEffect(
 	-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically

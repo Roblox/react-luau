@@ -1252,14 +1252,12 @@ function mountBinding<T>(initialValue: T): (ReactBinding<T>, ReactBindingUpdater
 	return value, updateValue
 end
 
--- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
 function updateBinding<T>(initialValue: T): (ReactBinding<T>, ReactBindingUpdater<T>)
 	local hook = updateWorkInProgressHook()
 	return unpack(hook.memoizedState)
 end
 
--- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
-function mountRef<T>(initialValue: T): { current: T | nil }
+function mountRef<T>(initialValue: T): { current: T }
 	local hook = mountWorkInProgressHook()
 	-- ROBLOX DEVIATION: Implement useRef with bindings
 	local ref: any = createRef()
@@ -1268,11 +1266,10 @@ function mountRef<T>(initialValue: T): { current: T | nil }
 	--   Object.seal(ref)
 	-- end
 	hook.memoizedState = ref
-	return ref :: { current: T | nil }
+	return ref
 end
 
--- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
-function updateRef<T>(initialValue: T): { current: T | nil }
+function updateRef<T>(initialValue: T): { current: T }
 	local hook = updateWorkInProgressHook()
 	return hook.memoizedState
 end
@@ -2106,8 +2103,7 @@ if __DEV__ then
 			-- deviation: Lua version of useState and useReducer return two items, not list like upstream
 			return result, setResult
 		end,
-		-- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
-		useRef = function<T>(initialValue: T): { current: T | nil }
+		useRef = function<T>(initialValue: T): { current: T }
 			currentHookNameInDev = "useRef"
 			mountHookTypesDev()
 			return mountRef(initialValue)
@@ -2248,8 +2244,7 @@ if __DEV__ then
 			-- deviation: Lua version of useState and useReducer return two items, not list like upstream
 			return result, setResult
 		end,
-		-- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
-		useRef = function<T>(initialValue: T): { current: T | nil }
+		useRef = function<T>(initialValue: T): { current: T }
 			currentHookNameInDev = "useRef"
 			updateHookTypesDev()
 			return mountRef(initialValue)
@@ -2389,8 +2384,7 @@ if __DEV__ then
 			-- deviation: Lua version of useState and useReducer return two items, not list like upstream
 			return result, setResult
 		end,
-		-- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
-		useRef = function<T>(initialValue: T): { current: T | nil }
+		useRef = function<T>(initialValue: T): { current: T }
 			currentHookNameInDev = "useRef"
 			updateHookTypesDev()
 			return updateRef(initialValue)
@@ -2531,8 +2525,7 @@ if __DEV__ then
 			-- ROBLOX deviation: Lua version of useState and useReducer return two items, not list like upstream
 			return result, setResult
 		end,
-		-- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
-		useRef = function<T>(initialValue: T): { current: T | nil }
+		useRef = function<T>(initialValue: T): { current: T }
 			currentHookNameInDev = "useRef"
 			updateHookTypesDev()
 			return updateRef(initialValue)
@@ -2680,8 +2673,7 @@ if __DEV__ then
 			-- deviation: Lua version of useState and useReducer return two items, not list like upstream
 			return result, setResult
 		end,
-		-- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
-		useRef = function<T>(initialValue: T): { current: T | nil }
+		useRef = function<T>(initialValue: T): { current: T }
 			currentHookNameInDev = "useRef"
 			warnInvalidHookAccess()
 			mountHookTypesDev()
@@ -2838,8 +2830,7 @@ if __DEV__ then
 			-- deviation: Lua version of useState and useReducer return two items, not list like upstream
 			return result, setResult
 		end,
-		-- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
-		useRef = function<T>(initialValue: T): { current: T | nil }
+		useRef = function<T>(initialValue: T): { current: T }
 			currentHookNameInDev = "useRef"
 			warnInvalidHookAccess()
 			updateHookTypesDev()
@@ -2996,8 +2987,7 @@ if __DEV__ then
 			-- deviation: Lua version of useState and useReducer return two items, not list like upstream
 			return result, setResult
 		end,
-		-- ROBLOX deviation: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
-		useRef = function<T>(initialValue: T): { current: T | nil }
+		useRef = function<T>(initialValue: T): { current: T }
 			currentHookNameInDev = "useRef"
 			warnInvalidHookAccess()
 			updateHookTypesDev()

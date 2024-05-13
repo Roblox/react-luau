@@ -55,9 +55,7 @@ export type Dispatcher = {
 		context: ReactContext<T>,
 		observedBits: nil | number | boolean
 	) -> T,
-	-- ROBLOX deviation START: TS models this slightly differently, which is needed to have an initially empty ref and clear the ref, and still typecheck
-	useRef: <T>(initialValue: T) -> { current: T | nil },
-	-- ROBLOX deviation END
+	useRef: <T>(initialValue: T) -> { current: T },
 	-- ROBLOX deviation START: Bindings are a feature unique to Roact
 	useBinding: <T>(initialValue: T) -> (ReactBinding<T>, ReactBindingUpdater<T>),
 	-- ROBLOX deviation END
