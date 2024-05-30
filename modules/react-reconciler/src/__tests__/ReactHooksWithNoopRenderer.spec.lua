@@ -350,7 +350,7 @@ describe("useState", function()
 		local CounterRef = forwardRef(Counter)
 		local counter = React.createRef()
 		ReactNoop.render(
-			React.createElement(CounterRef, { initialState = 42, ref = counter })
+			React.createElement(CounterRef, { initialState = "42", ref = counter })
 		)
 		jestExpect(Scheduler).toFlushAndYield({ "getInitialState", "Count: 42" })
 		jestExpect(ReactNoop.getChildren()).toEqual({ span("Count: 42") })
@@ -2904,7 +2904,7 @@ describe("useEffect", function()
 	end)
 
 	it("works with memo", function()
-		local function Counter(props)
+		local function Counter(props: { count: number })
 			local count = props.count
 
 			useLayoutEffect(function()

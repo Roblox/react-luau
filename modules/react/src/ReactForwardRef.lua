@@ -15,7 +15,7 @@ local ReactSymbols = require(Packages.Shared).ReactSymbols
 local ReactTypes = require(Packages.Shared)
 type React_Node = ReactTypes.React_Node
 type React_Ref<ElementType> = ReactTypes.React_Ref<ElementType>
-type React_AbstractComponent<Config, Instance> = ReactTypes.React_AbstractComponent<
+type React_ForwardRefComponent<Config, Instance> = ReactTypes.React_ForwardRefComponent<
 	Config,
 	Instance
 >
@@ -27,7 +27,7 @@ local exports = {}
 exports.forwardRef =
 	function<Props, ElementType>(
 		render: (props: Props, ref: React_Ref<ElementType>) -> React_Node
-	): React_AbstractComponent<Props, ElementType>
+	): React_ForwardRefComponent<Props, ElementType>
 		if _G.__DEV__ then
 			-- ROBLOX deviation START: Lua functions can't have properties given a table (which we can index to see if it's the Memo type)
 			if
@@ -101,8 +101,8 @@ exports.forwardRef =
 				end,
 			})
 		end
-		-- ROBLOX FIXME Luau: making us explicitly add nilable (optional) fields: because the former is missing fields 'forceUpdate', 'getChildContext', 'props', 'setState', and 'state
-		return (elementType :: any) :: React_AbstractComponent<Props, ElementType>
+
+		return elementType
 	end
 
 return exports

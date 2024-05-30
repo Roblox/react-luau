@@ -72,6 +72,9 @@ export type React_AbstractComponent<Config, Instance> = flowtypes.React_Abstract
 	Config,
 	Instance
 >
+export type React_ForwardRefComponent<Config, Instance> =
+	flowtypes.React_ForwardRefComponent<Config, Instance>
+export type React_MemoComponent<Config, T> = flowtypes.React_MemoComponent<Config, T>
 export type React_ComponentType<Config> = flowtypes.React_ComponentType<Config>
 export type React_PureComponent<Props, State = nil> = flowtypes.React_PureComponent<
 	Props,

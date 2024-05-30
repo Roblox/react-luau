@@ -21,6 +21,7 @@ type React_StatelessFunctionalComponent<Props> = Shared.React_StatelessFunctiona
 type React_ElementType = Shared.React_ElementType
 type React_Component<Props, State> = Shared.React_Component<Props, State>
 type React_ComponentType<Props> = Shared.React_ComponentType<Props>
+type React_MemoComponent<Config, T> = Shared.React_MemoComponent<Config, T>
 type React_AbstractComponent<Config, Instance> = Shared.React_AbstractComponent<
 	Config,
 	Instance
@@ -40,7 +41,7 @@ exports.memo = function<Props, T>(
 	type_: React_StatelessFunctionalComponent<Props> | React_AbstractComponent<Props, T> | string,
 	-- ROBLOX deviation END
 	compare: ((oldProps: Props, newProps: Props) -> boolean)?
-): React_AbstractComponent<Props, any>
+): React_MemoComponent<Props, any>
 	if _G.__DEV__ then
 		local validType = isValidElementType(type_)
 
@@ -66,7 +67,8 @@ exports.memo = function<Props, T>(
 			elseif
 				type_ ~= nil
 				and typeof(type_) == "table"
-				and (type_)["$$typeof"] == REACT_ELEMENT_TYPE
+				and (type_ :: React_MemoComponent<Props, T>)["$$typeof"]
+					== REACT_ELEMENT_TYPE
 			then
 				typeString = string.format(
 					"<%s />",
@@ -114,7 +116,7 @@ exports.memo = function<Props, T>(
 						and (type_ :: React_AbstractComponent<Props, T>).displayName
 							== nil
 					then
-						(type_ :: React_AbstractComponent<Props, T>).displayName = name
+						(type_ :: React_MemoComponent<Props, T>).displayName = name
 					end
 				else
 					rawset(self, key, value)
@@ -123,7 +125,7 @@ exports.memo = function<Props, T>(
 		})
 	end
 
-	return elementType
+	return elementType :: React_MemoComponent<Props, any>
 end
 
 return exports

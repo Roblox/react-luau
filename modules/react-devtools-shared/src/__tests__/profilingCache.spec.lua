@@ -198,7 +198,7 @@ xdescribe("ProfilingCache", function()
 				React.Fragment,
 				nil,
 				children,
-				React.createElement(MemoizedChild, { duration = 1 })
+				React.createElement(MemoizedChild, { key = -1, duration = 1 })
 			)
 		end
 		function Child(ref)
@@ -656,7 +656,7 @@ xdescribe("ProfilingCache", function()
 				React.Fragment,
 				nil,
 				children,
-				React.createElement(MemoizedChild, { duration = 1 })
+				React.createElement(MemoizedChild, { key = -1, duration = 1 })
 			)
 		end
 		function Child(ref)
@@ -759,7 +759,7 @@ xdescribe("ProfilingCache", function()
 				React.Fragment,
 				nil,
 				children,
-				React.createElement(MemoizedChild, { duration = 1 })
+				React.createElement(MemoizedChild, { key = -1, duration = 1 })
 			)
 		end
 		function Child(ref)

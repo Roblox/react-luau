@@ -47,16 +47,31 @@ export type React_Element<ElementType> = {
 
 export type React_PureComponent<Props, State = nil> = React_Component<Props, State>
 
--- ROBLOX note: this flowtype built-in is derived from the object shape returned by forwardRef
-export type React_AbstractComponent<Config, Instance> = {
+export type React_AbstractComponent<Config, T> =
+	React_ForwardRefComponent<Config, T>
+	| React_MemoComponent<Config, T>
+
+type React_BaseAbstractComponent<Config, T> = {
 	["$$typeof"]: number,
-	render: ((props: Config, ref: React_Ref<Instance>) -> React_Node)?,
 	displayName: string?,
 	defaultProps: Config?,
 	-- not in React flowtype, but is in definitelytyped and is used in ReactElement
 	name: string?,
+}
+
+-- ROBLOX note: this flowtype built-in is derived from the object shape returned by forwardRef
+export type React_ForwardRefComponent<Config, Instance> = React_BaseAbstractComponent<
+	Config,
+	Instance
+> & {
+	render: (props: Config, ref: React_Ref<Instance>) -> React_Node,
 	-- allows methods to be hung on a component, used in forwardRef.spec regression test we added
 	[string]: any,
+}
+
+export type React_MemoComponent<Config, T> = React_BaseAbstractComponent<Config, T> & {
+	type: React_StatelessFunctionalComponent<Config>,
+	compare: ((oldProps: Config, newProps: Config) -> boolean)?,
 }
 
 -- ROBLOX TODO: ElementConfig: something like export type React_ElementConfig<React_Component<P>> = P
