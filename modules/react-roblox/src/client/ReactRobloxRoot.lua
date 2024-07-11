@@ -49,6 +49,10 @@ local invariant = require(Packages.Shared).invariant
 local enableEagerRootListeners =
 	require(Packages.Shared).ReactFeatureFlags.enableEagerRootListeners
 
+-- ROBLOX deviation: Used to fix unmount not being synchronous
+local flushSync = ReactFiberReconciler.flushSync
+local flushPassiveEffects = ReactFiberReconciler.flushPassiveEffects
+
 local BlockingRoot = ReactFiberReconciler.ReactRootTags.BlockingRoot
 local ConcurrentRoot = ReactFiberReconciler.ReactRootTags.ConcurrentRoot
 local LegacyRoot = ReactFiberReconciler.ReactRootTags.LegacyRoot
@@ -116,9 +120,15 @@ function ReactRobloxRoot:unmount()
 	-- end
 	local root = self._internalRoot
 	local container = root.containerInfo
-	updateContainer(nil, root, nil, function()
-		unmarkContainerAsRoot(container)
+
+	-- ROBLOX deviation: unmount() is synchronous in upstream, at least in modern versions
+	flushSync(function()
+		updateContainer(nil, root, nil, function()
+			unmarkContainerAsRoot(container)
+		end)
 	end)
+
+	flushPassiveEffects()
 end
 
 -- ROBLOX TODO: add Options type
