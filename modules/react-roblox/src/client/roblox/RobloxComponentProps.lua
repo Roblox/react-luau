@@ -17,8 +17,6 @@ local CollectionService = game:GetService("CollectionService")
 local Packages = script.Parent.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
-local Set = LuauPolyfill.Set
-local String = LuauPolyfill.String
 local inspect = LuauPolyfill.util.inspect
 
 local console = require(Packages.Shared).console
@@ -75,6 +73,11 @@ end
 
 local function setRobloxInstanceProperty(hostInstance, key, newValue): ()
 	if newValue == nil then
+		local success, _ = pcall(hostInstance.ResetPropertyToDefault, hostInstance, key)
+		if success then
+			return
+		end
+
 		local hostClass = hostInstance.ClassName
 		local _, defaultValue = getDefaultInstanceProperty(hostClass, key)
 		newValue = defaultValue
