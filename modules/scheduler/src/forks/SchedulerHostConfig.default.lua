@@ -121,6 +121,28 @@ local function performWorkUntilDeadline()
 	end
 end
 
+-- ROBLOX deviation: wrap performWorkUntilDeadline for cleaner MicroProfiler attribution
+local function wrapPerformWorkWithCoroutine(performWork)
+	local co = coroutine.create(function()
+		while true do
+			-- We wrap `performWork` with a coroutine so that it can yield internally
+			-- but not implicitly yield the entire `co` coroutine
+			local wrapped = coroutine.wrap(performWork)
+			local ok, result = pcall(wrapped)
+			coroutine.yield(ok, result)
+		end
+	end)
+
+	return function()
+		local _, ok, result = coroutine.resume(co)
+		-- Propogate errors from `co` so that it always stays alive
+		if not ok then
+			error(result)
+		end
+	end
+end
+performWorkUntilDeadline = wrapPerformWorkWithCoroutine(performWorkUntilDeadline)
+
 local function requestHostCallback(callback)
 	scheduledHostCallback = callback
 	if not isMessageLoopRunning then
