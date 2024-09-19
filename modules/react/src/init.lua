@@ -12,7 +12,7 @@
 -- ROBLOX deviation: simulates `index.js` and exports React's public interface
 local Packages = script.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
-type Object = LuauPolyfill.Object
+export type Object = LuauPolyfill.Object
 
 local React = require(script.React)
 -- ROBLOX deviation START: bindings support
