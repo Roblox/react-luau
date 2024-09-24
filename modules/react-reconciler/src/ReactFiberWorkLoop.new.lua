@@ -223,6 +223,9 @@ local enqueueUpdate = require(script.Parent["ReactUpdateQueue.new"]).enqueueUpda
 local resetContextDependencies =
 	require(script.Parent["ReactFiberNewContext.new"]).resetContextDependencies
 
+-- ROBLOX deviation: RobloxReactProfiling
+local RobloxReactProfiling = require(script.Parent.RobloxReactProfiling)
+
 -- ROBLOX deviation: Pre-declare function
 local ensureRootIsScheduled
 
@@ -824,17 +827,29 @@ ensureRootIsScheduled = function(root: FiberRoot, currentTime: number)
 		-- Special case: Sync React callbacks are scheduled on a special
 		-- internal queue
 		newCallbackNode = scheduleSyncCallback(function()
-			return mod.performSyncWorkOnRoot(root)
+			-- ROBLOX deviation: RobloxReactProfiling
+			local profileRunning = RobloxReactProfiling.profileRootBeforeUnitOfWork(root)
+			local ret = mod.performSyncWorkOnRoot(root)
+			RobloxReactProfiling.profileRootAfterYielding(profileRunning)
+			return ret
 		end)
 	elseif newCallbackPriority == ReactFiberLane.SyncBatchedLanePriority then
 		newCallbackNode = scheduleCallback(ImmediateSchedulerPriority, function()
-			return mod.performSyncWorkOnRoot(root)
+			-- ROBLOX deviation: RobloxReactProfiling
+			local profileRunning = RobloxReactProfiling.profileRootBeforeUnitOfWork(root)
+			local ret = mod.performSyncWorkOnRoot(root)
+			RobloxReactProfiling.profileRootAfterYielding(profileRunning)
+			return ret
 		end)
 	else
 		local schedulerPriorityLevel =
 			lanePriorityToSchedulerPriority(newCallbackPriority)
 		newCallbackNode = scheduleCallback(schedulerPriorityLevel, function()
-			return mod.performConcurrentWorkOnRoot(root)
+			-- ROBLOX deviation: RobloxReactProfiling
+			local profileRunning = RobloxReactProfiling.profileRootBeforeUnitOfWork(root)
+			local ret = mod.performConcurrentWorkOnRoot(root)
+			RobloxReactProfiling.profileRootAfterYielding(profileRunning)
+			return ret
 		end)
 	end
 
@@ -1927,6 +1942,9 @@ mod.workLoopConcurrent = function()
 end
 
 mod.performUnitOfWork = function(unitOfWork: Fiber): ()
+	-- ROBLOX deviation: RobloxReactProfiling
+	local profileRunning = RobloxReactProfiling.profileUnitOfWorkBefore(unitOfWork)
+
 	-- The current, flushed, state of this fiber is the alternate. Ideally
 	-- nothing should rely on this, but relying on it here means that we don't
 	-- need an additional field on the work in progress.
@@ -1956,6 +1974,9 @@ mod.performUnitOfWork = function(unitOfWork: Fiber): ()
 	end
 
 	ReactCurrentOwner.current = nil
+
+	-- ROBLOX deviation: RobloxReactProfiling
+	RobloxReactProfiling.profileUnitOfWorkAfter(profileRunning)
 end
 
 mod.completeUnitOfWork = function(unitOfWork: Fiber)
@@ -2069,7 +2090,11 @@ end
 mod.commitRoot = function(root)
 	local renderPriorityLevel = getCurrentPriorityLevel()
 	runWithPriority(ImmediateSchedulerPriority, function()
-		return mod.commitRootImpl(root, renderPriorityLevel)
+		-- ROBLOX deviation: RobloxReactProfiling
+		RobloxReactProfiling.profileCommitBefore()
+		local ret = mod.commitRootImpl(root, renderPriorityLevel)
+		RobloxReactProfiling.profileCommitAfter()
+		return ret
 	end)
 	return nil
 end

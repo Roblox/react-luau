@@ -306,4 +306,6 @@ if _G.__DEV__ then
 	-- end
 end
 
+exports.robloxReactProfiling = ReactReconciler.robloxReactProfiling
+
 return exports
