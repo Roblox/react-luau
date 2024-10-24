@@ -307,14 +307,37 @@ local function updateProperties(
 	end
 end
 
+local _, FFlagReactFixBindingMemoryLeak = xpcall(function()
+	return game:DefineFastFlag("ReactFixBindingMemoryLeak", false)
+end, function()
+	return true
+end)
+
+local function cleanupBindings(domElement: HostInstance)
+	local instanceBindings = instanceToBindings[domElement]
+	if instanceBindings ~= nil then
+		for _, disconnectBinding in instanceBindings do
+			disconnectBinding()
+		end
+
+		instanceToBindings[domElement] = nil
+	end
+end
+
 -- ROBLOX deviation: Clear out references to components when they unmount so we
 -- avoid leaking memory when they're removed
 local function cleanupHostComponent(domElement: HostInstance)
+	-- We do not need to manually disconnect the events since the element is being destroyed.
 	if instanceToEventManager[domElement] ~= nil then
 		instanceToEventManager[domElement] = nil
 	end
-	if instanceToBindings[domElement] ~= nil then
-		instanceToBindings[domElement] = nil
+
+	if FFlagReactFixBindingMemoryLeak then
+		cleanupBindings(domElement)
+	else
+		if instanceToBindings[domElement] ~= nil then
+			instanceToBindings[domElement] = nil
+		end
 	end
 
 	-- ROBLOX https://jira.rbx.com/browse/LUAFDN-718: Tables are somehow ending up
@@ -329,8 +352,13 @@ local function cleanupHostComponent(domElement: HostInstance)
 		if instanceToEventManager[descElement] ~= nil then
 			instanceToEventManager[descElement] = nil
 		end
-		if instanceToBindings[descElement] ~= nil then
-			instanceToBindings[descElement] = nil
+
+		if FFlagReactFixBindingMemoryLeak then
+			cleanupBindings(descElement)
+		else
+			if instanceToBindings[descElement] ~= nil then
+				instanceToBindings[descElement] = nil
+			end
 		end
 		removeAllTags(domElement)
 	end

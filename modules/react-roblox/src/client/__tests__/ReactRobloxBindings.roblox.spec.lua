@@ -98,6 +98,41 @@ it("should not return the same root twice", function()
 	jestExpect(reactRobloxRoot).never.toBe(reactRobloxRoot2)
 end)
 
+it("should unsubscribe from bindings when unmounted", function()
+	local counterBinding, setCounter = React.createBinding(0)
+	local renderCount = 0
+
+	local function Component()
+		return React.createElement("TextLabel", {
+			Text = counterBinding:map(function(counter)
+				renderCount += 1
+				return tostring(counter)
+			end),
+		})
+	end
+
+	ReactRoblox.act(function()
+		reactRobloxRoot:render(React.createElement(Component))
+	end)
+
+	jestExpect(renderCount).toBe(1)
+
+	ReactRoblox.act(function()
+		reactRobloxRoot:render(React.createElement(Component))
+	end)
+
+	jestExpect(renderCount).toBe(2)
+	setCounter(1)
+	jestExpect(renderCount).toBe(3)
+
+	ReactRoblox.act(function()
+		reactRobloxRoot:unmount()
+	end)
+
+	setCounter(2)
+	jestExpect(renderCount).toBe(3)
+end)
+
 describe("useBinding hook", function()
 	it("returns the same binding object each time", function()
 		local captureBinding = jest.fn()
