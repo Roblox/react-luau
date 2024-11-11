@@ -9,6 +9,15 @@ local it = JestGlobals.it
 
 local ReactInstanceMap = require(Packages.Shared).ReactInstanceMap
 
+local __DEV__ = _G.__DEV__ :: boolean
+local SafeFlags = require(Packages.SafeFlags)
+local GetFFlagReactInstanceMapDisableErrorChecking =
+	SafeFlags.createGetFFlag("ReactInstanceMapDisableErrorChecking")
+local FFlagReactInstanceMapDisableErrorChecking =
+	GetFFlagReactInstanceMapDisableErrorChecking()
+
+local errorsEnabled = not FFlagReactInstanceMapDisableErrorChecking or __DEV__
+
 describe("get", function()
 	it("with invalid fiber", function()
 		local elementWithBadFiber = {
@@ -17,11 +26,19 @@ describe("get", function()
 				-- missing key fields of Fiber
 			},
 		}
-		jestExpect(function()
-			ReactInstanceMap.get(elementWithBadFiber)
-		end).toThrow(
-			"invalid fiber in UNNAMED Component during get from ReactInstanceMap!"
-		)
+		if errorsEnabled then
+			jestExpect(function()
+				ReactInstanceMap.get(elementWithBadFiber)
+			end).toThrow(
+				"invalid fiber in UNNAMED Component during get from ReactInstanceMap!"
+			)
+		else
+			jestExpect(function()
+				ReactInstanceMap.get(elementWithBadFiber)
+			end).never.toThrow(
+				"invalid fiber in UNNAMED Component during get from ReactInstanceMap!"
+			)
+		end
 	end)
 	it("with valid fiber that has invalid alternate", function()
 		local elementWithGoodFiberBadAlternate = {
@@ -36,11 +53,19 @@ describe("get", function()
 				},
 			},
 		}
-		jestExpect(function()
-			ReactInstanceMap.get(elementWithGoodFiberBadAlternate)
-		end).toThrow(
-			"invalid alternate fiber (UNNAMED alternate) in UNNAMED Component during get from ReactInstanceMap!"
-		)
+		if errorsEnabled then
+			jestExpect(function()
+				ReactInstanceMap.get(elementWithGoodFiberBadAlternate)
+			end).toThrow(
+				"invalid alternate fiber (UNNAMED alternate) in UNNAMED Component during get from ReactInstanceMap!"
+			)
+		else
+			jestExpect(function()
+				ReactInstanceMap.get(elementWithGoodFiberBadAlternate)
+			end).never.toThrow(
+				"invalid alternate fiber (UNNAMED alternate) in UNNAMED Component during get from ReactInstanceMap!"
+			)
+		end
 	end)
 end)
 describe("set", function()
@@ -49,9 +74,17 @@ describe("set", function()
 			tag = 0,
 			-- missing key fields of Fiber
 		}
-		jestExpect(function()
-			ReactInstanceMap.set({ displayName = "MyComponent" }, badFiber)
-		end).toThrow("invalid fiber in MyComponent being set in ReactInstanceMap!")
+		if errorsEnabled then
+			jestExpect(function()
+				ReactInstanceMap.set({ displayName = "MyComponent" }, badFiber)
+			end).toThrow("invalid fiber in MyComponent being set in ReactInstanceMap!")
+		else
+			jestExpect(function()
+				ReactInstanceMap.set({ displayName = "MyComponent" }, badFiber)
+			end).never.toThrow(
+				"invalid fiber in MyComponent being set in ReactInstanceMap!"
+			)
+		end
 	end)
 	it("with valid fiber with no return that has invalid alternate", function()
 		local goodFiberBadAlternate = {
@@ -64,11 +97,19 @@ describe("set", function()
 				-- missing key fields of Fiber
 			},
 		}
-		jestExpect(function()
-			ReactInstanceMap.set({}, goodFiberBadAlternate)
-		end).toThrow(
-			"invalid alternate fiber (UNNAMED alternate) in UNNAMED Component being set in ReactInstanceMap!"
-		)
+		if errorsEnabled then
+			jestExpect(function()
+				ReactInstanceMap.set({}, goodFiberBadAlternate)
+			end).toThrow(
+				"invalid alternate fiber (UNNAMED alternate) in UNNAMED Component being set in ReactInstanceMap!"
+			)
+		else
+			jestExpect(function()
+				ReactInstanceMap.set({}, goodFiberBadAlternate)
+			end).never.toThrow(
+				"invalid alternate fiber (UNNAMED alternate) in UNNAMED Component being set in ReactInstanceMap!"
+			)
+		end
 	end)
 	it("with valid fiber with a valid return_ that has invalid alternate", function()
 		local goodFiberGoodReturnBadAlternate = {
@@ -93,10 +134,18 @@ describe("set", function()
 				},
 			},
 		}
-		jestExpect(function()
-			ReactInstanceMap.set({}, goodFiberGoodReturnBadAlternate)
-		end).toThrow(
-			"invalid alternate fiber (UNNAMED alternate) in UNNAMED Component being set in ReactInstanceMap! { tag: 3 }\n (from original fiber UNNAMED Component)"
-		)
+		if errorsEnabled then
+			jestExpect(function()
+				ReactInstanceMap.set({}, goodFiberGoodReturnBadAlternate)
+			end).toThrow(
+				"invalid alternate fiber (UNNAMED alternate) in UNNAMED Component being set in ReactInstanceMap! { tag: 3 }\n (from original fiber UNNAMED Component)"
+			)
+		else
+			jestExpect(function()
+				ReactInstanceMap.set({}, goodFiberGoodReturnBadAlternate)
+			end).never.toThrow(
+				"invalid alternate fiber (UNNAMED alternate) in UNNAMED Component being set in ReactInstanceMap! { tag: 3 }\n (from original fiber UNNAMED Component)"
+			)
+		end
 	end)
 end)

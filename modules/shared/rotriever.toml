@@ -8,9 +8,10 @@ files = ["*", "!**/__tests__/**"]
 
 [dependencies]
 LuauPolyfill = { workspace = true }
+SafeFlags = { workspace = true }
 
 [dev_dependencies]
-JestGlobals ={ workspace = true }
+JestGlobals = { workspace = true }
 React = { path = "../react" }
 Scheduler = { path = "../scheduler" }
 ReactNoop = { path = "../react-noop-renderer" }

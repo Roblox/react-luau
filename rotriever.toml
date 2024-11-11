@@ -1,5 +1,5 @@
 [workspace]
-version = "17.1.3"
+version = "17.1.4"
 members = ["modules/*"]
 authors = [
 	"Paul Doyle <pdoyle@roblox.com>",
@@ -8,7 +8,7 @@ authors = [
 	"Carlo Conte <cconte@roblox.com>",
 	"Henry Allen <hallen@roblox.com>",
 	"Olivier Trepanier <otrepanier@roblox.com>",
-	"Hugh Collins <hcollins@roblox.com>"
+	"Hugh Collins <hcollins@roblox.com>",
 ]
 
 [config]
@@ -19,3 +19,4 @@ Promise = "github.com/roblox/roblox-lua-promise@3.3.0"
 Jest = "github.com/roblox/jest-roblox@3"
 JestGlobals = "github.com/roblox/jest-roblox@3"
 LuauPolyfill = "github.com/roblox/luau-polyfill@1"
+SafeFlags = "github.com/Roblox/safe-flags-internal@0.1.1"

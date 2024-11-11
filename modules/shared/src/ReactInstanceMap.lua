@@ -29,6 +29,14 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
 local inspect = LuauPolyfill.util.inspect
 local getComponentName = require(script.Parent.getComponentName)
+local ReactUtils = script:FindFirstAncestor("ReactUtils")
+
+local __DEV__ = _G.__DEV__ :: boolean
+local SafeFlags = require(Packages.SafeFlags)
+local GetFFlagReactInstanceMapDisableErrorChecking =
+	SafeFlags.createGetFFlag("ReactInstanceMapDisableErrorChecking")
+local FFlagReactInstanceMapDisableErrorChecking =
+	GetFFlagReactInstanceMapDisableErrorChecking()
 
 local exports = {}
 
@@ -43,78 +51,83 @@ exports.remove = function(key)
 	key._reactInternals = nil
 end
 
-exports.get = function(key)
-	local value = key._reactInternals
-
-	-- ROBLOX deviation: we have a crash in production this will help catch
-	-- ROBLOX TODO: wrap this in __DEV__
-	if not isValidFiber(value) then
-		error(
-			Error.new(
-				"invalid fiber in "
-					.. (getComponentName(key) or "UNNAMED Component")
-					.. " during get from ReactInstanceMap! "
-					.. inspect(value)
+if not FFlagReactInstanceMapDisableErrorChecking or __DEV__ then
+	exports.get = function(key)
+		local value = key._reactInternals
+		if not isValidFiber(value) then
+			error(
+				Error.new(
+					"invalid fiber in "
+						.. (getComponentName(key) or "UNNAMED Component")
+						.. " during get from ReactInstanceMap! "
+						.. inspect(value)
+				)
 			)
-		)
-	elseif value.alternate ~= nil and not isValidFiber(value.alternate) then
-		error(
-			Error.new(
-				"invalid alternate fiber ("
-					.. (getComponentName(key) or "UNNAMED alternate")
-					.. ") in "
-					.. (getComponentName(key) or "UNNAMED Component")
-					.. " during get from ReactInstanceMap! "
-					.. inspect(value.alternate)
+		elseif value.alternate ~= nil and not isValidFiber(value.alternate) then
+			error(
+				Error.new(
+					"invalid alternate fiber ("
+						.. (getComponentName(key) or "UNNAMED alternate")
+						.. ") in "
+						.. (getComponentName(key) or "UNNAMED Component")
+						.. " during get from ReactInstanceMap! "
+						.. inspect(value.alternate)
+				)
 			)
-		)
+		end
+		return value
 	end
-
-	return value
+else
+	exports.get = function(key)
+		return key._reactInternals
+	end
 end
 
 exports.has = function(key)
 	return key._reactInternals ~= nil
 end
 
-exports.set = function(key, value)
-	-- ROBLOX deviation: we have a crash in production this will help catch
-	-- ROBLOX TODO: wrap this in __DEV__
-	local parent = value
-	local message
-	while parent ~= nil do
-		if not isValidFiber(parent) then
-			message = "invalid fiber in "
-				.. (getComponentName(key) or "UNNAMED Component")
-				.. " being set in ReactInstanceMap! "
-				.. inspect(parent)
-				.. "\n"
+if not FFlagReactInstanceMapDisableErrorChecking or __DEV__ then
+	exports.set = function(key, value)
+		local parent = value
+		local message
+		while parent ~= nil do
+			if not isValidFiber(parent) then
+				message = "invalid fiber in "
+					.. (getComponentName(key) or "UNNAMED Component")
+					.. " being set in ReactInstanceMap! "
+					.. inspect(parent)
+					.. "\n"
 
-			if value ~= parent then
-				message ..= " (from original fiber " .. (getComponentName(key) or "UNNAMED Component") .. ")"
-			end
-			error(Error.new(message))
-		elseif
-			(parent :: any).alternate ~= nil
-			and not isValidFiber((parent :: any).alternate)
-		then
-			message = "invalid alternate fiber ("
-				.. (getComponentName(key) or "UNNAMED alternate")
-				.. ") in "
-				.. (getComponentName(key) or "UNNAMED Component")
-				.. " being set in ReactInstanceMap! "
-				.. inspect((parent :: any).alternate)
-				.. "\n"
+				if value ~= parent then
+					message ..= " (from original fiber " .. (getComponentName(key) or "UNNAMED Component") .. ")"
+				end
+				error(Error.new(message))
+			elseif
+				(parent :: any).alternate ~= nil
+				and not isValidFiber((parent :: any).alternate)
+			then
+				message = "invalid alternate fiber ("
+					.. (getComponentName(key) or "UNNAMED alternate")
+					.. ") in "
+					.. (getComponentName(key) or "UNNAMED Component")
+					.. " being set in ReactInstanceMap! "
+					.. inspect((parent :: any).alternate)
+					.. "\n"
 
-			if value ~= parent then
-				message ..= " (from original fiber " .. (getComponentName(key) or "UNNAMED Component") .. ")"
+				if value ~= parent then
+					message ..= " (from original fiber " .. (getComponentName(key) or "UNNAMED Component") .. ")"
+				end
+				error(Error.new(message))
 			end
-			error(Error.new(message))
+			parent = (parent :: any).return_
 		end
-		parent = (parent :: any).return_
+		(key :: any)._reactInternals = value
 	end
-
-	(key :: any)._reactInternals = value
+else
+	exports.set = function(key, value)
+		(key :: any)._reactInternals = value
+	end
 end
 
 return exports
