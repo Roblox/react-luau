@@ -17,6 +17,10 @@ local console = require(Packages.Shared).console
 local ReactFiberSchedulerPriorities =
 	require(script.Parent["ReactFiberSchedulerPriorities.roblox"])
 
+local SafeFlags = require(Packages.SafeFlags)
+local GetFFlagReactInlineMergeLanes = SafeFlags.createGetFFlag("ReactInlineMergeLanes")
+local FFlagReactInlineMergeLanes = GetFFlagReactInlineMergeLanes()
+
 -- deviation: Instead of defining these here, and and re-exporting in
 -- `ReactInternalTypes`, we depend on and re-export them here to avoid cyclical
 -- require issues
@@ -685,7 +689,10 @@ exports.isSubsetOfLanes = isSubsetOfLanes
 local function mergeLanes(a: Lanes | Lane, b: Lanes | Lane): Lanes
 	return bit32.bor(a, b)
 end
-exports.mergeLanes = mergeLanes
+type MergeLanes = (a: Lanes | Lane, b: Lanes | Lane) -> Lanes
+exports.mergeLanes = (
+	if FFlagReactInlineMergeLanes then bit32.bor else mergeLanes
+) :: MergeLanes
 
 local function removeLanes(set: Lanes, subset: Lanes | Lane): Lanes
 	return bit32.band(set, bit32.bnot(subset))
