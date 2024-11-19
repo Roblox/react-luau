@@ -12,9 +12,7 @@
 	* See the License for the specific language governing permissions and
 	* limitations under the License.
 ]]
-
 -- Targeted performance insights for Roblox Microprofiler
-
 local Packages = script.Parent.Parent
 local getComponentName = require(Packages.Shared).getComponentName
 local ReactWorkTags = require(script.Parent.ReactWorkTags)
@@ -24,11 +22,12 @@ type Fiber = ReactInternalTypes.Fiber
 type FiberRoot = ReactInternalTypes.FiberRoot
 
 -- ReactMicroprofilerLevel Levels --
-local LEVEL_ROOTS = 1 -- Level 1: Roots + Commit time
-local LEVEL_FIBERS = 10 -- Level 10: Individual Fiber "units of work"
+local LEVEL_ROOTS_LOG_ONLY = 1 -- Level 1: Roots for Logging only
+local LEVEL_ROOTS = 5 -- Level 5: Roots + Commit time in Microprofiler
+local LEVEL_FIBERS = 10 -- Level 10: Individual Fiber "units of work" in Microprofiler
 
 local loadedFlag, ReactMicroprofilerLevel = pcall(function()
-	return game:DefineFastInt("ReactMicroprofilerLevel", 0)
+	return game:DefineFastInt("ReactMicroprofilerLevel2", 0)
 end)
 if not loadedFlag then
 	ReactMicroprofilerLevel = 0
@@ -41,9 +40,37 @@ export type Marker = {
 }
 
 export type SamplerCallback = (Marker) -> ()
+function noop(...: unknown) end
 
 local enableRootSampling = false
 local timerSamplingCallback: SamplerCallback | nil = nil
+
+-- used to inhibit profileend() calls that no longer match the originating profilebegin(...) frame
+local frameId = 0
+local lastFrameId = 0
+
+if ReactMicroprofilerLevel >= LEVEL_ROOTS then
+	game:GetService("RunService").RenderStepped:Connect(function()
+		frameId = (frameId + 1) % 10000
+	end)
+end
+
+local microprofiler = if ReactMicroprofilerLevel >= LEVEL_ROOTS
+	then {
+		profilebegin = function(...)
+			lastFrameId = frameId
+			debug.profilebegin(...)
+		end,
+		profileend = function()
+			if lastFrameId == frameId then
+				debug.profileend()
+			end
+		end,
+	}
+	else {
+		profilebegin = noop,
+		profileend = noop,
+	}
 
 function startTimerSampling(timerSamplingCallbackFn: SamplerCallback)
 	if enableRootSampling then
@@ -128,7 +155,7 @@ function profileRootBeforeUnitOfWork(root: FiberRoot): Marker?
 			endTime = 0,
 		}
 		startTimer(marker)
-		debug.profilebegin(profileId)
+		microprofiler.profilebegin(profileId)
 		return marker
 	end
 
@@ -138,7 +165,7 @@ end
 function profileRootAfterYielding(marker: Marker?)
 	if marker then
 		endTimer(marker)
-		debug.profileend()
+		microprofiler.profileend()
 	end
 end
 
@@ -168,7 +195,7 @@ function profileUnitOfWorkBefore(unitOfWork: Fiber)
 	end
 
 	if profileId ~= nil then
-		debug.profilebegin(profileId)
+		microprofiler.profilebegin(profileId)
 		return true
 	end
 
@@ -177,26 +204,24 @@ end
 
 function profileUnitOfWorkAfter(profileRunning: boolean)
 	if profileRunning then
-		debug.profileend()
+		microprofiler.profileend()
 	end
 end
 
 function profileCommitBefore()
-	debug.profilebegin("Commit")
+	microprofiler.profilebegin("Commit")
 end
 function profileCommitAfter()
-	debug.profileend()
+	microprofiler.profileend()
 end
-
-function noop(...: unknown) end
 
 return {
 	startTimerSampling = startTimerSampling,
 	endTimerSampling = endTimerSampling,
-	profileRootBeforeUnitOfWork = if ReactMicroprofilerLevel >= LEVEL_ROOTS
+	profileRootBeforeUnitOfWork = if ReactMicroprofilerLevel >= LEVEL_ROOTS_LOG_ONLY
 		then profileRootBeforeUnitOfWork
 		else noop,
-	profileRootAfterYielding = if ReactMicroprofilerLevel >= LEVEL_ROOTS
+	profileRootAfterYielding = if ReactMicroprofilerLevel >= LEVEL_ROOTS_LOG_ONLY
 		then profileRootAfterYielding
 		else noop,
 	profileUnitOfWorkBefore = if ReactMicroprofilerLevel >= LEVEL_FIBERS
