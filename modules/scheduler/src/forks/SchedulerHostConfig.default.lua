@@ -15,6 +15,7 @@ local Shared = require(Packages.Shared)
 local console = Shared.console
 local errorToString = Shared.errorToString
 local describeError = Shared.describeError
+local SafeFlags = require(Packages.SafeFlags)
 
 -- ROBLOX deviation: getCurrentTime will always map to `tick` in Luau
 local getCurrentTime = function()
@@ -35,11 +36,14 @@ local isMessageLoopRunning = false
 local scheduledHostCallback: ((boolean, number) -> boolean) | nil = nil
 local taskTimeoutID = Object.None
 
+local GetFIntReactSchedulerYieldInterval =
+	SafeFlags.createGetFInt("ReactSchedulerYieldInterval", 15)
+
 -- Scheduler periodically yields in case there is other work on the main
 -- thread, like user events. By default, it yields multiple times per frame.
 -- It does not attempt to align with frame boundaries, since most tasks don't
 -- need to be frame aligned; for those that do, use requestAnimationFrame.
-local yieldInterval = 15
+local yieldInterval = GetFIntReactSchedulerYieldInterval()
 local deadline = 0
 
 -- ROBLOX deviation: Removed some logic around browser functionality that's not
