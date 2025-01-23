@@ -37,7 +37,7 @@ local scheduledHostCallback: ((boolean, number) -> boolean) | nil = nil
 local taskTimeoutID = Object.None
 
 local GetFIntReactSchedulerYieldInterval =
-	SafeFlags.createGetFInt("ReactSchedulerYieldInterval", 15)
+	SafeFlags.createGetFInt("ReactSchedulerYieldInterval2", 15)
 local GetFIntReactSchedulerDesiredFrameRate =
 	SafeFlags.createGetFInt("ReactSchedulerDesiredFrameRate", 60)
 local GetFFlagReactSchedulerEnableDeferredWork =
