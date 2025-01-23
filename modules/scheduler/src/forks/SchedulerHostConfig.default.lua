@@ -38,6 +38,16 @@ local taskTimeoutID = Object.None
 
 local GetFIntReactSchedulerYieldInterval =
 	SafeFlags.createGetFInt("ReactSchedulerYieldInterval", 15)
+local GetFIntReactSchedulerDesiredFrameRate =
+	SafeFlags.createGetFInt("ReactSchedulerDesiredFrameRate", 60)
+local GetFFlagReactSchedulerEnableDeferredWork =
+	SafeFlags.createGetFFlag("ReactSchedulerEnableDeferredWork")
+local FFlagReactSchedulerEnableDeferredWork = GetFFlagReactSchedulerEnableDeferredWork()
+
+-- ROBLOX deviation: support deferred re-entrants before yielding to the next frame
+local isDeferred = false
+local frameStartTime = 0
+local maxMillisecondsPerFrame = 1000 / GetFIntReactSchedulerDesiredFrameRate()
 
 -- Scheduler periodically yields in case there is other work on the main
 -- thread, like user events. By default, it yields multiple times per frame.
@@ -80,6 +90,12 @@ local function performWorkUntilDeadline()
 		deadline = currentTime + yieldInterval
 		local hasTimeRemaining = true
 
+		if FFlagReactSchedulerEnableDeferredWork then
+			if not isDeferred then
+				frameStartTime = currentTime
+			end
+		end
+
 		local ok, result
 		local function doWork()
 			local hasMoreWork = (scheduledHostCallback :: any)(
@@ -98,9 +114,22 @@ local function performWorkUntilDeadline()
 				-- more work, either yield and defer till later this frame, or
 				-- delay work till next frame
 
-				-- ROBLOX FIXME: What's the proper combination of task.defer and
-				-- task.delay that makes this optimal?
-				task.delay(0, performWorkUntilDeadline)
+				if FFlagReactSchedulerEnableDeferredWork then
+					local timeUsed = getCurrentTime() - frameStartTime
+					local budgetRemaining = maxMillisecondsPerFrame - timeUsed
+
+					if budgetRemaining > yieldInterval then
+						-- Budget remains for more work this frame, defer
+						isDeferred = true
+						task.defer(performWorkUntilDeadline)
+					else
+						-- No budget remains for more work this frame, delay to next frame
+						isDeferred = false
+						task.delay(0, performWorkUntilDeadline)
+					end
+				else
+					task.delay(0, performWorkUntilDeadline)
+				end
 			end
 			return nil
 		end
