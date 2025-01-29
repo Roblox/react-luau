@@ -38,16 +38,34 @@ local taskTimeoutID = Object.None
 
 local GetFIntReactSchedulerYieldInterval =
 	SafeFlags.createGetFInt("ReactSchedulerYieldInterval2", 15)
-local GetFIntReactSchedulerDesiredFrameRate =
-	SafeFlags.createGetFInt("ReactSchedulerDesiredFrameRate", 60)
-local GetFFlagReactSchedulerEnableDeferredWork =
-	SafeFlags.createGetFFlag("ReactSchedulerEnableDeferredWork")
-local FFlagReactSchedulerEnableDeferredWork = GetFFlagReactSchedulerEnableDeferredWork()
+local FIntReactSchedulerDesiredFrameRate =
+	SafeFlags.createGetFInt("ReactSchedulerDesiredFrameRate", 60)()
+local FIntReactSchedulerMinimumFrameRate =
+	SafeFlags.createGetFInt("ReactSchedulerMinFrameRate", 30)()
+local FFlagReactSchedulerEnableDeferredWork =
+	SafeFlags.createGetFFlag("ReactSchedulerEnableDeferredWork")()
+local FFlagReactSchedulerSetFrameMarkerOnHeartbeatEnd =
+	SafeFlags.createGetFFlag("ReactSchedulerSetFrameMarkerOnHeartbeatEnd")()
+local FFlagReactSchedulerSetTargetMsByHeartbeatDelta =
+	SafeFlags.createGetFFlag("ReactSchedulerSetTargetMsByHeartbeatDelta")()
 
 -- ROBLOX deviation: support deferred re-entrants before yielding to the next frame
 local isDeferred = false
 local frameStartTime = 0
-local maxMillisecondsPerFrame = 1000 / GetFIntReactSchedulerDesiredFrameRate()
+local desiredMillisecondsPerFrame = 1000 / FIntReactSchedulerDesiredFrameRate
+local maxMillisecondsPerFrame = 1000 / FIntReactSchedulerMinimumFrameRate
+local targetMillisecondsPerFrame = desiredMillisecondsPerFrame
+
+if FFlagReactSchedulerSetTargetMsByHeartbeatDelta then
+	game:GetService("RunService").Heartbeat:Connect(function(step: number)
+		targetMillisecondsPerFrame =
+			math.clamp(step * 1000, desiredMillisecondsPerFrame, maxMillisecondsPerFrame)
+	end)
+end
+
+local function setFrameMarker()
+	frameStartTime = getCurrentTime()
+end
 
 -- Scheduler periodically yields in case there is other work on the main
 -- thread, like user events. By default, it yields multiple times per frame.
@@ -55,6 +73,12 @@ local maxMillisecondsPerFrame = 1000 / GetFIntReactSchedulerDesiredFrameRate()
 -- need to be frame aligned; for those that do, use requestAnimationFrame.
 local yieldInterval = GetFIntReactSchedulerYieldInterval()
 local deadline = 0
+
+local function doesBudgetRemain(): boolean
+	local timeElapsed = getCurrentTime() - frameStartTime
+	local budget = targetMillisecondsPerFrame - timeElapsed
+	return budget > yieldInterval
+end
 
 -- ROBLOX deviation: Removed some logic around browser functionality that's not
 -- present in the roblox engine
@@ -90,9 +114,23 @@ local function performWorkUntilDeadline()
 		deadline = currentTime + yieldInterval
 		local hasTimeRemaining = true
 
-		if FFlagReactSchedulerEnableDeferredWork then
+		if
+			FFlagReactSchedulerEnableDeferredWork
+			and not FFlagReactSchedulerSetFrameMarkerOnHeartbeatEnd
+		then
 			if not isDeferred then
 				frameStartTime = currentTime
+			end
+		end
+
+		if FFlagReactSchedulerSetFrameMarkerOnHeartbeatEnd then
+			-- We only want to set no time remaining if we are deferring work
+			-- This ensures we run React at least once per frame if there's work
+			-- While this helps avoid starving React, it doesn't guarantee it will
+			if isDeferred then
+				if not doesBudgetRemain() then
+					hasTimeRemaining = false
+				end
 			end
 		end
 
@@ -115,10 +153,7 @@ local function performWorkUntilDeadline()
 				-- delay work till next frame
 
 				if FFlagReactSchedulerEnableDeferredWork then
-					local timeUsed = getCurrentTime() - frameStartTime
-					local budgetRemaining = maxMillisecondsPerFrame - timeUsed
-
-					if budgetRemaining > yieldInterval then
+					if doesBudgetRemain() then
 						-- Budget remains for more work this frame, defer
 						isDeferred = true
 						task.defer(performWorkUntilDeadline)
@@ -126,6 +161,9 @@ local function performWorkUntilDeadline()
 						-- No budget remains for more work this frame, delay to next frame
 						isDeferred = false
 						task.delay(0, performWorkUntilDeadline)
+						if FFlagReactSchedulerSetFrameMarkerOnHeartbeatEnd then
+							task.defer(setFrameMarker)
+						end
 					end
 				else
 					task.delay(0, performWorkUntilDeadline)
@@ -144,6 +182,9 @@ local function performWorkUntilDeadline()
 			-- If a scheduler task throws, exit the current coroutine so the
 			-- error can be observed.
 			task.delay(0, performWorkUntilDeadline)
+			if FFlagReactSchedulerSetFrameMarkerOnHeartbeatEnd then
+				task.defer(setFrameMarker)
+			end
 
 			-- ROBLOX FIXME: the top-level Luau VM handler doesn't deal with
 			-- non-string errors, so massage it until VM support lands
@@ -182,6 +223,9 @@ local function requestHostCallback(callback)
 		isMessageLoopRunning = true
 
 		task.delay(0, performWorkUntilDeadline)
+		if FFlagReactSchedulerSetFrameMarkerOnHeartbeatEnd then
+			task.defer(setFrameMarker)
+		end
 	end
 end
 
