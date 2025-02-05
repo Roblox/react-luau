@@ -956,7 +956,11 @@ mod.performConcurrentWorkOnRoot = function(root): (() -> ...any) | nil
 		-- The task node scheduled for this root is the same one that's
 		-- currently executed. Need to return a continuation.
 		return function()
-			return mod.performConcurrentWorkOnRoot(root)
+			-- ROBLOX deviation: RobloxReactProfiling
+			local profileRunning = RobloxReactProfiling.profileRootBeforeUnitOfWork(root)
+			local ret = mod.performConcurrentWorkOnRoot(root)
+			RobloxReactProfiling.profileRootAfterYielding(profileRunning)
+			return ret
 		end
 	end
 	-- ROBLOX Luau FIXME: Luau shouldn't error on nil-able returns

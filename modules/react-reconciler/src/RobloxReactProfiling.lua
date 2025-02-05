@@ -27,7 +27,7 @@ local LEVEL_ROOTS = 5 -- Level 5: Roots + Commit time in Microprofiler
 local LEVEL_FIBERS = 10 -- Level 10: Individual Fiber "units of work" in Microprofiler
 
 local loadedFlag, ReactMicroprofilerLevel = pcall(function()
-	return game:DefineFastInt("ReactMicroprofilerLevel2", 0)
+	return game:DefineFastInt("ReactMicroprofilerLevel3", 0)
 end)
 if not loadedFlag then
 	ReactMicroprofilerLevel = 0
