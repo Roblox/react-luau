@@ -4,4 +4,4 @@ ignore:
   - '*jest*'
   - '*mock*'
   - '*Dev*'
-  - '*/_Index/*
+  - '*/_Index/*'
