@@ -1,0 +1,7 @@
+ignore:
+  - '*spec.lua'
+  - '*__test*'
+  - '*jest*'
+  - '*mock*'
+  - '*Dev*'
+  - '*/_Index/*
