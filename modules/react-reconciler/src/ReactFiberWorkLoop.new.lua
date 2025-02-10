@@ -2143,7 +2143,8 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
 		end
 
 		if enableSchedulingProfiler then
-			SchedulingProfiler.markCommitStopped()
+			-- ROBLOX deviation: pass root for attribution
+			SchedulingProfiler.markCommitStopped(root)
 		end
 
 		return nil
@@ -2462,7 +2463,8 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
 		end
 
 		if enableSchedulingProfiler then
-			SchedulingProfiler.markCommitStopped()
+			-- ROBLOX deviation: pass root for attribution
+			SchedulingProfiler.markCommitStopped(root)
 		end
 
 		-- This is a legacy edge case. We just committed the initial mount of
@@ -2482,7 +2484,8 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
 	end
 
 	if enableSchedulingProfiler then
-		SchedulingProfiler.markCommitStopped()
+		-- ROBLOX deviation: pass root for attribution
+		SchedulingProfiler.markCommitStopped(root)
 	end
 
 	return nil
@@ -2980,7 +2983,8 @@ flushPassiveEffectsImpl = function()
 	end
 
 	if enableSchedulingProfiler then
-		SchedulingProfiler.markPassiveEffectsStopped()
+		-- ROBLOX deviation: pass root for attribution
+		SchedulingProfiler.markPassiveEffectsStopped(root)
 	end
 
 	if __DEV__ and enableDoubleInvokingEffects then

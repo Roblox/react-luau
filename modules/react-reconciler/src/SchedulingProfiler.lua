@@ -21,6 +21,7 @@ type Lanes = ReactFiberLane.Lanes
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
+type FiberRoot = ReactInternalTypes.FiberRoot
 
 local ReactTypes = require(Packages.Shared)
 type Wakeable = ReactTypes.Wakeable
@@ -47,6 +48,23 @@ function formatLanes(laneOrLanes: Lane | Lanes): string
 	return tostring(laneOrLanes)
 end
 
+-- ROBLOX deviation START: profiler event callback
+export type ProfilerEvent = number
+export type ProfilerEventCallback = (type: ProfilerEvent, root: FiberRoot?) -> ()
+local profilerEventCallback: ProfilerEventCallback? = nil
+local profilerEventTypes = {
+	CommitStart = 0,
+	CommitStop = 1,
+	LayoutEffectsStart = 2,
+	LayoutEffectsStop = 3,
+	PassiveEffectsStart = 4,
+	PassiveEffectsStop = 5,
+	RenderStart = 6,
+	RenderYield = 7,
+	RenderStop = 8,
+} :: { [string]: ProfilerEvent }
+-- ROBLOX deviation END
+
 -- Create a mark on React initialization
 if enableSchedulingProfiler then
 	if supportsUserTiming then
@@ -59,13 +77,21 @@ exports.markCommitStarted = function(lanes: Lanes): ()
 		if supportsUserTiming then
 			performance.mark("--commit-start-" .. formatLanes(lanes))
 		end
+		-- ROBLOX deviation: profiler event callback
+		if profilerEventCallback then
+			profilerEventCallback(profilerEventTypes.CommitStart)
+		end
 	end
 end
 
-exports.markCommitStopped = function(): ()
+exports.markCommitStopped = function(root: FiberRoot): ()
 	if enableSchedulingProfiler then
 		if supportsUserTiming then
 			performance.mark("--commit-stop")
+		end
+		-- ROBLOX deviation: profiler event callback
+		if profilerEventCallback then
+			profilerEventCallback(profilerEventTypes.CommitStop, root)
 		end
 	end
 end
@@ -119,6 +145,10 @@ exports.markLayoutEffectsStopped = function(): ()
 		if supportsUserTiming then
 			performance.mark("--layout-effects-stop")
 		end
+		-- ROBLOX deviation: profiler event callback
+		if profilerEventCallback then
+			profilerEventCallback(profilerEventTypes.LayoutEffectsStop)
+		end
 	end
 end
 
@@ -127,13 +157,21 @@ exports.markPassiveEffectsStarted = function(lanes: Lanes): ()
 		if supportsUserTiming then
 			performance.mark("--passive-effects-start-" .. formatLanes(lanes))
 		end
+		-- ROBLOX deviation: profiler event callback
+		if profilerEventCallback then
+			profilerEventCallback(profilerEventTypes.PassiveEffectsStart)
+		end
 	end
 end
 
-exports.markPassiveEffectsStopped = function(): ()
+exports.markPassiveEffectsStopped = function(root: FiberRoot): ()
 	if enableSchedulingProfiler then
 		if supportsUserTiming then
 			performance.mark("--passive-effects-stop")
+		end
+		-- ROBLOX deviation: profiler event callback
+		if profilerEventCallback then
+			profilerEventCallback(profilerEventTypes.PassiveEffectsStop, root)
 		end
 	end
 end
@@ -143,6 +181,10 @@ exports.markRenderStarted = function(lanes: Lanes): ()
 		if supportsUserTiming then
 			performance.mark("--render-start-" .. formatLanes(lanes))
 		end
+		-- ROBLOX deviation: profiler event callback
+		if profilerEventCallback then
+			profilerEventCallback(profilerEventTypes.RenderStart)
+		end
 	end
 end
 
@@ -151,6 +193,10 @@ exports.markRenderYielded = function(): ()
 		if supportsUserTiming then
 			performance.mark("--render-yield")
 		end
+		-- ROBLOX deviation: profiler event callback
+		if profilerEventCallback then
+			profilerEventCallback(profilerEventTypes.RenderYield)
+		end
 	end
 end
 
@@ -158,6 +204,10 @@ exports.markRenderStopped = function(): ()
 	if enableSchedulingProfiler then
 		if supportsUserTiming then
 			performance.mark("--render-stop")
+		end
+		-- ROBLOX deviation: profiler event callback
+		if profilerEventCallback then
+			profilerEventCallback(profilerEventTypes.RenderStop)
 		end
 	end
 end
@@ -193,5 +243,16 @@ exports.markStateUpdateScheduled = function(fiber: Fiber, lane: Lane): ()
 		end
 	end
 end
+
+-- ROBLOX deviation START: profiler event callback
+exports.profilerEventTypes = profilerEventTypes
+
+exports.registerProfilerEventCallback = function(callback: ProfilerEventCallback)
+	if profilerEventCallback then
+		warn("SchedulingProfiler: Another event callback was already registered.")
+	end
+	profilerEventCallback = callback
+end
+-- ROBLOX deviation END
 
 return exports

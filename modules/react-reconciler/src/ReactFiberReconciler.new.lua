@@ -120,7 +120,8 @@ local setCurrentUpdateLanePriority = ReactFiberLane.setCurrentUpdateLanePriority
 -- local scheduleRoot = ReactFiberHotReloading.scheduleRoot
 -- local setRefreshHandler = ReactFiberHotReloading.setRefreshHandler
 -- local findHostInstancesForRefresh = ReactFiberHotReloading.findHostInstancesForRefresh
-local markRenderScheduled = require(script.Parent.SchedulingProfiler).markRenderScheduled
+local SchedulingProfiler = require(script.Parent.SchedulingProfiler)
+local markRenderScheduled = SchedulingProfiler.markRenderScheduled
 
 local exports = {}
 
@@ -824,5 +825,9 @@ exports.injectIntoDevTools = function(devToolsConfig: DevToolsConfig): boolean
 end
 
 exports.robloxReactProfiling = require(script.Parent.RobloxReactProfiling)
+exports.schedulingProfiler = {
+	profilerEventTypes = SchedulingProfiler.profilerEventTypes,
+	registerProfilerEventCallback = SchedulingProfiler.registerProfilerEventCallback,
+}
 
 return exports
