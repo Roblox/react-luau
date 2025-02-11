@@ -137,6 +137,10 @@ exports.markLayoutEffectsStarted = function(lanes: Lanes): ()
 		if supportsUserTiming then
 			performance.mark("--layout-effects-start-" .. formatLanes(lanes))
 		end
+		-- ROBLOX deviation: profiler event callback
+		if profilerEventCallback then
+			profilerEventCallback(profilerEventTypes.LayoutEffectsStart)
+		end
 	end
 end
 

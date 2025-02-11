@@ -307,5 +307,6 @@ if _G.__DEV__ then
 end
 
 exports.robloxReactProfiling = ReactReconciler.robloxReactProfiling
+exports.schedulingProfiler = ReactReconciler.schedulingProfiler
 
 return exports
