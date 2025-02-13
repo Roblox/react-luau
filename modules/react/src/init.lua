@@ -37,6 +37,7 @@ export type ElementType = SharedModule.React_ElementType
 export type Element<C> = SharedModule.React_Element<C>
 export type Key = SharedModule.React_Key
 export type Ref<ElementType> = SharedModule.React_Ref<ElementType>
+export type RefObject<T = any> = SharedModule.RefObject<T>
 export type Node = SharedModule.React_Node
 export type Context<T> = SharedModule.ReactContext<T>
 -- ROBLOX TODO: Portal
