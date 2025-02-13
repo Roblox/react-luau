@@ -111,7 +111,7 @@ export type ReactPortal = {
 	-- ROBLOX deviation END
 }
 
-export type RefObject = { current: any }
+export type RefObject<T = any> = { current: T }
 
 -- ROBLOX deviation START: No Luau support for numeric literal types
 -- export type EventPriority = 0 | 1 | 2;
