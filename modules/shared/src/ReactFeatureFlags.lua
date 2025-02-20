@@ -48,10 +48,10 @@ exports.warnAboutDeprecatedLifecycles = true
 exports.enableProfilerTimer = _G.__PROFILE__
 
 -- Record durations for commit and passive effects phases.
-exports.enableProfilerCommitHooks = false
+exports.enableProfilerCommitHooks = _G.__PROFILE__
 
 -- Trace which interactions trigger each commit.
-exports.enableSchedulerTracing = _G.__PROFILE__
+exports.enableSchedulerTracing = false
 
 -- SSR experiments
 exports.enableSuspenseServerRenderer = _G.__EXPERIMENTAL__
