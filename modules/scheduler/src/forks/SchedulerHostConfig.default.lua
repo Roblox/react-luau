@@ -56,11 +56,24 @@ local desiredMillisecondsPerFrame = 1000 / FIntReactSchedulerDesiredFrameRate
 local maxMillisecondsPerFrame = 1000 / FIntReactSchedulerMinimumFrameRate
 local targetMillisecondsPerFrame = desiredMillisecondsPerFrame
 
+local heartbeatConection: RBXScriptConnection? = nil
+
+local function createHeartbeatConnection()
+	if heartbeatConection then
+		heartbeatConection:Disconnect()
+	end
+	heartbeatConection = game:GetService("RunService").Heartbeat
+		:Connect(function(step: number)
+			targetMillisecondsPerFrame = math.clamp(
+				step * 1000,
+				desiredMillisecondsPerFrame,
+				maxMillisecondsPerFrame
+			)
+		end)
+end
+
 if FFlagReactSchedulerSetTargetMsByHeartbeatDelta then
-	game:GetService("RunService").Heartbeat:Connect(function(step: number)
-		targetMillisecondsPerFrame =
-			math.clamp(step * 1000, desiredMillisecondsPerFrame, maxMillisecondsPerFrame)
-	end)
+	createHeartbeatConnection()
 end
 
 local function setFrameMarker()
@@ -73,6 +86,37 @@ end
 -- need to be frame aligned; for those that do, use requestAnimationFrame.
 local yieldInterval = GetFIntReactSchedulerYieldInterval()
 local deadline = 0
+
+type schedulerFlags = {
+	yieldInterval: number?,
+	deferredWork: boolean?,
+	heartbeatFrameMarker: boolean?,
+	targetMsByHeartbeatDelta: boolean?,
+}
+
+local function setSchedulerFlags(flags: schedulerFlags)
+	if flags.yieldInterval ~= nil then
+		yieldInterval = flags.yieldInterval
+	end
+	if flags.deferredWork ~= nil then
+		FFlagReactSchedulerEnableDeferredWork = flags.deferredWork
+	end
+	if flags.heartbeatFrameMarker ~= nil then
+		FFlagReactSchedulerSetFrameMarkerOnHeartbeatEnd = flags.heartbeatFrameMarker
+	end
+	if flags.targetMsByHeartbeatDelta ~= nil then
+		FFlagReactSchedulerSetTargetMsByHeartbeatDelta = flags.targetMsByHeartbeatDelta
+		if flags.targetMsByHeartbeatDelta then
+			createHeartbeatConnection()
+		else
+			if heartbeatConection then
+				heartbeatConection:Disconnect()
+				heartbeatConection = nil
+				targetMillisecondsPerFrame = desiredMillisecondsPerFrame -- reset to default
+			end
+		end
+	end
+end
 
 local function doesBudgetRemain(): boolean
 	local timeElapsed = getCurrentTime() - frameStartTime
@@ -253,4 +297,5 @@ return {
 	requestPaint = requestPaint,
 	getCurrentTime = getCurrentTime,
 	forceFrameRate = forceFrameRate,
+	setSchedulerFlags = setSchedulerFlags,
 }
