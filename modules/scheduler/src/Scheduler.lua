@@ -573,7 +573,7 @@ return function(hostConfig)
 		unstable_getFirstCallbackNode = unstable_getFirstCallbackNode,
 		unstable_now = getCurrentTime,
 		unstable_forceFrameRate = forceFrameRate,
-		unstable_setShedulerFlags = setSchedulerFlags,
+		unstable_setSchedulerFlags = setSchedulerFlags,
 		-- ROBLOX TODO: use if-expressions when all clients are on 503+
 		unstable_Profiling = (function()
 			if enableProfiling then
