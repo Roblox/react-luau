@@ -3195,10 +3195,13 @@ local function renderWithHooks<Props, SecondArg>(
 
 	-- ROBLOX performance: use React 18 approach that avoid invariant in hot paths
 	if didRenderTooFewHooks then
+		local childrenName = getComponentName(children.type) or "unknown"
 		error(
 			Error.new(
 				"Rendered fewer hooks than expected. This may be caused by an accidental "
-					.. "early return statement."
+					.. "early return statement. Inside: '"
+					.. childrenName
+					.. "'."
 			)
 		)
 	end
