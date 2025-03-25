@@ -27,7 +27,7 @@ local LEVEL_ROOTS = 5 -- Level 5: Roots + Commit time in Microprofiler
 local LEVEL_FIBERS = 10 -- Level 10: Individual Fiber "units of work" in Microprofiler
 
 local loadedFlag, ReactMicroprofilerLevel = pcall(function()
-	return game:DefineFastInt("ReactMicroprofilerLevel3", 0)
+	return game:DefineFastInt("ReactMicroprofilerLevel4", 0)
 end)
 if not loadedFlag then
 	ReactMicroprofilerLevel = 0
@@ -46,24 +46,24 @@ local enableRootSampling = false
 local timerSamplingCallback: SamplerCallback | nil = nil
 
 -- used to inhibit profileend() calls that no longer match the originating profilebegin(...) frame
-local frameId = 0
-local lastFrameId = 0
+local numActiveProfilesInFrame = 0
 
 if ReactMicroprofilerLevel >= LEVEL_ROOTS then
 	game:GetService("RunService").RenderStepped:Connect(function()
-		frameId = (frameId + 1) % 10000
+		numActiveProfilesInFrame = 0
 	end)
 end
 
 local microprofiler = if ReactMicroprofilerLevel >= LEVEL_ROOTS
 	then {
 		profilebegin = function(...)
-			lastFrameId = frameId
 			debug.profilebegin(...)
+			numActiveProfilesInFrame += 1
 		end,
 		profileend = function()
-			if lastFrameId == frameId then
+			if numActiveProfilesInFrame > 0 then
 				debug.profileend()
+				numActiveProfilesInFrame -= 1
 			end
 		end,
 	}
