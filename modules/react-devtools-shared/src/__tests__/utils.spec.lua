@@ -47,14 +47,14 @@ describe("utils", function()
 			jestExpect(getDisplayName(FauxComponent)).toEqual("OverrideDisplayName")
 		end)
 
-		it("should return the fallback for anonymous functions", function()
-			jestExpect(getDisplayName(function() end, "Fallback")).toEqual("Fallback")
+		it("should return the fallback for invalid type", function()
+			jestExpect(getDisplayName(100, "Fallback")).toEqual("Fallback")
 		end)
 
 		it(
-			"should return Anonymous for anonymous functions without a fallback",
+			"should return fileName:lineNumber for anonymous functions without a fallback",
 			function()
-				jestExpect(getDisplayName(function() end)).toEqual("Anonymous")
+				jestExpect(getDisplayName(function() end)).toMatch("utils.spec:[0-9]*")
 			end
 		)
 

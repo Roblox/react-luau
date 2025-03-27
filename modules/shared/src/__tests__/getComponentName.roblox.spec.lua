@@ -20,9 +20,11 @@ describe("function components", function()
 	it("gets name from non-anonymous function", function()
 		jestExpect(getComponentName(MyComponent)).toBe("MyComponent")
 	end)
-	it("gets nil from anonymous function", function()
+	it("gets fileName:lineNumber from anonymous function", function()
 		local anonymous = function() end
-		jestExpect(getComponentName(anonymous)).toBe(nil)
+		jestExpect(getComponentName(anonymous)).toMatch(
+			"getComponentName.roblox.spec:[0-9]*"
+		)
 	end)
 end)
 describe("Lazy components", function()
@@ -36,7 +38,7 @@ describe("Lazy components", function()
 		end)
 		jestExpect(getComponentName(lazyMyComponent)).toBe("MyComponent")
 	end)
-	it("gets nil from lazy-wrapped anonymous function", function()
+	it("gets fileName:lineNumber from lazy-wrapped anonymous function", function()
 		local lazyAnonymous = React.lazy(function()
 			return {
 				andThen = function(self, resolve)
@@ -44,6 +46,8 @@ describe("Lazy components", function()
 				end,
 			}
 		end)
-		jestExpect(getComponentName(lazyAnonymous)).toBe(nil)
+		jestExpect(getComponentName(lazyAnonymous)).toMatch(
+			"getComponentName.roblox.spec:[0-9]*"
+		)
 	end)
 end)

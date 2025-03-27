@@ -3485,10 +3485,9 @@ mod.warnAboutRenderPhaseUpdatesInDEV = function(fiber: Fiber): ()
 				or fiber.tag == ReactWorkTags.SimpleMemoComponent
 			then
 				local renderingComponentName = (function()
-					if workInProgress ~= nil then
-						return getComponentName((workInProgress :: Fiber).type)
-					end
-					return "Unknown"
+					return workInProgress
+							and getComponentName((workInProgress :: Fiber).type)
+						or "Unknown"
 				end)()
 				-- Dedupe by the rendering component because it's the one that needs to be fixed.
 				local dedupeKey = renderingComponentName
