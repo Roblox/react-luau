@@ -78,7 +78,8 @@ local function getComponentName(type: any): string | nil
 		if name and string.len(name) > 0 then
 			return name
 		else
-			return nil
+			local fileName, line = debug.info((type :: any) :: Function, "sl")
+			return string.format("%s:%d", fileName, line)
 		end
 	end
 
