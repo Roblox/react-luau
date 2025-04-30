@@ -10,7 +10,7 @@ local testPathIgnorePatterns = {}
 local allProjects = { Workspace }
 
 for _, project in projectsWithCustomJestConfig do
-	table.insert(testPathIgnorePatterns, project)
+	table.insert(testPathIgnorePatterns, tostring(project))
 	table.insert(allProjects, project)
 end
 

@@ -48,6 +48,10 @@ local FFlagReactSchedulerSetFrameMarkerOnHeartbeatEnd =
 	SafeFlags.createGetFFlag("ReactSchedulerSetFrameMarkerOnHeartbeatEnd")()
 local FFlagReactSchedulerSetTargetMsByHeartbeatDelta =
 	SafeFlags.createGetFFlag("ReactSchedulerSetTargetMsByHeartbeatDelta")()
+local FFlagReactSchedulerNumberOfLookbackFrames =
+	SafeFlags.createGetFInt("ReactSchedulerNumberOfLookbackFrames", 1)()
+local FFlagReactSchedulerLookbackUseRingBuffer =
+	SafeFlags.createGetFFlag("ReactSchedulerLookbackUseRingBuffer")()
 
 -- ROBLOX deviation: support deferred re-entrants before yielding to the next frame
 local isDeferred = false
@@ -55,8 +59,13 @@ local frameStartTime = 0
 local desiredMillisecondsPerFrame = 1000 / FIntReactSchedulerDesiredFrameRate
 local maxMillisecondsPerFrame = 1000 / FIntReactSchedulerMinimumFrameRate
 local targetMillisecondsPerFrame = desiredMillisecondsPerFrame
+local averageMillisecondsPerFrame = targetMillisecondsPerFrame
 
 local heartbeatConection: RBXScriptConnection? = nil
+local lookbackBuffer = if FFlagReactSchedulerLookbackUseRingBuffer
+	then table.create(FFlagReactSchedulerNumberOfLookbackFrames)
+	else nil :: never
+local lookbackIndex = 1
 
 local function createHeartbeatConnection()
 	if heartbeatConection then
@@ -64,11 +73,40 @@ local function createHeartbeatConnection()
 	end
 	heartbeatConection = game:GetService("RunService").Heartbeat
 		:Connect(function(step: number)
-			targetMillisecondsPerFrame = math.clamp(
-				step * 1000,
-				desiredMillisecondsPerFrame,
-				maxMillisecondsPerFrame
-			)
+			if FFlagReactSchedulerNumberOfLookbackFrames > 1 then
+				if FFlagReactSchedulerLookbackUseRingBuffer then
+					lookbackBuffer[lookbackIndex] = step * 1000
+					lookbackIndex = (
+						lookbackIndex % FFlagReactSchedulerNumberOfLookbackFrames
+					) + 1
+					local totalFrameTime = 0
+					local totalFrames = FFlagReactSchedulerNumberOfLookbackFrames
+					for i = 1, totalFrames do
+						if lookbackBuffer[i] == nil then
+							totalFrames = i - 1
+							break
+						end
+						totalFrameTime += lookbackBuffer[i]
+					end
+					averageMillisecondsPerFrame = totalFrameTime / totalFrames
+				else
+					local nFrames = FFlagReactSchedulerNumberOfLookbackFrames
+					averageMillisecondsPerFrame = (
+						averageMillisecondsPerFrame * (nFrames - 1) + step * 1000
+					) / nFrames
+				end
+				targetMillisecondsPerFrame = math.clamp(
+					averageMillisecondsPerFrame,
+					desiredMillisecondsPerFrame,
+					maxMillisecondsPerFrame
+				)
+			else
+				targetMillisecondsPerFrame = math.clamp(
+					step * 1000,
+					desiredMillisecondsPerFrame,
+					maxMillisecondsPerFrame
+				)
+			end
 		end)
 end
 
@@ -92,6 +130,7 @@ type schedulerFlags = {
 	deferredWork: boolean?,
 	heartbeatFrameMarker: boolean?,
 	targetMsByHeartbeatDelta: boolean?,
+	numberOfLookbackFrames: number?,
 }
 
 local function setSchedulerFlags(flags: schedulerFlags)
@@ -115,6 +154,9 @@ local function setSchedulerFlags(flags: schedulerFlags)
 				targetMillisecondsPerFrame = desiredMillisecondsPerFrame -- reset to default
 			end
 		end
+	end
+	if flags.numberOfLookbackFrames ~= nil then
+		FFlagReactSchedulerNumberOfLookbackFrames = flags.numberOfLookbackFrames
 	end
 end
 
