@@ -131,6 +131,7 @@ type schedulerFlags = {
 	heartbeatFrameMarker: boolean?,
 	targetMsByHeartbeatDelta: boolean?,
 	numberOfLookbackFrames: number?,
+	lookbackUseRingBuffer: boolean?,
 }
 
 local function setSchedulerFlags(flags: schedulerFlags)
@@ -157,6 +158,9 @@ local function setSchedulerFlags(flags: schedulerFlags)
 	end
 	if flags.numberOfLookbackFrames ~= nil then
 		FFlagReactSchedulerNumberOfLookbackFrames = flags.numberOfLookbackFrames
+	end
+	if flags.lookbackUseRingBuffer ~= nil then
+		FFlagReactSchedulerLookbackUseRingBuffer = flags.lookbackUseRingBuffer
 	end
 end
 
