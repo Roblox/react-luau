@@ -26,6 +26,7 @@ return function(hostConfig)
 	local forceFrameRate = SchedulerHostConfig.forceFrameRate
 	local requestPaint = SchedulerHostConfig.requestPaint
 	local setSchedulerFlags = SchedulerHostConfig.setSchedulerFlags
+	local getSchedulerFlags = SchedulerHostConfig.getSchedulerFlags
 
 	-- ROBLOX deviation? inline the MinHeap to see if the module-level visibility lets Luau optimize better
 	-- local SchedulerMinHeap = require(script.Parent.SchedulerMinHeap)
@@ -574,6 +575,7 @@ return function(hostConfig)
 		unstable_now = getCurrentTime,
 		unstable_forceFrameRate = forceFrameRate,
 		unstable_setSchedulerFlags = setSchedulerFlags,
+		unstable_getSchedulerFlags = getSchedulerFlags,
 		-- ROBLOX TODO: use if-expressions when all clients are on 503+
 		unstable_Profiling = (function()
 			if enableProfiling then
