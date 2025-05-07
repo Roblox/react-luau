@@ -51,6 +51,7 @@ local exports = {
 	unstable_now = Scheduler.unstable_now,
 	unstable_forceFrameRate = Scheduler.unstable_forceFrameRate,
 	unstable_setSchedulerFlags = Scheduler.unstable_setSchedulerFlags,
+	unstable_getSchedulerFlags = Scheduler.unstable_getSchedulerFlags,
 	unstable_flushAllWithoutAsserting = onlyInTestError(
 		"unstable_flushAllWithoutAsserting"
 	) :: any,
