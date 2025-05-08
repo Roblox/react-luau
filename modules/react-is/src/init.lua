@@ -41,9 +41,29 @@ local isValidElementType = require(Packages.Shared).isValidElementType
 -- ROBLOX deviation START: additional imports
 local REACT_BINDING_TYPE = sharedReactSymbolsModule.REACT_BINDING_TYPE
 -- ROBLOX deviation END
+
+local SafeFlags = require(Packages.SafeFlags)
+local FFlagReactIsProtectedTypeOf =
+	SafeFlags.createGetFFlag("ReactIsProtectedTypeOf", false)()
+
 local function typeOf(object: any)
 	if typeof(object) == "table" and object ~= nil then
-		local __typeof = object["$$typeof"]
+		local __typeof: any
+		if FFlagReactIsProtectedTypeOf then
+			-- ROBLOX note: The pcall is necessary because some tables we might
+			--  index are wrapped in a metatable that throws if you try to index
+			--  a bad property.
+			local couldIndex
+			couldIndex, __typeof = pcall(function()
+				return object["$$typeof"]
+			end)
+
+			if not couldIndex then
+				return nil
+			end
+		else
+			__typeof = object["$$typeof"]
+		end
 		-- ROBLOX deviation START: simplified switch statement conversion, adds Binding type check
 		-- repeat --[[ ROBLOX comment: switch statement conversion ]]
 		-- 	local entered_, break_ = false, false
