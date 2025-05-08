@@ -17,3 +17,7 @@ shadowing = "allow"
 
 # remove when this issue is fixed: https://github.com/Kampfkarren/selene/issues/179
 if_same_then_else = "allow"
+
+# Many of the tests and examples create instances that don't exist. That's okay
+# ignore them.
+roblox_incorrect_roact_usage = "allow"
