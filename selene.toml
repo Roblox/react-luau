@@ -21,3 +21,6 @@ if_same_then_else = "allow"
 # Many of the tests and examples create instances that don't exist. That's okay
 # ignore them.
 roblox_incorrect_roact_usage = "allow"
+
+# Doesn't apply to roact-alignment
+roblox_internal_custom_color = "allow"

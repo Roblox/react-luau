@@ -38,8 +38,7 @@ local getSavedComponentFilters = utils.getSavedComponentFilters
 local saveComponentFilters = utils.saveComponentFilters
 local separateDisplayNameAndHOCs = utils.separateDisplayNameAndHOCs
 local shallowDiffers = utils.shallowDiffers
--- ROBLOX deviation: don't use string encoding
--- local utfDecodeString = utils.utfDecodeString
+local utfDecodeString = utils.utfDecodeString
 local storage = require(script.Parent.Parent.storage)
 local localStorageGetItem = storage.localStorageGetItem
 local localStorageSetItem = storage.localStorageSetItem
@@ -781,14 +780,11 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 	local stringTableEnd = i + stringTableSize
 
 	while i < stringTableEnd do
-		-- ROBLOX deviation: don't binary encode strings, so store string directly rather than length
-		-- local nextLength = operations[POSTFIX_INCREMENT()]
-		-- local nextString = utfDecodeString(Array.slice(operations, i, i + nextLength))
-		local nextString = operations[POSTFIX_INCREMENT()]
+		local nextLength = operations[POSTFIX_INCREMENT()]
+		local nextString = utfDecodeString(Array.slice(operations, i, i + nextLength))
 
 		table.insert(stringTable, nextString)
-		-- ROBLOX deviation: don't binary encode strings, so no need to move pointer
-		-- i = i + nextLength
+		i = i + nextLength
 	end
 
 	-- ROBLOX deviation: 1-indexing, use <= not <

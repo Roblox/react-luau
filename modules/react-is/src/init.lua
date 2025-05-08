@@ -43,8 +43,7 @@ local REACT_BINDING_TYPE = sharedReactSymbolsModule.REACT_BINDING_TYPE
 -- ROBLOX deviation END
 local function typeOf(object: any)
 	if typeof(object) == "table" and object ~= nil then
-		local __typeof --[[ ROBLOX CHECK: replaced unhandled characters in identifier. Original identifier: $$typeof ]] =
-			object["$$typeof"]
+		local __typeof = object["$$typeof"]
 		-- ROBLOX deviation START: simplified switch statement conversion, adds Binding type check
 		-- repeat --[[ ROBLOX comment: switch statement conversion ]]
 		-- 	local entered_, break_ = false, false

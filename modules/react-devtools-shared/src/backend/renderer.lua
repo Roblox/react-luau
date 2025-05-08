@@ -55,13 +55,13 @@ local ElementTypeSuspenseList = types.ElementTypeSuspenseList
 local utils = require(script.Parent.Parent.utils)
 local deletePathInObject = utils.deletePathInObject
 local getDisplayName = utils.getDisplayName
+local getWrappedDisplayName = utils.getWrappedDisplayName
 local getDefaultComponentFilters = utils.getDefaultComponentFilters
 local getInObject = utils.getInObject
 local getUID = utils.getUID
 local renamePathInObject = utils.renamePathInObject
 local setInObject = utils.setInObject
--- ROBLOX deviation: Don't encode strings
--- local utfEncodeString = utils.utfEncodeString
+local utfEncodeString = utils.utfEncodeString
 local storage = require(script.Parent.Parent.storage)
 local sessionStorageGetItem = storage.sessionStorageGetItem
 local backendUtils = require(script.Parent.utils)
@@ -137,6 +137,8 @@ type Interaction = ProfilerTypes.Interaction
 local TypesModules = require(script.Parent.Parent.types)
 type ComponentFilter = TypesModules.ComponentFilter
 type ElementType = TypesModules.ElementType
+
+local ENCODE_TO_NULL = newproxy() :: { __T: "ENCODE_TO_NULL" }
 
 type RegExpComponentFilter = TypesModules.RegExpComponentFilter
 type ElementTypeComponentFilter = TypesModules.ElementTypeComponentFilter
@@ -378,9 +380,12 @@ exports.getInternalReactConstants = function(version: string): {
 		elseif tag == FunctionComponent or tag == IndeterminateComponent then
 			return getDisplayName(resolvedType)
 		elseif tag == ForwardRef then
-			-- Mirror https://github.com/facebook/react/blob/7c21bf72ace77094fd1910cc350a548287ef8350/packages/shared/getComponentName.js#L27-L37
-			return (type_ and type_.displayName)
-				or getDisplayName(resolvedType, "Anonymous")
+			return getWrappedDisplayName(
+				fiber.elementType,
+				resolvedType,
+				"ForwardRef",
+				"Anonymous"
+			)
 		elseif tag == HostRoot then
 			return nil
 		elseif tag == HostComponent then
@@ -522,30 +527,14 @@ exports.attach = function(
 		ReactPriorityLevels.IdlePriority
 
 	-- ROBLOX deviation: these need binding to self
-	local overrideHookState = function(...)
-		return renderer.overrideHookState(...)
-	end
-	local overrideHookStateDeletePath = function(...)
-		return renderer.overrideHookStateDeletePath(...)
-	end
-	local overrideHookStateRenamePath = function(...)
-		return renderer.overrideHookStateRenamePath(...)
-	end
-	local overrideProps = function(...)
-		return renderer.overrideProps(...)
-	end
-	local overridePropsDeletePath = function(...)
-		return renderer.overridePropsDeletePath(...)
-	end
-	local overridePropsRenamePath = function(...)
-		return renderer.overridePropsRenamePath(...)
-	end
-	local setSuspenseHandler = function(...)
-		return renderer.setSuspenseHandler(...)
-	end
-	local scheduleUpdate = function(...)
-		return renderer.scheduleUpdate(...)
-	end
+	local overrideHookState = renderer.overrideHookState
+	local overrideHookStateDeletePath = renderer.overrideHookStateDeletePath
+	local overrideHookStateRenamePath = renderer.overrideHookStateRenamePath
+	local overrideProps = renderer.overrideProps
+	local overridePropsDeletePath = renderer.overridePropsDeletePath
+	local overridePropsRenamePath = renderer.overridePropsRenamePath
+	local setSuspenseHandler = renderer.setSuspenseHandler
+	local scheduleUpdate = renderer.scheduleUpdate
 
 	local supportsTogglingSuspense = typeof(setSuspenseHandler) == "function"
 		and typeof(scheduleUpdate) == "function"
@@ -907,28 +896,28 @@ exports.attach = function(
 		then
 			if prevFiber == nil then
 				return {
-					context = nil,
+					context = ENCODE_TO_NULL,
 					didHooksChange = false,
 					isFirstMount = true,
-					props = nil,
-					state = nil,
+					props = ENCODE_TO_NULL,
+					state = ENCODE_TO_NULL,
 				}
 			else
+				local context = getContextChangedKeys(nextFiber)
+				local props =
+					getChangedKeys(prevFiber.memoizedProps, nextFiber.memoizedProps)
+				local state =
+					getChangedKeys(prevFiber.memoizedState, nextFiber.memoizedState)
+
 				return {
-					context = getContextChangedKeys(nextFiber),
+					context = if context == nil then ENCODE_TO_NULL else context,
 					didHooksChange = didHooksChange(
 						(prevFiber :: Fiber).memoizedState,
 						nextFiber.memoizedState
 					),
 					isFirstMount = false,
-					props = getChangedKeys(
-						(prevFiber :: Fiber).memoizedProps,
-						nextFiber.memoizedProps
-					),
-					state = getChangedKeys(
-						(prevFiber :: Fiber).memoizedState,
-						nextFiber.memoizedState
-					),
+					props = if props == nil then ENCODE_TO_NULL else props,
+					state = if state == nil then ENCODE_TO_NULL else state,
 				}
 			end
 		else
@@ -1182,7 +1171,7 @@ exports.attach = function(
 		local numUnmountIDs = #pendingRealUnmountedIDs
 			+ #pendingSimulatedUnmountedIDs
 			+ (if pendingUnmountedRootID == nil then 0 else 1)
-		local operations: Array<string | number> = {}
+		local operations: Array<number> = {}
 		-- ROBLOX deviation: don't create an array of specified length
 		-- Identify which renderer this update is coming from.
 		-- 2 -- [rendererID, rootFiberID]
@@ -1216,24 +1205,13 @@ exports.attach = function(
 
 		-- Now fill in the string table.
 		-- [stringTableLength, str1Length, ...str1, str2Length, ...str2, ...]
-		-- ROBLOX deviation: [stringCount, str1, str2, ...]
 		operations[POSTFIX_INCREMENT()] = pendingStringTableLength
-
-		-- ROBLOX deviation: insert operations in pendingStringTable value-order
-		local stringTableStartIndex = #operations
-
-		pendingStringTable:forEach(function(value, key)
-			-- ROBLOX deviation: Don't encode strings
-			-- operations[POSTFIX_INCREMENT()] = #key
-			-- local encodedKey = utfEncodeString(key)
-			-- for j = 1, #encodedKey do
-			-- 	operations[i + j] = encodedKey[j]
-			-- end
-			-- i = i + #key
-			operations[stringTableStartIndex + value] = key
-
-			-- ROBLOX deviation: ensure increment is still called
-			POSTFIX_INCREMENT()
+		pendingStringTable:forEach(function(_value, key)
+			local encodedKey = utfEncodeString(key)
+			operations[POSTFIX_INCREMENT()] = #encodedKey
+			for _, codepoint in encodedKey do
+				operations[POSTFIX_INCREMENT()] = codepoint
+			end
 		end)
 
 		if numUnmountIDs > 0 then
@@ -1298,28 +1276,25 @@ exports.attach = function(
 	end
 
 	local function getStringID(str: string | nil): number
-		if str == nil or str == "" then
+		if str == nil then
 			return 0
 		end
 
-		-- ROBLOX FIXME Luau: needs type states to not need manual cast
-		local existingID = pendingStringTable:get(str :: string)
-
-		if existingID ~= nil then
-			return existingID
+		local existingEntry = pendingStringTable:get(str)
+		if existingEntry ~= nil then
+			return existingEntry
 		end
 
-		local stringID = pendingStringTable.size + 1
+		local id = pendingStringTable.size + 1
+		local encodedString = utfEncodeString(str)
 
-		-- ROBLOX FIXME Luau: needs type states to not need cast
-		pendingStringTable:set(str :: string, stringID)
+		pendingStringTable:set(str, id)
+
 		-- The string table total length needs to account
 		-- both for the string length, and for the array item
 		-- that contains the length itself. Hence + 1.
-		-- ROBLOX deviation: Don't encode strings, so just count one for the single string entry
-		-- pendingStringTableLength = pendingStringTableLength + (#str + 1)
-		pendingStringTableLength += 1
-		return stringID
+		pendingStringTableLength += #encodedString + 1
+		return id
 	end
 
 	local function recordMount(fiber: Fiber, parentFiber: Fiber | nil)
@@ -2593,7 +2568,7 @@ exports.attach = function(
 
 			-- Temporarily disable all console logging before re-running the hook.
 			-- ROBLOX TODO: Is iterating over console methods be sensible here?
-			for method, _ in console do
+			for method, _ in pairs(console) do
 				pcall(function()
 					originalConsoleMethods[method] = console[method]
 					console[method] = function() end
@@ -2605,7 +2580,7 @@ exports.attach = function(
 			end)
 
 			-- Restore original console functionality.
-			for method, _ in console do
+			for method, _ in pairs(console) do
 				pcall(function()
 					console[method] = originalConsoleMethods[method]
 				end)
@@ -2977,6 +2952,7 @@ exports.attach = function(
 				end
 			elseif type_ == "hooks" then
 				if type(overrideHookStateDeletePath) == "function" then
+					assert(hookID, "Expected hookID to be defined")
 					overrideHookStateDeletePath(fiber :: Fiber, hookID, path)
 				end
 			elseif type_ == "props" then
@@ -3027,6 +3003,7 @@ exports.attach = function(
 				end
 			elseif type_ == "hooks" then
 				if type(overrideHookStateRenamePath) == "function" then
+					assert(hookID, "Expected hookID to be defined")
 					overrideHookStateRenamePath(fiber, hookID, oldPath, newPath)
 				end
 			elseif type_ == "props" then
@@ -3078,6 +3055,7 @@ exports.attach = function(
 				end
 			elseif type_ == "hooks" then
 				if type(overrideHookState) == "function" then
+					assert(hookID, "Expected hookID to be defined")
 					overrideHookState(fiber :: Fiber, hookID, path, value)
 				end
 			elseif type_ == "props" then
@@ -3183,7 +3161,7 @@ exports.attach = function(
 						changeDescriptions = if changeDescriptions ~= nil
 							-- ROBLOX FIXME: types don't flow from entries through Array.from() return value
 							then Array.from(changeDescriptions:entries()) :: Array<Array<any>>
-							else nil,
+							else ENCODE_TO_NULL,
 						duration = maxActualDuration,
 						fiberActualDurations = fiberActualDurations,
 						fiberSelfDurations = fiberSelfDurations,

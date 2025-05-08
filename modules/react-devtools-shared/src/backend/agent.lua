@@ -34,10 +34,8 @@ local storage = require(script.Parent.Parent.storage)
 local sessionStorageGetItem = storage.sessionStorageGetItem
 local sessionStorageRemoveItem = storage.sessionStorageRemoveItem
 local sessionStorageSetItem = storage.sessionStorageSetItem
--- local Highlighter = require(script.Parent.views.Highlighter)
--- local setupHighlighter = Highlighter.default
--- ROBLOX TODO: stub for now
-local setupHighlighter = function(bridge, agent) end
+local Highlighter = require(script.Parent.views.Highlighter)
+local setupHighlighter = Highlighter.setupHighlighter
 -- local TraceUpdates = require(script.Parent.views.TraceUpdates)
 -- local setupTraceUpdates = TraceUpdates.initialize
 -- local setTraceUpdatesEnabled = TraceUpdates.toggleEnabled
@@ -244,7 +242,7 @@ function Agent.new(bridge: BackendBridge)
 		sessionStorageGetItem(SESSION_STORAGE_LAST_SELECTION_KEY)
 
 	if persistedSelectionString ~= nil then
-		self._persistedSelection = JSON.JSONDecode(persistedSelectionString)
+		self._persistedSelection = JSON:JSONDecode(persistedSelectionString)
 	end
 
 	local function wrapSelf(method: Function)
@@ -299,7 +297,7 @@ function Agent.new(bridge: BackendBridge)
 	local isBackendStorageAPISupported = true
 
 	bridge:send("isBackendStorageAPISupported", isBackendStorageAPISupported)
-	-- ROBLOX TODO: implement Highlighter stub
+
 	setupHighlighter(bridge, self)
 	setupTraceUpdates(self)
 
