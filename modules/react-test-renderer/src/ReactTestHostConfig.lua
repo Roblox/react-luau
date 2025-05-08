@@ -112,24 +112,26 @@ exports.getPublicInstance = function(inst: Instance | TextInstance)
 	end
 end
 
-exports.appendChild =
-	function(parentInstance: Instance | Container, child: Instance | TextInstance)
-		if _G.__DEV__ then
-			if not Array.isArray(parentInstance.children) then
-				console.error(
-					"An invalid container has been provided. "
-						.. "This may indicate that another renderer is being used in addition to the test renderer. "
-						.. "(For example, ReactNoop.createPortal inside of a ReactTestRenderer tree.) "
-						.. "This is not supported."
-				)
-			end
+exports.appendChild = function(
+	parentInstance: Instance | Container,
+	child: Instance | TextInstance
+)
+	if _G.__DEV__ then
+		if not Array.isArray(parentInstance.children) then
+			console.error(
+				"An invalid container has been provided. "
+					.. "This may indicate that another renderer is being used in addition to the test renderer. "
+					.. "(For example, ReactNoop.createPortal inside of a ReactTestRenderer tree.) "
+					.. "This is not supported."
+			)
 		end
-		local index = Array.indexOf(parentInstance.children, child)
-		if index ~= -1 then
-			Array.splice(parentInstance.children, index, 1)
-		end
-		table.insert(parentInstance.children, child)
 	end
+	local index = Array.indexOf(parentInstance.children, child)
+	if index ~= -1 then
+		Array.splice(parentInstance.children, index, 1)
+	end
+	table.insert(parentInstance.children, child)
+end
 
 exports.insertBefore = function(
 	parentInstance: Instance | Container,
@@ -144,12 +146,14 @@ exports.insertBefore = function(
 	Array.splice(parentInstance.children, beforeIndex, 0, child)
 end
 
-exports.removeChild =
-	function(parentInstance: Instance | Container, child: Instance | TextInstance)
-		RobloxComponentProps.removeTags(child)
-		local index = Array.indexOf(parentInstance.children, child)
-		Array.splice(parentInstance.children, index, 1)
-	end
+exports.removeChild = function(
+	parentInstance: Instance | Container,
+	child: Instance | TextInstance
+)
+	RobloxComponentProps.removeTags(child)
+	local index = Array.indexOf(parentInstance.children, child)
+	Array.splice(parentInstance.children, index, 1)
+end
 
 exports.clearContainer = function(container: Container)
 	Array.splice(container.children, 0)
@@ -194,14 +198,16 @@ exports.createInstance = function(
 	}
 end
 
-exports.appendInitialChild =
-	function(parentInstance: Instance, child: Instance | TextInstance)
-		local index = Array.indexOf(parentInstance.children, child)
-		if index ~= -1 then
-			Array.splice(parentInstance.children, index, 1)
-		end
-		table.insert(parentInstance.children, child)
+exports.appendInitialChild = function(
+	parentInstance: Instance,
+	child: Instance | TextInstance
+)
+	local index = Array.indexOf(parentInstance.children, child)
+	if index ~= -1 then
+		Array.splice(parentInstance.children, index, 1)
 	end
+	table.insert(parentInstance.children, child)
+end
 
 exports.finalizeInitialChildren = function(
 	testElement: Instance,
@@ -277,10 +283,13 @@ exports.commitMount = function(
 	-- noop
 end
 
-exports.commitTextUpdate =
-	function(textInstance: TextInstance, oldText: string, newText: string)
-		textInstance.text = newText
-	end
+exports.commitTextUpdate = function(
+	textInstance: TextInstance,
+	oldText: string,
+	newText: string
+)
+	textInstance.text = newText
+end
 
 exports.resetTextContent = function(testElement: Instance)
 	-- noop
@@ -306,63 +315,77 @@ exports.unhideTextInstance = function(textInstance: TextInstance, text: string)
 	textInstance.isHidden = false
 end
 
-exports.getFundamentalComponentInstance =
-	function(fundamentalInstance: ReactFundamentalComponentInstance<any, any>): Instance
-		local impl = fundamentalInstance.impl
-		local props = fundamentalInstance.props
-		local state = fundamentalInstance.state
-		return impl.getInstance(nil, props, state)
-	end
+exports.getFundamentalComponentInstance = function(fundamentalInstance: ReactFundamentalComponentInstance<
+	any,
+	any
+>): Instance
+	local impl = fundamentalInstance.impl
+	local props = fundamentalInstance.props
+	local state = fundamentalInstance.state
+	return impl.getInstance(nil, props, state)
+end
 
-exports.mountFundamentalComponent =
-	function(fundamentalInstance: ReactFundamentalComponentInstance<any, any>)
-		local impl = fundamentalInstance.impl
-		local instance = fundamentalInstance.instance
-		local props = fundamentalInstance.props
-		local state = fundamentalInstance.state
-		local onMount = impl.onMount
-		if onMount ~= nil then
-			onMount(nil, instance, props, state)
-		end
+exports.mountFundamentalComponent = function(
+	fundamentalInstance: ReactFundamentalComponentInstance<
+		any,
+		any
+	>
+)
+	local impl = fundamentalInstance.impl
+	local instance = fundamentalInstance.instance
+	local props = fundamentalInstance.props
+	local state = fundamentalInstance.state
+	local onMount = impl.onMount
+	if onMount ~= nil then
+		onMount(nil, instance, props, state)
 	end
+end
 
-exports.shouldUpdateFundamentalComponent =
-	function(fundamentalInstance: ReactFundamentalComponentInstance<any, any>): boolean
-		local impl = fundamentalInstance.impl
-		local prevProps = fundamentalInstance.prevProps
-		local props = fundamentalInstance.props
-		local state = fundamentalInstance.state
-		local shouldUpdate = impl.shouldUpdate
-		if shouldUpdate ~= nil then
-			return shouldUpdate(nil, prevProps, props, state)
-		end
-		return true
+exports.shouldUpdateFundamentalComponent = function(fundamentalInstance: ReactFundamentalComponentInstance<
+	any,
+	any
+>): boolean
+	local impl = fundamentalInstance.impl
+	local prevProps = fundamentalInstance.prevProps
+	local props = fundamentalInstance.props
+	local state = fundamentalInstance.state
+	local shouldUpdate = impl.shouldUpdate
+	if shouldUpdate ~= nil then
+		return shouldUpdate(nil, prevProps, props, state)
 	end
+	return true
+end
 
-exports.updateFundamentalComponent =
-	function(fundamentalInstance: ReactFundamentalComponentInstance<any, any>)
-		local impl = fundamentalInstance.impl
-		local instance = fundamentalInstance.instance
-		local prevProps = fundamentalInstance.prevProps
-		local props = fundamentalInstance.props
-		local state = fundamentalInstance.state
-		local onUpdate = impl.onUpdate
-		if onUpdate ~= nil then
-			onUpdate(nil, instance, prevProps, props, state)
-		end
+exports.updateFundamentalComponent = function(
+	fundamentalInstance: ReactFundamentalComponentInstance<
+		any,
+		any
+	>
+)
+	local impl = fundamentalInstance.impl
+	local instance = fundamentalInstance.instance
+	local prevProps = fundamentalInstance.prevProps
+	local props = fundamentalInstance.props
+	local state = fundamentalInstance.state
+	local onUpdate = impl.onUpdate
+	if onUpdate ~= nil then
+		onUpdate(nil, instance, prevProps, props, state)
 	end
+end
 
-exports.unmountFundamentalComponent =
-	function(fundamentalInstance: ReactFundamentalComponentInstance<any, any>)
-		local impl = fundamentalInstance.impl
-		local instance = fundamentalInstance.instance
-		local props = fundamentalInstance.props
-		local state = fundamentalInstance.state
-		local onUnmount = impl.onUnmount
-		if onUnmount ~= nil then
-			onUnmount(nil, instance, props, state)
-		end
+exports.unmountFundamentalComponent = function(fundamentalInstance: ReactFundamentalComponentInstance<
+	any,
+	any
+>)
+	local impl = fundamentalInstance.impl
+	local instance = fundamentalInstance.instance
+	local props = fundamentalInstance.props
+	local state = fundamentalInstance.state
+	local onUnmount = impl.onUnmount
+	if onUnmount ~= nil then
+		onUnmount(nil, instance, props, state)
 	end
+end
 
 exports.getInstanceFromNode = function(mockNode: Object): Object?
 	local instance = nodeToInstanceMap[mockNode]

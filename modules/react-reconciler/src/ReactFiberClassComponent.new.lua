@@ -250,7 +250,7 @@ local function initializeClassComponentUpdater()
 
 	classComponentUpdater = {
 		isMounted = isMounted,
-		enqueueSetState = function(inst, payload, callback: (() -> (...any))?)
+		enqueueSetState = function(inst, payload, callback: (() -> ...any)?)
 			local fiber = getInstance(inst)
 			local eventTime = requestEventTime()
 			local lane = requestUpdateLane(fiber)

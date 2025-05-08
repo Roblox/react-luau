@@ -212,16 +212,18 @@ exports.createRoot = function(container: Container, options: RootOptions?): Root
 	return ReactRobloxRoot.new(container, options)
 end
 
-exports.createBlockingRoot =
-	function(container: Container, options: RootOptions?): RootType
-		invariant(
-			isValidContainer(container),
-			-- ROBLOX deviation: Use roblox engine terminology
-			"createRoot(...): Target container is not a Roblox Instance."
-		)
-		warnIfReactDOMContainerInDEV(container)
-		return createBlockingRoot(container, BlockingRoot, options)
-	end
+exports.createBlockingRoot = function(
+	container: Container,
+	options: RootOptions?
+): RootType
+	invariant(
+		isValidContainer(container),
+		-- ROBLOX deviation: Use roblox engine terminology
+		"createRoot(...): Target container is not a Roblox Instance."
+	)
+	warnIfReactDOMContainerInDEV(container)
+	return createBlockingRoot(container, BlockingRoot, options)
+end
 
 exports.createLegacyRoot = function(container: Container, options: RootOptions?): RootType
 	return createBlockingRoot(container, LegacyRoot, options)

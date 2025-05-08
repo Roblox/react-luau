@@ -392,18 +392,19 @@ exports.flushPassiveEffects = flushPassiveEffects
 exports.IsThisRendererActing = IsThisRendererActing
 exports.act = act
 
-exports.getPublicRootInstance =
-	function(container: OpaqueRoot): React_Component<any, any> | PublicInstance | nil
-		local containerFiber = container.current
-		if not containerFiber.child then
-			return nil
-		end
-		if containerFiber.child.tag == HostComponent then
-			return getPublicInstance(containerFiber.child.stateNode)
-		else
-			return containerFiber.child.stateNode
-		end
+exports.getPublicRootInstance = function(
+	container: OpaqueRoot
+): React_Component<any, any> | PublicInstance | nil
+	local containerFiber = container.current
+	if not containerFiber.child then
+		return nil
 	end
+	if containerFiber.child.tag == HostComponent then
+		return getPublicInstance(containerFiber.child.stateNode)
+	else
+		return containerFiber.child.stateNode
+	end
+end
 
 -- deviation: Declare function ahead of use
 local markRetryLaneIfNotHydrated
@@ -673,42 +674,49 @@ if __DEV__ then
 	end
 
 	-- Support DevTools editable values for useState and useReducer.
-	overrideHookState =
-		function(fiber: Fiber, id: number, path: Array<string | number>, value: any)
-			local hook = findHook(fiber, id)
-			if hook ~= nil then
-				local newState = copyWithSet(hook.memoizedState, path, value)
-				hook.memoizedState = newState
-				hook.baseState = newState
+	overrideHookState = function(
+		fiber: Fiber,
+		id: number,
+		path: Array<string | number>,
+		value: any
+	)
+		local hook = findHook(fiber, id)
+		if hook ~= nil then
+			local newState = copyWithSet(hook.memoizedState, path, value)
+			hook.memoizedState = newState
+			hook.baseState = newState
 
-				-- We aren't actually adding an update to the queue,
-				-- because there is no update we can add for useReducer hooks that won't trigger an error.
-				-- (There's no appropriate action type for DevTools overrides.)
-				-- As a result though, React will see the scheduled update as a noop and bailout.
-				-- Shallow cloning props works as a workaround for now to bypass the bailout check.
-				fiber.memoizedProps = table.clone(fiber.memoizedProps)
+			-- We aren't actually adding an update to the queue,
+			-- because there is no update we can add for useReducer hooks that won't trigger an error.
+			-- (There's no appropriate action type for DevTools overrides.)
+			-- As a result though, React will see the scheduled update as a noop and bailout.
+			-- Shallow cloning props works as a workaround for now to bypass the bailout check.
+			fiber.memoizedProps = table.clone(fiber.memoizedProps)
 
-				scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp)
-			end
+			scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp)
 		end
-	overrideHookStateDeletePath =
-		function(fiber: Fiber, id: number, path: Array<string | number>)
-			local hook = findHook(fiber, id)
-			if hook ~= nil then
-				local newState = copyWithDelete(hook.memoizedState, path)
-				hook.memoizedState = newState
-				hook.baseState = newState
+	end
+	overrideHookStateDeletePath = function(
+		fiber: Fiber,
+		id: number,
+		path: Array<string | number>
+	)
+		local hook = findHook(fiber, id)
+		if hook ~= nil then
+			local newState = copyWithDelete(hook.memoizedState, path)
+			hook.memoizedState = newState
+			hook.baseState = newState
 
-				-- We aren't actually adding an update to the queue,
-				-- because there is no update we can add for useReducer hooks that won't trigger an error.
-				-- (There's no appropriate action type for DevTools overrides.)
-				-- As a result though, React will see the scheduled update as a noop and bailout.
-				-- Shallow cloning props works as a workaround for now to bypass the bailout check.
-				fiber.memoizedProps = table.clone(fiber.memoizedProps)
+			-- We aren't actually adding an update to the queue,
+			-- because there is no update we can add for useReducer hooks that won't trigger an error.
+			-- (There's no appropriate action type for DevTools overrides.)
+			-- As a result though, React will see the scheduled update as a noop and bailout.
+			-- Shallow cloning props works as a workaround for now to bypass the bailout check.
+			fiber.memoizedProps = table.clone(fiber.memoizedProps)
 
-				scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp)
-			end
+			scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp)
 		end
+	end
 	overrideHookStateRenamePath = function(
 		fiber: Fiber,
 		id: number,
@@ -769,7 +777,7 @@ if __DEV__ then
 		scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp)
 	end
 
-	setSuspenseHandler = function(newShouldSuspendImpl: (Fiber) -> (boolean))
+	setSuspenseHandler = function(newShouldSuspendImpl: (Fiber) -> boolean)
 		shouldSuspendImpl = newShouldSuspendImpl
 	end
 end

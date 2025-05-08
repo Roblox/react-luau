@@ -217,7 +217,7 @@ export type ProfilerStore = EventEmitter<{
 	profilingData: (
 		self: ProfilerStore,
 		value: ProfilingDataFrontend?
-	) -> (...ProfilingDataFrontend?),
+	) -> ...ProfilingDataFrontend?,
 	clear: (self: ProfilerStore) -> (),
 	startProfiling: (self: ProfilerStore) -> (),
 	stopProfiling: (self: ProfilerStore) -> (),

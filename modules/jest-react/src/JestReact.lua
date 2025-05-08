@@ -77,8 +77,8 @@ local function assertYieldsWereCleared(root)
 	local actualYields = Scheduler.unstable_clearYields()
 	-- ROBLOX deviation END
 	invariant(
-		-- ROBLOX deviation START: fix .length
-		-- actualYields.length == 0,
+			-- ROBLOX deviation START: fix .length
+			-- actualYields.length == 0,
 		#actualYields == 0,
 		-- ROBLOX deviation END
 		"Log of yielded values is not empty. "
