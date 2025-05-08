@@ -193,6 +193,7 @@ describe("Binding.join", function()
 		local binding2 = Binding.create(2)
 		local binding3 = Binding.create(3)
 
+		-- selene: allow(mixed_table)
 		local joinedBinding = Binding.join({
 			binding1,
 			binding2,
@@ -212,6 +213,7 @@ describe("Binding.join", function()
 		local binding2, update2 = Binding.create(2)
 		local binding3, update3 = Binding.create(3)
 
+		-- selene: allow(mixed_table)
 		local joinedBinding = Binding.join({
 			binding1,
 			binding2,

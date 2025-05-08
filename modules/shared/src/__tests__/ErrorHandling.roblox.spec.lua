@@ -97,6 +97,7 @@ describe("errorToString", function()
 		jestExpect(errorString).toContain("31337")
 	end)
 	it("prints arrays", function()
+		-- selene: allow(mixed_table)
 		local errorString = errorToString({ foo = 1, 2, 3 })
 
 		jestExpect(errorString).toContain("foo: 1")
