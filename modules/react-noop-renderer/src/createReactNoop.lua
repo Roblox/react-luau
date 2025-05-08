@@ -326,7 +326,10 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			return inst
 		end,
 
-		appendInitialChild = function(parentInstance: Instance, child: Instance | TextInstance)
+		appendInitialChild = function(
+			parentInstance: Instance,
+			child: Instance | TextInstance
+		)
 			table.insert(parentInstance.children, child)
 		end,
 
@@ -1083,7 +1086,9 @@ local function createReactNoop(reconciler, useMutation: boolean)
 						log(
 							string.rep("  ", depth + 1) .. "~",
 							-- ROBLOX TODO: this is a bogus field, even in upstream
-							"[" .. tostring((update :: any).expirationTime) .. "]"
+							"["
+								.. tostring((update :: any).expirationTime)
+								.. "]"
 						)
 					until update == nil
 				end
@@ -1097,7 +1102,9 @@ local function createReactNoop(reconciler, useMutation: boolean)
 							log(
 								string.rep("  ", depth + 1) .. "~",
 								-- ROBLOX TODO: this is a bogus field, even in upstream
-								"[" .. tostring((update :: any).expirationTime) .. "]"
+								"["
+									.. tostring((update :: any).expirationTime)
+									.. "]"
 							)
 						until pendingUpdate == nil or pendingUpdate == firstPending
 					end

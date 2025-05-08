@@ -582,19 +582,21 @@ exports.createElement = createElement
 --  factory.type = type
 --  return factory
 --end
-exports.cloneAndReplaceKey =
-	function<P, T>(oldElement: ReactElement<P, T>, newKey: any): ReactElement<P, T>
-		local newElement = ReactElement(
-			oldElement.type,
-			newKey,
-			oldElement.ref,
-			oldElement._self,
-			oldElement._source,
-			oldElement._owner,
-			oldElement.props
-		)
-		return newElement
-	end
+exports.cloneAndReplaceKey = function<P, T>(
+	oldElement: ReactElement<P, T>,
+	newKey: any
+): ReactElement<P, T>
+	local newElement = ReactElement(
+		oldElement.type,
+		newKey,
+		oldElement.ref,
+		oldElement._self,
+		oldElement._source,
+		oldElement._owner,
+		oldElement.props
+	)
+	return newElement
+end
 
 --[[*
 * Clone and return a new ReactElement using element as the starting point.

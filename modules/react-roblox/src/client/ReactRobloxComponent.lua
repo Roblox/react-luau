@@ -35,7 +35,7 @@ local function diffProperties(
 	lastRawProps: Object,
 	nextRawProps: Object,
 	rootContainerElement: HostInstance
-): (nil | Array<any>)
+): nil | Array<any>
 	-- if _G.__DEV__ then
 	--   validatePropertiesInDevelopment(tag, nextRawProps)
 	-- end

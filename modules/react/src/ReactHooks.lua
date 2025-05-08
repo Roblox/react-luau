@@ -147,7 +147,7 @@ exports.useBinding = useBinding
 
 local function useEffect(
 	-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
-	create: (() -> ()) | (() -> (() -> ())),
+	create: (() -> ()) | (() -> () -> ()),
 	deps: Array<any> | nil
 ): ()
 	local dispatcher = resolveDispatcher()
@@ -157,7 +157,7 @@ exports.useEffect = useEffect
 
 local function useLayoutEffect(
 	-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
-	create: (() -> ()) | (() -> (() -> ())),
+	create: (() -> ()) | (() -> () -> ()),
 	deps: Array<any> | nil
 ): ()
 	local dispatcher = resolveDispatcher()
@@ -217,14 +217,19 @@ exports.useOpaqueIdentifier = function(): OpaqueIDType | nil
 	return dispatcher.useOpaqueIdentifier()
 end
 
-exports.useMutableSource =
-	function<Source, Snapshot>(
-		source: MutableSource<Source>,
-		getSnapshot: MutableSourceGetSnapshotFn<Source, Snapshot>,
-		subscribe: MutableSourceSubscribeFn<Source, Snapshot>
-	): Snapshot
-		local dispatcher = resolveDispatcher()
-		return dispatcher.useMutableSource(source, getSnapshot, subscribe)
-	end
+exports.useMutableSource = function<Source, Snapshot>(
+	source: MutableSource<Source>,
+	getSnapshot: MutableSourceGetSnapshotFn<
+		Source,
+		Snapshot
+	>,
+	subscribe: MutableSourceSubscribeFn<
+		Source,
+		Snapshot
+	>
+): Snapshot
+	local dispatcher = resolveDispatcher()
+	return dispatcher.useMutableSource(source, getSnapshot, subscribe)
+end
 
 return exports

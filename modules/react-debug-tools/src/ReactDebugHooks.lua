@@ -325,7 +325,7 @@ end
 local function useLayoutEffect(
 	-- ROBLOX deviation START: Luau needs union type packs for this type to translate idiomatically
 	-- create: () -> () -> () | void,
-	create: (() -> ()) | (() -> (() -> ())),
+	create: (() -> ()) | (() -> () -> ()),
 	-- ROBLOX deviation END
 	inputs: Array<unknown> | void | nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]]
 ): ()
@@ -338,7 +338,7 @@ end
 local function useEffect(
 	-- ROBLOX deviation START: Luau needs union type packs for this type to translate idiomatically
 	-- create: () -> () -> () | void,
-	create: (() -> ()) | (() -> (() -> ())),
+	create: (() -> ()) | (() -> () -> ()),
 	-- ROBLOX deviation END
 	inputs: Array<unknown> | void | nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]]
 ): ()

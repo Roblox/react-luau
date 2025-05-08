@@ -135,12 +135,12 @@ export type ReactFundamentalComponentInstance<C, H> = {
 export type ReactFundamentalImpl<C, H> = {
 	displayName: string,
 	reconcileChildren: boolean,
-	getInitialState: nil | (Object) -> (Object),
-	getInstance: (C, Object, Object) -> (H),
-	getServerSideString: nil | (C, Object) -> (string),
-	getServerSideStringClose: nil | (C, Object) -> (string),
+	getInitialState: nil | (Object) -> Object,
+	getInstance: (C, Object, Object) -> H,
+	getServerSideString: nil | (C, Object) -> string,
+	getServerSideStringClose: nil | (C, Object) -> string,
 	onMount: (C, any, Object, Object) -> (),
-	shouldUpdate: nil | (C, Object?, Object, Object) -> (boolean),
+	shouldUpdate: nil | (C, Object?, Object, Object) -> boolean,
 	onUpdate: nil | (C, any, Object?, Object, Object) -> (),
 	onUnmount: nil | (C, any, Object, Object) -> (),
 	onHydrate: nil | (C, Object, Object) -> boolean,
@@ -198,7 +198,7 @@ export type MutableSourceGetSnapshotFn<Source, Snapshot> = (source: Source) -> S
 export type MutableSourceSubscribeFn<Source, Snapshot> = (
 	source: Source,
 	callback: (snapshot: Snapshot) -> ()
-) -> (() -> ())
+) -> () -> ()
 
 export type MutableSourceGetVersionFn = (
 	_source: NonMaybeType<any>

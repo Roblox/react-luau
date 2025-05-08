@@ -33,7 +33,7 @@ type Function = (...any) -> ...any
 type Connection = { callback: Function, disconnected: boolean }
 type Map<K, V> = { [K]: V }
 
-local function createSignal(): ((Function) -> (() -> ()), (...any) -> ())
+local function createSignal(): ((Function) -> () -> (), (...any) -> ())
 	local connections: Map<Function, Connection> = {}
 	local suspendedConnections = {}
 	local firing = false

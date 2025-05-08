@@ -37,7 +37,7 @@ type BindingInternal<T> = {
 	map: <U>(BindingInternal<T>, (T) -> U) -> any,
 
 	update: (T) -> (),
-	subscribe: ((T) -> ()) -> (() -> ()),
+	subscribe: ((T) -> ()) -> () -> (),
 }
 
 local BindingInternalApi = {}

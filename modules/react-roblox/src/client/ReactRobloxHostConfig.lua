@@ -585,27 +585,33 @@ exports.appendChildToContainer = function(container: Container, child: Instance)
 	-- end
 end
 
-exports.insertBefore =
-	function(parentInstance: Instance, child: Instance, _beforeChild: Instance)
-		-- ROBLOX deviation: Roblox's DOM is based on child->parent references
-		child.Parent = parentInstance
-		-- parentInstance.insertBefore(child, beforeChild)
-		if _G.__DEV__ then
-			checkTags(child)
-		end
+exports.insertBefore = function(
+	parentInstance: Instance,
+	child: Instance,
+	_beforeChild: Instance
+)
+	-- ROBLOX deviation: Roblox's DOM is based on child->parent references
+	child.Parent = parentInstance
+	-- parentInstance.insertBefore(child, beforeChild)
+	if _G.__DEV__ then
+		checkTags(child)
 	end
+end
 
-exports.insertInContainerBefore =
-	function(container: Container, child: Instance, beforeChild: Instance)
-		-- ROBLOX deviation: use our container definition
-		local parentNode = container
-		exports.insertBefore(parentNode, child, beforeChild)
-		-- if container.nodeType == COMMENT_NODE)
-		--   (container.parentNode: any).insertBefore(child, beforeChild)
-		-- } else {
-		--   container.insertBefore(child, beforeChild)
-		-- end
-	end
+exports.insertInContainerBefore = function(
+	container: Container,
+	child: Instance,
+	beforeChild: Instance
+)
+	-- ROBLOX deviation: use our container definition
+	local parentNode = container
+	exports.insertBefore(parentNode, child, beforeChild)
+	-- if container.nodeType == COMMENT_NODE)
+	--   (container.parentNode: any).insertBefore(child, beforeChild)
+	-- } else {
+	--   container.insertBefore(child, beforeChild)
+	-- end
+end
 
 -- function createEvent(type: DOMEventName, bubbles: boolean): Event {
 --   local event = document.createEvent('Event')
@@ -657,58 +663,62 @@ exports.removeChildFromContainer = function(_container: Container, child: Instan
 	-- end
 end
 
-exports.clearSuspenseBoundary =
-	function(parentInstance: Instance, suspenseInstance: SuspenseInstance)
-		-- ROBLOX FIXME: this is a major thing we need to fix for Suspense to work as a feature
-		unimplemented("clearSuspenseBoundary")
-		--   local node = suspenseInstance
-		--   -- Delete all nodes within this suspense boundary.
-		--   -- There might be nested nodes so we need to keep track of how
-		--   -- deep we are and only break out when we're back on top.
-		--   local depth = 0
-		--   do {
-		--     local nextNode = node.nextSibling
-		--     parentInstance.removeChild(node)
-		--     if nextNode and nextNode.nodeType == COMMENT_NODE)
-		--       local data = ((nextNode: any).data: string)
-		--       if data == SUSPENSE_END_DATA)
-		--         if depth == 0)
-		--           parentInstance.removeChild(nextNode)
-		--           -- Retry if any event replaying was blocked on this.
-		--           retryIfBlockedOn(suspenseInstance)
-		--           return
-		--         } else {
-		--           depth--
-		--         end
-		--       } else if
-		--         data == SUSPENSE_START_DATA or
-		--         data == SUSPENSE_PENDING_START_DATA or
-		--         data == SUSPENSE_FALLBACK_START_DATA
-		--       )
-		--         depth++
-		--       end
-		--     end
-		--     node = nextNode
-		--   } while (node)
-		--   -- TODO: Warn, we didn't find the end comment boundary.
-		--   -- Retry if any event replaying was blocked on this.
-		--   retryIfBlockedOn(suspenseInstance)
-	end
+exports.clearSuspenseBoundary = function(
+	parentInstance: Instance,
+	suspenseInstance: SuspenseInstance
+)
+	-- ROBLOX FIXME: this is a major thing we need to fix for Suspense to work as a feature
+	unimplemented("clearSuspenseBoundary")
+	--   local node = suspenseInstance
+	--   -- Delete all nodes within this suspense boundary.
+	--   -- There might be nested nodes so we need to keep track of how
+	--   -- deep we are and only break out when we're back on top.
+	--   local depth = 0
+	--   do {
+	--     local nextNode = node.nextSibling
+	--     parentInstance.removeChild(node)
+	--     if nextNode and nextNode.nodeType == COMMENT_NODE)
+	--       local data = ((nextNode: any).data: string)
+	--       if data == SUSPENSE_END_DATA)
+	--         if depth == 0)
+	--           parentInstance.removeChild(nextNode)
+	--           -- Retry if any event replaying was blocked on this.
+	--           retryIfBlockedOn(suspenseInstance)
+	--           return
+	--         } else {
+	--           depth--
+	--         end
+	--       } else if
+	--         data == SUSPENSE_START_DATA or
+	--         data == SUSPENSE_PENDING_START_DATA or
+	--         data == SUSPENSE_FALLBACK_START_DATA
+	--       )
+	--         depth++
+	--       end
+	--     end
+	--     node = nextNode
+	--   } while (node)
+	--   -- TODO: Warn, we didn't find the end comment boundary.
+	--   -- Retry if any event replaying was blocked on this.
+	--   retryIfBlockedOn(suspenseInstance)
+end
 
-exports.clearSuspenseBoundaryFromContainer =
-	function(container: Container, suspenseInstance: SuspenseInstance)
-		-- ROBLOX FIXME: this is a major thing we need to fix for Suspense to work as a feature
-		unimplemented("clearSuspenseBoundaryFromContainer")
-		--   if container.nodeType == COMMENT_NODE)
-		--     clearSuspenseBoundary((container.parentNode: any), suspenseInstance)
-		--   } else if container.nodeType == ELEMENT_NODE)
-		--     clearSuspenseBoundary((container: any), suspenseInstance)
-		--   } else {
-		--     -- Document nodes should never contain suspense boundaries.
-		--   end
-		--   -- Retry if any event replaying was blocked on this.
-		--   retryIfBlockedOn(container)
-	end
+exports.clearSuspenseBoundaryFromContainer = function(
+	container: Container,
+	suspenseInstance: SuspenseInstance
+)
+	-- ROBLOX FIXME: this is a major thing we need to fix for Suspense to work as a feature
+	unimplemented("clearSuspenseBoundaryFromContainer")
+	--   if container.nodeType == COMMENT_NODE)
+	--     clearSuspenseBoundary((container.parentNode: any), suspenseInstance)
+	--   } else if container.nodeType == ELEMENT_NODE)
+	--     clearSuspenseBoundary((container: any), suspenseInstance)
+	--   } else {
+	--     -- Document nodes should never contain suspense boundaries.
+	--   end
+	--   -- Retry if any event replaying was blocked on this.
+	--   retryIfBlockedOn(container)
+end
 
 exports.hideInstance = function(instance: Instance)
 	unimplemented("hideInstance")
