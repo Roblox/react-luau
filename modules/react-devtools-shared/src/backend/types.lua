@@ -105,47 +105,29 @@ export type ReactRenderer = {
 	rendererPackageName: string,
 	bundleType: BundleType,
 	-- 16.9+
-	overrideHookState: (
-		self: ReactRenderer,
-		Object,
-		number,
-		Array<string | number>,
-		any
-	) -> (),
+	overrideHookState: (Object, number, Array<string | number>, any) -> (),
 	-- 17+
-	overrideHookStateDeletePath: (
-		self: ReactRenderer,
-		Object,
-		number,
-		Array<string | number>
-	) -> (),
+	overrideHookStateDeletePath: (Object, number, Array<string | number>) -> (),
 	-- 17+
 	overrideHookStateRenamePath: (
-		self: ReactRenderer,
 		Object,
 		number,
 		Array<string | number>,
 		Array<string | number>
 	) -> (),
 	-- 16.7+
-	overrideProps: (self: ReactRenderer, Object, Array<string | number>, any) -> (),
+	overrideProps: (Object, Array<string | number>, any) -> (),
 	-- 17+
-	overridePropsDeletePath: (
-		(self: ReactRenderer, Object, Array<string | number>) -> ()
-	),
+	overridePropsDeletePath: (Object, Array<string | number>) -> (),
 	-- 17+
 	overridePropsRenamePath: (
-		self: ReactRenderer,
 		Object,
 		Array<string | number>,
 		Array<string | number>
 	) -> (),
 	-- 16.9+
-	scheduleUpdate: (self: ReactRenderer, Object) -> (),
-	setSuspenseHandler: (
-		self: ReactRenderer,
-		shouldSuspend: (fiber: Object) -> boolean
-	) -> (),
+	scheduleUpdate: (Object) -> (),
+	setSuspenseHandler: (shouldSuspend: (fiber: Object) -> boolean) -> (),
 	-- Only injected by React v16.8+ in order to support hooks inspection.
 	currentDispatcherRef: CurrentDispatcherRef?,
 	-- Only injected by React v16.9+ in DEV mode.
@@ -158,19 +140,21 @@ export type ReactRenderer = {
 	--   ...
 }
 
+type null = { __T: "ENCODE_TO_NULL" }
+
 export type ChangeDescription = {
-	context: Array<string> | boolean | nil,
+	context: Array<string> | boolean | null,
 	didHooksChange: boolean,
 	isFirstMount: boolean,
-	props: Array<string> | nil,
-	state: Array<string> | nil,
+	props: Array<string> | null,
+	state: Array<string> | null,
 }
 
 export type CommitDataBackend = {
 	-- Tuple of fiber ID and change description
 	-- ROBLOX TODO: how to express bracket syntax embedded in Array type?
 	-- changeDescriptions: Array<[number, ChangeDescription]> | nil,
-	changeDescriptions: Array<Array<number | ChangeDescription>> | nil,
+	changeDescriptions: Array<Array<number | ChangeDescription>> | null,
 	duration: number,
 	-- Tuple of fiber ID and actual duration
 	fiberActualDurations: Array<Array<number>>,

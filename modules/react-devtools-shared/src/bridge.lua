@@ -113,8 +113,7 @@ type BackendEvents = {
 	extensionBackendInitialized: () -> (),
 	inspectedElement: (InspectedElementPayload) -> (),
 	isBackendStorageAPISupported: (boolean) -> (),
-	-- ROBLOX deviation: don't binary encode strings
-	operations: (Array<number | string>) -> (),
+	operations: (Array<number>) -> (),
 	ownersList: (OwnersList) -> (),
 	overrideComponentFilters: (Array<ComponentFilter>) -> (),
 	profilingData: (ProfilingDataBackend) -> (),

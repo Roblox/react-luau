@@ -51,7 +51,7 @@ exports.enableProfilerTimer = _G.__PROFILE__
 exports.enableProfilerCommitHooks = _G.__PROFILE__
 
 -- Trace which interactions trigger each commit.
-exports.enableSchedulerTracing = false
+exports.enableSchedulerTracing = _G.__PROFILE__
 
 -- SSR experiments
 exports.enableSuspenseServerRenderer = _G.__EXPERIMENTAL__

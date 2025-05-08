@@ -9,9 +9,18 @@
 local Packages = script.Parent.Parent
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
+local Array = LuauPolyfill.Array
 local Symbol = LuauPolyfill.Symbol
+local Object = LuauPolyfill.Object
+local String = LuauPolyfill.String
 type Array<T> = { [number]: T }
 type Object = { [string]: any }
+
+local Utils = require(script.Parent.utils)
+local formatDataForPreview = Utils.formatDataForPreview
+local getDisplayNameForReactElement = Utils.getDisplayNameForReactElement
+local getAllEnumerableKeys = Utils.getAllEnumerableKeys
+local getDataType = Utils.getDataType
 
 -- ROBLOX FIXME: !!! THIS FILE IS A STUB WITH BAREBONES FOR UTILS TEST
 local function unimplemented(functionName: string)
@@ -78,7 +87,7 @@ export type Unserializable = {
 --
 -- Reducing this threshold will improve the speed of initial component inspection,
 -- but may decrease the responsiveness of expanding objects/arrays to inspect further.
-local _LEVEL_THRESHOLD = 2
+local LEVEL_THRESHOLD = 2
 
 -- /**
 --  * Generate the dehydrated metadata for complex object instances
@@ -90,8 +99,29 @@ exports.createDehydrated = function(
 	cleaned: Array<Array<string | number>>,
 	path: Array<string | number>
 ): Dehydrated
-	unimplemented("createDehydrated")
-	error("unimplemented createDehydrated")
+	table.insert(cleaned, path)
+
+	local dehydrated: Dehydrated = {
+		inspectable = inspectable,
+		type = type,
+		preview_long = formatDataForPreview(data, true),
+		preview_short = formatDataForPreview(data, false),
+		name = if not data.constructor or data.constructor.name == "Object"
+			then ""
+			else data.constructor.name,
+	}
+
+	if type == "array" or type == "typed_array" then
+		dehydrated.size = data.length
+	elseif type == "object" then
+		dehydrated.size = Object.keys(data).length
+	end
+
+	if type == "iterator" or type == "typed_array" then
+		dehydrated.readonly = true
+	end
+
+	return dehydrated
 end
 
 -- /**
@@ -113,21 +143,19 @@ end
 --  * and cleaned = [["some", "attr"], ["other"]]
 --  */
 exports.dehydrate = function(
-	data: Object,
+	data: any,
 	cleaned: Array<Array<string | number>>,
 	unserializable: Array<Array<string | number>>,
 	path: Array<string | number>,
 	isPathAllowed: (Array<string | number>) -> boolean,
-	level: number?
+	level_: number?
 ): string | Dehydrated | Unserializable | Array<Dehydrated> | Array<Unserializable> | {
 	[string]: string | Dehydrated | Unserializable, --[[...]]
 }
-	if level == nil then
-		level = 0
-	end
+	local level = level_ or 0
 
-	-- ROBLOX TODO: port this properly, for now just do the default case
-	-- let isPathAllowedCheck;
+	local type_ = getDataType(data)
+	local isPathAllowedCheck
 
 	-- switch (type) {
 	--   case 'html_element':
@@ -140,26 +168,18 @@ exports.dehydrate = function(
 	-- 	  type,
 	-- 	};
 
-	--   case 'function':
-	-- 	cleaned.push(path);
-	-- 	return {
-	-- 	  inspectable: false,
-	-- 	  preview_short: formatDataForPreview(data, false),
-	-- 	  preview_long: formatDataForPreview(data, true),
-	-- 	  name:
-	-- 		typeof data.name === 'function' || !data.name
-	-- 		  ? 'function'
-	-- 		  : data.name,
-	-- 	  type,
-	-- 	};
-
-	--   case 'string':
-	-- 	isPathAllowedCheck = isPathAllowed(path);
-	-- 	if (isPathAllowedCheck) {
-	-- 	  return data;
-	-- 	} else {
-	-- 	  return data.length <= 500 ? data : data.slice(0, 500) + '...';
-	-- 	}
+	if type_ == "function" then
+		table.insert(cleaned, path)
+		local functionName = debug.info(data, "n")
+		return {
+			inspectable = false,
+			preview_short = formatDataForPreview(data, false),
+			preview_long = formatDataForPreview(data, true),
+			name = functionName,
+			type = type_,
+		}
+	elseif type_ == "string" then
+		return if #data <= 500 then data else String.slice(data, 0, 500) + "..."
 
 	--   case 'bigint':
 	-- 	cleaned.push(path);
@@ -181,17 +201,17 @@ exports.dehydrate = function(
 	-- 	  type,
 	-- 	};
 
-	--   // React Elements aren't very inspector-friendly,
-	--   // and often contain private fields or circular references.
-	--   case 'react_element':
-	-- 	cleaned.push(path);
-	-- 	return {
-	-- 	  inspectable: false,
-	-- 	  preview_short: formatDataForPreview(data, false),
-	-- 	  preview_long: formatDataForPreview(data, true),
-	-- 	  name: getDisplayNameForReactElement(data) || 'Unknown',
-	-- 	  type,
-	-- 	};
+	-- React Elements aren't very inspector-friendly,
+	-- and often contain private fields or circular references.
+	elseif type_ == "react_element" then
+		table.insert(cleaned, path)
+		return {
+			inspectable = false,
+			preview_short = formatDataForPreview(data, false),
+			preview_long = formatDataForPreview(data, true),
+			name = getDisplayNameForReactElement(data) or "Unknown",
+			type = type_,
+		}
 
 	--   // ArrayBuffers error if you try to inspect them.
 	--   case 'array_buffer':
@@ -205,22 +225,22 @@ exports.dehydrate = function(
 	-- 	  size: data.byteLength,
 	-- 	  type,
 	-- 	};
+	elseif type_ == "array" then
+		isPathAllowedCheck = isPathAllowed(path)
+		if level >= LEVEL_THRESHOLD and not isPathAllowedCheck then
+			return exports.createDehydrated(type_, true, data, cleaned, path)
+		end
 
-	--   case 'array':
-	-- 	isPathAllowedCheck = isPathAllowed(path);
-	-- 	if (level >= LEVEL_THRESHOLD && !isPathAllowedCheck) {
-	-- 	  return createDehydrated(type, true, data, cleaned, path);
-	-- 	}
-	-- 	return data.map((item, i) =>
-	-- 	  dehydrate(
-	-- 		item,
-	-- 		cleaned,
-	-- 		unserializable,
-	-- 		path.concat([i]),
-	-- 		isPathAllowed,
-	-- 		isPathAllowedCheck ? 1 : level + 1,
-	-- 	  ),
-	-- 	);
+		return Array.map(data, function(item, i)
+			return exports.dehydrate(
+				item,
+				cleaned,
+				unserializable,
+				Array.concat(path, i),
+				isPathAllowed,
+				if isPathAllowedCheck then 1 else level + 1
+			)
+		end)
 
 	--   case 'html_all_collection':
 	--   case 'typed_array':
@@ -292,39 +312,35 @@ exports.dehydrate = function(
 	-- 	  name: data.toString(),
 	-- 	  type,
 	-- 	};
+	elseif type_ == "table" then
+		isPathAllowedCheck = isPathAllowed(path)
+		if level >= LEVEL_THRESHOLD and not isPathAllowedCheck then
+			return exports.createDehydrated(type_, true, data, cleaned, path)
+		end
 
-	--   case 'object':
-	-- 	isPathAllowedCheck = isPathAllowed(path);
-	-- 	if (level >= LEVEL_THRESHOLD && !isPathAllowedCheck) {
-	-- 	  return createDehydrated(type, true, data, cleaned, path);
-	-- 	} else {
-	-- 	  const object = {};
-	-- 	  getAllEnumerableKeys(data).forEach(key => {
-	-- 		const name = key.toString();
-	-- 		object[name] = dehydrate(
-	-- 		  data[key],
-	-- 		  cleaned,
-	-- 		  unserializable,
-	-- 		  path.concat([name]),
-	-- 		  isPathAllowed,
-	-- 		  isPathAllowedCheck ? 1 : level + 1,
-	-- 		);
-	-- 	  });
-	-- 	  return object;
-	-- 	}
+		local object = {}
 
-	--   case 'infinity':
-	--   case 'nan':
-	--   case 'undefined':
-	-- 	// Some values are lossy when sent through a WebSocket.
-	-- 	// We dehydrate+rehydrate them to preserve their type.
-	-- 	cleaned.push(path);
-	-- 	return {
-	-- 	  type,
-	-- 	};
+		Array.forEach(getAllEnumerableKeys(data), function(key)
+			local name = tostring(key)
+			object[name] = exports.dehydrate(
+				data[key],
+				cleaned,
+				unserializable,
+				Array.concat(path, name),
+				isPathAllowed,
+				if isPathAllowedCheck then 1 else level + 1
+			)
+		end)
 
-	--   default:
-	return data
+		return object
+	elseif type_ == "infinity" or type_ == "nan" or type_ == "nil" then
+		table.insert(cleaned, path)
+		return {
+			type = type_,
+		}
+	else
+		return data
+	end
 end
 
 exports.fillInPath = function(

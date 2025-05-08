@@ -1,0 +1,10 @@
+[package]
+name = "ReactDevtools"
+version = { workspace = true }
+authors = { workspace = true }
+publish = true
+content_root = "src"
+files = ["*", "!**/__tests__/**"]
+
+[dependencies]
+ReactDevtoolsCore = { path = "../react-devtools-core" }

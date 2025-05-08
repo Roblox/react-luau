@@ -1,0 +1,14 @@
+[package]
+name = "ReactDevtoolsCore"
+version = { workspace = true }
+authors = { workspace = true }
+publish = true
+content_root = "src"
+files = ["*", "!**/__tests__/**"]
+
+[dependencies]
+LuauPolyfill = { workspace = true }
+ReactDevtoolsShared = { path = "../react-devtools-shared" }
+
+[dev_dependencies]
+JestGlobals = { workspace = true }

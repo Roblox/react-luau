@@ -66,8 +66,6 @@ local ElementTypeMemo = types.ElementTypeMemo
 local storage = require(script.Parent.storage)
 local localStorageGetItem = storage.localStorageGetItem
 local localStorageSetItem = storage.localStorageSetItem
-local hydration = require(script.Parent.hydration)
-local meta = hydration.meta
 type ComponentFilter = types.ComponentFilter
 type ElementType = types.ElementType
 
@@ -75,7 +73,6 @@ local cachedDisplayNames: WeakMap<Function, string> = WeakMap.new()
 
 -- On large trees, encoding takes significant time.
 -- Try to reuse the already encoded strings.
--- ROBLOX TODO: implement this when there's a performance issue in Studio tools driving it
 -- local encodedStringCache = LRU({max = 1000})
 
 exports.alphaSortKeys = function(
@@ -125,6 +122,20 @@ exports.getDisplayName = function(type_: any, fallbackName: string?): string
 	return displayName
 end
 
+-- Mirror https://github.com/facebook/react/blob/7c21bf72ace77094fd1910cc350a548287ef8350/packages/shared/getComponentName.js#L27-L37
+-- This is from a newer version of React and solves some bugs with the current
+-- version's implementation.
+exports.getWrappedDisplayName = function(
+	outerType: any,
+	innerType: any,
+	wrapperName: string,
+	fallbackName: string?
+): string
+	local displayName = outerType and outerType.displayName
+	return displayName
+		or `{wrapperName}({exports.getDisplayName(innerType, fallbackName)})`
+end
+
 local uidCounter: number = 0
 
 exports.getUID = function(): number
@@ -132,11 +143,72 @@ exports.getUID = function(): number
 	return uidCounter
 end
 
--- ROBLOX deviation: string encoding not required
--- exports.utfDecodeString = function(str): string
--- end
--- exports.utfEncodeString = function(str): string
--- end
+exports.utfDecodeString = function(codePoints: { number }): string
+	-- Rebuild the actual code-point sequence by merging any > 0xFFFF entries
+	local seq = {}
+	local i = 1
+	while i <= #codePoints do
+		local cp = codePoints[i]
+		if cp >= 0x10000 then
+			-- This was a paired surrogate in the encode step.
+			-- Skip the next “low surrogate” placeholder so we don’t double-count.
+			table.insert(seq, cp)
+			i = i + 2
+		else
+			-- BMP or standalone surrogate — just push it.
+			table.insert(seq, cp)
+			i = i + 1
+		end
+	end
+
+	return utf8.char(table.unpack(seq))
+end
+
+exports.utfEncodeString = function(str): Array<number>
+	-- First, convert the UTF-8 string to a table of UTF-16 code units.
+	-- JavaScript’s strings are UTF-16 encoded. Lua strings are UTF-8 encoded,
+	-- so we need to "simulate" that conversion.
+	local utf16Units = {}
+	for pos, codepoint in utf8.codes(str) do
+		-- If the codepoint is in the BMP, it maps directly.
+		if codepoint < 0x10000 then
+			table.insert(utf16Units, codepoint)
+		else
+			-- For codepoints outside the BMP, convert them to surrogate pairs.
+			local cp = codepoint - 0x10000
+			local high = math.floor(cp / 0x400) + 0xD800
+			local low = (cp % 0x400) + 0xDC00
+			table.insert(utf16Units, high)
+			table.insert(utf16Units, low)
+		end
+	end
+
+	-- Now, mimic the JS loop:
+	-- For each index in the UTF-16 table, call codePointAt logic.
+	local result = {}
+	for i = 1, #utf16Units do
+		local current = utf16Units[i]
+		-- Check for a high surrogate followed by a low surrogate.
+		if current >= 0xD800 and current <= 0xDBFF and i < #utf16Units then
+			local nextUnit = utf16Units[i + 1]
+			if nextUnit >= 0xDC00 and nextUnit <= 0xDFFF then
+				-- Combine them as JS's codePointAt does.
+				result[i] = ((current - 0xD800) * 0x400) + (nextUnit - 0xDC00) + 0x10000
+			else
+				result[i] = current
+			end
+		else
+			result[i] = current
+		end
+	end
+
+	-- Optionally store in cache.
+	-- if encodedStringCache then
+	-- 	encodedStringCache.set(str, result)
+	-- end
+
+	return result
+end
 
 -- ROBLOX deviation: don't binary encode strings, so operations Array can include strings
 exports.printOperationsArray = function(operations: Array<number | string>)
@@ -480,7 +552,8 @@ export type DataType = string
 --  */
 exports.getDataType = function(data: Object?): DataType
 	if data == nil then
-		return "null"
+		-- ROBLOX deviation: null is nil in Luau
+		return "nil"
 		-- ROBLOX deviation: no undefined in Lua
 		-- elseif data == nil then
 		--     return'undefined'
@@ -496,9 +569,10 @@ exports.getDataType = function(data: Object?): DataType
 	--   }
 
 	local type_ = typeof(data)
-	if type_ == "bigint" then
-		return "bigint"
-	elseif type_ == "boolean" then
+	-- ROBLOX deviation: no bigint in Luau
+	-- if type_ == "bigint" then
+	-- 	return "bigint"
+	if type_ == "boolean" then
 		return "boolean"
 	elseif type_ == "function" then
 		return "function"
@@ -510,7 +584,9 @@ exports.getDataType = function(data: Object?): DataType
 		else
 			return "number"
 		end
-	elseif type_ == "object" then
+	-- ROBLOX deviation: no object type in Luau
+	-- elseif type_ == "object" then
+	elseif type_ == "table" then
 		if Array.isArray(data) then
 			return "array"
 
@@ -540,7 +616,7 @@ exports.getDataType = function(data: Object?): DataType
 			-- }
 			--   }
 		else
-			return "object"
+			return "table"
 		end
 	elseif type_ == "string" then
 		return "string"
@@ -633,30 +709,28 @@ end
 -- Would show a preview of...
 --   [123, "abc", Array(2), {…}]
 
-function exports.formatDataForPreview(data: Object, showFormattedValue: boolean): string
-	if data[meta.type] ~= nil then
-		return (function()
-			if showFormattedValue then
-				return data[meta.preview_long]
-			end
-			return data[meta.preview_short]
-		end)()
-	end
+function exports.formatDataForPreview(data: any, showFormattedValue: boolean): string
+	-- UIBLOX-2077: This is a cache for performance but relies on adding data
+	-- onto the object, but in Luau we can't add fields to any old object.
+	-- Investigate this later.
+
+	-- if data[meta.type] ~= nil then
+	-- 	return (function()
+	-- 		if showFormattedValue then
+	-- 			return data[meta.preview_long]
+	-- 		end
+	-- 		return data[meta.preview_short]
+	-- 	end)()
+	-- end
 
 	local type_ = exports.getDataType(data)
 
 	if type_ == "html_element" then
 		return string.format("<%s />", truncateForDisplay(string.lower(data.tagName)))
 	elseif type_ == "function" then
-		return truncateForDisplay(string.format(
-			"ƒ %s() {}",
-			(function()
-				if typeof(data.name) == "function" then
-					return ""
-				end
-				return data.name
-			end)()
-		))
+		-- ROBLOX deviation: use debug.info to get the function name
+		local functionName = debug.info(data, "n")
+		return truncateForDisplay(`ƒ {functionName}()`)
 	elseif type_ == "string" then
 		return string.format('"%s"', tostring(data))
 		-- ROBLOX TODO? should we support our RegExp and Symbol polyfills here?
@@ -686,13 +760,7 @@ function exports.formatDataForPreview(data: Object, showFormattedValue: boolean)
 			end
 			return string.format("[%s]", truncateForDisplay(formatted))
 		else
-			local length = (function()
-				if array[#meta] ~= nil then
-					return array[#meta]
-				end
-				return #array
-			end)()
-			return string.format("Array(%s)", length)
+			return `Array({#array})`
 		end
 		-- ROBLOX deviation: don't implement web-specifics
 		-- elseif type_ == 'typed_array' then
@@ -700,7 +768,7 @@ function exports.formatDataForPreview(data: Object, showFormattedValue: boolean)
 		-- elseif type_ == 'opaque_iterator' then
 		-- ROBLOX TODO? should we support Luau's datetime object?
 		-- elseif type_ == 'date' then
-	elseif type_ == "object" then
+	elseif type_ == "table" then
 		if showFormattedValue then
 			local keys = exports.getAllEnumerableKeys(data)
 			table.sort(keys, exports.alphaSortKeys)
