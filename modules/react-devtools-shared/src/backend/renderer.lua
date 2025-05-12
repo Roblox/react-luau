@@ -2104,16 +2104,15 @@ exports.attach = function(
 		end
 
 		-- Next we'll drill down this component to find all HostComponent/Text.
-		-- ROBLOX FIXME Luau: shouldn't need cast on the RHS here
-		local node: Fiber = fiber :: Fiber
+		local node: Fiber = fiber
 
 		while true do
 			if node.tag == HostComponent or node.tag == HostText then
 				table.insert(fibers, node)
 			elseif node.child then
-				-- ROBLOX TODO: What do we use instead of "return"?
-				(node.child :: Fiber).return_ = node
+				node.child.return_ = node
 				node = node.child :: Fiber
+				continue
 			end
 			if node == fiber then
 				return fibers

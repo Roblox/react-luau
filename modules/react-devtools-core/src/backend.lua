@@ -189,25 +189,20 @@ local function connectToDevtools(options_: ConnectOptions?)
 
 		bridge:addListener(
 			"inspectElement",
-			function(data: { id: number, rendererId: number })
-				-- UIBLOX-2055: Native element highlighting is disabled because
-				-- the rendererId passed by the frontend is not available here.
-				-- It's currently blocking MVP so this functionality is disabled
-				-- for now.
+			function(data: { id: number, rendererID: number })
+				local id = data.id
+				local rendererId = data.rendererID
 
-				-- local id = data.id
-				-- local rendererId = data.rendererId
-
-				-- if agent then
-				-- 	local renderer = agent.rendererInterfaces[rendererId]
-				-- 	if renderer ~= nil then
-				-- 		local nodes = renderer:findNativeNodesForFiberID(id)
-				-- 		if nodes ~= nil and next(nodes) ~= nil then
-				-- 			local node = nodes[1]
-				-- 			agent:emit("showNativeHighlight", node)
-				-- 		end
-				-- 	end
-				-- end
+				if agent then
+					local renderer = agent._rendererInterfaces[rendererId]
+					if renderer ~= nil then
+						local nodes = renderer.findNativeNodesForFiberID(id)
+						if nodes ~= nil and next(nodes) ~= nil then
+							local node = nodes[1]
+							agent:emit("showNativeHighlight", node)
+						end
+					end
+				end
 			end
 		)
 
