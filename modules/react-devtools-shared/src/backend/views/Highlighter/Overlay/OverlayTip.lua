@@ -45,6 +45,7 @@ function OverlayTip.new(container: GuiBase2d)
 	background.AutomaticSize = Enum.AutomaticSize.XY
 	background.Size = UDim2.fromScale(0, 0)
 	background.BorderSizePixel = 0
+	background.ZIndex = 1_000_000 + 1
 	self.background = background
 
 	local layout = Instance.new("UIListLayout")
