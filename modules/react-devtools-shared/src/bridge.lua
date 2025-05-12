@@ -239,7 +239,9 @@ function Bridge.new(wall: Wall)
 	-- Temporarily support older standalone front-ends sending commands to newer embedded backends.
 	-- We do this because React Native embeds the React DevTools backend,
 	-- but cannot control which version of the frontend users use.
-	self:addListener("overrideValueAtPath", self.overrideValueAtPath)
+	self:addListener("overrideValueAtPath", function(...)
+		return self:overrideValueAtPath(...)
+	end)
 
 	-- ROBLOX deviation: just expose wall as an instance field, instead of read-only property
 	self.wall = wall
