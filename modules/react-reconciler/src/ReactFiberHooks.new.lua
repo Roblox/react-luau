@@ -149,6 +149,9 @@ local markStateUpdateScheduled =
 local ReactCurrentDispatcher = ReactSharedInternals.ReactCurrentDispatcher
 -- local ReactCurrentBatchConfig = ReactSharedInternals.ReactCurrentBatchConfig
 
+local FFlagReactCleanQueueOnUpdateBailout =
+	require(Packages.SafeFlags).createGetFFlag("ReactCleanQueueOnUpdateBailout")()
+
 -- deviation: common types
 type Array<T> = { [number]: T }
 
@@ -1874,6 +1877,17 @@ function dispatchAction<S, A>(fiber: Fiber, queue: UpdateQueue<S, A>, action: A,
 					-- It's still possible that we'll need to rebase this update later,
 					-- if the component re-renders for a different reason and by that
 					-- time the reducer has changed.
+
+					-- First remove the update just added to prevent unbounded queue growth.
+					if FFlagReactCleanQueueOnUpdateBailout then
+						if pending == nil then
+							queue.pending = nil
+						else
+							pending.next = update.next
+							queue.pending = pending
+						end
+					end
+
 					return
 				end
 				-- ROBLOX catch
