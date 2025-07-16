@@ -22,6 +22,12 @@ type DevtoolsHook = ReactDevtoolsShared.DevtoolsHook
 
 local serializeTable = require(script.Parent.utils.serializeTable)
 
+-- ROBLOX deviation: In order to support launching DevTools after the client has
+-- started, the renderer needs to be injected before any other scripts. The hook
+-- will look for the presence of a global __REACT_DEVTOOLS_ATTACH__ and attach
+-- an injected renderer early.
+require(script.Parent.setupAttachHook)
+
 type Array<T> = { T }
 
 export type ConnectOptions = {
