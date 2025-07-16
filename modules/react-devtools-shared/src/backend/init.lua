@@ -132,6 +132,10 @@ end
 return {
 	initBackend = initBackend,
 	agent = require(script.agent),
+	-- ROBLOX deviation: require renderer lazily to avoid causing React to initialize prematurely.
+	getRendererLazy = function()
+		return require(script.renderer)
+	end,
 	NativeStyleEditor = {
 		types = require(script.NativeStyleEditor.types),
 	},
