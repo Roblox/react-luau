@@ -53,7 +53,7 @@ valgrind \
         --fastFlags.allOnLuau \
 >/dev/null
 
-TIME_ELAPSED=$(bc <<< "$(now_ms) - ${START_TIME}")
+TIME_ELAPSED=$(($(now_ms) - START_TIME))
 
 # Generate report using cg_annotate and extract the header and totals of the
 # recorded events valgrind was configured to record.
@@ -82,31 +82,31 @@ for i in "${!TOTALS_ARRAY[@]}"; do
     case ${HEADERS_ARRAY[$i]} in
         I1mr | ILmr)
             REF=${TOTALS_ARRAY[header_map["Ir"]]}
-            OPS_PER_SEC=$(bc -l <<< "$TOTAL / $REF")
+            OPS_PER_SEC=$(awk "BEGIN {printf \"%.6f\", $TOTAL / $REF}")
             ;;
 
         D1mr | DLmr)
             REF=${TOTALS_ARRAY[header_map["Dr"]]}
-            OPS_PER_SEC=$(bc -l <<< "$TOTAL / $REF")
+            OPS_PER_SEC=$(awk "BEGIN {printf \"%.6f\", $TOTAL / $REF}")
             ;;
 
         D1mw | DLmw)
             REF=${TOTALS_ARRAY[header_map["Dw"]]}
-            OPS_PER_SEC=$(bc -l <<< "$TOTAL / $REF")
+            OPS_PER_SEC=$(awk "BEGIN {printf \"%.6f\", $TOTAL / $REF}")
             ;;
 
         Bcm)
             REF=${TOTALS_ARRAY[header_map["Bc"]]}
-            OPS_PER_SEC=$(bc -l <<< "$TOTAL / $REF")
+            OPS_PER_SEC=$(awk "BEGIN {printf \"%.6f\", $TOTAL / $REF}")
             ;;
 
         Bim)
             REF=${TOTALS_ARRAY[header_map["Bi"]]}
-            OPS_PER_SEC=$(bc -l <<< "$TOTAL / $REF")
+            OPS_PER_SEC=$(awk "BEGIN {printf \"%.6f\", $TOTAL / $REF}")
             ;;
 
         *)
-            OPS_PER_SEC=$(bc -l <<< "$TOTAL")
+            OPS_PER_SEC=$(awk "BEGIN {printf \"%.6f\", $TOTAL}")
             ;;
         esac
 
