@@ -21,6 +21,10 @@ type Map<K, V> = { [K]: V }
 local console = require(Packages.Shared).console
 local describeError = require(Packages.Shared).describeError
 
+local SafeFlags = require(Packages.SafeFlags)
+local FFlagReactPreventAssigningKeyToChildren =
+	SafeFlags.createGetFFlag("ReactPreventAssigningKeyToChildren")()
+
 local ReactTypes = require(Packages.Shared)
 -- ROBLOX deviation: ReactElement is defined at the top level of Shared along
 -- with the rest of the ReactTypes
@@ -1054,15 +1058,35 @@ local function ChildReconciler(shouldTrackSideEffects)
 		-- Keep scanning and use the map to restore deleted items as moves.
 		-- ROBLOX deviation: use while loop in place of modified for loop
 		while newIdx <= newChildrenCount do
-			local newFiber = updateFromMap(
-				existingChildren,
-				returnFiber,
-				newIdx,
-				newChildren[newIdx],
-				lanes,
-				-- ROBLOX deviation: pass newIdx to be used as the key of the element
-				newIdx
-			)
+			local newFiber
+			-- ROBLOX performance: avoid repeated indexing of newChildren to newIdx
+			local newChildNewIdx = newChildren[newIdx]
+			if
+				not FFlagReactPreventAssigningKeyToChildren
+				or (
+					newChildNewIdx ~= nil
+					and type(newChildNewIdx) == "table"
+					and newChildNewIdx["$$typeof"] ~= nil
+				)
+			then
+				newFiber = updateFromMap(
+					existingChildren,
+					returnFiber,
+					newIdx,
+					newChildNewIdx,
+					lanes,
+					-- ROBLOX deviation: pass newIdx to be used as the key of the element
+					newIdx
+				)
+			else
+				newFiber = updateFromMap(
+					existingChildren,
+					returnFiber,
+					newIdx,
+					newChildNewIdx,
+					lanes
+				)
+			end
 			if newFiber ~= nil then
 				if shouldTrackSideEffects then
 					if newFiber.alternate ~= nil then

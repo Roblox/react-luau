@@ -286,4 +286,28 @@ describe("ChildArray Keys", function()
 		jestExpect(thirdChild).toBeDefined()
 		jestExpect(thirdChild.Text).toEqual("three")
 	end)
+
+	it("Should not assign keys to children tables", function()
+		local ReactRoblox = require(Packages.ReactRoblox)
+		local Scheduler = require(Packages.Dev.Scheduler)
+		local React = require(Packages.React)
+		local parent = Instance.new("Folder")
+
+		local function Component()
+			local _, setState = React.useState(false)
+
+			React.useEffect(function()
+				setState(true)
+			end, {})
+
+			return React.createElement("Frame", nil, false, {})
+		end
+
+		local componentInstance = RoactCompat.createElement(Component)
+
+		local root = ReactRoblox.createRoot(parent)
+
+		root:render(componentInstance)
+		Scheduler.unstable_flushAllWithoutAsserting()
+	end)
 end)
