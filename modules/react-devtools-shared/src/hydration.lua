@@ -179,7 +179,7 @@ exports.dehydrate = function(
 			type = type_,
 		}
 	elseif type_ == "string" then
-		return if #data <= 500 then data else String.slice(data, 0, 500) + "..."
+		return if #data <= 500 then data else String.slice(data, 0, 500) .. "..."
 
 	--   case 'bigint':
 	-- 	cleaned.push(path);
