@@ -46,7 +46,7 @@ The [react repo](https://github.com/facebook/react) is a monorepo with a number 
 | `react-native-renderer` | Renderer interface for react-native | ❌ Not ported | ➖ Unlikely to be ported | Not well documented, likely does not apply to Roblox |
 | 📌`react-noop-renderer` | Renderer used for debugging Fiber | ✔️ Ported |  | Used heavily for internal framework testing |
 | 📌`react-reconciler` | Reconciler implementation used with various renderers | ✔️ Ported |  | Bulk of React's complicated logic lives here |
-| `react-refresh` | Wiring for Fast Refresh | ❌ Not ported | 🔁 Revisit if needed | Successor to "hot reloading", but relies on bundler step |
+| `react-refresh` | Wiring for Fast Refresh | ✔️ Ported | | Successor to "hot reloading", but relies on bundler step |
 | `react-server` | Experimental package for creating React streaming server renderers | ❌ Not ported | 🔁 Revisit if needed  | API considered unstable. Might be worth investigating if it stabilizes |
 | `react-test-renderer` | Test renderer helpful utilities and snapshot support | ✔️ Ported | | Used for testing much of React's internals, can be used by client developers |
 | `react-transport-dom-delay` | Internal package, likely for testing | ❌ Not ported | ➖ Unlikely to be ported | Internal library for experimental React Flight feature |

@@ -1,0 +1,8 @@
+{
+	"language": {
+		"mode": "strict"
+	},
+	"lint": {
+		"*": "enabled"
+	}
+}
