@@ -77,9 +77,9 @@ local createFiberFromPortal = ReactFiber.createFiberFromPortal
 -- ROBLOX deviation: we do not support string refs
 -- local emptyRefsObject =
 -- 	require(script.Parent["ReactFiberClassComponent.new"]).emptyRefsObject
--- local ReactFiberHotReloading = require(script.Parent["ReactFiberHotReloading.new"])
--- local isCompatibleFamilyForHotReloading =
--- 	ReactFiberHotReloading.isCompatibleFamilyForHotReloading
+local ReactFiberHotReloading = require(script.Parent["ReactFiberHotReloading.new"])
+local isCompatibleFamilyForHotReloading =
+	ReactFiberHotReloading.isCompatibleFamilyForHotReloading
 -- ROBLOX deviation: we do not support string refs, which removes our use of StrictMode
 -- local StrictMode = require(script.Parent.ReactTypeOfMode).StrictMode
 
@@ -487,9 +487,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 		if current ~= nil then
 			if
 				(current :: Fiber).elementType == element.type
-				-- ROBLOX performance: avoid always-false cmp, hot reloading isn't enabled in Roblox yet
-				-- Keep this check inline so it only runs on the false path:
-				-- or (__DEV__ and isCompatibleFamilyForHotReloading(current, element))
+				or (__DEV__ and isCompatibleFamilyForHotReloading(current, element))
 			then
 				-- Move based on index
 				local existing = useFiber(current :: Fiber, element.props)
@@ -1417,12 +1415,7 @@ local function ChildReconciler(shouldTrackSideEffects)
 				else
 					if
 						child.elementType == element.type
-						-- ROBLOX performance: avoid always-false cmp, hot reloading isn't enabled in Roblox yet
-						-- Keep this check inline so it only runs on the false path:
-						-- or (
-						-- 	__DEV__
-						-- 	and isCompatibleFamilyForHotReloading(child, element)
-						-- )
+						or (__DEV__ and isCompatibleFamilyForHotReloading(child, element))
 					then
 						deleteRemainingChildren(returnFiber, child.sibling)
 						local existing = useFiber(child, element.props)

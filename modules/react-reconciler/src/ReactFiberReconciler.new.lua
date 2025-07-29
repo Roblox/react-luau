@@ -115,11 +115,11 @@ local getHighestPriorityPendingLanes = ReactFiberLane.getHighestPriorityPendingL
 local higherPriorityLane = ReactFiberLane.higherPriorityLane
 local getCurrentUpdateLanePriority = ReactFiberLane.getCurrentUpdateLanePriority
 local setCurrentUpdateLanePriority = ReactFiberLane.setCurrentUpdateLanePriority
--- local ReactFiberHotReloading = require(script.Parent["ReactFiberHotReloading.new"])
--- local scheduleRefresh = ReactFiberHotReloading.scheduleRefresh
--- local scheduleRoot = ReactFiberHotReloading.scheduleRoot
--- local setRefreshHandler = ReactFiberHotReloading.setRefreshHandler
--- local findHostInstancesForRefresh = ReactFiberHotReloading.findHostInstancesForRefresh
+local ReactFiberHotReloading = require(script.Parent["ReactFiberHotReloading.new"])
+local scheduleRefresh = ReactFiberHotReloading.scheduleRefresh
+local scheduleRoot = ReactFiberHotReloading.scheduleRoot
+local setRefreshHandler = ReactFiberHotReloading.setRefreshHandler
+local findHostInstancesForRefresh = ReactFiberHotReloading.findHostInstancesForRefresh
 local SchedulingProfiler = require(script.Parent.SchedulingProfiler)
 local markRenderScheduled = SchedulingProfiler.markRenderScheduled
 
@@ -821,12 +821,13 @@ exports.injectIntoDevTools = function(devToolsConfig: DevToolsConfig): boolean
 		currentDispatcherRef = ReactCurrentDispatcher,
 		findHostInstanceByFiber = findHostInstanceByFiber,
 		findFiberByHostInstance = findFiberByHostInstance or emptyFindFiberByHostInstance,
-		-- FIXME: WIP
 		-- React Refresh
-		-- findHostInstancesForRefresh = __DEV__ and findHostInstancesForRefresh or nil,
-		-- scheduleRefresh = __DEV__ and scheduleRefresh or nil,
-		-- scheduleRoot = __DEV__ and scheduleRoot or nil,
-		-- setRefreshHandler = __DEV__ and setRefreshHandler or nil,
+		findHostInstancesForRefresh = if __DEV__
+			then findHostInstancesForRefresh
+			else nil,
+		scheduleRefresh = if __DEV__ then scheduleRefresh else nil,
+		scheduleRoot = if __DEV__ then scheduleRoot else nil,
+		setRefreshHandler = if __DEV__ then setRefreshHandler else nil,
 		-- Enables DevTools to append owner stacks to error messages in DEV mode.
 		getCurrentFiber = getCurrentFiber,
 	})

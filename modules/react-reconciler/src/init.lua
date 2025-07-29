@@ -21,6 +21,17 @@ export type UpdateQueue<T> = ReactInternalTypes.UpdateQueue<T>
 
 export type RootTag = ReactRootTags.RootTag
 
+-- ROBLOX deviation: export types needed by ReactFreshRuntime
+local ReactFiberHostConfigModule = require(script.ReactFiberHostConfig)
+export type Instance = ReactFiberHostConfigModule.Instance
+local ReactFiberHotReloading = require(script["ReactFiberHotReloading.new"])
+export type Family = ReactFiberHotReloading.Family
+export type RefreshUpdate = ReactFiberHotReloading.RefreshUpdate
+export type SetRefreshHandler = ReactFiberHotReloading.SetRefreshHandler
+export type ScheduleRefresh = ReactFiberHotReloading.ScheduleRefresh
+export type ScheduleRoot = ReactFiberHotReloading.ScheduleRoot
+export type FindHostInstancesForRefresh = ReactFiberHotReloading.FindHostInstancesForRefresh
+
 -- ROBLOX deviation: In order to allow host config to be spliced in, we export
 -- this top-level package as an initializer function that returns the configured
 -- reconciler module

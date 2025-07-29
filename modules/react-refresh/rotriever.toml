@@ -1,0 +1,11 @@
+[package]
+name = "ReactRefresh"
+version = { workspace = true }
+publish = true
+content_root = "src"
+files = ["*", "!**/__tests__/**"]
+
+[dependencies]
+LuauPolyfill = { workspace = true }
+ReactReconciler = { path = "../react-reconciler" }
+Shared = { path = "../shared" }
