@@ -723,10 +723,25 @@ local function isLikelyComponentType(type_): boolean
 			-- local name = type_.name or type_.displayName
 			-- return typeof(name) == "string" and RegExp("^[A-Z]"):test(name)
 			-- ROBLOX deviation: use debug.info and string.match
-			local name = debug.info(type_, "n") or debug.info(type_, "s")
-			return string.match(name, "^%u") ~= nil
+			local name = debug.info(type_, "n")
+			if #name > 0 then
+				return string.match(name, "^%u") ~= nil
+			end
+			-- The function is anonymous, go by file name
+			name = debug.info(type_, "s")
+			-- Capture the file name from the full datamodel path
+			local fileName = string.match(name, "([^%.]+)$")
+			if fileName ~= nil then
+				return string.match(fileName, "^%u") ~= nil
+			end
+			return false
 		elseif typeof(type_) == "table" then
 			if type_ ~= nil then
+				-- ROBLOX deviation: classes are tables
+				if type_.isReactComponent then
+					-- React class.
+					return true
+				end
 				local condition_ = type_["$$typeof"]
 				if
 					condition_ == REACT_FORWARD_REF_TYPE
