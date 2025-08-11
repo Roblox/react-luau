@@ -1,0 +1,18 @@
+[package]
+name = "ExampleApp"
+version = { workspace = true }
+authors = { workspace = true }
+publish = false
+content_root = "src"
+files = ["*", "!**/__tests__/**"]
+
+[config]
+registry_index = true
+
+[dependencies]
+React = { path = "../react" }
+ReactRoblox = { path = "../react-roblox" }
+ReactDevtoolsCore = { path = "../react-devtools-core" }
+
+Foundation = "1.42.0"
+ReactUtils = "1.6.0"
