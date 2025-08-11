@@ -20,3 +20,13 @@ Jest = "github.com/roblox/jest-roblox@3"
 JestGlobals = "github.com/roblox/jest-roblox@3"
 LuauPolyfill = "github.com/roblox/luau-polyfill@1"
 SafeFlags = "github.com/Roblox/safe-flags-internal@0.1.1"
+
+# Patch dependencies for the example app
+[config.patch."https://github.com/roblox/roact"]
+Roact = { path = "modules/roact-compat" }
+
+[config.patch."https://github.com/roblox/roact-alignment"]
+React = { path = "modules/react" }
+ReactRoblox = { path = "modules/react-roblox" }
+ReactIs = { path = "modules/react-is" }
+RoactCompat = { path = "modules/roact-compat" }
