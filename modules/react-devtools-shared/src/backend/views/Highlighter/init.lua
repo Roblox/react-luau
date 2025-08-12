@@ -35,6 +35,16 @@ local function isVisible(obj: GuiObject)
 	end
 end
 
+local function pickGuiObjectNodes(nodes: { Instance }): { GuiBase2d }
+	local relevantNodes = {}
+	for _, node in nodes do
+		if node:IsA("GuiBase2d") then
+			table.insert(relevantNodes, node)
+		end
+	end
+	return relevantNodes
+end
+
 local exports = {}
 
 function exports.setupHighlighter(bridge: BackendBridge, agent: Agent)
@@ -112,9 +122,25 @@ function exports.setupHighlighter(bridge: BackendBridge, agent: Agent)
 		selectFiberForNode(target)
 	end
 
+	local lastInputProcessed = false
+	local function onInputBegan(input: InputObject, gameProcessedEvent: boolean)
+		local inputType = input.UserInputType
+		if inputType ~= Enum.UserInputType.MouseButton1 then
+			return
+		end
+
+		lastInputProcessed = gameProcessedEvent
+	end
+
 	local function onInputEnded(input: InputObject)
 		local inputType = input.UserInputType
 		if inputType ~= Enum.UserInputType.MouseButton1 then
+			return
+		end
+
+		-- If the event wasn't processed then the user most likely clicked to
+		-- focus the viewport, so we don't want to select any fiber.
+		if not lastInputProcessed then
 			return
 		end
 
@@ -133,6 +159,10 @@ function exports.setupHighlighter(bridge: BackendBridge, agent: Agent)
 		table.insert(
 			listenerConnections,
 			UserInputService.InputChanged:Connect(onInputChanged)
+		)
+		table.insert(
+			listenerConnections,
+			UserInputService.InputBegan:Connect(onInputBegan)
 		)
 		table.insert(
 			listenerConnections,
@@ -173,12 +203,16 @@ function exports.setupHighlighter(bridge: BackendBridge, agent: Agent)
 			-- TODO-Roblox: Support scrolling node into view
 			-- This would require checking if the node is in a scrollable
 			-- container and then scrolling those containers to center the node.
-			local node = nodes[1]
+			local relevantNodes = pickGuiObjectNodes(nodes)
+			if #relevantNodes == 0 then
+				hideOverlay()
+				return
+			end
 
-			showOverlay(nodes, displayName, hideAfterTimeout)
+			showOverlay(relevantNodes, displayName, hideAfterTimeout)
 
 			if openNativeElementsPanel then
-				_G.__REACT_DEVTOOLS_GLOBAL_HOOK__["$0"] = node
+				_G.__REACT_DEVTOOLS_GLOBAL_HOOK__["$0"] = relevantNodes[1]
 				bridge:send("syncSelectionToNativeElementsPanel")
 			end
 		else

@@ -75,6 +75,7 @@ function OverlayTip.new(container: GuiBase2d)
 	name.Font = Enum.Font.BuilderSansBold
 	name.TextColor3 = Color3.fromHex("#ee78e6")
 	name.TextSize = 16
+	name.ZIndex = 1_000_000 + 2
 	name.Parent = background
 	self.nameLabel = name
 
@@ -84,6 +85,7 @@ function OverlayTip.new(container: GuiBase2d)
 	divider.BackgroundColor3 = Color3.fromHex("#aaaaaa")
 	divider.BorderSizePixel = 0
 	divider.LayoutOrder = 2
+	divider.ZIndex = 1_000_000 + 2
 	divider.Parent = background
 
 	local dimensions = Instance.new("TextLabel")
@@ -95,6 +97,7 @@ function OverlayTip.new(container: GuiBase2d)
 	dimensions.Font = Enum.Font.BuilderSansBold
 	dimensions.TextColor3 = Color3.fromHex("#d7d7d7")
 	dimensions.TextSize = 16
+	dimensions.ZIndex = 1_000_000 + 2
 	dimensions.Parent = background
 	self.dimensionsLabel = dimensions
 

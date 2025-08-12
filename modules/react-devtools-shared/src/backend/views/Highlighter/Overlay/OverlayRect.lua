@@ -5,10 +5,9 @@ function OverlayRect.new(container: GuiBase2d)
 	local self = setmetatable({}, OverlayRect)
 	self.container = container
 
-	local node = Instance.new("CanvasGroup")
+	local node = Instance.new("Frame")
 	node.Name = "OverlayRect"
 	node.BackgroundTransparency = 1
-	node.GroupTransparency = 0.3
 	node.Parent = container
 	self.node = node
 

@@ -33,11 +33,20 @@ function Overlay.new()
 
 	-- Use a button to sink inputs under the overlay when clicking
 	self.containerFrame = Instance.new("ImageButton")
+	self.containerFrame.Name = "OverlayContainer"
 	self.containerFrame.Size = UDim2.fromScale(1, 1)
 	self.containerFrame.BackgroundTransparency = 1
 	self.containerFrame.Image = ""
 	self.containerFrame.ZIndex = 1_000_000
 	self.containerFrame.Parent = self.container
+
+	self.rectContainer = Instance.new("CanvasGroup")
+	self.rectContainer.Name = "OverlayRects"
+	self.rectContainer.Size = UDim2.fromScale(1, 1)
+	self.rectContainer.BackgroundTransparency = 1
+	self.rectContainer.GroupTransparency = 0.3
+	self.rectContainer.ZIndex = 1_000_000 + 1
+	self.rectContainer.Parent = self.containerFrame
 
 	self.tip = OverlayTip.new(self.containerFrame)
 	self.rects = {} :: { OverlayRect }
@@ -74,7 +83,11 @@ function Overlay.inspect(self: Overlay, nodes: { GuiBase2d }, name: string?)
 	self.container.Parent = self.layerCollector
 	local elements = Array.filter(nodes, function(node: GuiBase2d)
 		return node:IsA("LayerCollector")
-			or (self.layerCollector and node:IsDescendantOf(self.layerCollector))
+			or (
+				if self.layerCollector
+					then node:IsDescendantOf(self.layerCollector)
+					else false
+			)
 	end)
 
 	-- Remove extra rects
@@ -87,7 +100,7 @@ function Overlay.inspect(self: Overlay, nodes: { GuiBase2d }, name: string?)
 	end
 
 	while #self.rects < #elements do
-		table.insert(self.rects, OverlayRect.new(self.containerFrame))
+		table.insert(self.rects, OverlayRect.new(self.rectContainer))
 	end
 
 	local outerBox = {
