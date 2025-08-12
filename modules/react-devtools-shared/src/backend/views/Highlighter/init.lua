@@ -45,6 +45,12 @@ local function pickGuiObjectNodes(nodes: { Instance }): { GuiBase2d }
 	return relevantNodes
 end
 
+local function isInputValid(input: InputObject)
+	return input.UserInputType == Enum.UserInputType.MouseMovement
+		or input.UserInputType == Enum.UserInputType.MouseButton1
+		or input.UserInputType == Enum.UserInputType.Touch
+end
+
 local exports = {}
 
 function exports.setupHighlighter(bridge: BackendBridge, agent: Agent)
@@ -82,8 +88,7 @@ function exports.setupHighlighter(bridge: BackendBridge, agent: Agent)
 			return
 		end
 
-		local inputType = input.UserInputType
-		if inputType ~= Enum.UserInputType.MouseMovement then
+		if not isInputValid(input) then
 			return
 		end
 
@@ -124,8 +129,7 @@ function exports.setupHighlighter(bridge: BackendBridge, agent: Agent)
 
 	local lastInputProcessed = false
 	local function onInputBegan(input: InputObject, gameProcessedEvent: boolean)
-		local inputType = input.UserInputType
-		if inputType ~= Enum.UserInputType.MouseButton1 then
+		if not isInputValid(input) then
 			return
 		end
 
@@ -133,8 +137,7 @@ function exports.setupHighlighter(bridge: BackendBridge, agent: Agent)
 	end
 
 	local function onInputEnded(input: InputObject)
-		local inputType = input.UserInputType
-		if inputType ~= Enum.UserInputType.MouseButton1 then
+		if not isInputValid(input) then
 			return
 		end
 
