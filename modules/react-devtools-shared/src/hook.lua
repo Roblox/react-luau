@@ -158,14 +158,14 @@ exports.installHook = function(target: any): DevToolsHook | nil
 	local function onCommitFiberRoot(rendererID, root, priorityLevel)
 		local mountedRoots = hook.getFiberRoots(rendererID)
 		local current = root.current
-		local isKnownRoot = mountedRoots[root] ~= nil
+		local isKnownRoot = mountedRoots:has(root)
 		local isUnmounting = current.memoizedState == nil
 			or current.memoizedState.element == nil
 
 		if not isKnownRoot and not isUnmounting then
-			mountedRoots[root] = true
+			mountedRoots:add(root)
 		elseif isKnownRoot and isUnmounting then
-			mountedRoots[root] = nil
+			mountedRoots:delete(root)
 		end
 
 		local rendererInterface = rendererInterfaces:get(rendererID)

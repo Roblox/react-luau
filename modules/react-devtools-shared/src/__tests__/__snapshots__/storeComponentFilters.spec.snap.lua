@@ -1,4 +1,4 @@
--- Jest Roblox Snapshot v1, http://roblox.github.io/jest-roblox/snapshot-testing
+-- Jest Roblox Snapshot v1, http://roblox.github.io/jest-roblox-internal/snapshot-testing
 local exports = {}
 exports[ [=[Store component filters should filter HOCs: 1: mount 1]=] ] = [=[
 
@@ -12,10 +12,8 @@ exports[ [=[Store component filters should filter HOCs: 1: mount 1]=] ] = [=[
 exports[ [=[Store component filters should filter HOCs: 2: hide all HOCs 1]=] ] = [=[
 
 "[root]
-  ▾ <Component> [Bar][Foo]
-    ▾ <Component> [Foo]
-      ▾ <Component>
-          <TextLabel>"
+  ▾ <Component>
+      <TextLabel>"
 ]=]
 
 exports[ [=[Store component filters should filter HOCs: 3: disable HOC filter 1]=] ] = [=[
@@ -41,8 +39,7 @@ exports[ [=[Store component filters should filter by display name: 1: mount 1]=]
 exports[ [=[Store component filters should filter by display name: 2: filter "Foo" 1]=] ] = [=[
 
 "[root]
-  ▾ <Foo key=\"1\">
-      <Text>
+    <Text>
   ▾ <Bar key=\"2\">
       <Text>
   ▾ <Baz key=\"3\">
@@ -54,10 +51,8 @@ exports[ [=[Store component filters should filter by display name: 3: filter "Ba
 "[root]
   ▾ <Foo key=\"1\">
       <Text>
-  ▾ <Bar key=\"2\">
-      <Text>
-  ▾ <Baz key=\"3\">
-      <Text>"
+    <Text>
+    <Text>"
 ]=]
 
 exports[ [=[Store component filters should filter by display name: 4: filter "B.z" 1]=] ] = [=[
@@ -67,8 +62,7 @@ exports[ [=[Store component filters should filter by display name: 4: filter "B.
       <Text>
   ▾ <Bar key=\"2\">
       <Text>
-  ▾ <Baz key=\"3\">
-      <Text>"
+    <Text>"
 ]=]
 
 exports[ [=[Store component filters should filter by path: 1: mount 1]=] ] = [=[
@@ -119,27 +113,22 @@ exports[ [=[Store component filters should support filtering by element type: 2:
 
 "[root]
   ▾ <Root>
-    ▾ <Frame>
-      ▾ <Component>
-          <TextLabel>"
+      <Component>"
 ]=]
 
 exports[ [=[Store component filters should support filtering by element type: 3: hide class components 1]=] ] = [=[
 
 "[root]
-  ▾ <Root>
-    ▾ <Frame>
-      ▾ <Component>
-          <TextLabel>"
+  ▾ <Frame>
+    ▾ <Component>
+        <TextLabel>"
 ]=]
 
 exports[ [=[Store component filters should support filtering by element type: 4: hide class and function components 1]=] ] = [=[
 
 "[root]
-  ▾ <Root>
-    ▾ <Frame>
-      ▾ <Component>
-          <TextLabel>"
+  ▾ <Frame>
+      <TextLabel>"
 ]=]
 
 exports[ [=[Store component filters should support filtering by element type: 5: disable all filters 1]=] ] = [=[
