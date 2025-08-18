@@ -3100,9 +3100,10 @@ exports.attach = function(
 				local initialTreeBaseDurations: Array<Array<number>> = {}
 				local allInteractions: Map<number, Interaction> = Map.new()
 				local interactionCommits: Map<number, Array<number>> = Map.new()
-				local displayName = displayNamesByRootID ~= nil
-						and (displayNamesByRootID :: DisplayNamesByRootID):get(rootID)
-					or "Unknown"
+
+				local displayName = if displayNamesByRootID ~= nil
+					then displayNamesByRootID:get(rootID) or "Unknown"
+					else "Unknown"
 
 				if initialTreeBaseDurationsMap ~= nil then
 					initialTreeBaseDurationsMap:forEach(function(treeBaseDuration, id)
@@ -3400,7 +3401,9 @@ exports.attach = function(
 				break
 			end
 
-			local displayName = getDisplayNameForFiber(child :: Fiber)
+			local displayName = if type(child.key) == "string"
+				then child.key
+				else getDisplayNameForFiber(child :: Fiber)
 
 			if displayName ~= nil then
 				-- Prefer display names that we get from user-defined components.
