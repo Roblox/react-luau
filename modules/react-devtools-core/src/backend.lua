@@ -36,6 +36,9 @@ export type ConnectOptions = {
 	port: number?,
 	useHttps: boolean?,
 	isAppActive: (() -> boolean)?,
+	-- ROBLOX Deviation: Expose an option to start profiling as soon as we
+	-- setup the DevTools hook.
+	profileOnStart: boolean?,
 }
 
 local hook = installHook(ReactGlobals)
@@ -246,6 +249,12 @@ local function connectToDevtools(options_: ConnectOptions?)
 		end)
 
 		initBackend(hook, agent :: any, ReactGlobals)
+
+		-- ROBLOX Deviation: Expose an option to start profiling as soon as we
+		-- setup the DevTools hook.
+		if options.profileOnStart then
+			agent:startProfiling()
+		end
 	end)
 end
 
