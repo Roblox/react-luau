@@ -8,14 +8,16 @@
  * @flow
 ]]
 
-local __DEV__ = _G.__DEV__ :: boolean
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local flowtypes = require(Packages.Shared)
 type React_Component<Props, State> = flowtypes.React_Component<Props, State>
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
 type Function = (...any) -> ...any
+
+local __DEV__ = ReactGlobals.__DEV__ :: boolean
 
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
@@ -311,7 +313,7 @@ exports.updateContainer = function(
 	if __DEV__ then
 		-- deviation: use TestEZ's __TESTEZ_RUNNING_TEST__ (no jest global)
 		-- $FlowExpectedError - jest isn't a global, and isn't recognized outside of tests
-		if _G.__TESTEZ_RUNNING_TEST__ then
+		if ReactGlobals.__TESTEZ_RUNNING_TEST__ then
 			warnIfUnmockedScheduler(current)
 			warnIfNotScopedWithMatchingAct(current)
 		end

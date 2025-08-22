@@ -11,6 +11,7 @@
 
 local React = script.Parent
 local Packages = React.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 type Object = LuauPolyfill.Object
 
@@ -36,7 +37,8 @@ local ReactNone = require(React["None.roblox"])
 local SharedModule = require(Packages.Shared)
 local ReactSymbols = SharedModule.ReactSymbols
 
-local shouldValidate = _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__
+local shouldValidate = ReactGlobals.__DEV__
+	or ReactGlobals.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__
 local ReactTypes = require(Packages.Shared)
 export type React_StatelessFunctionalComponent<P> =
 	ReactTypes.React_StatelessFunctionalComponent<P>

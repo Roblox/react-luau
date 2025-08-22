@@ -8,6 +8,10 @@
  *
  * @flow
  ]]
+
+local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
+
 -- local invariant = require(script.Parent.invariant)
 local describeError = require(script.Parent["ErrorHandling.roblox"]).describeError
 
@@ -17,7 +21,7 @@ local function invokeGuardedCallbackProd(reporter, name, func, context, ...)
 
 	-- ROBLOX deviation: YOLO flag for disabling pcall
 	local ok, result
-	if not _G.__YOLO__ then
+	if not ReactGlobals.__YOLO__ then
 		-- deviation: Since functions in lua _explicitly_ accept 'self' as a
 		-- first argument when they use it, it becomes incorrect for us to call
 		-- a function with a nil "context", where context in this case is
@@ -46,7 +50,7 @@ end
 
 local invokeGuardedCallbackImpl = invokeGuardedCallbackProd
 
-if _G.__DEV__ then
+if ReactGlobals.__DEV__ then
 	-- In DEV mode, we swap out invokeGuardedCallback for a special version
 	-- that plays more nicely with the browser's DevTools. The idea is to preserve
 	-- "Pause on exceptions" behavior. Because React wraps all user-provided

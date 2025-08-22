@@ -20,11 +20,12 @@
 -- wrapper to be able to use consoleWithStackDev in dev mode
 local Shared = script.Parent
 local Packages = Shared.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local console = LuauPolyfill.console
 local consoleWithStackDev = require(Shared.consoleWithStackDev)
 
-if _G.__DEV__ then
+if ReactGlobals.__DEV__ then
 	local newConsole = setmetatable({
 		warn = consoleWithStackDev.warn,
 		error = consoleWithStackDev.error,

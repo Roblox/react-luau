@@ -6,9 +6,8 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  ]]
-local __DEV__ = _G.__DEV__ :: boolean
-local __COMPAT_WARNINGS__ = _G.__COMPAT_WARNINGS__ :: boolean
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 type Object = LuauPolyfill.Object
@@ -22,6 +21,9 @@ local SharedModule = require(Packages.Shared)
 type React_Component<Props, State = nil> = SharedModule.React_Component<Props, State>
 local ReactNoopUpdateQueue = require(script.Parent.ReactNoopUpdateQueue)
 local emptyObject = {}
+
+local __DEV__ = ReactGlobals.__DEV__ :: boolean
+local __COMPAT_WARNINGS__ = ReactGlobals.__COMPAT_WARNINGS__ :: boolean
 
 if __DEV__ then
 	Object.freeze(emptyObject)
@@ -144,7 +146,7 @@ local Component = (
 ]]
 
 -- ROBLOX performance: pool size tuned for benchmarks
-local InstancePoolSize = if not _G.__TESTEZ_RUNNING_TEST__ then 900 else 0
+local InstancePoolSize = if not ReactGlobals.__TESTEZ_RUNNING_TEST__ then 900 else 0
 local InstancePoolIndex = 1
 local InstancePool = table.create(InstancePoolSize)
 for i = 1, InstancePoolSize do

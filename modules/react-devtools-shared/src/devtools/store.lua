@@ -9,6 +9,7 @@
 
 local Packages = script.Parent.Parent.Parent
 
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local inspect = LuauPolyfill.util.inspect
 local Array = LuauPolyfill.Array
@@ -1038,7 +1039,7 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 
 				children[j] = childID
 
-				if _G.__DEV__ then
+				if ReactGlobals.__DEV__ then
 					local childElement: Element? = self._idToElement:get(childID)
 
 					if
@@ -1054,7 +1055,7 @@ function Store:onBridgeOperations(operations: Array<number>): ()
 
 			i = i + numChildren
 
-			if _G.__DEBUG__ then
+			if ReactGlobals.__DEBUG__ then
 				debug_(
 					"Re-order",
 					string.format(

@@ -10,6 +10,7 @@
  ]]
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local xdescribe = JestGlobals.xdescribe
 local beforeEach = JestGlobals.beforeEach
@@ -30,11 +31,11 @@ xdescribe("profiling charts", function()
 	local store: Store
 	local utils
 	beforeEach(function()
-		_G.__PROFILE__ = true
+		ReactGlobals.__PROFILE__ = true
 		utils = require(script.Parent.utils)
 		utils.beforeEachProfiling()
 
-		store = _G.store
+		store = (ReactGlobals :: any).store
 		store:setCollapseNodesByDefault(false)
 		store:setRecordChangeDescriptions(true)
 		React = require(Packages.React)
@@ -43,7 +44,7 @@ xdescribe("profiling charts", function()
 		SchedulerTracing = Scheduler.tracing
 	end)
 	afterEach(function()
-		_G.__PROFILE__ = nil
+		ReactGlobals.__PROFILE__ = nil
 	end)
 	describe("flamegraph chart", function()
 		it("should contain valid data", function()

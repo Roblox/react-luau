@@ -11,6 +11,7 @@
 
 local Packages = script.Parent.Parent
 
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Error = LuauPolyfill.Error
@@ -56,7 +57,7 @@ local REACT_FORWARD_REF_TYPE = ReactSymbols.REACT_FORWARD_REF_TYPE
 local REACT_MEMO_TYPE = ReactSymbols.REACT_MEMO_TYPE
 local REACT_LAZY_TYPE = ReactSymbols.REACT_LAZY_TYPE
 
-local __DEV__ = _G.__DEV__
+local __DEV__ = ReactGlobals.__DEV__
 
 export type Family = {
 	current: any,

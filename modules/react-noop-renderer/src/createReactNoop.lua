@@ -17,6 +17,7 @@
 ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 
 local Array = LuauPolyfill.Array
@@ -89,7 +90,7 @@ type TextInstance = {
 local NO_CONTEXT = {}
 local UPPERCASE_CONTEXT = {}
 local UPDATE_SIGNAL = {}
-if _G.__DEV__ then
+if ReactGlobals.__DEV__ then
 	Object.freeze(NO_CONTEXT)
 	Object.freeze(UPDATE_SIGNAL)
 end
@@ -706,7 +707,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				props.children = children
 			end
 			local store = nil
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				store = {}
 			end
 			return {
@@ -751,7 +752,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 		end
 		if Array.isArray(children) then
 			local store = nil
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				store = {}
 			end
 			return {
@@ -784,7 +785,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 	-- 			ref: nil,
 	-- 			props: {children},
 	-- 			_owner: nil,
-	-- 			_store: _G.__DEV__ ? {} : undefined,
+	-- 			_store: ReactGlobals.__DEV__ ? {} : undefined,
 	-- 		}
 	-- 	}
 	-- 	return children
@@ -947,7 +948,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			if typeof(component.id) == "number" then
 				return component
 			end
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				return NoopRenderer.findHostInstanceWithWarning(component, "findInstance")
 			end
 			return NoopRenderer.findHostInstance(component)
@@ -1203,7 +1204,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 			IsSomeRendererActing.current = previousIsSomeRendererActing
 			IsThisRendererActing.current = previousIsThisRendererActing
 
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				if actingUpdatesScopeDepth > previousActingUpdatesScopeDepth then
 					-- if it's _less than_ previousActingUpdatesScopeDepth, then we can
 					-- assume the 'other' one has warned

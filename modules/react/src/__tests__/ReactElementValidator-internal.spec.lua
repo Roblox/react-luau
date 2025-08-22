@@ -7,6 +7,7 @@
  * @emails react-core
 ]]
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
 local jest = JestGlobals.jest
@@ -351,7 +352,7 @@ describe("ReactElementValidator", function()
 					"Element type is invalid: expected a string (for built-in components) "
 						.. "or a class/function (for composite components) but got: number."
 						.. (
-							_G.__DEV__
+							ReactGlobals.__DEV__
 								and "\n\nCheck the render method of `ParentComp`."
 							or ""
 						)
@@ -380,7 +381,7 @@ describe("ReactElementValidator", function()
 				"Element type is invalid: expected a string (for built-in components) "
 					.. "or a class/function (for composite components) but got: number."
 					.. (
-						_G.__DEV__
+						ReactGlobals.__DEV__
 							and "\n\nCheck the render method of `ParentPureComp`."
 						or ""
 					)
@@ -534,7 +535,7 @@ describe("ReactElementValidator", function()
 		)
 	end)
 
-	if not _G.__EXPERIMENTAL__ then
+	if not ReactGlobals.__EXPERIMENTAL__ then
 		-- ROBLOX deviation: createFactory is deprecated in React so it is removed in
 		-- the Lua version
 		it.skip("should warn when accessing .type on an element factory", function()

@@ -10,13 +10,14 @@
  ]]
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
 local describe = JestGlobals.describe
 local it = JestGlobals.it
 local beforeEach = JestGlobals.beforeEach
 
-local global = _G
+local global = ReactGlobals :: any
 local ReactRoblox
 
 -- ROBLOX Deviation: Skip test in nonDev mode

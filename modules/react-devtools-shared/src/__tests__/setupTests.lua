@@ -8,6 +8,7 @@
  * @flow
  *]]
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
 local beforeEach = JestGlobals.beforeEach
@@ -18,7 +19,7 @@ local afterEach = JestGlobals.afterEach
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 
-local global = _G
+local global = ReactGlobals :: any
 
 type Array<T> = { [number]: T }
 

@@ -8,10 +8,13 @@
 --  * @flow
 --  */
 
+local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
+
 local exports = {}
 
 -- Flip this flag to true to enable verbose console debug logging.
-exports.__DEBUG__ = _G.__DEBUG__
+exports.__DEBUG__ = ReactGlobals.__DEBUG__
 
 exports.TREE_OPERATION_ADD = 1
 exports.TREE_OPERATION_REMOVE = 2

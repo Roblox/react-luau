@@ -11,6 +11,7 @@
  ]]
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local xdescribe = JestGlobals.xdescribe
 local beforeEach = JestGlobals.beforeEach
@@ -20,7 +21,7 @@ local jestExpect = JestGlobals.expect
 local devtoolsTypes = require(script.Parent.Parent.devtools.types)
 type Store = devtoolsTypes.Store
 
-local global = _G
+local global = ReactGlobals :: any
 
 xdescribe("commit tree", function()
 	local React

@@ -13,6 +13,7 @@ local Packages = script.Parent.Parent.Parent
 -- local LuauPolyfill = require(Packages.LuauPolyfill)
 -- local Boolean = LuauPolyfill.Boolean
 -- ROBLOX deviation END
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local beforeEach = JestGlobals.beforeEach
 local describe = JestGlobals.describe
@@ -76,9 +77,9 @@ describe("ReactHooksInspection", function()
 				isStateEditable = false,
 				id = nil,
 				name = "Custom",
-				-- ROBLOX deviation START: use _G.__DEV__
+				-- ROBLOX deviation START: use ReactGlobals.__DEV__
 				-- value = if Boolean.toJSBoolean(__DEV__) then "custom hook label" else nil,
-				value = if _G.__DEV__ then "custom hook label" else nil,
+				value = if ReactGlobals.__DEV__ then "custom hook label" else nil,
 				-- ROBLOX deviation END
 				subHooks = {
 					{
@@ -473,9 +474,9 @@ describe("ReactHooksInspection", function()
 					isStateEditable = false,
 					id = nil,
 					name = "Custom",
-					-- ROBLOX deviation START: use _G.__DEV__
+					-- ROBLOX deviation START: use ReactGlobals.__DEV__
 					-- value = if Boolean.toJSBoolean(__DEV__) then "bar:123" else nil,
-					value = if _G.__DEV__ then "bar:123" else nil,
+					value = if ReactGlobals.__DEV__ then "bar:123" else nil,
 					-- ROBLOX deviation END
 					subHooks = {
 						{

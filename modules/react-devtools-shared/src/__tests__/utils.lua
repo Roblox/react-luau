@@ -9,6 +9,7 @@ local HttpService = game:GetService("HttpService")
 ]]
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jest = JestGlobals.jest
 local jestExpect = JestGlobals.expect
@@ -18,7 +19,7 @@ local Array = LuauPolyfill.Array
 local Number = LuauPolyfill.Number
 local Object = LuauPolyfill.Object
 type Function = (...any) -> any?
-local global = _G
+local global = ReactGlobals :: any
 local exports = {}
 
 local Bridge = require(script.Parent.Parent.bridge)
@@ -180,14 +181,14 @@ exports.getRendererID = function(): number
 end
 exports.requireTestRenderer = function(): any
 	-- Hide the hook before requiring TestRenderer, so we don't end up with a loop.
-	local hook = global.__REACT_DEVTOOLS_GLOBAL_HOOK__
-	global.__REACT_DEVTOOLS_GLOBAL_HOOK__ = nil
+	local hook = ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__
+	ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__ = nil
 
 	local success, module = pcall(function()
 		return require(Packages.Dev.ReactTestRenderer)
 	end)
 
-	global.__REACT_DEVTOOLS_GLOBAL_HOOK__ = hook
+	ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__ = hook
 
 	if not success then
 		warn("Failed to require TestRenderer", module)

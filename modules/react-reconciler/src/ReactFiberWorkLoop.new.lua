@@ -8,16 +8,18 @@
  *
  * @flow
 ]]
-local __DEV__ = _G.__DEV__
-local __YOLO__ = _G.__YOLO__
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Set = LuauPolyfill.Set
 type Set<T> = LuauPolyfill.Set<T>
 type Array<T> = LuauPolyfill.Array<T>
+
+local __DEV__ = ReactGlobals.__DEV__
+local __YOLO__ = ReactGlobals.__YOLO__
 
 local exports: any = {}
 
@@ -3960,7 +3962,7 @@ exports.act = function(callback: () -> Thenable<any>): Thenable<any>
 	-- Since there are numerous testing scenarios in which we call `require` on
 	-- the Roact library _before_ we bootstrap tests, we expose a global to toggle
 	-- this explicilty
-	if not (__DEV__ or _G.__ROACT_17_MOCK_SCHEDULER__) then
+	if not (__DEV__ or ReactGlobals.__ROACT_17_MOCK_SCHEDULER__) then
 		if didWarnAboutUsingActInProd == false then
 			didWarnAboutUsingActInProd = true
 			-- eslint-disable-next-line react-internal/no-production-logging

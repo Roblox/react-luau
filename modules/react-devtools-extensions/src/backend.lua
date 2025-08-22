@@ -1,5 +1,6 @@
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.2/packages/react-devtools-extensions/src/backend.js
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 -- ROBLOX deviation START: not needed
 -- local Boolean = LuauPolyfill.Boolean
@@ -117,7 +118,7 @@ local function setup(hook)
 	end)
 	-- ROBLOX deviation START: use _G instead of window
 	-- initBackend(hook, agent, window) -- Let the frontend know that the backend has attached listeners and is ready for messages.
-	initBackend(hook, agent, _G)
+	initBackend(hook, agent, ReactGlobals)
 	-- ROBLOX deviation END
 	-- This covers the case of syncing saved values after reloading/navigating while DevTools remain open.
 	bridge:send("extensionBackendInitialized") -- Setup React Native style editor if a renderer like react-native-web has injected it.

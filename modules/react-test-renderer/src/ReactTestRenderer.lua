@@ -9,6 +9,7 @@
 --  */
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local Scheduler = require(Packages.Scheduler)
 local console = require(Packages.Shared).console
 local LuauPolyfill = require(Packages.LuauPolyfill)
@@ -688,7 +689,7 @@ end
 
 -- Enable ReactTestRenderer to be used to test DevTools integration.
 local bundleType = 0
-if _G.__DEV__ then
+if ReactGlobals.__DEV__ then
 	bundleType = 1
 end
 
@@ -735,7 +736,7 @@ local function unstable_concurrentAct(scope: () -> () | Thenable<any>)
 		IsSomeRendererActing.current = previousIsSomeRendererActing
 		IsThisRendererActing.current = previousIsThisRendererActing
 
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			if actingUpdatesScopeDepth > previousActingUpdatesScopeDepth then
 				console.error(
 					"You seem to have overlapping act() calls, this is not supported. "

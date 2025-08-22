@@ -25,13 +25,14 @@
 
 local Shared = script.Parent
 local Packages = Shared.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
 local inspect = LuauPolyfill.util.inspect
 local getComponentName = require(script.Parent.getComponentName)
 local ReactUtils = script:FindFirstAncestor("ReactUtils")
 
-local __DEV__ = _G.__DEV__ :: boolean
+local __DEV__ = ReactGlobals.__DEV__ :: boolean
 local SafeFlags = require(Packages.SafeFlags)
 local GetFFlagReactInstanceMapDisableErrorChecking =
 	SafeFlags.createGetFFlag("ReactInstanceMapDisableErrorChecking")

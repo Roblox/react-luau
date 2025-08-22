@@ -9,6 +9,7 @@
  *
 ]]
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 -- ROBLOX: use patched console from shared
 local Shared = require(Packages.Shared)
 local console = Shared.console
@@ -55,7 +56,7 @@ exports.createContext = function<T>(
 
 	local hasWarnedAboutDisplayNameOnConsumer = false
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- A separate object, but proxies back to the original context object for
 		-- backwards compatibility. It has a different $$typeof, so we can properly
 		-- warn for the incorrect usage of Context as a Consumer.
@@ -105,7 +106,7 @@ exports.createContext = function<T>(
 		context.Consumer = context
 	end
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		context._currentRenderer = nil
 		context._currentRenderer2 = nil
 	end

@@ -8,6 +8,7 @@ local lazy
 
 local Packages = script.Parent.Parent.Parent
 
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
 local setTimeout = LuauPolyfill.setTimeout
@@ -950,7 +951,7 @@ describe("ReactLazy", function()
 			})
 		))
 
-		local moreThanOnce = _G.__DEV__
+		local moreThanOnce = ReactGlobals.__DEV__
 				and " Did you wrap a component in React.lazy() more than once?"
 			or ""
 

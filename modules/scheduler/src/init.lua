@@ -9,6 +9,9 @@
  * @flow
 ]]
 
+local Packages = script.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
+
 local initializeScheduler = require(script.Scheduler)
 
 local function onlyInTestError(functionName: string)
@@ -27,7 +30,7 @@ export type Interaction = Tracing.Interaction
 -- are numerous testing scenarios in which we call `require` on the Roact
 -- library _before_ we bootstrap tests, we expose an additional global to toggle
 -- this explicilty
-if _G.__ROACT_17_MOCK_SCHEDULER__ then
+if ReactGlobals.__ROACT_17_MOCK_SCHEDULER__ then
 	return require(script.unstable_mock)
 end
 

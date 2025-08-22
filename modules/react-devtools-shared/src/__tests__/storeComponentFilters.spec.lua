@@ -11,6 +11,7 @@
 
 type Function = (...any) -> ...any
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jest = JestGlobals.jest
 local describe = JestGlobals.describe
@@ -18,7 +19,7 @@ local it = JestGlobals.it
 local beforeEach = JestGlobals.beforeEach
 local jestExpect = JestGlobals.expect
 
-local global = _G
+local global = ReactGlobals :: any
 
 local bridgeModule = require(script.Parent.Parent.bridge)
 type FrontendBridge = bridgeModule.FrontendBridge

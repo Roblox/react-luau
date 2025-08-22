@@ -15,12 +15,14 @@ local function unimplemented(message: string)
 	print("UNIMPLEMENTED ERROR: " .. message)
 	error("FIXME (roblox): " .. message .. " is unimplemented")
 end
-local __DEV__ = _G.__DEV__ :: boolean
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Error = LuauPolyfill.Error
 local Object = LuauPolyfill.Object
+
+local __DEV__ = ReactGlobals.__DEV__ :: boolean
 
 -- ROBLOX: use Bindings to implement useRef
 local createRef = require(Packages.React).createRef
@@ -1323,7 +1325,7 @@ local function mountEffect(
 	if __DEV__ then
 		-- deviation: use TestEZ's __TESTEZ_RUNNING_TEST__ as well as jest
 		-- $FlowExpectedError - jest isn't a global, and isn't recognized outside of tests
-		if type(_G.jest) ~= "nil" or _G.__TESTEZ_RUNNING_TEST__ then
+		if type(_G.jest) ~= "nil" or ReactGlobals.__TESTEZ_RUNNING_TEST__ then
 			warnIfNotCurrentlyActingEffectsInDEV(currentlyRenderingFiber)
 		end
 	end
@@ -1353,7 +1355,7 @@ local function updateEffect(
 	if __DEV__ then
 		-- deviation: use TestEZ's __TESTEZ_RUNNING_TEST__ in addition to jest
 		-- $FlowExpectedError - jest isn't a global, and isn't recognized outside of tests
-		if type(_G.jest) ~= "nil" or _G.__TESTEZ_RUNNING_TEST__ then
+		if type(_G.jest) ~= "nil" or ReactGlobals.__TESTEZ_RUNNING_TEST__ then
 			warnIfNotCurrentlyActingEffectsInDEV(currentlyRenderingFiber)
 		end
 	end
@@ -1899,7 +1901,7 @@ function dispatchAction<S, A>(fiber: Fiber, queue: UpdateQueue<S, A>, action: A,
 		if __DEV__ then
 			-- $FlowExpectedError - jest isn't a global, and isn't recognized outside of tests
 			-- deviation: use TestEZ's __TESTEZ_RUNNING_TEST__ as well as jest
-			if type(_G.jest) ~= "nil" or _G.__TESTEZ_RUNNING_TEST__ then
+			if type(_G.jest) ~= "nil" or ReactGlobals.__TESTEZ_RUNNING_TEST__ then
 				warnIfNotScopedWithMatchingAct(fiber)
 				warnIfNotCurrentlyActingUpdatesInDEV(fiber)
 			end

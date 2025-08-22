@@ -1,0 +1,12 @@
+[package]
+name = "ReactGlobals"
+version = { workspace = true }
+authors = { workspace = true }
+content_root = "src"
+files = ["*", "!**/__tests__/**"]
+
+[dependencies]
+SafeFlags = { workspace = true }
+
+[dev_dependencies]
+JestGlobals = { workspace = true }

@@ -6,6 +6,7 @@ local Players = game:GetService("Players")
 local PackageRoot = script.Parent.Parent.Parent
 
 local Packages = PackageRoot.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local console = LuauPolyfill.console
 
@@ -215,7 +216,7 @@ function exports.setupHighlighter(bridge: BackendBridge, agent: Agent)
 			showOverlay(relevantNodes, displayName, hideAfterTimeout)
 
 			if openNativeElementsPanel then
-				_G.__REACT_DEVTOOLS_GLOBAL_HOOK__["$0"] = relevantNodes[1]
+				ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__["$0"] = relevantNodes[1]
 				bridge:send("syncSelectionToNativeElementsPanel")
 			end
 		else

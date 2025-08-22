@@ -9,12 +9,14 @@
  * @flow
 ]]
 
-local __DEV__ = _G.__DEV__
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 local Array = LuauPolyfill.Array
 local inspect = LuauPolyfill.util.inspect
+
+local __DEV__ = ReactGlobals.__DEV__
 
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console

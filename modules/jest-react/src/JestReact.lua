@@ -6,6 +6,7 @@
  * LICENSE file in the root directory of this source tree.
  ]]
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 -- ROBLOX deviation START: not used
@@ -122,9 +123,9 @@ local function unstable_toMatchRenderedOutput(root, expectedJSX)
 					ref = nil,
 					props = { children = actualJSXChildren },
 					_owner = nil,
-					-- ROBLOX deviation START: remove toJSBoolean, use _G.__DEV__
+					-- ROBLOX deviation START: remove toJSBoolean, use ReactGlobals.__DEV__
 					-- _store = if Boolean.toJSBoolean(__DEV__) then {} else nil,
-					_store = if _G.__DEV__ then {} else nil,
+					_store = if ReactGlobals.__DEV__ then {} else nil,
 					-- ROBLOX deviation END
 				}
 			end
@@ -154,9 +155,9 @@ function jsonChildToJSXChild(jsonChild)
 				then jsonChild.props
 				else Object.assign({}, jsonChild.props, { children = jsxChildren }),
 			_owner = nil,
-			-- ROBLOX deviation START: remove toJSBoolean, use _G.__DEV__
+			-- ROBLOX deviation START: remove toJSBoolean, use ReactGlobals.__DEV__
 			-- _store = if Boolean.toJSBoolean(__DEV__) then {} else nil,
-			_store = if _G.__DEV__ then {} else nil,
+			_store = if ReactGlobals.__DEV__ then {} else nil,
 			-- ROBLOX deviation END
 		}
 	end

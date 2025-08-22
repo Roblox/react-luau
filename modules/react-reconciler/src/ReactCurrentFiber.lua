@@ -8,8 +8,10 @@
  *
  * @flow
 ]]
-local __DEV__ = _G.__DEV__ :: boolean
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
+
+local __DEV__ = ReactGlobals.__DEV__ :: boolean
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber

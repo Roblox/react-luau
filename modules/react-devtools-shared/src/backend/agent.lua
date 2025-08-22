@@ -7,11 +7,11 @@
 ]]
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 type Set<T> = LuauPolyfill.Set<T>
 local console = LuauPolyfill.console
 local JSON = game:GetService("HttpService")
-local global = _G
 type Function = (...any) -> ...any
 type Array<T> = { [number]: T }
 type Object = { [string]: any }
@@ -652,7 +652,7 @@ function Agent:setTraceUpdatesEnabled(traceUpdatesEnabled: boolean)
 	end
 end
 function Agent:syncSelectionFromNativeElementsPanel()
-	local target = global.__REACT_DEVTOOLS_GLOBAL_HOOK__["$0"]
+	local target = ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__["$0"]
 
 	if target == nil then
 		return
@@ -756,7 +756,7 @@ function Agent:onTraceUpdates(nodes: Set<NativeType>)
 	self:emit("traceUpdates", nodes)
 end
 function Agent:onHookOperations(operations: Array<number>)
-	if global.__DEBUG__ then
+	if ReactGlobals.__DEBUG__ then
 		debug_("onHookOperations", operations)
 	end
 

@@ -4,6 +4,7 @@ local HttpService = game:GetService("HttpService")
 local WebSocketService = game:GetService("WebSocketService")
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local ReactDevtoolsShared = require(Packages.ReactDevtoolsShared)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 
@@ -37,7 +38,7 @@ export type ConnectOptions = {
 	isAppActive: (() -> boolean)?,
 }
 
-local hook = installHook(_G)
+local hook = installHook(ReactGlobals)
 local savedComponentFilters: Array<ComponentFilter> = getDefaultComponentFilters()
 
 local function debugPrint(methodName: string, ...: any)
@@ -232,7 +233,7 @@ local function connectToDevtools(options_: ConnectOptions?)
 		-- work for React Native though. Ideally the backend would save the
 		-- filters itself, but RN doesn't provide a sync storage solution. So
 		-- for now we just fall back to using the default filters...
-		if _G.__REACT_DEVTOOLS_COMPONENT_FILTERS__ == nil then
+		if ReactGlobals.__REACT_DEVTOOLS_COMPONENT_FILTERS__ == nil then
 			bridge:send("overrideComponentFilters", savedComponentFilters)
 		end
 
@@ -244,7 +245,7 @@ local function connectToDevtools(options_: ConnectOptions?)
 			hook:emit("shutdown")
 		end)
 
-		initBackend(hook, agent :: any, _G)
+		initBackend(hook, agent :: any, ReactGlobals)
 	end)
 end
 

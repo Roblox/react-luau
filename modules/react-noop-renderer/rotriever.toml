@@ -10,5 +10,6 @@ files = ["*", "!**/__tests__/**"]
 LuauPolyfill = { workspace = true }
 Scheduler = { path = "../scheduler" }
 Shared = { path = "../shared" }
+ReactGlobals = { path = "../react-globals" }
 ReactReconciler = { path = "../react-reconciler" }
 JestGlobals = { workspace = true }

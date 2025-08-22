@@ -10,6 +10,7 @@
 ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 
@@ -217,7 +218,7 @@ flushSyncCallbackQueueImpl = function()
 			-- ROBLOX deviation: YOLO flag for disabling pcall
 			local ok = true
 			local result
-			if not _G.__YOLO__ then
+			if not ReactGlobals.__YOLO__ then
 				-- ROBLOX performance: hoist non-throwables out of try{} to eliminate anon function
 				local isSync = true
 				local queue = syncQueue
@@ -278,7 +279,7 @@ flushSyncCallbackQueueImpl = function()
 		else
 			-- ROBLOX deviation: YOLO flag for disabling pcall
 			local ok, result
-			if not _G.__YOLO__ then
+			if not ReactGlobals.__YOLO__ then
 				-- ROBLOX performance: hoist non-throwables out of try{} to eliminate anon function
 				local isSync = true
 				local queue = syncQueue

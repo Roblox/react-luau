@@ -10,6 +10,7 @@
 ]]
 local Packages = script.Parent.Parent.Parent
 
+local ReactGlobals = require(Packages.ReactGlobals)
 local ReactTypes = require(Packages.Shared)
 type ReactNodeList = ReactTypes.ReactNodeList
 local ReactRobloxHostTypes = require(script.Parent["ReactRobloxHostTypes.roblox"])
@@ -94,7 +95,7 @@ local Tag = require(Packages.Shared).Tag
 -- local didWarnAboutUnstableRenderSubtreeIntoContainer = false
 
 -- deviation: Built-ins for maps and sets are not required
--- if _G.__DEV__ then
+-- if ReactGlobals.__DEV__ then
 --   if
 --     typeof Map ~= 'function' or
 --     -- $FlowIssue Flow incorrectly thinks Map has no prototype
@@ -158,7 +159,7 @@ end
 --   containerNode: Container,
 --   callback: any
 -- )
---   if _G.__DEV__ then
+--   if ReactGlobals.__DEV__ then
 --     if
 --       warnUnstableRenderSubtreeIntoContainer and
 --       not didWarnAboutUnstableRenderSubtreeIntoContainer
@@ -184,7 +185,7 @@ end
 --   container: Container,
 --   key: string?
 -- )
---   if _G.__DEV__ then
+--   if ReactGlobals.__DEV__ then
 --     if not didWarnAboutUnstableCreatePortal then
 --       didWarnAboutUnstableCreatePortal = true
 --       console.warn(
@@ -263,7 +264,7 @@ local exports = {
 	end,
 }
 
-if _G.__ROACT_17_MOCK_SCHEDULER__ then
+if ReactGlobals.__ROACT_17_MOCK_SCHEDULER__ then
 	-- ROBLOX deviation: When the __ROACT_17_MOCK_SCHEDULER__ is enabled, we
 	-- re-export the `act` function from ReactReconciler. The global will
 	-- additionally force the scheduler to use the mock interface
@@ -274,12 +275,12 @@ end
 -- value
 local _foundDevTools = injectIntoDevTools({
 	findFiberByHostInstance = getClosestInstanceFromNode,
-	bundleType = if _G.__DEV__ then 1 else 0,
+	bundleType = if ReactGlobals.__DEV__ then 1 else 0,
 	version = ReactVersion,
 	rendererPackageName = "ReactRoblox",
 })
 
-if _G.__DEV__ then
+if ReactGlobals.__DEV__ then
 	-- if not foundDevTools and canUseDOM and window.top == window.self then
 	--   If we're in Chrome or Firefox, provide a download link if not installed.
 	--   if

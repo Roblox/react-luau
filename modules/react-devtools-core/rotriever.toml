@@ -9,6 +9,7 @@ files = ["*", "!**/__tests__/**"]
 [dependencies]
 LuauPolyfill = { workspace = true }
 ReactDevtoolsShared = { path = "../react-devtools-shared" }
+ReactGlobals = { path = "../react-globals" }
 
 [dev_dependencies]
 JestGlobals = { workspace = true }

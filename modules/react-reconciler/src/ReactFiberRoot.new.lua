@@ -10,6 +10,7 @@
 ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Set = LuauPolyfill.Set
 local Map = LuauPolyfill.Map
@@ -88,7 +89,7 @@ local function FiberRootNode(containerInfo, tag, hydrate)
 		rootNode.hydrationCallbacks = nil
 	end
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if tag == BlockingRoot then
 			rootNode._debugRootType = "createBlockingRoot()"
 		elseif tag == ConcurrentRoot then

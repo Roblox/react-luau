@@ -18,6 +18,7 @@
 
 local HttpService = game:GetService("HttpService")
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
 local describe = JestGlobals.describe
@@ -99,8 +100,8 @@ beforeEach(function()
 	jest.resetModules()
 	jest.useFakeTimers()
 
-	prevCompatWarnings = _G.__COMPAT_WARNINGS__
-	_G.__COMPAT_WARNINGS__ = false
+	prevCompatWarnings = ReactGlobals.__COMPAT_WARNINGS__
+	ReactGlobals.__COMPAT_WARNINGS__ = false
 
 	React = require(Packages.React)
 	ReactNoop = require(Packages.Dev.ReactNoopRenderer)
@@ -115,7 +116,7 @@ beforeEach(function()
 end)
 
 afterEach(function()
-	_G.__COMPAT_WARNINGS__ = prevCompatWarnings
+	ReactGlobals.__COMPAT_WARNINGS__ = prevCompatWarnings
 end)
 
 it("should correctly determine if a component is mounted", function()
@@ -712,8 +713,8 @@ it(
 describe("Naming conventions", function()
 	local prevCompatWarnings
 	beforeEach(function()
-		prevCompatWarnings = _G.__COMPAT_WARNINGS__
-		_G.__COMPAT_WARNINGS__ = true
+		prevCompatWarnings = ReactGlobals.__COMPAT_WARNINGS__
+		ReactGlobals.__COMPAT_WARNINGS__ = true
 		jest.resetModules()
 		jest.useFakeTimers()
 		React = require(Packages.React)
@@ -723,7 +724,7 @@ describe("Naming conventions", function()
 	end)
 
 	afterEach(function()
-		_G.__COMPAT_WARNINGS__ = prevCompatWarnings
+		ReactGlobals.__COMPAT_WARNINGS__ = prevCompatWarnings
 	end)
 
 	local function testWithComponentKind(component: string)

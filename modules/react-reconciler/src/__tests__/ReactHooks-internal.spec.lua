@@ -16,6 +16,7 @@ local Scheduler
 -- local ReactDOMServer
 local act
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
 local beforeEach = JestGlobals.beforeEach
@@ -40,7 +41,7 @@ describe("ReactHooks", function()
 		-- ReactDOMServer = require("react-dom/server")
 		act = ReactTestRenderer.unstable_concurrentAct
 	end)
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		it("useDebugValue throws when used in a class component", function()
 			type Example = { render: any } --[[ ROBLOX TODO: replace 'any' type/ add missing ]]
 			local Example = React.Component:extend("Example")
@@ -1188,7 +1189,7 @@ describe("ReactHooks", function()
 			end, function()
 				return nil
 			end)
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				React.useDebugValue(0)
 			end
 			return nil
@@ -1259,12 +1260,12 @@ describe("ReactHooks", function()
 		renderer.update(
 			React.createElement(StrictMode, nil, React.createElement(NoHooks))
 		)
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 		renderCount = 0
 		renderer.update(
 			React.createElement(StrictMode, nil, React.createElement(NoHooks))
 		)
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 		renderCount = 0
 		renderer.update(React.createElement(FwdRef))
 		jestExpect(renderCount).toBe(1)
@@ -1273,10 +1274,10 @@ describe("ReactHooks", function()
 		jestExpect(renderCount).toBe(1)
 		renderCount = 0
 		renderer.update(React.createElement(StrictMode, nil, React.createElement(FwdRef)))
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 		renderCount = 0
 		renderer.update(React.createElement(StrictMode, nil, React.createElement(FwdRef)))
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 		renderCount = 0
 		renderer.update(React.createElement(Memo, { arg = 1 }))
 		jestExpect(renderCount).toBe(1)
@@ -1287,12 +1288,12 @@ describe("ReactHooks", function()
 		renderer.update(
 			React.createElement(StrictMode, nil, React.createElement(Memo, { arg = 1 }))
 		)
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 		renderCount = 0
 		renderer.update(
 			React.createElement(StrictMode, nil, React.createElement(Memo, { arg = 2 }))
 		)
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 		if not ReactFeatureFlags.disableModulePatternComponents then
 			renderCount = 0
 			jestExpect(function()
@@ -1313,12 +1314,12 @@ describe("ReactHooks", function()
 			renderer.update(
 				React.createElement(StrictMode, nil, React.createElement(Factory))
 			)
-			jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+			jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 			renderCount = 0
 			renderer.update(
 				React.createElement(StrictMode, nil, React.createElement(Factory))
 			)
-			jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+			jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 		end
 		renderCount = 0
 		renderer.update(React.createElement(HasHooks))
@@ -1330,12 +1331,12 @@ describe("ReactHooks", function()
 		renderer.update(
 			React.createElement(StrictMode, nil, React.createElement(HasHooks))
 		)
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 		renderCount = 0
 		renderer.update(
 			React.createElement(StrictMode, nil, React.createElement(HasHooks))
 		)
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 		renderCount = 0
 		renderer.update(React.createElement(FwdRefHasHooks))
 		jestExpect(renderCount).toBe(1)
@@ -1346,12 +1347,12 @@ describe("ReactHooks", function()
 		renderer.update(
 			React.createElement(StrictMode, nil, React.createElement(FwdRefHasHooks))
 		)
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 		renderCount = 0
 		renderer.update(
 			React.createElement(StrictMode, nil, React.createElement(FwdRefHasHooks))
 		)
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 		renderCount = 0
 		renderer.update(React.createElement(MemoHasHooks, { arg = 1 }))
 		jestExpect(renderCount).toBe(1)
@@ -1366,7 +1367,7 @@ describe("ReactHooks", function()
 				React.createElement(MemoHasHooks, { arg = 1 })
 			)
 		)
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 		renderCount = 0
 		renderer.update(
 			React.createElement(
@@ -1375,7 +1376,7 @@ describe("ReactHooks", function()
 				React.createElement(MemoHasHooks, { arg = 2 })
 			)
 		)
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 		ReactFeatureFlags.debugRenderPhaseSideEffectsForStrictMode = false
 	end)
 	it("double-invokes useMemo in DEV StrictMode despite []", function()
@@ -1393,7 +1394,7 @@ describe("ReactHooks", function()
 		ReactTestRenderer.create(
 			React.createElement(StrictMode, nil, React.createElement(BadUseMemo))
 		)
-		jestExpect(useMemoCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(useMemoCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 		ReactFeatureFlags.debugRenderPhaseSideEffectsForStrictMode = false
 	end)
 	describe("hook ordering", function()
@@ -1459,7 +1460,7 @@ describe("ReactHooks", function()
 			useStateHelper,
 		}
 		-- ROBLOX TODO: unflag this when we implement useTransition and useDeferredValueHelper
-		if _G.__EXPERIMENTAL__ then
+		if ReactGlobals.__EXPERIMENTAL__ then
 			-- local function useTransitionHelper()
 			-- 	return React.useTransition()
 			-- end

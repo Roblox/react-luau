@@ -10,6 +10,7 @@
  ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 
@@ -89,7 +90,7 @@ local nextHydratableInstance: nil | HydratableInstance = nil
 local isHydrating: boolean = false
 
 function warnIfHydrating()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if isHydrating then
 			console.error(
 				"We should not be hydrating here. This is a bug in React. Please file a bug."
@@ -126,7 +127,7 @@ end
 
 function deleteHydratableInstance(returnFiber: Fiber?, instance: HydratableInstance)
 	unimplemented("deleteHydratableInstance")
-	-- if _G.__DEV__ then
+	-- if ReactGlobals.__DEV__ then
 	--   switch (returnFiber.tag)
 	--     case HostRoot:
 	--       didNotHydrateContainerInstance(
@@ -162,7 +163,7 @@ end
 function insertNonHydratedInstance(returnFiber: Fiber?, fiber: Fiber)
 	unimplemented("insertNonHydratedInstance")
 	fiber.flags = bit32.bor(bit32.band(fiber.flags, bit32.bnot(Hydrating)), Placement)
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- switch (returnFiber.tag)
 		--   case HostRoot: {
 		--     local parentContainer = returnFiber.stateNode.containerInfo
@@ -348,7 +349,7 @@ function prepareToHydrateHostTextInstance(fiber: Fiber): boolean
 	local textInstance: TextInstance = fiber.stateNode
 	local textContent: string = fiber.memoizedProps
 	local shouldUpdate = hydrateTextInstance(textInstance, textContent, fiber)
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if shouldUpdate then
 			-- We assume that prepareToHydrateHostTextInstance is called in a context where the
 			-- hydration parent is the parent host component of this host text.

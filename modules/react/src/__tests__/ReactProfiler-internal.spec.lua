@@ -18,6 +18,7 @@ local Set
 
 local Packages = script.Parent.Parent.Parent
 
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
 local jest = JestGlobals.jest
@@ -170,7 +171,7 @@ describe("Profiler", function()
 					return "disabled"
 				end)() .. "}", function()
 					-- ROBLOX deviation START: add condition, otherwise the suite will fail because of no tests
-					if _G.__DEV__ and enableProfilerTimer then
+					if ReactGlobals.__DEV__ and enableProfilerTimer then
 						-- ROBLOX deviation END
 						beforeEach(function()
 							jest.resetModules()
@@ -188,7 +189,7 @@ describe("Profiler", function()
 
 					-- This will throw in production too,
 					-- But the test is only interested in verifying the DEV error message.
-					if _G.__DEV__ and enableProfilerTimer then
+					if ReactGlobals.__DEV__ and enableProfilerTimer then
 						it("should warn if required params are missing", function()
 							jestExpect(function()
 								ReactTestRenderer.create(
@@ -960,7 +961,7 @@ describe("Profiler", function()
 									-- Add an additional 3 (ThrowsError) if we replayed the failed work
 									jestExpect(mountCall[6]).toBe((function()
 										if
-											_G.__DEV__
+											ReactGlobals.__DEV__
 											and replayFailedUnitOfWorkWithInvokeGuardedCallback
 										then
 											return 22
@@ -977,7 +978,7 @@ describe("Profiler", function()
 									-- start time
 									jestExpect(updateCall[5]).toBe((function()
 										if
-											_G.__DEV__
+											ReactGlobals.__DEV__
 											and replayFailedUnitOfWorkWithInvokeGuardedCallback
 										then
 											return 22
@@ -989,7 +990,7 @@ describe("Profiler", function()
 									-- Add an additional 3 (ThrowsError) if we replayed the failed work
 									jestExpect(updateCall[6]).toBe((function()
 										if
-											_G.__DEV__
+											ReactGlobals.__DEV__
 											and replayFailedUnitOfWorkWithInvokeGuardedCallback
 										then
 											return 44
@@ -1070,7 +1071,7 @@ describe("Profiler", function()
 									-- commit time
 									jestExpect(mountCall[6]).toBe((function()
 										if
-											_G.__DEV__
+											ReactGlobals.__DEV__
 											and replayFailedUnitOfWorkWithInvokeGuardedCallback
 										then
 											return 54

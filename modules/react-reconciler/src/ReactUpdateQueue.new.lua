@@ -86,12 +86,13 @@
 -- regardless of priority. Intermediate state may vary according to system
 -- resources, but the final state is always the same.
 
-local __DEV__ = _G.__DEV__
-local __YOLO__ = _G.__YOLO__
-
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
+
+local __DEV__ = ReactGlobals.__DEV__
+local __YOLO__ = ReactGlobals.__YOLO__
 
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console

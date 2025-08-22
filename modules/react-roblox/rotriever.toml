@@ -10,9 +10,10 @@ files = ["*", "!**/__tests__/**"]
 LuauPolyfill = { workspace = true }
 Shared = { path = "../shared" }
 React = { path = "../react" }
+ReactGlobals = { path = "../react-globals" }
 ReactReconciler = { path = "../react-reconciler" }
 Scheduler = { path = "../scheduler" }
 
 [dev_dependencies]
-JestGlobals ={ workspace = true }
+JestGlobals = { workspace = true }
 Promise = { workspace = true }

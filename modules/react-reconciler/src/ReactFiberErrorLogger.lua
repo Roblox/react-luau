@@ -10,6 +10,7 @@
  ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 type Error = LuauPolyfill.Error
 local inspect = LuauPolyfill.util.inspect
@@ -42,7 +43,7 @@ exports.logCapturedError = function(boundary: Fiber, errorInfo: CapturedValue<an
 		end
 
 		local error_ = errorInfo.value
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			local source = errorInfo.source
 			local stack = errorInfo.stack
 			local componentStack = stack or ""

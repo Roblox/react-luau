@@ -6,6 +6,7 @@ content_root = "src"
 files = ["*", "!**/__tests__/**"]
 
 [dependencies]
+ReactGlobals = { path = "../react-globals" }
 Scheduler = { path = "../scheduler" }
 Shared = { path = "../shared" }
 React = { path = "../react" }

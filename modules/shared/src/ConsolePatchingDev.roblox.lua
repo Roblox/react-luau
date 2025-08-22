@@ -8,6 +8,9 @@
  * @flow
  ]]
 
+local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
+
 -- deviation: Lua objects don't have any special properties the way that JS
 -- Objects do; this has been modified from the JS, which uses
 -- `Object.defineProperties` to ensure that properties are modifiable. In Lua,
@@ -38,7 +41,7 @@ local exports = {}
 exports.disabledLog = disabledLog
 
 exports.disableLogs = function()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if disabledDepth == 0 then
 			prevLog = console.log
 			prevInfo = console.info
@@ -62,7 +65,7 @@ exports.disableLogs = function()
 end
 
 exports.reenableLogs = function()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		disabledDepth = disabledDepth - 1
 
 		if disabledDepth == 0 then

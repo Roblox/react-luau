@@ -11,6 +11,7 @@
 
 -- ROBLOX deviation: prompted by selene to add a type
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 type ComparisonTestsProps = {
@@ -382,13 +383,13 @@ describe("forwardRef", function()
 			React.createElement(RefForwardingComponent, { ref = ref, optional = "foo" })
 		)
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 
 		ReactNoop.render(
 			React.createElement(RefForwardingComponent, { ref = ref, optional = "foo" })
 		)
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(renderCount).toBe(_G.__DEV__ and 4 or 2)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 4 or 2)
 	end)
 
 	it("should bailout if forwardRef is wrapped in memo", function()
@@ -412,7 +413,7 @@ describe("forwardRef", function()
 			React.createElement(RefForwardingComponent, { ref = ref, optional = "foo" })
 		)
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 
 		jestExpect(ref.current.type).toBe("div")
 
@@ -420,7 +421,7 @@ describe("forwardRef", function()
 			React.createElement(RefForwardingComponent, { ref = ref, optional = "foo" })
 		)
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 
 		local differentRef = React.createRef()
 
@@ -431,7 +432,7 @@ describe("forwardRef", function()
 			)
 		)
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(renderCount).toBe(_G.__DEV__ and 4 or 2)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 4 or 2)
 
 		jestExpect(ref.current).toBe(nil)
 		jestExpect(differentRef.current.type).toBe("div")
@@ -440,7 +441,7 @@ describe("forwardRef", function()
 			React.createElement(RefForwardingComponent, { ref = ref, optional = "bar" })
 		)
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(renderCount).toBe(_G.__DEV__ and 6 or 3)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 6 or 3)
 	end)
 
 	it("should custom memo comparisons to compose", function()
@@ -473,7 +474,7 @@ describe("forwardRef", function()
 			)
 		)
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(renderCount).toBe(_G.__DEV__ and 2 or 1)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 2 or 1)
 
 		jestExpect(ref.current.type).toBe("div")
 
@@ -485,7 +486,7 @@ describe("forwardRef", function()
 			)
 		)
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(renderCount).toBe(_G.__DEV__ and 4 or 2)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 4 or 2)
 
 		-- Changing c doesn't rerender
 		ReactNoop.render(
@@ -495,7 +496,7 @@ describe("forwardRef", function()
 			)
 		)
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(renderCount).toBe(_G.__DEV__ and 4 or 2)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 4 or 2)
 
 		local ComposedMemo = React.memo(
 			RefForwardingComponent,
@@ -508,28 +509,28 @@ describe("forwardRef", function()
 			React.createElement(ComposedMemo, { ref = ref, a = 0, b = 0, c = 0 })
 		)
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(renderCount).toBe(_G.__DEV__ and 6 or 3)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 6 or 3)
 
 		-- Changing just b no longer updates
 		ReactNoop.render(
 			React.createElement(ComposedMemo, { ref = ref, a = 0, b = 1, c = 0 })
 		)
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(renderCount).toBe(_G.__DEV__ and 6 or 3)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 6 or 3)
 
 		-- Changing just a and c updates
 		ReactNoop.render(
 			React.createElement(ComposedMemo, { ref = ref, a = 2, b = 2, c = 2 })
 		)
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(renderCount).toBe(_G.__DEV__ and 8 or 4)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 8 or 4)
 
 		-- Changing just c does not update
 		ReactNoop.render(
 			React.createElement(ComposedMemo, { ref = ref, a = 2, b = 2, c = 3 })
 		)
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(renderCount).toBe(_G.__DEV__ and 8 or 4)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 8 or 4)
 
 		-- Changing ref still rerenders
 		local differentRef = React.createRef()
@@ -538,7 +539,7 @@ describe("forwardRef", function()
 			React.createElement(ComposedMemo, { ref = differentRef, a = 2, b = 2, c = 3 })
 		)
 		jestExpect(Scheduler).toFlushWithoutYielding()
-		jestExpect(renderCount).toBe(_G.__DEV__ and 10 or 5)
+		jestExpect(renderCount).toBe(ReactGlobals.__DEV__ and 10 or 5)
 
 		jestExpect(ref.current).toBe(nil)
 		jestExpect(differentRef.current.type).toBe("div")

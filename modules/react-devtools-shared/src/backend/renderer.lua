@@ -9,6 +9,7 @@
 
 local Packages = script.Parent.Parent.Parent
 
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Shared = require(Packages.Shared)
 local console = Shared.console
@@ -28,7 +29,7 @@ type Object = LuauPolyfill.Object
 
 -- ROBLOX deviation: Use _G as a catch all for global for now
 -- ROBLOX TODO: Work out a better capability-based solution
-local window = _G
+local window = ReactGlobals
 local exports = {}
 
 local invariant = require(Packages.Shared).invariant
@@ -546,7 +547,7 @@ exports.attach = function(
 	-- Don't patch in test environments because we don't want to interfere with Jest's own console overrides.
 	-- ROBLOX deviation: instead of checking if `process.env.NODE_ENV ~= "production"`
 	-- we use the __DEV__ global
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		registerRendererWithConsole(renderer)
 
 		-- The renderer interface can't read these preferences directly,

@@ -18,11 +18,6 @@ local function unimplemented(message: string)
 	error("FIXME (roblox): " .. message .. " is unimplemented", 2)
 end
 
-local __DEV__ = _G.__DEV__ :: boolean
-local __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ =
-	_G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ :: boolean
-local __COMPAT_WARNINGS__ = _G.__COMPAT_WARNINGS__ :: boolean
-
 local Packages = script.Parent.Parent
 -- ROBLOX: use patched console from Shared
 local Shared = require(Packages.Shared)
@@ -31,6 +26,13 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
 local inspect = LuauPolyfill.util.inspect
+
+-- Note: This file is right on Luau's local register limit. Adding the globals
+-- import to its own variable literally breaks everything.
+local __DEV__ = require(Packages.ReactGlobals).__DEV__
+local __DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ =
+	require(Packages.ReactGlobals).__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__
+local __COMPAT_WARNINGS__ = require(Packages.ReactGlobals).__COMPAT_WARNINGS__
 
 local ReactTypes = require(Packages.Shared)
 type ReactProviderType<T> = ReactTypes.ReactProviderType<T>

@@ -4,6 +4,7 @@
 type Function = (...any) -> any?
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
 local jest = JestGlobals.jest
@@ -32,13 +33,13 @@ describe("Devtools Integration", function()
 	afterEach(function()
 		jest.resetModules()
 		jest.useRealTimers()
-		_G.__REACT_DEVTOOLS_GLOBAL_HOOK__ = nil
+		ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__ = nil
 	end)
 
 	-- Devtools naturally relies on using DEV mode, so this test only makes
 	-- sense when it's enabled
 	local itSkipIfNonDEV = it
-	if not _G.__DEV__ then
+	if not ReactGlobals.__DEV__ then
 		itSkipIfNonDEV = xit :: any
 	end
 

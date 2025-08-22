@@ -8,6 +8,7 @@
 --!strict
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local React
 local ReactNoop
 -- local ReactDOM
@@ -112,7 +113,7 @@ describe("ReactStrictMode", function()
 			)
 		end)
 
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			jestExpect(log).toEqual({
 				"constructor",
 				"constructor",
@@ -145,7 +146,7 @@ describe("ReactStrictMode", function()
 			)
 		end)
 
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			jestExpect(log).toEqual({
 				"getDerivedStateFromProps",
 				"getDerivedStateFromProps",
@@ -178,7 +179,7 @@ describe("ReactStrictMode", function()
 			)
 		end)
 
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			jestExpect(log).toEqual({
 				"getDerivedStateFromProps",
 				"getDerivedStateFromProps",
@@ -228,7 +229,7 @@ describe("ReactStrictMode", function()
 		end)
 		-- Callback should be invoked twice in DEV
 		jestExpect(setStateCount).toEqual((function()
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				return 2
 			end
 
@@ -286,7 +287,7 @@ describe("ReactStrictMode", function()
 			ReactNoop.render(React.createElement(Root))
 		end)
 
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			jestExpect(log).toEqual({
 				"constructor",
 				"constructor",
@@ -313,7 +314,7 @@ describe("ReactStrictMode", function()
 			ReactNoop.render(React.createElement(Root))
 		end)
 
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			jestExpect(log).toEqual({
 				"getDerivedStateFromProps",
 				"getDerivedStateFromProps",
@@ -340,7 +341,7 @@ describe("ReactStrictMode", function()
 			ReactNoop.render(React.createElement(Root))
 		end)
 
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			jestExpect(log).toEqual({
 				"getDerivedStateFromProps",
 				"getDerivedStateFromProps",
@@ -392,7 +393,7 @@ describe("ReactStrictMode", function()
 		end)
 		-- Callback should be invoked twice (in DEV)
 		jestExpect(setStateCount).toEqual((function()
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				return 2
 			end
 

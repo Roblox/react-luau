@@ -2,6 +2,7 @@
 -- ROBLOX TODO: make this only pass in __DEV__
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
 local describe = JestGlobals.describe
@@ -9,7 +10,7 @@ local it = JestGlobals.it
 
 local ReactInstanceMap = require(Packages.Shared).ReactInstanceMap
 
-local __DEV__ = _G.__DEV__ :: boolean
+local __DEV__ = ReactGlobals.__DEV__ :: boolean
 local SafeFlags = require(Packages.SafeFlags)
 local GetFFlagReactInstanceMapDisableErrorChecking =
 	SafeFlags.createGetFFlag("ReactInstanceMapDisableErrorChecking")

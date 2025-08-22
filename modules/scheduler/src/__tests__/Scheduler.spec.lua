@@ -23,7 +23,7 @@ local runWithPriority
 local ImmediatePriority
 local UserBlockingPriority
 local NormalPriority
--- deviation: These are only used in a commented-out _G.__DEV__-only test
+-- deviation: These are only used in a commented-out ReactGlobals.__DEV__-only test
 -- (commented out to silence lints)
 -- local LowPriority
 -- local IdlePriority
@@ -59,7 +59,7 @@ beforeEach(function()
 	ImmediatePriority = Scheduler.unstable_ImmediatePriority
 	UserBlockingPriority = Scheduler.unstable_UserBlockingPriority
 	NormalPriority = Scheduler.unstable_NormalPriority
-	-- deviation: These are only used in a commented-out _G.__DEV__-only
+	-- deviation: These are only used in a commented-out ReactGlobals.__DEV__-only
 	-- test (commented out to silence lints)
 	-- LowPriority = Scheduler.unstable_LowPriority
 	-- IdlePriority = Scheduler.unstable_IdlePriority
@@ -528,7 +528,7 @@ it("exposes the current priority level", function()
 	})
 end)
 
--- if _G.__DEV__ then
+-- if ReactGlobals.__DEV__ then
 -- ROBLOX TODO(align): Re-enable this test if it's useful
 --
 -- Function names are minified in prod, though you could still infer the

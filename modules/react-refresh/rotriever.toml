@@ -7,5 +7,6 @@ files = ["*", "!**/__tests__/**"]
 
 [dependencies]
 LuauPolyfill = { workspace = true }
+ReactGlobals = { path = "../react-globals" }
 ReactReconciler = { path = "../react-reconciler" }
 Shared = { path = "../shared" }

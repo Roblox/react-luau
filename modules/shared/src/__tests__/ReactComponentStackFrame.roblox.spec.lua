@@ -5,6 +5,7 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 local String = LuauPolyfill.String
 
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local beforeEach = JestGlobals.beforeEach
 local jestExpect = JestGlobals.expect
@@ -72,7 +73,7 @@ describe("with enableComponentStackLocations to false", function()
 		end)
 
 		-- deviation: cannot have a field in a function object
-		-- if _G.__DEV__ then
+		-- if ReactGlobals.__DEV__ then
 		-- 	it("shows the owner name if there is no source", function()
 		-- 		local owner = function() end
 		--  	owner.displayName = "foo"
@@ -140,7 +141,7 @@ describe("with enableComponentStackLocations to false", function()
 					owner
 				)
 
-				if _G.__DEV__ then
+				if ReactGlobals.__DEV__ then
 					assertStringContains(
 						frame,
 						string.format(
@@ -229,7 +230,7 @@ describe("DEV warning stack trace", function()
 			DevParent
 		)
 
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			jestExpect(description).toEqual(
 				"\n    in TestDevStackComponent (at TestDev-file.lua:20)"
 			)
@@ -261,7 +262,7 @@ describe("DEV warning stack trace", function()
 				DevParent
 			)
 
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				jestExpect(description).toEqual(
 					"\n    in DevStackFunctionComponent (at TestDevFunction-file.lua:15)"
 				)

@@ -9,6 +9,7 @@
  * @flow
  ]]
 local Packages = script.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 -- ROBLOX deviation START: not used
 -- local LuauPolyfill = require(Packages.LuauPolyfill)
 -- local Boolean = LuauPolyfill.Boolean
@@ -180,10 +181,10 @@ exports.isValidElementType = isValidElementType
 local hasWarnedAboutDeprecatedIsAsyncMode = false
 local hasWarnedAboutDeprecatedIsConcurrentMode = false -- AsyncMode should be deprecated
 local function isAsyncMode(object: any)
-	-- ROBLOX deviation START: remove toJSBoolean, use _G.__DEV__
+	-- ROBLOX deviation START: remove toJSBoolean, use ReactGlobals.__DEV__
 	-- if Boolean.toJSBoolean(__DEV__) then
 	-- 	if not Boolean.toJSBoolean(hasWarnedAboutDeprecatedIsAsyncMode) then
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if not hasWarnedAboutDeprecatedIsAsyncMode then
 			-- ROBLOX deviation END
 			hasWarnedAboutDeprecatedIsAsyncMode = true -- Using console['warn'] to evade Babel and ESLint
@@ -197,10 +198,10 @@ local function isAsyncMode(object: any)
 end
 exports.isAsyncMode = isAsyncMode
 local function isConcurrentMode(object: any)
-	-- ROBLOX deviation START: remove toJSBoolean, use _G.__DEV__
+	-- ROBLOX deviation START: remove toJSBoolean, use ReactGlobals.__DEV__
 	-- if Boolean.toJSBoolean(__DEV__) then
 	-- 	if not Boolean.toJSBoolean(hasWarnedAboutDeprecatedIsConcurrentMode) then
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if not hasWarnedAboutDeprecatedIsConcurrentMode then
 			-- ROBLOX deviation END
 			hasWarnedAboutDeprecatedIsConcurrentMode = true -- Using console['warn'] to evade Babel and ESLint

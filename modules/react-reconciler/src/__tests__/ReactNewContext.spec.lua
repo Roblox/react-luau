@@ -1266,7 +1266,7 @@ describe("Context.Consumer", function()
 		jestExpect(Scheduler).toFlushAndThrow("attempt to call a nil value")
 		-- ROBLOX Test Noise: Warning is logged (verified in debugger), but
 		-- toErrorDev doesn't match; use `spyOnDev` when available
-		-- if _G.__DEV__ then
+		-- if ReactGlobals.__DEV__ then
 		-- 	jestExpect(console.error.calls.argsFor(0)({ 0 })).toContain(
 		-- 		"A context consumer was rendered with multiple children, or a child " .. "that isn't a function"
 		-- 	)

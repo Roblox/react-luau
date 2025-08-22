@@ -8,6 +8,7 @@
  * @emails react-core
  ]]
 local Packages = script.Parent.Parent.Parent.Parent.TestRunner
+local ReactGlobals = require(Packages.Dev.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
 local beforeEach = JestGlobals.beforeEach
@@ -34,7 +35,7 @@ end)
 describe("toErrorDev", function()
 	it("does not fail if a warning contains a stack", function()
 		jestExpect(function()
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				console.error("Hello\n    in div")
 			end
 		end).toErrorDev("Hello")
@@ -42,7 +43,7 @@ describe("toErrorDev", function()
 
 	it("does not fail if all warnings contain a stack", function()
 		jestExpect(function()
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				console.error("Hello\n    in div")
 				console.error("Good day\n    in div")
 				console.error("Bye\n    in div")
@@ -56,12 +57,12 @@ describe("toErrorDev", function()
 
 	it("does not fail if warnings without stack explicitly opt out", function()
 		jestExpect(function()
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				console.error("Hello")
 			end
 		end).toErrorDev("Hello", { withoutStack = true })
 		jestExpect(function()
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				console.error("Hello")
 				console.error("Good day")
 				console.error("Bye")
@@ -79,7 +80,7 @@ describe("toErrorDev", function()
 		"does not fail when expected stack-less warning number matches the actual one",
 		function()
 			jestExpect(function()
-				if _G.__DEV__ then
+				if ReactGlobals.__DEV__ then
 					console.error("Hello\n    in div")
 					console.error("Good day")
 					console.error("Bye\n    in div")
@@ -94,7 +95,7 @@ describe("toErrorDev", function()
 		end
 	)
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- // Helper methods avoids invalid toWarn().toThrow() nesting
 		-- // See no-to-warn-dev-within-to-throw
 		local function expectToWarnAndToThrow(expectBlock, expectedErrorMessage)
@@ -283,7 +284,7 @@ end)
 describe("toWarnDev", function()
 	it("does not fail if a warning contains a stack", function()
 		jestExpect(function()
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				console.warn("Hello\n    in div")
 			end
 		end).toWarnDev("Hello")
@@ -291,7 +292,7 @@ describe("toWarnDev", function()
 
 	it("does not fail if all warnings contain a stack", function()
 		jestExpect(function()
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				console.warn("Hello\n    in div")
 				console.warn("Good day\n    in div")
 				console.warn("Bye\n    in div")
@@ -305,12 +306,12 @@ describe("toWarnDev", function()
 
 	it("does not fail if warnings without stack explicitly opt out", function()
 		jestExpect(function()
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				console.warn("Hello")
 			end
 		end).toWarnDev("Hello", { withoutStack = true })
 		jestExpect(function()
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				console.warn("Hello")
 				console.warn("Good day")
 				console.warn("Bye")
@@ -328,7 +329,7 @@ describe("toWarnDev", function()
 		"does not fail when expected stack-less warning number matches the actual one",
 		function()
 			jestExpect(function()
-				if _G.__DEV__ then
+				if ReactGlobals.__DEV__ then
 					console.warn("Hello\n    in div")
 					console.warn("Good day")
 					console.warn("Bye\n    in div")
@@ -343,7 +344,7 @@ describe("toWarnDev", function()
 		end
 	)
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- // Helper methods avoids invalid toWarn().toThrow() nesting
 		-- // See no-to-warn-dev-within-to-throw
 		local function expectToWarnAndToThrow(expectBlock, expectedErrorMessage)

@@ -10,6 +10,7 @@
  ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 
@@ -35,7 +36,7 @@ local ReactStrictModeWarnings = {
 	discardPendingWarnings = function() end,
 }
 
-if _G.__DEV__ then
+if ReactGlobals.__DEV__ then
 	local findStrictRoot = function(fiber: Fiber): Fiber | nil
 		local maybeStrictRoot = nil
 

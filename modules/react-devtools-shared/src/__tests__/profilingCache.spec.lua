@@ -10,6 +10,7 @@
  ]]
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
 local xdescribe = JestGlobals.xdescribe
@@ -30,7 +31,7 @@ type Store = devtoolsTypes.Store
 local ProfilerTypes = require(script.Parent.Parent.devtools.views.Profiler.types)
 type ProfilingDataFrontend = ProfilerTypes.ProfilingDataFrontend
 
-local global = _G
+local global = ReactGlobals :: any
 
 -- ROBLOX deviation START: inline simplified PropTypes logic
 -- ROBLOX FIXME luau: if not annotated, gets 'Failed ot unify type packs'
@@ -64,7 +65,7 @@ xdescribe("ProfilingCache", function()
 	local act
 
 	beforeEach(function()
-		_G.__PROFILE__ = true
+		ReactGlobals.__PROFILE__ = true
 		utils = require(script.Parent.utils)
 		act = utils.act
 
@@ -83,7 +84,7 @@ xdescribe("ProfilingCache", function()
 	end)
 
 	afterEach(function()
-		_G.__PROFILE__ = nil
+		ReactGlobals.__PROFILE__ = nil
 	end)
 
 	it(

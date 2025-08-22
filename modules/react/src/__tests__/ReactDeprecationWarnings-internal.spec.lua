@@ -5,6 +5,7 @@ local ReactNoop
 local Scheduler
 -- local JSXDEVRuntime
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
 local describe = JestGlobals.describe
@@ -57,7 +58,7 @@ describe("ReactDeprecationWarnings", function()
 			return React.createElement(RefComponent, { ref = "refComponent" })
 		end
 		ReactNoop.render(React.createElement(Component))
-		local expectedName = _G.__DEV__ and "Component"
+		local expectedName = ReactGlobals.__DEV__ and "Component"
 			or "<enable __DEV__ mode for component names>"
 		-- ROBLOX Test Noise: jest setup config makes this hide error
 		-- boundary warnings in upstream (scripts/jest/setupTests.js:72)
@@ -108,7 +109,7 @@ describe("ReactDeprecationWarnings", function()
 		ReactNoop.render(React.createElement(Component))
 
 		-- ROBLOX deviation: we removed string ref support ahead of upstream schedule
-		local expectedName = _G.__DEV__ and "Component"
+		local expectedName = ReactGlobals.__DEV__ and "Component"
 			or "<enable __DEV__ mode for component names>"
 		-- ROBLOX Test Noise: jest setup config makes this hide error
 		-- boundary warnings in upstream (scripts/jest/setupTests.js:72)
@@ -126,7 +127,7 @@ describe("ReactDeprecationWarnings", function()
 	end)
 
 	-- ROBLOX TODO: figure out how to do this without JSX internals
-	-- if _G.__DEV__ then
+	-- if ReactGlobals.__DEV__ then
 	-- 	xit("should warn when owner and self are different for string refs", function()
 	-- 		local RefComponent = React.Component:extend("")
 	-- 		RefComponent.__index = RefComponent

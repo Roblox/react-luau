@@ -23,6 +23,7 @@
 	* Shared has no intra-workspace dependencies (no cycles)
 ]]
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local console = require(Packages.LuauPolyfill).console
 local function onlyInTestError(functionName: string)
 	return function()
@@ -45,7 +46,7 @@ local ReactSharedInternals = {
 	IsSomeRendererActing = IsSomeRendererActing,
 	-- ROBLOX deviation: Luau type checking requires us to have a consistent export shape regardless of __DEV__
 	-- ROBLOX TODO: use if-expressions when all clients are on 503+
-	ReactDebugCurrentFrame = if _G.__DEV__
+	ReactDebugCurrentFrame = if ReactGlobals.__DEV__
 		then ReactDebugCurrentFrame
 		else {
 			setExtraStackFrame = function(_: string?): ()

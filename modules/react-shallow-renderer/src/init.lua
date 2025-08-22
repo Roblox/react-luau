@@ -8,6 +8,7 @@
  ]]
 
 local Packages = script.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 local Error = LuauPolyfill.Error
@@ -36,7 +37,7 @@ local ReactDebugCurrentFrame = ReactSharedInternals.ReactDebugCurrentFrame
 local RE_RENDER_LIMIT: number = 25
 
 local emptyObject = {}
-if _G.__DEV__ then
+if ReactGlobals.__DEV__ then
 	Object.freeze(emptyObject)
 end
 
@@ -46,7 +47,7 @@ local currentHookNameInDev = "currentHookNameInDev"
 
 local function areHookInputsEqual(nextDeps, prevDeps)
 	if prevDeps == nil then
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			consoleWithStackDev.error(
 				"%s received a final argument during self render, but not during "
 					.. "the previous render. Even though the final argument is optional, "
@@ -57,7 +58,7 @@ local function areHookInputsEqual(nextDeps, prevDeps)
 		return false
 	end
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- Don't bother comparing lengths in prod because these arrays should be
 		-- passed inline.
 		if #nextDeps ~= #prevDeps then
@@ -335,7 +336,7 @@ function ReactShallowRenderer:_createDispatcher()
 		local previousRef = self._workInProgressHook.memoizedState
 		if previousRef == nil then
 			local ref = { current = initialValue }
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				Object.seal(ref)
 			end
 			self._workInProgressHook.memoizedState = ref
@@ -598,7 +599,7 @@ function ReactShallowRenderer:render(element, maybeContext)
 
 	-- Inner memo component props aren't currently validated in createElement.
 	local prevGetStack
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		prevGetStack = ReactDebugCurrentFrame.getCurrentStack
 		ReactDebugCurrentFrame.getCurrentStack = getStackAddendum
 	end
@@ -720,7 +721,7 @@ function ReactShallowRenderer:render(element, maybeContext)
 	end)
 
 	-- finally
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		ReactDebugCurrentFrame.getCurrentStack = prevGetStack
 	end
 

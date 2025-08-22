@@ -10,6 +10,7 @@
  ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 -- ROBLOX: use patched console from shared
@@ -171,7 +172,7 @@ function createClassErrorUpdate(
 	local inst = fiber.stateNode
 	if inst ~= nil and typeof(inst.componentDidCatch) == "function" then
 		update.callback = function()
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				markFailedErrorBoundaryForHotReloading(fiber)
 			end
 			if typeof(getDerivedStateFromError) ~= "function" then
@@ -192,7 +193,7 @@ function createClassErrorUpdate(
 			inst:componentDidCatch(error_, {
 				componentStack = stack or "",
 			})
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				if typeof(getDerivedStateFromError) ~= "function" then
 					-- If componentDidCatch is the only error boundary method defined,
 					-- then it needs to call setState to recover from errors.
@@ -207,7 +208,7 @@ function createClassErrorUpdate(
 				end
 			end
 		end
-	elseif _G.__DEV__ then
+	elseif ReactGlobals.__DEV__ then
 		update.callback = function()
 			markFailedErrorBoundaryForHotReloading(fiber)
 		end
@@ -270,7 +271,7 @@ function throwException(
 		-- This is a wakeable.
 		local wakeable: Wakeable = value
 
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			if enableDebugTracing then
 				if bit32.band(sourceFiber.mode, DebugTracingMode) ~= 0 then
 					local name = getComponentName(sourceFiber.type) or "Unknown"

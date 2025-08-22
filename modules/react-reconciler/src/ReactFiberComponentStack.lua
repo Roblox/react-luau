@@ -10,6 +10,7 @@
 ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 type Function = (...any) -> ...any
 type Error = LuauPolyfill.Error
@@ -38,7 +39,7 @@ local describeClassComponentFrame = ReactComponentStackFrame.describeClassCompon
 local function describeFiber(fiber: Fiber): string
 	-- deviation: untangling some nested ternaries to use more idiomatic if/else
 	local owner: nil | Function = nil
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- FIXME (roblox): Luau's limited narrowing necessitates this local
 		local debugOwner = fiber._debugOwner
 		if debugOwner then
@@ -46,7 +47,7 @@ local function describeFiber(fiber: Fiber): string
 		end
 	end
 	local source = nil
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		source = fiber._debugSource
 	end
 	if fiber.tag == HostComponent then

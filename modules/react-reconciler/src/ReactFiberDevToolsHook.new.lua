@@ -9,6 +9,7 @@
  ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 local LuauPolyfill = require(Packages.LuauPolyfill)
@@ -61,15 +62,15 @@ local hasLoggedError = false
 
 -- ROBLOX deviation: We use a function to handle the hook being changed at runtime
 exports.isDevToolsPresent = function()
-	return _G.__REACT_DEVTOOLS_GLOBAL_HOOK__ ~= nil
+	return ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__ ~= nil
 end
 
 exports.injectInternals = function(internals: Object): boolean
-	if _G.__REACT_DEVTOOLS_GLOBAL_HOOK__ == nil then
+	if ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__ == nil then
 		-- No DevTools
 		return false
 	end
-	local hook: DevToolsHook = _G.__REACT_DEVTOOLS_GLOBAL_HOOK__
+	local hook: DevToolsHook = ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__
 	if hook.isDisabled then
 		-- This isn't a real property on the hook, but it can be set to opt out
 		-- of DevTools integration and associated warnings and logs.
@@ -77,7 +78,7 @@ exports.injectInternals = function(internals: Object): boolean
 		return true
 	end
 	if not hook.supportsFiber then
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			console.error(
 				"The installed version of React DevTools is too old and will not work "
 					.. "with the current version of React. Please update React DevTools. "
@@ -95,7 +96,7 @@ exports.injectInternals = function(internals: Object): boolean
 
 	if not ok then
 		-- Catch all errors because it is unsafe to throw during initialization.
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			console.error("React instrumentation encountered an error: %s.", err)
 		end
 	end
@@ -104,7 +105,7 @@ exports.injectInternals = function(internals: Object): boolean
 end
 
 exports.onScheduleRoot = function(root: FiberRoot, children: ReactNodeList)
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if
 			injectedHook
 			-- ROBLOX deviation: our mocked functions are tables with __call, since they have fields
@@ -114,7 +115,7 @@ exports.onScheduleRoot = function(root: FiberRoot, children: ReactNodeList)
 				pcall(injectedHook.onScheduleFiberRoot, rendererID, root, children)
 
 			if not ok then
-				if _G.__DEV__ and not hasLoggedError then
+				if ReactGlobals.__DEV__ and not hasLoggedError then
 					hasLoggedError = true
 					console.error("React instrumentation encountered an error: %s", err)
 				end
@@ -138,7 +139,7 @@ exports.onCommitRoot = function(root: FiberRoot, priorityLevel: ReactPriorityLev
 			end
 		end)
 		if not ok then
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				if not hasLoggedError then
 					hasLoggedError = true
 					console.error("React instrumentation encountered an error: %s", err)
@@ -156,7 +157,7 @@ exports.onCommitUnmount = function(fiber: Fiber)
 	then
 		local ok, err = pcall(injectedHook.onCommitFiberUnmount, rendererID, fiber)
 		if not ok then
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				if not hasLoggedError then
 					hasLoggedError = true
 					console.error("React instrumentation encountered an error: %s", err)

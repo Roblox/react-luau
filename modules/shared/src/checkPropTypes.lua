@@ -9,6 +9,7 @@
  * @flow
  ]]
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
 type Object = LuauPolyfill.Object
@@ -31,7 +32,7 @@ local ReactDebugCurrentFrame = ReactSharedInternals.ReactDebugCurrentFrame
 
 -- ROBLOX FIXME Luau: doesn't see `if element` as nilable table, so we get TypeError: Type 'any?' could not be converted into '{| _owner: {| type: nil |}, _source: Source?, type: any |}'
 local function setCurrentlyValidatingElement(element: any?)
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if element then
 			local owner = element._owner
 			local stack = describeUnknownElementTypeFrameInDEV(
@@ -57,7 +58,10 @@ local function checkPropTypes<P>(
 	componentName: string?,
 	element: any?
 ): ()
-	if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
+	if
+		ReactGlobals.__DEV__
+		or ReactGlobals.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__
+	then
 		-- deviation: hasOwnProperty shouldn't be relevant to lua objects
 		-- $FlowFixMe This is okay but Flow doesn't know it.
 		-- local has = Function.call.bind(Object.prototype.hasOwnProperty)
