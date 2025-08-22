@@ -185,7 +185,7 @@ local function mapIntoArray(
 			} = children :: any
 
 			-- ROBLOX DEVIATION: No equivalent for checking if iterableChildren is a Map
-			-- if _G.__DEV__ then
+			-- if ReactGlobals.__DEV__ then
 			-- 	-- Warn about using Maps as children
 			-- 	if iteratorFn == iterableChildren.entries then
 			-- 		if not didWarnAboutMaps then

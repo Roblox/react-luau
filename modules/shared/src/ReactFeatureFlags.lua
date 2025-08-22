@@ -11,6 +11,7 @@
 
 local Shared = script.Parent
 local Packages = Shared.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local SafeFlags = require(Packages.SafeFlags)
 local GetFFlagReactEnableSchedulingProfiler =
 	SafeFlags.createGetFFlag("ReactEnableSchedulingProfiler")
@@ -30,36 +31,36 @@ exports.enableDebugTracing = false
 -- Adds user timing marks for e.g. state updates, suspense, and work loop stuff,
 -- for an experimental scheduling profiler tool.
 exports.enableSchedulingProfiler = GetFFlagReactEnableSchedulingProfiler()
-	or (_G.__PROFILE__ and _G.__EXPERIMENTAL__)
+	or (ReactGlobals.__PROFILE__ and ReactGlobals.__EXPERIMENTAL__)
 
 -- Helps identify side effects in render-phase lifecycle hooks and setState
 -- reducers by double invoking them in Strict Mode.
 -- ROBLOX TODO: we'll want to enable this for DEV app bundles
-exports.debugRenderPhaseSideEffectsForStrictMode = _G.__DEV__
+exports.debugRenderPhaseSideEffectsForStrictMode = ReactGlobals.__DEV__
 
 -- To preserve the "Pause on caught exceptions" behavior of the debugger, we
 -- replay the begin phase of a failed component inside invokeGuardedCallback.
-exports.replayFailedUnitOfWorkWithInvokeGuardedCallback = _G.__DEV__
+exports.replayFailedUnitOfWorkWithInvokeGuardedCallback = ReactGlobals.__DEV__
 
 -- Warn about deprecated, async-unsafe lifecycles; relates to RFC #6:
 exports.warnAboutDeprecatedLifecycles = true
 
 -- Gather advanced timing metrics for Profiler subtrees.
-exports.enableProfilerTimer = _G.__PROFILE__
+exports.enableProfilerTimer = ReactGlobals.__PROFILE__
 
 -- Record durations for commit and passive effects phases.
-exports.enableProfilerCommitHooks = _G.__PROFILE__
+exports.enableProfilerCommitHooks = ReactGlobals.__PROFILE__
 
 -- Trace which interactions trigger each commit.
-exports.enableSchedulerTracing = _G.__PROFILE__
+exports.enableSchedulerTracing = ReactGlobals.__PROFILE__
 
 -- SSR experiments
-exports.enableSuspenseServerRenderer = _G.__EXPERIMENTAL__
-exports.enableSelectiveHydration = _G.__EXPERIMENTAL__
+exports.enableSuspenseServerRenderer = ReactGlobals.__EXPERIMENTAL__
+exports.enableSelectiveHydration = ReactGlobals.__EXPERIMENTAL__
 
 -- Flight experiments
-exports.enableBlocksAPI = _G.__EXPERIMENTAL__
-exports.enableLazyElements = _G.__EXPERIMENTAL__
+exports.enableBlocksAPI = ReactGlobals.__EXPERIMENTAL__
+exports.enableLazyElements = ReactGlobals.__EXPERIMENTAL__
 
 -- Only used in www builds.
 exports.enableSchedulerDebugging = false

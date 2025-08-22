@@ -15,13 +15,16 @@
 --!strict
 local console = require(script.Parent.console)
 
+local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
+
 -- ROBLOX DEVIATION: Initialize state to a singleton that warns on access and errors on assignment
 -- initial state singleton
 local UninitializedState = {}
 
 setmetatable(UninitializedState, {
 	__index = function(table, key)
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			console.warn(
 				"Attempted to access uninitialized state. Use setState to initialize state"
 			)
@@ -29,7 +32,7 @@ setmetatable(UninitializedState, {
 		return nil
 	end,
 	__newindex = function(table, key)
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			console.error(
 				"Attempted to directly mutate state. Use setState to assign new values to state."
 			)

@@ -17,8 +17,6 @@ local function unimplemented(message: string)
 	error("FIXME (roblox): " .. message .. " is unimplemented", 2)
 end
 
-local __DEV__ = _G.__DEV__ :: boolean
-local __YOLO__ = _G.__YOLO__ :: boolean
 -- ROBLOX DEVIATION: keep track of the pcall run depth and stop wrapping pcalls after we hit MAX_RUN_DEPTH.
 -- ROBLOX note: if this number is raised to 195, the test in RoactRecursiveLayoutPcallDepth will fail
 local runDepth = 0
@@ -41,12 +39,16 @@ local function isCallable(value)
 end
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
 local Set = LuauPolyfill.Set
 type Array<T> = { [number]: T }
+
+local __DEV__ = ReactGlobals.__DEV__ :: boolean
+local __YOLO__ = ReactGlobals.__YOLO__ :: boolean
 
 local ReactFiberHostConfig = require(script.Parent.ReactFiberHostConfig)
 type Instance = ReactFiberHostConfig.Instance

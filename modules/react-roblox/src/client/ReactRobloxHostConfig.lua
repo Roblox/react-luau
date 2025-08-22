@@ -19,6 +19,7 @@ end
 
 local CollectionService = game:GetService("CollectionService")
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local inspect = LuauPolyfill.util.inspect
 local console = require(Packages.Shared).console
@@ -250,7 +251,7 @@ exports.getRootHostContext = function(rootContainerInstance: Container): HostCon
 	--     break
 	--   end
 	-- end
-	-- if _G.__DEV__ then
+	-- if ReactGlobals.__DEV__ then
 	--   local validatedTag = type.toLowerCase()
 	--   local ancestorInfo = updatedAncestorInfo(null, validatedTag)
 	--   return {namespace, ancestorInfo}
@@ -266,7 +267,7 @@ exports.getChildHostContext = function(
 	-- ROBLOX deviation: unclear on the purpose here just yet, might be fine to
 	-- just return parent's hostContext for now
 	return parentHostContext
-	-- if _G.__DEV__ then
+	-- if ReactGlobals.__DEV__ then
 	--   local parentHostContextDev = ((parentHostContext: any): HostContextDev)
 	--   local namespace = getChildNamespace(parentHostContextDev.namespace, type)
 	--   local ancestorInfo = updatedAncestorInfo(
@@ -416,7 +417,7 @@ local function prepareUpdate(
 	rootContainerInstance: Container,
 	hostContext: HostContext
 ): nil | Array<any>
-	-- if _G.__DEV__ then
+	-- if ReactGlobals.__DEV__ then
 	--   local hostContextDev = ((hostContext: any): HostContextDev)
 	--   if
 	--     typeof newProps.children ~= typeof oldProps.children and
@@ -551,7 +552,7 @@ exports.appendChild = function(parentInstance: Instance, child: Instance)
 	-- ROBLOX deviation: Roblox's DOM is based on child->parent references
 	child.Parent = parentInstance
 	-- parentInstance.appendChild(child)
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		checkTags(child)
 	end
 end
@@ -593,7 +594,7 @@ exports.insertBefore = function(
 	-- ROBLOX deviation: Roblox's DOM is based on child->parent references
 	child.Parent = parentInstance
 	-- parentInstance.insertBefore(child, beforeChild)
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		checkTags(child)
 	end
 end

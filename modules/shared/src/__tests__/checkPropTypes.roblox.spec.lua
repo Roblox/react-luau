@@ -3,6 +3,7 @@ local React
 
 local ReactNoop
 local Scheduler
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local afterEach = JestGlobals.afterEach
 local beforeEach = JestGlobals.beforeEach
@@ -68,7 +69,7 @@ describe("tests propTypes and validateProps behavior", function()
 			ReactNoop.render(React.createElement(Foo, { myProp = "hello" }))
 			jestExpect(Scheduler).toFlushWithoutYielding()
 		end
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			-- For legacy compatibility, this test throws as well as warning
 			jestExpect(testValidation).toThrow("no no no no no")
 		else
@@ -144,7 +145,7 @@ describe("tests propTypes and validateProps behavior", function()
 				{ withoutStack = 2 }
 			)
 		end
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			-- For legacy compatibility, this test throws as well as warning
 			jestExpect(testValidation).toThrow("no no no no no")
 		else
@@ -206,7 +207,7 @@ describe("tests propTypes and validateProps behavior", function()
 				{ withoutStack = 2 }
 			)
 		end
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			-- For legacy compatibility, this test throws as well as warning
 			jestExpect(testValidation).toThrow("no no no no no")
 		else
@@ -261,12 +262,14 @@ describe("tests propTypes and validateProps behavior", function()
 
 	describe("__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__", function()
 		beforeEach(function(context)
-			context.oldValidate = _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__
-			_G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ = true
+			context.oldValidate =
+				ReactGlobals.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__
+			ReactGlobals.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ = true
 		end)
 
 		afterEach(function(context)
-			_G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ = context.oldValidate
+			ReactGlobals.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ =
+				context.oldValidate
 		end)
 
 		it("validateProps defined, returns false", function()
@@ -285,7 +288,7 @@ describe("tests propTypes and validateProps behavior", function()
 			end
 
 			-- For legacy compatibility, this test throws as well as warning
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				jestExpect(testValidation).toThrow("no no no no no")
 			else
 				jestExpect(testValidation).never.toThrow()

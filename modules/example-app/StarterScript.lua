@@ -6,8 +6,9 @@ if RunService:IsServer() then
 end
 
 -- Set global flags and initialize devtools before React is ever used
-_G.__DEV__ = true
-_G.__PROFILE__ = true
+local ReactGlobals = require(CorePackages.ReactGlobals)
+ReactGlobals.__DEV__ = true
+ReactGlobals.__PROFILE__ = true
 
 local ReactDevtoolsCore = require(CorePackages.ReactDevtoolsCore)
 ReactDevtoolsCore.backend.connectToDevtools()

@@ -8,6 +8,7 @@
  * @emails react-core
  ]]
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 -- ROBLOX deviation START: unused imports
 -- local Array = LuauPolyfill.Array
@@ -343,7 +344,7 @@ describe("ReactCache", function()
 			)
 			-- ROBLOX deviation START: remove toJSBoolean and use _G
 			-- if Boolean.toJSBoolean(__DEV__) then
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				-- ROBLOX deviation END
 				expect(function()
 					expect(Scheduler).toFlushAndYield({ "App", "Loading..." })

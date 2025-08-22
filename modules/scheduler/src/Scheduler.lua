@@ -11,6 +11,7 @@
 -- for easier dependency injection with unstable_mock
 return function(hostConfig)
 	local Packages = script.Parent.Parent
+	local ReactGlobals = require(Packages.ReactGlobals)
 	local describeError = require(Packages.Shared).describeError
 
 	local SchedulerFeatureFlags = require(script.Parent.SchedulerFeatureFlags)
@@ -243,7 +244,7 @@ return function(hostConfig)
 
 		-- ROBLOX deviation: YOLO flag for disabling pcall
 		local ok, result
-		if not _G.__YOLO__ then
+		if not ReactGlobals.__YOLO__ then
 			-- ROBLOX performance: don't nest try/catch here, Lua can do better, and it eliminated an anon function creation
 			if enableProfiling then
 				ok, result =
@@ -357,7 +358,7 @@ return function(hostConfig)
 
 		-- ROBLOX deviation: YOLO flag for disabling pcall
 		local ok, result
-		if not _G.__YOLO__ then
+		if not ReactGlobals.__YOLO__ then
 			ok, result = xpcall(eventHandler, describeError)
 		else
 			ok = true
@@ -393,7 +394,7 @@ return function(hostConfig)
 
 		-- ROBLOX deviation: YOLO flag for disabling pcall
 		local ok, result
-		if not _G.__YOLO__ then
+		if not ReactGlobals.__YOLO__ then
 			ok, result = xpcall(eventHandler, describeError)
 		else
 			ok = true
@@ -420,7 +421,7 @@ return function(hostConfig)
 
 			-- ROBLOX deviation: YOLO flag for disabling pcall
 			local ok, result
-			if not _G.__YOLO__ then
+			if not ReactGlobals.__YOLO__ then
 				ok, result = xpcall(callback, describeError, ...)
 			else
 				ok = true

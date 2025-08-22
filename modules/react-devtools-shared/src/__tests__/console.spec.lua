@@ -6,15 +6,13 @@
  * LICENSE file in the root directory of this source tree.
 ]]
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local describe = JestGlobals.describe
 local xit = JestGlobals.xit
 local beforeEach = JestGlobals.beforeEach
 local jestExpect = JestGlobals.expect
 local jest = JestGlobals.jest
-
--- ROBLOX deviation: Use lua's _G global table
-local global = _G
 
 -- ROBLOX deviation: Stub for now
 local Console = {
@@ -71,8 +69,8 @@ describe("console", function()
 			breakOnWarn = false,
 		})
 
-		local inject = global.__REACT_DEVTOOLS_GLOBAL_HOOK__.inject
-		global.__REACT_DEVTOOLS_GLOBAL_HOOK__.inject = function(internals)
+		local inject = ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__.inject;
+		(ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__ :: any).inject = function(internals)
 			inject(internals)
 
 			Console.registerRenderer(internals)

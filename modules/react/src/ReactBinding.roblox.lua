@@ -16,6 +16,7 @@
 
 local Packages = script.Parent.Parent
 
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local ReactSymbols = require(Packages.Shared).ReactSymbols
 
@@ -91,7 +92,7 @@ function BindingInternalApi.create<T>(initialValue: T): (Binding<T>, BindingUpda
 	end
 
 	local source
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for bindings
 		source = debug.traceback("Binding created at:", 3)
 	end
@@ -108,7 +109,7 @@ function BindingInternalApi.map<T, U>(
 	upstreamBinding: BindingInternal<T>,
 	predicate: (T) -> U
 ): Binding<U>
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- ROBLOX TODO: More informative error messages here
 		assert(
 			typeof(upstreamBinding) == "table"
@@ -135,7 +136,7 @@ function BindingInternalApi.map<T, U>(
 	end
 
 	local source
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for bindings
 		source = debug.traceback("Mapped binding created at:", 3)
 	end
@@ -154,7 +155,7 @@ end
 function BindingInternalApi.join<T>(
 	upstreamBindings: { [string | number]: Binding<any> }
 ): Binding<T>
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		assert(typeof(upstreamBindings) == "table", "Expected arg #1 to be of type table")
 
 		for key, value in upstreamBindings do
@@ -215,7 +216,7 @@ function BindingInternalApi.join<T>(
 	end
 
 	local source
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for bindings
 		source = debug.traceback("Joined binding created at:", 2)
 	end

@@ -9,6 +9,7 @@
  * @jest-environment node
  ]]
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 -- ROBLOX deviation START: not needed
 -- local Boolean = LuauPolyfill.Boolean
@@ -36,7 +37,7 @@ describe("React hooks DevTools integration", function()
 	beforeEach(function()
 		-- ROBLOX deviation START: use _G instead of global
 		-- global.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
-		_G.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
+		ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
 			-- ROBLOX deviation END
 			inject = function(injected)
 				overrideHookState = injected.overrideHookState
@@ -62,7 +63,7 @@ describe("React hooks DevTools integration", function()
 	end)
 	-- ROBLOX deviation START: add afterEach to revert global flag
 	afterEach(function()
-		_G.__REACT_DEVTOOLS_GLOBAL_HOOK__ = nil
+		ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__ = nil
 	end)
 	-- ROBLOX deviation END
 	it("should support editing useState hooks", function()
@@ -107,9 +108,9 @@ describe("React hooks DevTools integration", function()
 			1 --[[ ROBLOX adaptation: added 1 to array index ]]
 		]
 		expect(stateHook.isStateEditable).toBe(true)
-		-- ROBLOX deviation START: use _G.__DEV__
+		-- ROBLOX deviation START: use ReactGlobals.__DEV__
 		-- if Boolean.toJSBoolean(__DEV__) then
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			-- ROBLOX deviation END
 			overrideHookState(fiber, stateHook.id, {}, 10)
 			expect(renderer:toJSON()).toEqual({
@@ -203,9 +204,9 @@ describe("React hooks DevTools integration", function()
 			1 --[[ ROBLOX adaptation: added 1 to array index ]]
 		]
 		expect(reducerHook.isStateEditable).toBe(true)
-		-- ROBLOX deviation START: use _G.__DEV__
+		-- ROBLOX deviation START: use ReactGlobals.__DEV__
 		-- if Boolean.toJSBoolean(__DEV__) then
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			-- ROBLOX deviation END
 			overrideHookState(fiber, reducerHook.id, { "foo" }, "def")
 			expect(renderer:toJSON()).toEqual({
@@ -301,9 +302,9 @@ describe("React hooks DevTools integration", function()
 				2 --[[ ROBLOX adaptation: added 1 to array index ]]
 			]
 			expect(stateHook.isStateEditable).toBe(true)
-			-- ROBLOX deviation START: use _G.__DEV__
+			-- ROBLOX deviation START: use ReactGlobals.__DEV__
 			-- if Boolean.toJSBoolean(__DEV__) then
-			if _G.__DEV__ then
+			if ReactGlobals.__DEV__ then
 				-- ROBLOX deviation END
 				overrideHookState(fiber, stateHook.id, { "count" }, 10)
 				expect(renderer:toJSON()).toEqual({
@@ -343,9 +344,9 @@ describe("React hooks DevTools integration", function()
 		end
 	)
 	it("should support overriding suspense in legacy mode", function()
-		-- ROBLOX deviation START: use _G.__DEV__
+		-- ROBLOX deviation START: use ReactGlobals.__DEV__
 		-- if Boolean.toJSBoolean(__DEV__) then
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			-- ROBLOX deviation END
 			-- Lock the first render
 			setSuspenseHandler(function()
@@ -374,9 +375,9 @@ describe("React hooks DevTools integration", function()
 			)
 		))
 		local fiber = renderer.root:_currentFiber().child
-		-- ROBLOX deviation START: use _G.__DEV__
+		-- ROBLOX deviation START: use ReactGlobals.__DEV__
 		-- if Boolean.toJSBoolean(__DEV__) then
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			-- ROBLOX deviation END
 			-- First render was locked
 			-- ROBLOX deviation START: use TextLabel instead
@@ -489,9 +490,9 @@ describe("React hooks DevTools integration", function()
 		-- ROBLOX deviation START: add useFakeTimers
 		jest.useFakeTimers()
 		-- ROBLOX deviation END
-		-- ROBLOX deviation START: use _G.__DEV__
+		-- ROBLOX deviation START: use ReactGlobals.__DEV__
 		-- if Boolean.toJSBoolean(__DEV__) then
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			-- ROBLOX deviation END
 			-- Lock the first render
 			setSuspenseHandler(function()
@@ -522,9 +523,9 @@ describe("React hooks DevTools integration", function()
 		expect(Scheduler).toFlushAndYield({}) -- Ensure we timeout any suspense time.
 		jest.advanceTimersByTime(1000)
 		local fiber = renderer.root:_currentFiber().child
-		-- ROBLOX deviation START: use _G.__DEV__
+		-- ROBLOX deviation START: use ReactGlobals.__DEV__
 		-- if Boolean.toJSBoolean(__DEV__) then
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			-- ROBLOX deviation END
 			-- First render was locked
 			-- ROBLOX deviation START: use TextLabel instead

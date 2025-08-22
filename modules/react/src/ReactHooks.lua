@@ -10,6 +10,7 @@
 ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 type Array<T> = LuauPolyfill.Array<T>
@@ -45,7 +46,7 @@ type Dispatch<A> = (A) -> ()
 local function resolveDispatcher(): Dispatcher
 	local dispatcher = ReactCurrentDispatcher.current
 	-- ROBLOX performance: upstream main only does this check in DEV mode and then not as an invariant
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if dispatcher == nil then
 			console.error(
 				"Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for"
@@ -71,7 +72,7 @@ local function useContext<T>(
 	... -- ROBLOX deviation: Lua must specify ... here to capture additional args
 ): T
 	local dispatcher = resolveDispatcher()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if unstable_observedBits ~= nil then
 			console.error(
 				"useContext() second argument is reserved for future "
@@ -188,7 +189,7 @@ end
 exports.useImperativeHandle = useImperativeHandle
 
 local function useDebugValue<T>(value: T, formatterFn: ((value: T) -> any)?): ()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		local dispatcher = resolveDispatcher()
 		return dispatcher.useDebugValue(value, formatterFn)
 	end

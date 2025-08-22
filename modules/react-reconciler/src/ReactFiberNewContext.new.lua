@@ -10,6 +10,7 @@
 ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Number = LuauPolyfill.Number
 local Error = LuauPolyfill.Error
@@ -59,7 +60,7 @@ local exports = {}
 local valueCursor: StackCursor<any> = createCursor(nil)
 
 local rendererSigil
-if _G.__DEV__ then
+if ReactGlobals.__DEV__ then
 	-- Use this to detect multiple renderers using the same context
 	rendererSigil = {}
 end
@@ -76,19 +77,19 @@ exports.resetContextDependencies = function(): ()
 	currentlyRenderingFiber = nil
 	lastContextDependency = nil
 	lastContextWithAllBitsObserved = nil
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		isDisallowedContextReadInDEV = false
 	end
 end
 
 exports.enterDisallowedContextReadInDEV = function(): ()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		isDisallowedContextReadInDEV = true
 	end
 end
 
 exports.exitDisallowedContextReadInDEV = function(): ()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		isDisallowedContextReadInDEV = false
 	end
 end
@@ -100,7 +101,7 @@ exports.pushProvider = function<T>(providerFiber: Fiber, nextValue: T): ()
 		push(valueCursor, context._currentValue, providerFiber)
 
 		context._currentValue = nextValue
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			if
 				context._currentRenderer ~= nil
 				and context._currentRenderer ~= rendererSigil
@@ -116,7 +117,7 @@ exports.pushProvider = function<T>(providerFiber: Fiber, nextValue: T): ()
 		push(valueCursor, context._currentValue2, providerFiber)
 
 		context._currentValue2 = nextValue
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			if
 				context._currentRenderer2 ~= nil
 				and context._currentRenderer2 ~= rendererSigil
@@ -160,7 +161,7 @@ exports.calculateChangedBits = function<T>(
 		end
 
 		-- ROBLOX performance: eliminate nice-to-have compare in hot path that's removed in React 18
-		-- if _G.__DEV__ then
+		-- if ReactGlobals.__DEV__ then
 		--   if bit32.band(changedBits, MAX_SIGNED_31_BIT_INT) ~= changedBits then
 		--     console.error(
 		--       "calculateChangedBits: Expected the return value to be a " ..
@@ -364,7 +365,7 @@ exports.readContext = function<T>(
 	context: ReactContext<T>,
 	observedBits: nil | number | boolean
 ): T
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- This warning would fire if you read context inside a Hook like useMemo.
 		-- Unlike the class check below, it's not enforced in production for perf.
 		if isDisallowedContextReadInDEV then

@@ -9,6 +9,7 @@
  * @flow
 ]]
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 
@@ -26,7 +27,7 @@ local valueStack: Array<any> = {}
 
 local fiberStack: Array<Fiber | null>
 
-if _G.__DEV__ then
+if ReactGlobals.__DEV__ then
 	fiberStack = {}
 end
 
@@ -44,13 +45,13 @@ end
 
 local function pop<T>(cursor: StackCursor<T>, fiber: Fiber): ()
 	if index < 1 then
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			console.error("Unexpected pop.")
 		end
 		return
 	end
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- ROBLOX TODO: workaround for Luau analysis bug
 		if fiber ~= fiberStack[index] :: Fiber then
 			console.error("Unexpected Fiber popped.")
@@ -67,7 +68,7 @@ local function pop<T>(cursor: StackCursor<T>, fiber: Fiber): ()
 
 	valueStack[index] = nil
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		fiberStack[index] = nil
 	end
 
@@ -84,7 +85,7 @@ local function push<T>(cursor: StackCursor<T>, value: T, fiber: Fiber): ()
 		valueStack[index] = stackValue
 	end
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		fiberStack[index] = fiber
 	end
 
@@ -92,7 +93,7 @@ local function push<T>(cursor: StackCursor<T>, value: T, fiber: Fiber): ()
 end
 
 local function checkThatStackIsEmpty()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if index ~= 0 then
 			console.error("Expected an empty stack. Something was not reset properly.")
 		end
@@ -100,7 +101,7 @@ local function checkThatStackIsEmpty()
 end
 
 local function resetStackAfterFatalErrorInDev()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		index = 0
 		-- ROBLOX deviation: Original js simply sets `length`
 		table.clear(valueStack)

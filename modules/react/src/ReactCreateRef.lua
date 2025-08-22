@@ -9,6 +9,7 @@
 *]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local ReactTypes = require(Packages.Shared)
 type RefObject = ReactTypes.RefObject
 
@@ -31,7 +32,7 @@ exports.createRef = function(): RefObject
 	-- assigned to fields of other Instances; we track creation here parallel to
 	-- how we do with bindings created via `createBinding` to improve messaging
 	-- when something goes wrong
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for refs
 		binding._source = debug.traceback("Ref created at:", 1)
 	end

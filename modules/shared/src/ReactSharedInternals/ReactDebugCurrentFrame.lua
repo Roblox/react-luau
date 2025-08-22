@@ -9,20 +9,23 @@
  * @flow
  ]]
 
+local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
+
 local ReactDebugCurrentFrame = {}
 
 local currentExtraStackFrame = nil :: nil | string
 
 function ReactDebugCurrentFrame.setExtraStackFrame(stack: string?): ()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		currentExtraStackFrame = stack
 	end
 end
 
-if _G.__DEV__ then
+if ReactGlobals.__DEV__ then
 	-- deviation: in Lua, the implementation is duplicated
 	-- function ReactDebugCurrentFrame.setExtraStackFrame(stack: string?)
-	-- 	if _G.__DEV__ then
+	-- 	if ReactGlobals.__DEV__ then
 	-- 		currentExtraStackFrame = stack
 	-- 	end
 	-- end

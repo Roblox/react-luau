@@ -15,6 +15,7 @@ local React
 local ReactNoop
 -- local act
 local Scheduler
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
@@ -2652,7 +2653,7 @@ describe("ReactErrorBoundaries", function()
 	-- ROBLOX TODO: when focused this test passes, however it causes 'runAllTimers flushes all scheduled callbacks' and
 	-- 'executes callbacks in order of priority' tests to fail in SchedulerNoDOM but only in __DEV__ mode
 	local skipIfDev = (function()
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			return it.skip
 		end
 		return it

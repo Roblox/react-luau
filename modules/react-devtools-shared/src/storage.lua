@@ -7,18 +7,21 @@
 --  *
 --  */
 
+local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
+
 local exports = {}
-if _G.__LOCALSTORAGE__ == nil then
-	_G.__LOCALSTORAGE__ = {}
+if ReactGlobals.__LOCALSTORAGE__ == nil then
+	ReactGlobals.__LOCALSTORAGE__ = {}
 end
 
-if _G.__SESSIONSTORAGE__ == nil then
-	_G.__SESSIONSTORAGE__ = {}
+if ReactGlobals.__SESSIONSTORAGE__ == nil then
+	ReactGlobals.__SESSIONSTORAGE__ = {}
 end
 
 -- ROBLOX FIXME: what's a high-performance storage that for temporal (current DM lifetime) and permanent (beyond current DM lifetime)
-local localStorage = _G.__LOCALSTORAGE__
-local sessionStorage = _G.__SESSIONSTORAGE__
+local localStorage = ReactGlobals.__LOCALSTORAGE__
+local sessionStorage = ReactGlobals.__SESSIONSTORAGE__
 
 exports.localStorageGetItem = function(key: string): any
 	return localStorage[key]

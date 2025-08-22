@@ -7,13 +7,14 @@
  ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 
 local didWarnStateUpdateForUnmountedComponent = {}
 
 local function warnNoop(publicInstance: any, callerName: string)
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- local constructor = publicInstance.constructor
 		-- local componentName = ((constructor and (constructor.displayName or constructor.name)) or 'ReactClass')
 		-- deviation: For Lua Class components, the name comes from a property

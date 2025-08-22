@@ -893,7 +893,7 @@ describe("ReactChildren", function()
 	-- 	end).toThrowError(
 	-- 		"Objects are not valid as a React child (found: object with keys "
 	-- 			.. "{a, b})."
-	-- 			.. (if _G.__DEV__
+	-- 			.. (if ReactGlobals.__DEV__
 	-- 				then " If you meant to render a collection of children, use an array instead."
 	-- 				else "")
 	-- 	)
@@ -911,7 +911,7 @@ describe("ReactChildren", function()
 	-- 		) --[[ ROBLOX CHECK: check if 'React.Children' is an Array ]]
 	-- 	end).toThrowError(
 	-- 		"Objects are not valid as a React child (found: /abc/)."
-	-- 			.. 	if _G.__DEV__
+	-- 			.. 	if ReactGlobals.__DEV__
 	-- 				then " If you meant to render a collection of children, use an array instead."
 	-- 				else ""
 	-- 	)

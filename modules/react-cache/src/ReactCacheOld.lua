@@ -8,6 +8,7 @@
  * @flow
  ]]
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 -- ROBLOX deviation START: unnecessary import
 -- local Boolean = LuauPolyfill.Boolean
@@ -90,7 +91,7 @@ end
 local function identityHashFn(input)
 	-- ROBLOX deviation START: remove unnecessary toJSBoolean and use _G
 	-- if Boolean.toJSBoolean(__DEV__) then
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- ROBLOX deviation END
 		if
 			typeof(input) ~= "string"

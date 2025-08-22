@@ -15,11 +15,12 @@
 ]]
 local Packages = script.Parent.Parent
 local React = require(Packages.React)
+local ReactGlobals = require(Packages.ReactGlobals)
 
 local warnOnce = require(script.Parent.warnOnce)
 
 local function oneChild(children)
-	if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
+	if ReactGlobals.__DEV__ and ReactGlobals.__COMPAT_WARNINGS__ then
 		warnOnce(
 			"oneChild",
 			"You likely don't need this at all! If you were assigning children "

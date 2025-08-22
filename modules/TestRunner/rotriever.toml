@@ -11,4 +11,5 @@ JestDiff = "github.com/roblox/jest-roblox@3"
 Jest = { workspace = true }
 JestGlobals = { workspace = true }
 JestReact = { path = "../jest-react" }
+ReactGlobals = { path = "../react-globals" }
 Scheduler = { path = "../scheduler" }

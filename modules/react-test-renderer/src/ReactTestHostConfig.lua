@@ -11,6 +11,7 @@
 
 local Packages = script.Parent.Parent
 
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 
 local Array = LuauPolyfill.Array
@@ -90,7 +91,7 @@ local NO_CONTEXT = {}
 local UPDATE_SIGNAL = {}
 local nodeToInstanceMap: { [Object]: Instance? } = {}
 
-if _G.__DEV__ then
+if ReactGlobals.__DEV__ then
 	Object.freeze(NO_CONTEXT)
 	Object.freeze(UPDATE_SIGNAL)
 end
@@ -116,7 +117,7 @@ exports.appendChild = function(
 	parentInstance: Instance | Container,
 	child: Instance | TextInstance
 )
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if not Array.isArray(parentInstance.children) then
 			console.error(
 				"An invalid container has been provided. "

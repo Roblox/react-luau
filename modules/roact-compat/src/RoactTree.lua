@@ -14,6 +14,7 @@
 	* limitations under the License.
 ]]
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local inspect = LuauPolyfill.util.inspect
 local ReactRoblox = require(Packages.ReactRoblox)
@@ -28,7 +29,7 @@ type RoactHandle = {
 }
 
 local function mount(element: any, parent: any, key: string?): RoactHandle
-	if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
+	if ReactGlobals.__DEV__ and ReactGlobals.__COMPAT_WARNINGS__ then
 		warnOnce("mount", "Please use the createRoot API in ReactRoblox")
 	end
 
@@ -77,7 +78,7 @@ local function mount(element: any, parent: any, key: string?): RoactHandle
 
 	-- ROBLOX TODO: remove INLINE_ACT flag when all tests are updated to use
 	-- `act` explicitly
-	if _G.__ROACT_17_INLINE_ACT__ then
+	if ReactGlobals.__ROACT_17_INLINE_ACT__ then
 		ReactRoblox.act(function()
 			root:render(ReactRoblox.createPortal({ [key] = element }, parent))
 		end)
@@ -95,7 +96,7 @@ local function mount(element: any, parent: any, key: string?): RoactHandle
 end
 
 local function update(roactHandle: RoactHandle, element)
-	if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
+	if ReactGlobals.__DEV__ and ReactGlobals.__COMPAT_WARNINGS__ then
 		warnOnce("update", "Please use the createRoot API in ReactRoblox")
 	end
 
@@ -103,7 +104,7 @@ local function update(roactHandle: RoactHandle, element)
 	local parent = roactHandle.parent
 	-- ROBLOX TODO: remove INLINE_ACT flag when all tests are updated to use
 	-- `act` explicitly
-	if _G.__ROACT_17_INLINE_ACT__ then
+	if ReactGlobals.__ROACT_17_INLINE_ACT__ then
 		ReactRoblox.act(function()
 			roactHandle.root:render(
 				ReactRoblox.createPortal({ [key :: string] = element }, parent)
@@ -119,13 +120,13 @@ local function update(roactHandle: RoactHandle, element)
 end
 
 local function unmount(roactHandle: RoactHandle)
-	if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
+	if ReactGlobals.__DEV__ and ReactGlobals.__COMPAT_WARNINGS__ then
 		warnOnce("unmount", "Please use the createRoot API in ReactRoblox")
 	end
 
 	-- ROBLOX TODO: remove INLINE_ACT flag when all tests are updated to use
 	-- `act` explicitly
-	if _G.__ROACT_17_INLINE_ACT__ then
+	if ReactGlobals.__ROACT_17_INLINE_ACT__ then
 		ReactRoblox.act(function()
 			roactHandle.root:unmount()
 		end)

@@ -13,6 +13,7 @@ registry_index = true
 React = { path = "../react" }
 ReactRoblox = { path = "../react-roblox" }
 ReactDevtoolsCore = { path = "../react-devtools-core" }
+ReactGlobals = { path = "../react-globals" }
 
 Foundation = "1.42.0"
 ReactUtils = "1.6.0"

@@ -10,6 +10,7 @@
 ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 
@@ -107,7 +108,7 @@ end
 -- ROBLOX TODO: Missing React$ internal flow types
 -- exports.isMounted = function(component: React$Component<any, any>): boolean
 exports.isMounted = function(component): boolean
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		local owner: any = ReactCurrentOwner.current
 		if owner ~= nil and owner.tag == ClassComponent then
 			local ownerFiber: Fiber = owner

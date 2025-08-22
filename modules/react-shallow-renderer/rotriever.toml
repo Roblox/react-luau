@@ -10,6 +10,7 @@ files = ["*", "!**/__tests__/**"]
 LuauPolyfill = { workspace = true }
 React = { path = "../react" }
 ReactIs = { path = "../react-is" }
+ReactGlobals = { path = "../react-globals" }
 Shared = { path = "../shared" }
 
 [dev_dependencies]

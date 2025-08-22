@@ -16,6 +16,7 @@ local act
 local createMutableSource
 local useMutableSource
 
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Promise = require(Packages.Promise)
 local Array = LuauPolyfill.Array
@@ -2181,7 +2182,7 @@ describe("useMutableSource", function()
 		end
 	)
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		describe("dev warnings", function()
 			-- @gate experimental
 			it(

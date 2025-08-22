@@ -9,6 +9,7 @@
  * @flow
 ]]
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type FiberRoot = ReactInternalTypes.FiberRoot
 type ReactPriorityLevel = ReactInternalTypes.ReactPriorityLevel
@@ -222,7 +223,7 @@ local function getHighestPriorityLanes(lanes: Lanes | Lane): Lanes
 		return_highestLanePriority = OffscreenLanePriority
 		return OffscreenLane
 	end
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		console.error("Should have found matching lanes. This is a bug in React.")
 	end
 	-- // This shouldn't be reachable, but as a fallback, return the entire bitmask.

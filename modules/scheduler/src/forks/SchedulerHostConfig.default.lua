@@ -8,6 +8,7 @@
 ]]
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 type Error = LuauPolyfill.Error
 local Object = LuauPolyfill.Object
@@ -272,7 +273,7 @@ local function performWorkUntilDeadline()
 			end
 			return nil
 		end
-		if not _G.__YOLO__ then
+		if not ReactGlobals.__YOLO__ then
 			ok, result = xpcall(doWork, describeError)
 		else
 			result = doWork()

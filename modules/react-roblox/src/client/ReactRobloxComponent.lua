@@ -36,7 +36,7 @@ local function diffProperties(
 	nextRawProps: Object,
 	rootContainerElement: HostInstance
 ): nil | Array<any>
-	-- if _G.__DEV__ then
+	-- if ReactGlobals.__DEV__ then
 	--   validatePropertiesInDevelopment(tag, nextRawProps)
 	-- end
 

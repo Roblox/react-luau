@@ -8,5 +8,6 @@ files = ["*", "!**/__tests__/**"]
 
 [dependencies]
 LuauPolyfill = { workspace = true }
-JestGlobals ={ workspace = true }
+JestGlobals = { workspace = true }
+ReactGlobals = { path = "../react-globals" }
 Shared = { path = "../shared" }

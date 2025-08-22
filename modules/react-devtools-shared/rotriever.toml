@@ -14,9 +14,10 @@ ReactReconciler = { path = "../react-reconciler" }
 ReactRoblox = { path = "../react-roblox" }
 ReactIs = { path = "../react-is" }
 ReactDebugTools = { path = "../react-debug-tools" }
+ReactGlobals = { path = "../react-globals" }
 
 [dev_dependencies]
-JestGlobals ={ workspace = true }
+JestGlobals = { workspace = true }
 Scheduler = { path = "../scheduler" }
 Promise = { workspace = true }
 ReactTestRenderer = { path = "../react-test-renderer" }

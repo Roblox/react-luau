@@ -14,6 +14,7 @@
 ]]
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local afterEach = JestGlobals.afterEach
 local beforeEach = JestGlobals.beforeEach
@@ -26,30 +27,30 @@ local RoactCompat
 
 local prevCompatWarnings
 beforeEach(function()
-	prevCompatWarnings = _G.__COMPAT_WARNINGS__
+	prevCompatWarnings = ReactGlobals.__COMPAT_WARNINGS__
 	-- Silence warnings; we're intersted in functionality in these tests
-	_G.__COMPAT_WARNINGS__ = false
+	ReactGlobals.__COMPAT_WARNINGS__ = false
 end)
 
 afterEach(function()
-	_G.__COMPAT_WARNINGS__ = prevCompatWarnings
+	ReactGlobals.__COMPAT_WARNINGS__ = prevCompatWarnings
 end)
 
 describe("Concurrent root (default behavior)", function()
 	local prevInlineAct, prevMockScheduler
 	beforeEach(function()
-		prevInlineAct = _G.__ROACT_17_INLINE_ACT__
-		prevMockScheduler = _G.__ROACT_17_MOCK_SCHEDULER__
-		_G.__ROACT_17_INLINE_ACT__ = true
-		_G.__ROACT_17_MOCK_SCHEDULER__ = true
+		prevInlineAct = ReactGlobals.__ROACT_17_INLINE_ACT__
+		prevMockScheduler = ReactGlobals.__ROACT_17_MOCK_SCHEDULER__
+		ReactGlobals.__ROACT_17_INLINE_ACT__ = true
+		ReactGlobals.__ROACT_17_MOCK_SCHEDULER__ = true
 		jest.resetModules()
 		Roact = require(Packages.Dev.Roact)
 		RoactCompat = require(script.Parent.Parent)
 	end)
 
 	afterEach(function()
-		_G.__ROACT_17_INLINE_ACT__ = prevInlineAct
-		_G.__ROACT_17_MOCK_SCHEDULER__ = prevMockScheduler
+		ReactGlobals.__ROACT_17_INLINE_ACT__ = prevInlineAct
+		ReactGlobals.__ROACT_17_MOCK_SCHEDULER__ = prevMockScheduler
 	end)
 
 	it("should create an orphaned instance to mount under if none is provided", function()

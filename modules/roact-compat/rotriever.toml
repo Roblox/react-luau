@@ -9,10 +9,11 @@ files = ["*", "!**/__tests__/**"]
 [dependencies]
 LuauPolyfill = { workspace = true }
 React = { path = "../react" }
+ReactGlobals = { path = "../react-globals" }
 ReactRoblox = { path = "../react-roblox" }
 Shared = { path = "../shared" }
 
 [dev_dependencies]
 Roact = "github.com/roblox/roact@1.4.0"
-JestGlobals ={ workspace = true }
+JestGlobals = { workspace = true }
 Scheduler = { path = "../scheduler" }

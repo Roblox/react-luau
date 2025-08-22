@@ -4,14 +4,16 @@ local Packages = script.Parent
 
 return {
 	setup = function(debugMode: boolean)
+		local ReactGlobals = require(Packages.ReactGlobals)
+
 		-- ROBLOX note: Set globals for React devtools to work
-		_G.__DEV__ = true
-		_G.__DEBUG__ = debugMode or false
-		_G.__PROFILE__ = true
-		_G.__EXPERIMENTAL__ = true
+		ReactGlobals.__DEV__ = true
+		ReactGlobals.__DEBUG__ = debugMode or false
+		ReactGlobals.__PROFILE__ = true
+		ReactGlobals.__EXPERIMENTAL__ = true
 		-- ROBLOX note: Don't hide host coomponents as the current Developer Inspector uses on these to preserve a
 		-- direct mapping between the Inspector tree and the Explorer tree as requested by design.
-		_G.__REACT_DEVTOOLS_COMPONENT_FILTERS__ = {}
+		ReactGlobals.__REACT_DEVTOOLS_COMPONENT_FILTERS__ = {}
 
 		local ReactDevtoolsShared = require(Packages.ReactDevtoolsShared)
 		local setup = require(Packages.ReactDevtoolsExtensions.backend).setup
@@ -19,13 +21,13 @@ return {
 		local Store = ReactDevtoolsShared.devtools.store
 
 		-- ROBLOX note: Ensure that the global hook is installed before the injection into DevTools
-		installHook(_G)
+		installHook(ReactGlobals)
 
 		-- ROBLOX note: Ensure that ReactRoblox is loaded after injection so that the ReactHostConfig is populated correctly
 		require(Packages.React)
 		require(Packages.ReactRoblox)
 
-		local hook = _G.__REACT_DEVTOOLS_GLOBAL_HOOK__
+		local hook = ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__
 
 		-- ROBLOX note: Make sure that this method was called before ReactRoblox was first required,
 		-- otherwise the profiler will not be enabled for the session.

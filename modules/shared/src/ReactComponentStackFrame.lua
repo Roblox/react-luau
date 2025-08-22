@@ -9,6 +9,9 @@
  * @flow
 ]]
 
+local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
+
 type Object = { [string]: any }
 type Function = (...any) -> ...any
 
@@ -89,14 +92,14 @@ local function describeBuiltInComponentFrame(
 	-- 	return "\n" .. prefix .. name
 	-- else
 	-- 	local ownerName = nil
-	-- 	if _G.__DEV__ and owner then
+	-- 	if ReactGlobals.__DEV__ and owner then
 	-- 		ownerName = describeOwner(owner)
 	-- 	end
 
 	-- 	return describeComponentFrame(name, source, ownerName)
 	-- end
 	local ownerName = nil
-	if _G.__DEV__ and owner then
+	if ReactGlobals.__DEV__ and owner then
 		ownerName = describeOwner(owner)
 	end
 
@@ -106,7 +109,7 @@ end
 
 local reentry = false
 local componentFrameCache = nil
-if _G.__DEV__ then
+if ReactGlobals.__DEV__ then
 	componentFrameCache = setmetatable({}, { __mode = "k" })
 end
 
@@ -119,7 +122,7 @@ local function describeNativeComponentFrame(
 		return ""
 	end
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		local frame = componentFrameCache[fn]
 
 		if frame ~= nil then
@@ -135,7 +138,7 @@ local function describeNativeComponentFrame(
 	-- Error.prepareStackTrace = undefined
 	local previousDispatcher
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		previousDispatcher = ReactCurrentDispatcher.current
 		-- Set the dispatcher in DEV because this might be call in the render
 		-- function for warnings.
@@ -228,7 +231,7 @@ local function describeNativeComponentFrame(
 							-- similar to React
 							local frame = "\n" .. prefix .. sampleLines[sampleIndex]
 
-							if _G.__DEV__ then
+							if ReactGlobals.__DEV__ then
 								componentFrameCache[fn] = frame
 							end
 							-- // Return the line we found.
@@ -245,7 +248,7 @@ local function describeNativeComponentFrame(
 	end
 
 	reentry = false
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		ReactCurrentDispatcher.current = previousDispatcher
 		reenableLogs()
 	end
@@ -270,7 +273,7 @@ local function describeNativeComponentFrame(
 		syntheticFrame = describeBuiltInComponentFrame(name)
 	end
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		componentFrameCache[fn] = syntheticFrame
 	end
 
@@ -287,7 +290,7 @@ function describeComponentFrame(
 ): string
 	local sourceInfo = ""
 
-	if _G.__DEV__ and source then
+	if ReactGlobals.__DEV__ and source then
 		local path = source.fileName
 		local fileName = string.gsub(path, BEFORE_SLASH_PATTERN, "")
 
@@ -330,7 +333,7 @@ local function describeClassComponentFrame(
 	-- end
 	local name = tostring(ctor)
 	local ownerName = nil
-	if _G.__DEV__ and owner then
+	if ReactGlobals.__DEV__ and owner then
 		ownerName = describeOwner(owner)
 	end
 	return describeComponentFrame(name, source, ownerName)
@@ -354,7 +357,7 @@ function describeFunctionComponentFrame(
 	-- 	-- ROBLOX deviation: use debug.info to discover function names
 	-- 	local name = debug.info(fn :: Function, "n")
 	-- 	local ownerName = nil
-	-- 	if _G.__DEV__ and ownerFn then
+	-- 	if ReactGlobals.__DEV__ and ownerFn then
 	-- 		-- ROBLOX deviation: owner may be a function or a table
 	-- 		ownerName = describeOwner(ownerFn)
 	-- 	end
@@ -369,7 +372,7 @@ function describeFunctionComponentFrame(
 		then debug.info(fn :: Function, "n")
 		else tostring(fn)
 	local ownerName = nil
-	if _G.__DEV__ and ownerFn then
+	if ReactGlobals.__DEV__ and ownerFn then
 		-- ROBLOX deviation: owner may be a function or a table
 		ownerName = describeOwner(ownerFn)
 	end
@@ -390,7 +393,7 @@ local function describeUnknownElementTypeFrameInDEV(
 	-- ROBLOX deviation: owner could be a class component
 	ownerFn: nil | ReactComponent<any>
 ): string
-	if not _G.__DEV__ then
+	if not ReactGlobals.__DEV__ then
 		return ""
 	end
 	if type_ == nil then

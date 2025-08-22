@@ -8,10 +8,11 @@
 ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local ReactDevtoolsShared = require(Packages.ReactDevtoolsShared)
 
 local attach
-_G.__REACT_DEVTOOLS_ATTACH__ = function(...)
+ReactGlobals.__REACT_DEVTOOLS_ATTACH__ = function(...)
 	-- Importing the renderer module immediately causes React to initialize
 	-- prematurely and error. We import lazily here to avoid this, because
 	-- React will be initialized by the time this function is called.

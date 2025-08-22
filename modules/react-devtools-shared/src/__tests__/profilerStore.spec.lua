@@ -10,6 +10,7 @@
  ]]
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jest = JestGlobals.jest
 local jestExpect = JestGlobals.expect
@@ -20,7 +21,7 @@ local beforeEach = JestGlobals.beforeEach
 local devtoolsTypes = require(script.Parent.Parent.devtools.types)
 type Store = devtoolsTypes.Store
 
-local global = _G
+local global = ReactGlobals :: any
 
 xdescribe("ProfilerStore", function()
 	local React

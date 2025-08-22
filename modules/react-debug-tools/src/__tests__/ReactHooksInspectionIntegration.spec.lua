@@ -9,6 +9,7 @@
  * @jest-environment node
  ]]
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 -- ROBLOX deviation START: not needed
 -- local Boolean = LuauPolyfill.Boolean
@@ -790,11 +791,13 @@ describe("ReactHooksInspectionIntegration", function()
 					id = nil :: number?,
 					-- ROBLOX deviation END
 					name = "LabeledValue",
-					-- ROBLOX deviation START: use _G.__DEV__ and cast
+					-- ROBLOX deviation START: use ReactGlobals.__DEV__ and cast
 					-- value = if Boolean.toJSBoolean(__DEV__)
 					-- 	then "custom label a"
 					-- 	else nil,
-					value = (if _G.__DEV__ then "custom label a" else nil) :: any,
+					value = (
+							if ReactGlobals.__DEV__ then "custom label a" else nil
+						) :: any,
 					-- ROBLOX deviation END
 					subHooks = {
 						{
@@ -841,9 +844,9 @@ describe("ReactHooksInspectionIntegration", function()
 					isStateEditable = false,
 					id = nil,
 					name = "LabeledValue",
-					-- ROBLOX deviation START: use _G.__DEV__
+					-- ROBLOX deviation START: use ReactGlobals.__DEV__
 					-- value = if Boolean.toJSBoolean(__DEV__)
-					value = if _G.__DEV__
+					value = if ReactGlobals.__DEV__
 						-- ROBLOX deviation END
 						then "custom label d"
 						else nil,
@@ -886,18 +889,18 @@ describe("ReactHooksInspectionIntegration", function()
 					isStateEditable = false,
 					id = nil,
 					name = "Outer",
-					-- ROBLOX deviation START: use _G.__DEV__
+					-- ROBLOX deviation START: use ReactGlobals.__DEV__
 					-- value = if Boolean.toJSBoolean(__DEV__) then "outer" else nil,
-					value = if _G.__DEV__ then "outer" else nil,
+					value = if ReactGlobals.__DEV__ then "outer" else nil,
 					-- ROBLOX deviation END
 					subHooks = {
 						{
 							isStateEditable = false,
 							id = nil,
 							name = "Inner",
-							-- ROBLOX deviation START: use _G.__DEV__
+							-- ROBLOX deviation START: use ReactGlobals.__DEV__
 							-- value = if Boolean.toJSBoolean(__DEV__) then "inner" else nil,
-							value = if _G.__DEV__ then "inner" else nil,
+							value = if ReactGlobals.__DEV__ then "inner" else nil,
 							-- ROBLOX deviation END
 							subHooks = {
 								{
@@ -947,9 +950,9 @@ describe("ReactHooksInspectionIntegration", function()
 					id = nil :: number | nil,
 					-- ROBLOX deviation END
 					name = "SingleLabelCustom",
-					-- ROBLOX deviation START: use _G.__DEV__
+					-- ROBLOX deviation START: use ReactGlobals.__DEV__
 					-- value = if Boolean.toJSBoolean(__DEV__) then "single one" else nil,
-					value = (if _G.__DEV__ then "single one" else nil) :: any,
+					value = (if ReactGlobals.__DEV__ then "single one" else nil) :: any,
 					-- ROBLOX deviation END
 					subHooks = {
 						{
@@ -968,9 +971,9 @@ describe("ReactHooksInspectionIntegration", function()
 					isStateEditable = false,
 					id = nil,
 					name = "MultiLabelCustom",
-					-- ROBLOX deviation START: use _G.__DEV__
+					-- ROBLOX deviation START: use ReactGlobals.__DEV__
 					-- value = if Boolean.toJSBoolean(__DEV__)
-					value = if _G.__DEV__
+					value = if ReactGlobals.__DEV__
 						-- ROBLOX deviation END
 						then { "one", "two", "three" }
 						else nil,
@@ -991,9 +994,9 @@ describe("ReactHooksInspectionIntegration", function()
 					isStateEditable = false,
 					id = nil,
 					name = "SingleLabelCustom",
-					-- ROBLOX deviation START: use _G.__DEV__
+					-- ROBLOX deviation START: use ReactGlobals.__DEV__
 					-- value = if Boolean.toJSBoolean(__DEV__) then "single two" else nil,
-					value = if _G.__DEV__ then "single two" else nil,
+					value = if ReactGlobals.__DEV__ then "single two" else nil,
 					-- ROBLOX deviation END
 					subHooks = {
 						{
@@ -1045,9 +1048,9 @@ describe("ReactHooksInspectionIntegration", function()
 					isStateEditable = false,
 					id = nil,
 					name = "Custom",
-					-- ROBLOX deviation START: use _G.__DEV__
+					-- ROBLOX deviation START: use ReactGlobals.__DEV__
 					-- value = if Boolean.toJSBoolean(__DEV__) then "bar:123" else nil,
-					value = if _G.__DEV__ then "bar:123" else nil,
+					value = if ReactGlobals.__DEV__ then "bar:123" else nil,
 					-- ROBLOX deviation END
 					subHooks = {
 						{

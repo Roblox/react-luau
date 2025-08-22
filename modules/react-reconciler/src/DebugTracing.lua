@@ -9,6 +9,7 @@
 --  */
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 type Array<T> = { [number]: T }
 type Map<K, V> = { [K]: V }
 type Object = { [string]: any }
@@ -96,7 +97,7 @@ end
 local REACT_LOGO_STYLE = ""
 
 local function logCommitStarted(lanes: Lanes): ()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if enableDebugTracing then
 			group(
 				string.format("* commit (%s)", formatLanes(lanes)),
@@ -111,7 +112,7 @@ end
 exports.logCommitStarted = logCommitStarted
 
 local function logCommitStopped(): ()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if enableDebugTracing then
 			groupEnd()
 		end
@@ -139,7 +140,7 @@ exports.logCommitStopped = logCommitStopped
 -- end
 
 local function logComponentSuspended(componentName: string, wakeable: Wakeable): ()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if enableDebugTracing then
 			-- local _id = getWakeableID(wakeable)
 			-- ROBLOX deviation: our Wakeable can be a function or a callable table
@@ -177,7 +178,7 @@ end
 exports.logComponentSuspended = logComponentSuspended
 
 local function logLayoutEffectsStarted(lanes: Lanes): ()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if enableDebugTracing then
 			group(
 				string.format("* layout effects (%s)", formatLanes(lanes))
@@ -192,7 +193,7 @@ end
 exports.logLayoutEffectsStarted = logLayoutEffectsStarted
 
 local function logLayoutEffectsStopped(): ()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if enableDebugTracing then
 			groupEnd()
 		end
@@ -201,7 +202,7 @@ end
 exports.logLayoutEffectsStopped = logLayoutEffectsStopped
 
 local function logPassiveEffectsStarted(lanes: Lanes): ()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if enableDebugTracing then
 			group(
 				string.format("* passive effects (%s)", formatLanes(lanes))
@@ -216,7 +217,7 @@ end
 exports.logPassiveEffectsStarted = logPassiveEffectsStarted
 
 local function logPassiveEffectsStopped(): ()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if enableDebugTracing then
 			groupEnd()
 		end
@@ -225,7 +226,7 @@ end
 exports.logPassiveEffectsStopped = logPassiveEffectsStopped
 
 local function logRenderStarted(lanes: Lanes): ()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if enableDebugTracing then
 			group(
 				string.format("* render (%s)", formatLanes(lanes))
@@ -240,7 +241,7 @@ end
 exports.logRenderStarted = logRenderStarted
 
 local function logRenderStopped(): ()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if enableDebugTracing then
 			groupEnd()
 		end
@@ -249,7 +250,7 @@ end
 exports.logRenderStopped = logRenderStopped
 
 local function logForceUpdateScheduled(componentName: string, lane: Lane): ()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if enableDebugTracing then
 			log(
 				string.format("* %s forced update (%s)", componentName, formatLanes(lane))
@@ -268,7 +269,7 @@ local function logStateUpdateScheduled(
 	lane: Lane,
 	payloadOrAction: any
 ): ()
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if enableDebugTracing then
 			log(
 				string.format("* %s updated state (%s)", componentName, formatLanes(lane))

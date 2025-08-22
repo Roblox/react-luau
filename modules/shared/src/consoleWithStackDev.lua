@@ -6,6 +6,7 @@
 * LICENSE file in the root directory of this source tree.
 ]]
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local console = LuauPolyfill.console
 local Array = LuauPolyfill.Array
@@ -23,12 +24,12 @@ local printWarning
 
 local exports = {}
 exports.warn = function(format, ...)
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		printWarning("warn", format, { ... })
 	end
 end
 exports.error = function(format, ...)
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		printWarning("error", format, { ... })
 	end
 end
@@ -36,7 +37,7 @@ end
 function printWarning(level, format, args)
 	-- When changing this logic, you might want to also
 	-- update consoleWithStackDev.www.js as well.
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		local ReactDebugCurrentFrame = ReactSharedInternals.ReactDebugCurrentFrame
 		local stack = ReactDebugCurrentFrame.getStackAddendum()
 

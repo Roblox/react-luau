@@ -14,6 +14,7 @@ type Function = (...unknown) -> ()
 
 local Packages = script.Parent.Parent
 
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Error = LuauPolyfill.Error
@@ -57,7 +58,7 @@ type RendererHelpers = {
 	setRefreshHandler: SetRefreshHandler,
 }
 
-local __DEV__ = _G.__DEV__
+local __DEV__ = ReactGlobals.__DEV__
 
 if not __DEV__ then
 	error(

@@ -1,5 +1,6 @@
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.1/packages/react/src/__tests__/ReactProfilerDevToolsIntegration-test.internal.js
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local React
 local Scheduler
 local LuauPolyfill = require(Packages.LuauPolyfill)
@@ -27,8 +28,8 @@ describe("ReactProfiler DevTools integration", function()
 			onCommitFiberUnmount = function() end,
 			supportsFiber = true,
 		}
-		originalDevtoolsState = _G.__REACT_DEVTOOLS_GLOBAL_HOOK__
-		_G.__REACT_DEVTOOLS_GLOBAL_HOOK__ = hook
+		originalDevtoolsState = ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__
+		ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__ = hook
 
 		jest.resetModules()
 
@@ -57,7 +58,7 @@ describe("ReactProfiler DevTools integration", function()
 	end)
 
 	afterEach(function()
-		_G.__REACT_DEVTOOLS_GLOBAL_HOOK__ = originalDevtoolsState
+		ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__ = originalDevtoolsState
 	end)
 
 	it("should auto-Profile all fibers if the DevTools hook is detected", function()

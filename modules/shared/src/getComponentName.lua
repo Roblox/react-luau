@@ -8,6 +8,10 @@
 *
 * @flow
 ]]
+
+local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
+
 type Function = (...any) -> ...any
 local console = require(script.Parent.console)
 
@@ -61,7 +65,7 @@ local function getComponentName(type: any): string | nil
 	end
 	local typeofType = typeof(type)
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if typeofType == "table" and typeof(type.tag) == "number" then
 			console.warn(
 				"Received an unexpected object in getComponentName(). "

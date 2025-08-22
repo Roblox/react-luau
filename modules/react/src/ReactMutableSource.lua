@@ -10,6 +10,7 @@
 -- ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local ReactTypes = require(Packages.Shared)
 type MutableSourceGetVersionFn = ReactTypes.MutableSourceGetVersionFn
 type MutableSource<T> = ReactTypes.MutableSource<T>
@@ -25,7 +26,7 @@ local function createMutableSource<Source>(
 		_workInProgressVersionSecondary = nil,
 	}
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		mutableSource._currentPrimaryRenderer = nil
 		mutableSource._currentSecondaryRenderer = nil
 	end

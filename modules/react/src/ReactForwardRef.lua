@@ -8,6 +8,7 @@
 *]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 
@@ -33,7 +34,7 @@ exports.forwardRef = function<Props, ElementType>(
 	Props,
 	ElementType
 >
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- ROBLOX deviation START: Lua functions can't have properties given a table (which we can index to see if it's the Memo type)
 		if
 			typeof(render :: any) == "table"
@@ -83,7 +84,7 @@ exports.forwardRef = function<Props, ElementType>(
 		["$$typeof"] = REACT_FORWARD_REF_TYPE,
 		render = render,
 	}
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		local ownName
 		-- ROBLOX deviation: use metatables to approximate Object.defineProperty logic
 		setmetatable(elementType, {

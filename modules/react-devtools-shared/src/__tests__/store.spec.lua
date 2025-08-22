@@ -17,6 +17,7 @@ local fill = function(count, value)
 end
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jest = JestGlobals.jest
 local jestExpect = JestGlobals.expect
@@ -30,7 +31,7 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Object = LuauPolyfill.Object
 
-local global = _G
+local global = ReactGlobals :: any
 type Array<T> = { [number]: T }
 
 local ReactRoblox

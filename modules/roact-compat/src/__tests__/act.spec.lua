@@ -15,6 +15,7 @@
 
 local Packages = script.Parent.Parent.Parent
 
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local afterEach = JestGlobals.afterEach
 local beforeEach = JestGlobals.beforeEach
@@ -27,8 +28,8 @@ local RoactCompat
 describe("production mode", function()
 	local prevMockScheduler
 	beforeEach(function()
-		prevMockScheduler = _G.__ROACT_17_MOCK_SCHEDULER__
-		_G.__ROACT_17_MOCK_SCHEDULER__ = nil
+		prevMockScheduler = ReactGlobals.__ROACT_17_MOCK_SCHEDULER__
+		ReactGlobals.__ROACT_17_MOCK_SCHEDULER__ = nil
 		jest.resetModules()
 		RoactCompat = require(script.Parent.Parent)
 	end)
@@ -49,15 +50,15 @@ describe("production mode", function()
 	end)
 
 	afterEach(function()
-		_G.__ROACT_17_MOCK_SCHEDULER__ = prevMockScheduler
+		ReactGlobals.__ROACT_17_MOCK_SCHEDULER__ = prevMockScheduler
 	end)
 end)
 
 describe("test mode", function()
 	local prevMockScheduler
 	beforeEach(function()
-		prevMockScheduler = _G.__ROACT_17_MOCK_SCHEDULER__
-		_G.__ROACT_17_MOCK_SCHEDULER__ = true
+		prevMockScheduler = ReactGlobals.__ROACT_17_MOCK_SCHEDULER__
+		ReactGlobals.__ROACT_17_MOCK_SCHEDULER__ = true
 		jest.resetModules()
 		RoactCompat = require(script.Parent.Parent)
 	end)
@@ -90,6 +91,6 @@ describe("test mode", function()
 	end)
 
 	afterEach(function()
-		_G.__ROACT_17_MOCK_SCHEDULER__ = prevMockScheduler
+		ReactGlobals.__ROACT_17_MOCK_SCHEDULER__ = prevMockScheduler
 	end)
 end)

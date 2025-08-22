@@ -9,6 +9,7 @@
 ]]
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local beforeEach = JestGlobals.beforeEach
 local jestExpect = JestGlobals.expect
@@ -26,7 +27,7 @@ beforeEach(function()
 end)
 
 local function validateElement(element)
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		element._store.validated = true
 	end
 	return element

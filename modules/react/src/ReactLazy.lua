@@ -10,6 +10,7 @@
  *]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 -- ROBLOX: use patched console from shared
 local Shared = require(Packages.Shared)
 local console = Shared.console
@@ -80,7 +81,7 @@ function lazyInitializer<T>(payload: Payload<T>): T
 		thenable:andThen(function(moduleObject)
 			if payload._status == Pending then
 				local defaultExport = moduleObject.default
-				if _G.__DEV__ then
+				if ReactGlobals.__DEV__ then
 					if defaultExport == nil then
 						console.error(
 							"lazy: Expected the result of a dynamic import() call. "
@@ -132,7 +133,7 @@ exports.lazy = function<T>(
 		_init = lazyInitializer :: any,
 	}
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- In production, this would just set it on the object.
 		local defaultProps
 		local propTypes

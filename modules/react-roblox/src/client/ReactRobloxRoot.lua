@@ -16,6 +16,7 @@ type Container = ReactRobloxHostTypes.Container
 type RootType = ReactRobloxHostTypes.RootType
 type RootOptions = ReactRobloxHostTypes.RootOptions
 
+local ReactGlobals = require(Packages.ReactGlobals)
 local ReconcilerTypes = require(Packages.ReactReconciler)
 type RootTag = ReconcilerTypes.RootTag
 local ReactTypes = require(Packages.Shared)
@@ -83,7 +84,7 @@ end
 
 function ReactRobloxRoot:render(children: ReactNodeList)
 	local root = self._internalRoot
-	-- if _G.__DEV__ then
+	-- if ReactGlobals.__DEV__ then
 	--   if typeof (arguments[1] == 'function')
 	--     console.error(
 	--       'render(...): does not support the second callback argument. ' +
@@ -110,7 +111,7 @@ function ReactRobloxRoot:render(children: ReactNodeList)
 end
 
 function ReactRobloxRoot:unmount()
-	-- if _G.__DEV__ then
+	-- if ReactGlobals.__DEV__ then
 	--   if typeof arguments[0] == 'function')
 	--     console.error(
 	--       'unmount(...): does not support a callback argument. ' +
@@ -230,7 +231,7 @@ exports.createLegacyRoot = function(container: Container, options: RootOptions?)
 end
 
 function warnIfReactDOMContainerInDEV(container)
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		-- ROBLOX TODO: This behavior will deviate; should we validate that the
 		-- container is not a PlayerGui of any sort?
 

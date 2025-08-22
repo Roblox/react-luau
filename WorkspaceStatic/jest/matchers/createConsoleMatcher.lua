@@ -1,12 +1,13 @@
 --!nonstrict
 -- ROBLOX upstream: https://github.com/facebook/react/blob/6d50a9d090a2a672fc3dea5ce77a3a05332a6caa/fixtures/legacy-jsx-runtimes/setupTests.js
 local Packages = script.Parent.Parent.Parent.TestRunner
+local ReactGlobals = require(Packages.Dev.ReactGlobals)
 local JestDiff = require(Packages.Dev.JestDiff)
 
 local function shouldIgnoreConsoleError(format, args)
 	-- deviation: instead of checking if `process.env.NODE_ENV ~= "production"`
 	-- we use the __DEV__ global
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if typeof(format) == "string" then
 			if string.find(format, "Error: Uncaught %[") == 1 then
 				-- // This looks like an uncaught error from invokeGuardedCallback() wrapper
@@ -76,7 +77,7 @@ return function(consoleMethod, matcherName)
 		end
 		-- deviation: instead of checking if `process.env.NODE_ENV ~= "production"`
 		-- we use the __DEV__ global
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			-- // Warn about incorrect usage of matcher.
 			if typeof(expectedMessages) == "string" then
 				expectedMessages = { expectedMessages }

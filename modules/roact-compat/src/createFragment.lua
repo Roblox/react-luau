@@ -14,12 +14,13 @@
 	* limitations under the License.
 ]]
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local React = require(Packages.React)
 
 local warnOnce = require(script.Parent.warnOnce)
 
 return function(elements)
-	if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
+	if ReactGlobals.__DEV__ and ReactGlobals.__COMPAT_WARNINGS__ then
 		warnOnce(
 			"createFragment",
 			"Please instead use:\n\tReact.createElement(React.Fragment, ...)"

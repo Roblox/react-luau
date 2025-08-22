@@ -9,6 +9,7 @@
  ]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 
@@ -30,7 +31,7 @@ local isPrimaryRenderer = require(script.Parent.ReactFiberHostConfig).isPrimaryR
 local workInProgressSources: Array<MutableSource<any>> = {}
 
 local rendererSigil
-if _G.__DEV__ then
+if ReactGlobals.__DEV__ then
 	-- Used to detect multiple renderers using the same mutable source.
 	rendererSigil = {}
 end
@@ -73,7 +74,7 @@ exports.setWorkInProgressVersion = function(
 end
 
 exports.warnAboutMultipleRenderersDEV = function(mutableSource: MutableSource<any>)
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if isPrimaryRenderer then
 			if mutableSource._currentPrimaryRenderer == nil then
 				mutableSource._currentPrimaryRenderer = rendererSigil

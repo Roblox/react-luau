@@ -1,5 +1,6 @@
 --!strict
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
 local jest = JestGlobals.jest
@@ -44,7 +45,7 @@ describe("Binding.create", function()
 		jestExpect(asPercent:getValue()).toEqual("30%")
 	end)
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		it("should include a stack in DEV mode", function()
 			-- Simulate the additional layer of stack depth we'll have when
 			-- we use `React.createBinding` in the wild, since it will
@@ -175,7 +176,7 @@ describe("Mapped bindings", function()
 		end).toThrow()
 	end)
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		it("should include a stack in DEV mode", function()
 			local binding, _ = Binding.create(1)
 			local mappedBinding = binding:map(function(value)
@@ -301,7 +302,7 @@ describe("Binding.join", function()
 		end)
 	end)
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		it("should throw when a non-table value is passed", function()
 			jestExpect(function()
 				Binding.join(("hi" :: any) :: { [string]: Binding<any> })
@@ -341,7 +342,7 @@ describe("createRef", function()
 		jestExpect(tostring(ref)).toBe("Ref(Folder)")
 	end)
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		it("should include a stack in DEV mode", function()
 			local ref = (ReactCreateRef.createRef() :: any) :: { _source: string }
 			jestExpect(ref._source).toContain(script.Name)

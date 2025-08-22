@@ -9,6 +9,7 @@
 *]]
 
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 type Array<T> = LuauPolyfill.Array<T>
@@ -61,7 +62,7 @@ local exports = {}
 
 -- ROBLOX FIXME Luau: annotation shouldn't be necessary
 local function setCurrentlyValidatingElement(element: ReactElement<any, any> | nil)
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if element then
 			local owner = element._owner
 			local ownerArgument = nil
@@ -84,7 +85,7 @@ end
 
 local propTypesMisspellWarningShown
 
-if _G.__DEV__ then
+if ReactGlobals.__DEV__ then
 	propTypesMisspellWarningShown = false
 end
 
@@ -206,7 +207,7 @@ local function validateExplicitKey<P>(
 		)
 	end
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		setCurrentlyValidatingElement(element)
 		-- ROBLOX deviation START: Account for conflict between "key" prop and deviated table key behavior (in addition to missing key warnings)
 		-- Both forms of key were provided
@@ -291,7 +292,10 @@ end
 --  * @param {ReactElement} element
 --  */
 local function validatePropTypes<P>(element: ReactElement<P, any>)
-	if _G.__DEV__ or _G.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__ then
+	if
+		ReactGlobals.__DEV__
+		or ReactGlobals.__DISABLE_ALL_WARNINGS_EXCEPT_PROP_VALIDATION__
+	then
 		local type = element.type
 		if type == nil or typeof(type) == "string" then
 			return
@@ -341,7 +345,7 @@ end
 --  * @param {ReactElement} fragment
 --  */
 local function validateFragmentProps<P>(fragment: ReactElement<P & Object, any>)
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		local keys = Object.keys(fragment.props)
 		for i = 1, #keys do
 			local key = keys[i]
@@ -405,7 +409,7 @@ local function jsxWithValidation<P, T>(
 			info ..= "\n" .. inspect(type)
 		end
 
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			console.error(
 				"React.jsx: type is invalid -- expected a string (for "
 					.. "built-in components) or a class/function (for composite "
@@ -445,7 +449,7 @@ local function jsxWithValidation<P, T>(
 					Object.freeze(children)
 					-- end
 				else
-					if _G.__DEV__ then
+					if ReactGlobals.__DEV__ then
 						console.error(
 							"React.jsx: Static children should always be an array. "
 								.. "You are likely explicitly calling React.jsxs or React.jsxDEV. "
@@ -460,7 +464,7 @@ local function jsxWithValidation<P, T>(
 		end
 	end
 
-	if _G.__DEV__ then
+	if ReactGlobals.__DEV__ then
 		if warnAboutSpreadingKeyToJSX then
 			if hasOwnProperty(props, "key") then
 				console.error(
@@ -545,7 +549,7 @@ local function createElementWithValidation<P, T>(
 			end
 		end
 
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			console.error(
 				"React.createElement: type is invalid -- expected a string (for "
 					.. "built-in components) or a class/function (for composite "
@@ -600,7 +604,7 @@ exports.createElementWithValidation = createElementWithValidation
 -- 	-- property is deprecated so there is no need to port this over.
 -- 	-- validatedFactory.type = type
 
--- 	if _G.__DEV__ then
+-- 	if ReactGlobals.__DEV__ then
 -- 		if not didWarnAboutDeprecatedCreateFactory then
 -- 			didWarnAboutDeprecatedCreateFactory = true
 -- 			console.warn(

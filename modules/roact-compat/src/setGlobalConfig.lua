@@ -14,13 +14,15 @@
 	* limitations under the License.
 ]]
 
+local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local warnOnce = require(script.Parent.warnOnce)
 
 return function(_config)
-	if _G.__DEV__ and _G.__COMPAT_WARNINGS__ then
+	if ReactGlobals.__DEV__ and ReactGlobals.__COMPAT_WARNINGS__ then
 		warnOnce(
 			"setGlobalConfig",
-			"Roact 17 uses a `_G.__DEV__` flag to enable development behavior. "
+			"Roact 17 uses a `ReactGlobals.__DEV__` flag to enable development behavior. "
 				.. "If you're seeing this warning, you already have it enabled. "
 				.. "Please remove any redundant uses of `setGlobalConfig`."
 		)

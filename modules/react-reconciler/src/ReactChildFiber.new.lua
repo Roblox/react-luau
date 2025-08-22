@@ -8,8 +8,8 @@
  *
  * @flow
 ]]
-local __DEV__ = _G.__DEV__ :: boolean
 local Packages = script.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Error = LuauPolyfill.Error
@@ -20,6 +20,8 @@ type Map<K, V> = { [K]: V }
 -- ROBLOX: use patched console from shared
 local console = require(Packages.Shared).console
 local describeError = require(Packages.Shared).describeError
+
+local __DEV__ = ReactGlobals.__DEV__ :: boolean
 
 local SafeFlags = require(Packages.SafeFlags)
 local FFlagReactPreventAssigningKeyToChildren =

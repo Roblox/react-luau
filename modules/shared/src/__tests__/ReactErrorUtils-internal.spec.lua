@@ -9,6 +9,7 @@
 ]]
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
 local JestGlobals = require(Packages.Dev.JestGlobals)
@@ -134,7 +135,7 @@ it("handles nested errors in separate renderers", function()
 	jestExpect(ops).toEqual({ true, "nested error", false })
 end)
 
-if not _G.__DEV__ then
+if not ReactGlobals.__DEV__ then
 	-- jsdom doesn't handle this properly, but Chrome and Firefox should. Test
 	-- this with a fixture.
 	it("catches nil values", function()

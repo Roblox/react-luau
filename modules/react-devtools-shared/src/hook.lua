@@ -8,6 +8,7 @@
 ]]
 local Packages = script.Parent.Parent
 
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Map = LuauPolyfill.Map
@@ -24,7 +25,7 @@ local registerRendererWithConsole = console.registerRenderer
 local BackendTypes = require(script.Parent.backend.types)
 type DevToolsHook = BackendTypes.DevToolsHook
 
-local window = _G
+local window = ReactGlobals
 
 exports.installHook = function(target: any): DevToolsHook | nil
 	if target["__REACT_DEVTOOLS_GLOBAL_HOOK__"] then
@@ -67,7 +68,7 @@ exports.installHook = function(target: any): DevToolsHook | nil
 
 		-- ROBLOX deviation: instead of checking if `process.env.NODE_ENV ~= "production"`
 		-- we use the __DEV__ global
-		if _G.__DEV__ then
+		if ReactGlobals.__DEV__ then
 			pcall(function()
 				local appendComponentStack = window.__REACT_DEVTOOLS_APPEND_COMPONENT_STACK__
 					~= false

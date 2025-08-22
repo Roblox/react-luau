@@ -10,6 +10,7 @@
 ]]
 
 local Packages = script.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
 local beforeEach = JestGlobals.beforeEach
@@ -33,16 +34,16 @@ end)
 describe("DevTools hook detection", function()
 	local originalDevtoolsState
 	beforeAll(function()
-		originalDevtoolsState = _G.__REACT_DEVTOOLS_GLOBAL_HOOK__
+		originalDevtoolsState = ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__
 	end)
 
 	afterAll(function()
-		_G.__REACT_DEVTOOLS_GLOBAL_HOOK__ = originalDevtoolsState
+		ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__ = originalDevtoolsState
 	end)
 
-	local itIfDev = if _G.__DEV__ then it else it.skip :: any
+	local itIfDev = if ReactGlobals.__DEV__ then it else it.skip :: any
 	itIfDev("should log an error when fibers aren't supported", function()
-		_G.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
+		ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__ = {
 			isDisabled = false,
 			supportsHooks = false,
 		}
@@ -77,7 +78,7 @@ describe("DevTools hook detection", function()
 		local agent = {
 			addListener = jest.fn(),
 		}
-		_G.__REACT_DEVTOOLS_GLOBAL_HOOK__ = hook
+		ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__ = hook
 
 		ReactDevtoolsShared.backend.initBackend(hook, agent, {})
 

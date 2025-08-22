@@ -3,6 +3,7 @@
 local PackageRoot = script.Parent.Parent.Parent.Parent.Parent
 
 local Packages = PackageRoot.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 
@@ -125,7 +126,7 @@ function Overlay.inspect(self: Overlay, nodes: { GuiBase2d }, name: string?)
 		local node = elements[1]
 		name = node.Name
 
-		local hook: DevToolsHook? = _G.__REACT_DEVTOOLS_GLOBAL_HOOK__
+		local hook: DevToolsHook? = ReactGlobals.__REACT_DEVTOOLS_GLOBAL_HOOK__
 		if hook ~= nil and hook.rendererInterfaces ~= nil then
 			local ownerName = nil
 			for _, rendererInterface in hook.rendererInterfaces:values() do

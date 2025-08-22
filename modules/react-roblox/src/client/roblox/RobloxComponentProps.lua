@@ -12,12 +12,14 @@
 	* See the License for the specific language governing permissions and
 	* limitations under the License.
 ]]
-local __DEV__ = _G.__DEV__ :: boolean
 local CollectionService = game:GetService("CollectionService")
 local Packages = script.Parent.Parent.Parent.Parent
+local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Object = LuauPolyfill.Object
 local inspect = LuauPolyfill.util.inspect
+
+local __DEV__ = ReactGlobals.__DEV__ :: boolean
 
 local console = require(Packages.Shared).console
 
