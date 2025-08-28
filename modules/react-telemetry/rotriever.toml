@@ -1,5 +1,5 @@
 [package]
-name = "ReactDevtoolsCore"
+name = "ReactTelemetry"
 version = { workspace = true }
 authors = { workspace = true }
 publish = true
@@ -7,10 +7,9 @@ content_root = "src"
 files = ["*", "!**/__tests__/**"]
 
 [dependencies]
-LuauPolyfill = { workspace = true }
-ReactDevtoolsShared = { path = "../react-devtools-shared" }
 ReactGlobals = { path = "../react-globals" }
-ReactTelemetry = { path = "../react-telemetry" }
+LuauPolyfill = { workspace = true }
+SafeFlags = { workspace = true }
 
 [dev_dependencies]
 JestGlobals = { workspace = true }

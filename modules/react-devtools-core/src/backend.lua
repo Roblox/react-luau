@@ -6,6 +6,7 @@ local WebSocketService = game:GetService("WebSocketService")
 local Packages = script.Parent.Parent
 local ReactGlobals = require(Packages.ReactGlobals)
 local ReactDevtoolsShared = require(Packages.ReactDevtoolsShared)
+local ReactTelemetry = require(Packages.ReactTelemetry)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 
 local Object = LuauPolyfill.Object
@@ -93,6 +94,7 @@ local function connectToDevtools(options_: ConnectOptions?)
 			bridge:shutdown()
 		end
 
+		ReactTelemetry.reportFailedDevtoolsConnection("socket_closed")
 		scheduleRetry()
 	end
 
@@ -131,6 +133,7 @@ local function connectToDevtools(options_: ConnectOptions?)
 		warn(
 			`[React DevTools] Could not connect to DevTools. Attempted to connect to "{uri}" ({socket})`
 		)
+		ReactTelemetry.reportFailedDevtoolsConnection("create_client_failed")
 		scheduleRetry()
 		return
 	end
@@ -249,6 +252,8 @@ local function connectToDevtools(options_: ConnectOptions?)
 		end)
 
 		initBackend(hook, agent :: any, ReactGlobals)
+
+		ReactTelemetry.reportNewDevtoolsConnection()
 
 		-- ROBLOX Deviation: Expose an option to start profiling as soon as we
 		-- setup the DevTools hook.
