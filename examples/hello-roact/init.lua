@@ -1,7 +1,6 @@
 return function()
-
 	local PlayerGui = game:GetService("Players").LocalPlayer.PlayerGui
-	
+
 	local React = require(script.Parent.ProjectWorkspace.React)
 	local ReactRoblox = require(script.Parent.ProjectWorkspace.ReactRoblox)
 
