@@ -1,0 +1,7 @@
+[package]
+name = "ReactDevtoolsTimeline"
+version = { workspace = true }
+authors = { workspace = true }
+publish = true
+content_root = "src"
+files = ["*", "!**/__tests__/**"]
