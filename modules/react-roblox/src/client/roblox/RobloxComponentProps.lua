@@ -243,7 +243,7 @@ local function setInitialProperties(
 			applyPropsError,
 			domElement.Name,
 			domElement.ClassName,
-			errorMessage
+			tostring(errorMessage)
 		)
 		console.error(fullMessage)
 		-- FIXME: Until console.error can be instrumented to send telemetry, we need
