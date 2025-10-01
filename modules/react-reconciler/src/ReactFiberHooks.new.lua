@@ -2498,7 +2498,7 @@ if __DEV__ then
 		useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 			currentHookNameInDev = "useCallback"
 			updateHookTypesDev()
-			return mountCallback(callback, deps)
+			return updateCallback(callback, deps)
 		end,
 		useContext = function<T>(
 			context: ReactContext<T>,
