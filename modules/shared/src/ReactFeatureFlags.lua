@@ -13,8 +13,11 @@ local Shared = script.Parent
 local Packages = Shared.Parent
 local ReactGlobals = require(Packages.ReactGlobals)
 local SafeFlags = require(Packages.SafeFlags)
+
 local GetFFlagReactEnableSchedulingProfiler =
 	SafeFlags.createGetFFlag("ReactEnableSchedulingProfiler")
+local GetFFlagReactCatchYieldingInDEV =
+	SafeFlags.createGetFFlag("ReactCatchYieldingInDEV")
 
 -- Unknown globals fail type checking (see "Unknown symbols" section of
 -- https://roblox.github.io/luau/typecheck.html)
@@ -32,6 +35,9 @@ exports.enableDebugTracing = false
 -- for an experimental scheduling profiler tool.
 exports.enableSchedulingProfiler = GetFFlagReactEnableSchedulingProfiler()
 	or (ReactGlobals.__PROFILE__ and ReactGlobals.__EXPERIMENTAL__)
+
+-- When DEV mode is enabled, throw an error when a fiber attempts to yield.
+exports.catchYieldingInDEV = ReactGlobals.__DEV__ and GetFFlagReactCatchYieldingInDEV()
 
 -- Helps identify side effects in render-phase lifecycle hooks and setState
 -- reducers by double invoking them in Strict Mode.

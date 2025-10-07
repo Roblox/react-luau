@@ -12,7 +12,10 @@
 return function(hostConfig)
 	local Packages = script.Parent.Parent
 	local ReactGlobals = require(Packages.ReactGlobals)
-	local describeError = require(Packages.Shared).describeError
+	local ReactShared = require(Packages.Shared)
+
+	local describeError = ReactShared.describeError
+	local ReactFeatureFlags = ReactShared.ReactFeatureFlags
 
 	local SchedulerFeatureFlags = require(script.Parent.SchedulerFeatureFlags)
 	local enableSchedulerDebugging = SchedulerFeatureFlags.enableSchedulerDebugging
@@ -28,6 +31,8 @@ return function(hostConfig)
 	local requestPaint = SchedulerHostConfig.requestPaint
 	local setSchedulerFlags = SchedulerHostConfig.setSchedulerFlags
 	local getSchedulerFlags = SchedulerHostConfig.getSchedulerFlags
+
+	local NoYield = require(script.Parent.NoYield)
 
 	-- ROBLOX deviation? inline the MinHeap to see if the module-level visibility lets Luau optimize better
 	-- local SchedulerMinHeap = require(script.Parent.SchedulerMinHeap)
@@ -284,6 +289,8 @@ return function(hostConfig)
 	end
 
 	workLoop = function(hasTimeRemaining, initialTime)
+		local catchYieldingInDEV = ReactGlobals.__DEV__
+			and ReactFeatureFlags.catchYieldingInDEV
 		local currentTime = initialTime
 		advanceTimers(currentTime)
 		currentTask = peek(taskQueue)
@@ -304,7 +311,15 @@ return function(hostConfig)
 				currentPriorityLevel = currentTask.priorityLevel
 				local didUserCallbackTimeout = currentTask.expirationTime <= currentTime
 				markTaskRun(currentTask, currentTime)
-				local continuationCallback = callback(didUserCallbackTimeout)
+
+				local continuationCallback
+
+				if catchYieldingInDEV then
+					continuationCallback = NoYield(callback, didUserCallbackTimeout)
+				else
+					continuationCallback = callback(didUserCallbackTimeout)
+				end
+
 				currentTime = getCurrentTime()
 				if typeof(continuationCallback) == "function" then
 					currentTask.callback = continuationCallback
