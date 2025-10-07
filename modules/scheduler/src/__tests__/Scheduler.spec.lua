@@ -11,6 +11,7 @@
 local Packages = script.Parent.Parent.Parent
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
+local ReactGlobals = require(Packages.ReactGlobals)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local beforeEach = JestGlobals.beforeEach
 local jestExpect = JestGlobals.expect
@@ -18,6 +19,7 @@ local describe = JestGlobals.describe
 local it = JestGlobals.it
 local jest = JestGlobals.jest
 
+local ReactShared
 local Scheduler
 local runWithPriority
 local ImmediatePriority
@@ -49,6 +51,7 @@ end
 
 beforeEach(function()
 	jest.resetModules()
+	ReactShared = require(Packages.Shared)
 	-- deviation: In react, jest mocks Scheduler -> unstable_mock; since
 	-- unstable_mock depends on the real Scheduler, and our mock
 	-- functionality isn't smart enough to prevent self-requires, we simply
@@ -802,5 +805,68 @@ describe("delayed tasks", function()
 
 		Scheduler.unstable_advanceTime(100)
 		jestExpect(Scheduler).toFlushAndThrow("Oops A")
+	end)
+end)
+
+describe("yield catching", function()
+	-- Yield catching only works in DEV mode
+	if ReactGlobals.__DEV__ then
+		describe("when enabled", function()
+			beforeEach(function()
+				ReactShared.ReactFeatureFlags.catchYieldingInDEV = true
+			end)
+
+			it("throws if a callback yields", function()
+				scheduleCallback(NormalPriority, function()
+					task.wait()
+				end)
+
+				jestExpect(function()
+					jestExpect(Scheduler).toFlushWithoutYielding()
+				end).toThrow("Yielding is not currently supported")
+			end)
+
+			it("throws if a continuation yields", function()
+				scheduleCallback(NormalPriority, function()
+					Scheduler.unstable_yieldValue("A")
+					return function()
+						task.wait()
+					end
+				end)
+
+				jestExpect(Scheduler).toFlushAndYieldThrough({ "A" })
+				jestExpect(function()
+					jestExpect(Scheduler).toFlushWithoutYielding()
+				end).toThrow("Yielding is not currently supported")
+			end)
+		end)
+	end
+
+	describe("when disabled", function()
+		beforeEach(function()
+			ReactShared.ReactFeatureFlags.catchYieldingInDEV = false
+		end)
+
+		it("does not throw if a callback yields", function()
+			scheduleCallback(NormalPriority, function()
+				task.wait()
+				Scheduler.unstable_yieldValue("A")
+			end)
+
+			jestExpect(Scheduler).toFlushAndYield({ "A" })
+		end)
+
+		it("does not throw if a continuation yields", function()
+			scheduleCallback(NormalPriority, function()
+				Scheduler.unstable_yieldValue("A")
+				return function()
+					task.wait()
+					Scheduler.unstable_yieldValue("B")
+				end
+			end)
+
+			jestExpect(Scheduler).toFlushAndYieldThrough({ "A" })
+			jestExpect(Scheduler).toFlushAndYield({ "B" })
+		end)
 	end)
 end)
