@@ -57,11 +57,8 @@ describe("SchedulingProfiler", function()
 		ReactFeatureFlags.enableDebugTracing = false
 		ReactFeatureFlags.warnAboutDeprecatedLifecycles = true
 		ReactFeatureFlags.enableProfilerCommitHooks = false
-		ReactFeatureFlags.enableSelectiveHydration = false
 		ReactFeatureFlags.enableBlocksAPI = false
 		ReactFeatureFlags.enableLazyElements = false
-		ReactFeatureFlags.disableJavaScriptURLs = false
-		ReactFeatureFlags.disableInputAttributeSyncing = false
 		ReactFeatureFlags.enableSchedulerDebugging = false
 		ReactFeatureFlags.enableFundamentalAPI = false
 		ReactFeatureFlags.enableScopeAPI = false
@@ -71,20 +68,14 @@ describe("SchedulingProfiler", function()
 		ReactFeatureFlags.warnAboutDefaultPropsOnFunctionComponents = false
 		ReactFeatureFlags.warnAboutStringRefs = false
 		ReactFeatureFlags.disableLegacyContext = false
-		ReactFeatureFlags.disableSchedulerTimeoutBasedOnReactExpirationTime = false
-		ReactFeatureFlags.enableTrustedTypesIntegration = false
-		ReactFeatureFlags.disableTextareaChildren = false
 		ReactFeatureFlags.disableModulePatternComponents = false
 		ReactFeatureFlags.warnUnstableRenderSubtreeIntoContainer = false
 		ReactFeatureFlags.warnAboutSpreadingKeyToJSX = false
 		ReactFeatureFlags.enableComponentStackLocations = true
-		ReactFeatureFlags.enableLegacyFBSupport = false
-		ReactFeatureFlags.enableFilterEmptyStringAttributesDOM = false
 		ReactFeatureFlags.skipUnmountedBoundaries = false
 
 		ReactFeatureFlags.enableNewReconciler = false
 		ReactFeatureFlags.deferRenderPhaseUpdateToNextBatch = true
-		ReactFeatureFlags.enableDiscreteEventFlushingChange = false
 		ReactFeatureFlags.enableEagerRootListeners = true
 
 		ReactFeatureFlags.enableDoubleInvokingEffects = false
