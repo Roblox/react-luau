@@ -23,10 +23,6 @@ local GetFFlagReactCatchYieldingInDEV =
 -- https://roblox.github.io/luau/typecheck.html)
 local exports = {}
 
--- Filter certain DOM attributes (e.g. src, href) if their values are empty strings.
--- This prevents e.g. <img src=""> from making an unnecessary HTTP request for certain browsers.
-exports.enableFilterEmptyStringAttributesDOM = true
-
 -- Adds verbose console logging for e.g. state updates, suspense, and work loop stuff.
 -- Intended to enable React core members to more easily debug scheduling issues in DEV builds.
 exports.enableDebugTracing = false
@@ -62,7 +58,6 @@ exports.enableSchedulerTracing = ReactGlobals.__PROFILE__
 
 -- SSR experiments
 exports.enableSuspenseServerRenderer = ReactGlobals.__EXPERIMENTAL__
-exports.enableSelectiveHydration = ReactGlobals.__EXPERIMENTAL__
 
 -- Flight experiments
 exports.enableBlocksAPI = ReactGlobals.__EXPERIMENTAL__
@@ -70,9 +65,6 @@ exports.enableLazyElements = ReactGlobals.__EXPERIMENTAL__
 
 -- Only used in www builds.
 exports.enableSchedulerDebugging = false
-
--- Disable javascript: URL strings in href for XSS protection.
-exports.disableJavaScriptURLs = false
 
 -- Experimental Host Component support.
 exports.enableFundamentalAPI = false
@@ -82,8 +74,6 @@ exports.enableScopeAPI = false
 
 -- Experimental Create Event Handle API.
 exports.enableCreateEventHandleAPI = false
-
--- New API for JSX transforms to target - https://github.com/reactjs/rfcs/pull/107
 
 -- We will enforce mocking scheduler with scheduler/unstable_mock at some point. (v18?)
 -- Till then, we warn about the missing mock, but still fallback to a legacy mode compatible version
@@ -100,10 +90,6 @@ exports.enableSuspenseCallback = false
 -- from React.createElement to React.jsx
 -- https://github.com/reactjs/rfcs/blob/createlement-rfc/text/0000-create-element-changes.md
 exports.warnAboutDefaultPropsOnFunctionComponents = false
-
-exports.disableSchedulerTimeoutBasedOnReactExpirationTime = false
-
-exports.enableTrustedTypesIntegration = false
 
 -- Enables a warning when trying to spread a 'key' to an element
 -- a deprecated pattern we want to get rid of in the future
@@ -123,24 +109,14 @@ exports.skipUnmountedBoundaries = true
 -- Future APIs to be deprecated
 -- --------------------------
 
--- Prevent the value and checked attributes from syncing
--- with their related DOM properties
-exports.disableInputAttributeSyncing = true
-
 exports.warnAboutStringRefs = false
 
 exports.disableLegacyContext = false
-
--- Disables children for <textarea> elements
-exports.disableTextareaChildren = false
 
 exports.disableModulePatternComponents = false
 
 -- We should remove this flag once the above flag becomes enabled
 exports.warnUnstableRenderSubtreeIntoContainer = false
-
--- Support legacy Primer support on internal FB www
-exports.enableLegacyFBSupport = true
 
 -- Updates that occur in the render phase are not officially supported. But when
 -- they do occur, we defer them to a subsequent render by picking a lane that's
@@ -152,9 +128,8 @@ exports.deferRenderPhaseUpdateToNextBatch = false
 -- Replacement for runWithPriority in React internals.
 exports.decoupleUpdatePriorityFromScheduler = true
 
-exports.enableDiscreteEventFlushingChange = false
-
 exports.enableEagerRootListeners = false
 
 exports.enableDoubleInvokingEffects = false
+
 return exports
