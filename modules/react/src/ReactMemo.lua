@@ -36,6 +36,14 @@ local getComponentName = Shared.getComponentName
 
 local exports = {}
 
+--[[
+	Lets you skip re-rendering a component when its props are unchanged.
+
+	See [API reference for `memo`](https://react.dev/reference/react/memo).
+
+	@param Component The component to memoize.
+	@param propsAreEqual A function that will be used to determine if the props have changed.
+]]
 exports.memo = function<Props, T>(
 	-- ROBLOX deviation START: expanded type pulled from definitelytyped, not sure why upstream doesn't accept function component types
 	-- ROBLOX TODO Luau: React_Component<Props, any> gave me  Type 'React_Component<any, any>' could not be converted into '((any, any) -> (Array<(Array<<CYCLE>> | React_Element<any> | boolean | number | string)?> | React_Element<any> | boolean | number | string)?) | string'; none of the union options are compatible

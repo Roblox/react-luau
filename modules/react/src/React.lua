@@ -107,8 +107,23 @@ return {
 	-- ROBLOX deviation: bindings support
 	useBinding = ReactHooks.useBinding,
 	useState = ReactHooks.useState,
+	--[[
+		Lets you group elements without a wrapper node.
+
+		See [API reference for `Fragment`](https://react.dev/reference/react/Fragment).
+	]]
 	Fragment = ReactSymbols.REACT_FRAGMENT_TYPE,
+	--[[
+		Lets you measure rendering performance of a React tree programmatically.
+
+		See [API reference for `Profiler`](https://react.dev/reference/react/Profiler).
+	]]
 	Profiler = ReactSymbols.REACT_PROFILER_TYPE,
+	--[[
+		Lets you find common bugs in your components early during development.
+
+		See [API reference for `StrictMode`](https://react.dev/reference/react/StrictMode).
+	]]
 	StrictMode = ReactSymbols.REACT_STRICT_MODE_TYPE,
 	unstable_DebugTracingMode = ReactSymbols.REACT_DEBUG_TRACING_MODE_TYPE,
 	Suspense = ReactSymbols.REACT_SUSPENSE_TYPE,

@@ -117,6 +117,14 @@ end
 
 local exports = {}
 
+--[[
+	Lets you defer loading a component’s code until it is rendered for the first
+	time.
+
+	See [API reference for `React.lazy`](https://react.dev/reference/react/lazy).
+
+	@param load A function that returns a `Promise` or another thenable (a `Promise`-like object with an `andThen` method). React will not call `load` until the first time you attempt to render the returned component. After React first calls load, it will wait for it to resolve, and then render the resolved value’s `.default` as a React component. Both the returned `Promise` and the `Promise`’s resolved value will be cached, so React will not call load more than once. If the `Promise` rejects, React will throw the rejection reason for the nearest Error Boundary to handle.
+]]
 exports.lazy = function<T>(
 	ctor: () -> Thenable<{ default: T, [string]: any }>
 ): LazyComponent<T, Payload<T>>

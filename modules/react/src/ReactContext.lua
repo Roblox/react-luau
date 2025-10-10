@@ -22,6 +22,15 @@ type ReactProviderType<T> = Shared.ReactProviderType<T>
 
 local exports = {}
 
+--[[
+	Lets you create a Context that components can provide or read.
+
+	See [API reference for `createContext`](https://react.dev/reference/react/createContext).
+
+	@param defaultValue The value you want the context to have when there is no
+	matching Provider in the tree above the component reading the context. This
+	is meant as a "last resort" fallback.
+]]
 exports.createContext = function<T>(
 	defaultValue: T,
 	calculateChangedBits: ((a: T, b: T) -> number)?

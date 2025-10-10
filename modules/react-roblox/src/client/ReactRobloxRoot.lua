@@ -202,6 +202,12 @@ end
 
 exports.isValidContainer = isValidContainer
 
+--[[
+	`createRoot` lets you create a root to display React components inside a
+	Roblox instance.
+
+	See [API reference for `createRoot`](https://react.dev/reference/react-dom/client/createRoot).
+]]
 -- deviation: Create `Container` from instance
 exports.createRoot = function(container: Container, options: RootOptions?): RootType
 	invariant(

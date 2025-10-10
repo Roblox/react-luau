@@ -122,6 +122,16 @@ local Tag = require(Packages.Shared).Tag
 --   batchedEventUpdates
 -- )
 
+--[[
+	Lets you render some children into a different part of the DOM.
+
+	See [API reference for `createPortal`](https://react.dev/reference/react-dom/createPortal).
+
+	@param children Anything that can be rendered with React, such as an element or a Fragment.
+	@param container The Roblox instance to portal to.
+	@param key A unique string or number to be used as the portal’s [key](https://react.dev/learn/rendering-lists#keeping-list-items-in-order-with-key).
+	@return A React element that can be returned from a React component.
+]]
 local function createPortal(
 	children: ReactNodeList,
 	container: Container,
@@ -255,6 +265,14 @@ local exports = {
 
 	-- ROBLOX deviation: Export `act` function for testing purposes; in
 	-- production (a.k.a. scheduler isn't mocked), give an instructive error
+	--[[
+		Wrap any code rendering and triggering updates to your components into
+		`act()` calls.
+
+		Ensures that the behavior in your tests matches what happens in the
+		engine more closely by executing pending `useEffect`s before returning.
+		This also reduces the amount of re-renders done.
+	]]
 	act = function(_: () -> ()): ()
 		error(
 			"ReactRoblox.act is only available in testing environments, not "
