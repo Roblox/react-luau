@@ -25,6 +25,11 @@ local REACT_MEMO_TYPE = ReactSymbols.REACT_MEMO_TYPE
 
 local exports = {}
 -- ROBLOX TODO? should return Component's ELementType be REACT_FORWARD_REF_TYPE? probably, right?
+--[[
+	Lets your component expose a DOM node to a parent component using a ref.
+
+	See [API reference for `forwardRef`](https://react.dev/reference/react/forwardRef).
+]]
 exports.forwardRef = function<Props, ElementType>(
 	render: (
 		props: Props,
