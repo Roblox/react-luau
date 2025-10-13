@@ -18,6 +18,8 @@ local GetFFlagReactEnableSchedulingProfiler =
 	SafeFlags.createGetFFlag("ReactEnableSchedulingProfiler")
 local GetFFlagReactCatchYieldingInDEV =
 	SafeFlags.createGetFFlag("ReactCatchYieldingInDEV")
+local GetFFlagReactFilterInternalStackFrames =
+	SafeFlags.createGetFFlag("ReactFilterInternalStackFrames")
 
 -- Unknown globals fail type checking (see "Unknown symbols" section of
 -- https://roblox.github.io/luau/typecheck.html)
@@ -104,6 +106,11 @@ exports.enableNewReconciler = true
 -- and be handled by the nearest still-mounted boundary.
 -- If there are no still-mounted boundaries, the errors should be rethrown.
 exports.skipUnmountedBoundaries = true
+
+-- Clean up stacktraces by filtering out stack frames coming from inside React
+-- itself.
+exports.filterInternalStackFrames = ReactGlobals.__DEV__
+	and GetFFlagReactFilterInternalStackFrames()
 
 -- --------------------------
 -- Future APIs to be deprecated
