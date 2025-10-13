@@ -22,7 +22,114 @@ type Array<T> = LuauPolyfill.Array<T>
 local Error = LuauPolyfill.Error
 local inspect = LuauPolyfill.util.inspect
 
+local ReactFeatureFlags = require(script.Parent.ReactFeatureFlags)
+local filterInternalStackFrames = ReactFeatureFlags.filterInternalStackFrames
+
 local DIVIDER = "\n------ Error caught by React ------\n"
+
+-- List of known React package names that should be filtered from stacks.
+-- Note that this isn't an exhaustive list of all packages, only the ones that
+-- are likely to appear in a stack frame.
+local REACT_PACKAGE_NAMES = {
+	"React",
+	"ReactDevtoolsShared",
+	"ReactNoopRenderer",
+	"ReactReconciler",
+	"ReactRefresh",
+	"ReactRoblox",
+	"RoactCompat",
+	"Scheduler",
+	"Shared",
+}
+
+-- Cache React package path prefixes (lazily initialized)
+local reactPackagePrefixes: { string }? = nil
+
+--[[
+	Build a list of full instance paths for all React packages.
+	These are siblings under the Packages folder.
+]]
+local function getReactPackagePrefixes(): { string }
+	if reactPackagePrefixes then
+		return reactPackagePrefixes
+	end
+
+	local reactPackagePrefixes_ = {}
+
+	for _, packageName in REACT_PACKAGE_NAMES do
+		-- Note, we check the parent of Packages because we're interested in the
+		-- package index, not the linkers for Shared.
+		local package = Packages.Parent:FindFirstChild(packageName)
+		if package then
+			-- Get full instance path and remove "game." prefix if present
+			local packagePath = package:GetFullName():gsub("^game%.", "")
+			table.insert(reactPackagePrefixes_, packagePath)
+		end
+	end
+
+	reactPackagePrefixes = reactPackagePrefixes_
+	return reactPackagePrefixes_
+end
+
+--[[
+	Try to determine if a stack frame originates from inside React by checking
+	if the source path starts with any known React package path in the instance
+	tree.
+]]
+local function isInternalFrame(source: string): boolean
+	local prefixes = getReactPackagePrefixes()
+
+	for _, prefix in prefixes do
+		if string.sub(source, 1, #prefix) == prefix then
+			return true
+		end
+	end
+
+	return false
+end
+
+--[[
+	Build a stack string starting at the specified call stack level, skipping
+	any internal React frames. Mirrors the format of `debug.traceback()`.
+
+	If the first frame is internal to React, no filtering is applied - this
+	indicates the error originated from within React itself.
+]]
+local function buildStackString(level: number): string
+	local stack = ""
+
+	local handledFirstSource = false
+	local shouldFilter = false
+
+	for i = level + 1, math.huge do
+		local source, line, fnName = debug.info(i, "sln")
+		if not source then
+			break
+		end
+
+		if source == "[C]" then
+			-- Skip internal C frames
+			continue
+		end
+
+		if not handledFirstSource then
+			-- Decide whether to filter based on the first non-C frame
+			shouldFilter = not isInternalFrame(source)
+			handledFirstSource = true
+		end
+
+		if shouldFilter and isInternalFrame(source) then
+			continue
+		end
+
+		stack ..= `{source}:{line} function {fnName or "?"}\n`
+	end
+
+	-- Remove trailing newline
+	stack = string.gsub(stack, "\n$", "")
+
+	return stack
+end
 
 --[[
 	React does a lot of catching, retrying, and rethrowing errors that would
@@ -37,7 +144,11 @@ local function describeError(e: string | Error): Error
 		local message = if endOfStackFrame then string.sub(e, endOfStackFrame + 1) else e
 
 		local err = LuauPolyfill.Error.new(message)
-		err.stack = debug.traceback(nil, 2)
+		if filterInternalStackFrames then
+			err.stack = buildStackString(2)
+		else
+			err.stack = debug.traceback(nil, 2)
+		end
 		return err
 	end
 	return e :: Error
