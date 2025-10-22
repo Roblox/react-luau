@@ -1,13 +1,13 @@
 -- Based on: https://github.com/facebook/react/blob/12adaffef7105e2714f82651ea51936c563fe15c/packages/react-devtools-core/src/backend.js
 
 local HttpService = game:GetService("HttpService")
-local WebSocketService = game:GetService("WebSocketService")
 
 local Packages = script.Parent.Parent
 local ReactGlobals = require(Packages.ReactGlobals)
 local ReactDevtoolsShared = require(Packages.ReactDevtoolsShared)
 local ReactTelemetry = require(Packages.ReactTelemetry)
 local LuauPolyfill = require(Packages.LuauPolyfill)
+local SafeFlags = require(Packages.SafeFlags)
 
 local Object = LuauPolyfill.Object
 
@@ -23,6 +23,12 @@ type ComponentFilter = ReactDevtoolsShared.ComponentFilter
 type DevtoolsHook = ReactDevtoolsShared.DevtoolsHook
 
 local serializeTable = require(script.Parent.utils.serializeTable)
+
+-- Use the new HTTPService WebStream API for WebSockets instead of the
+-- legacy internal-only WebSocket API. Flag is here so we don't break current
+-- internal workflows.
+local FFlagReactDevtoolsUseHttpWebStream =
+	SafeFlags.createGetFFlag("ReactDevtoolsUseHttpWebStream")()
 
 -- ROBLOX deviation: In order to support launching DevTools after the client has
 -- started, the renderer needs to be injected before any other scripts. The hook
@@ -126,7 +132,31 @@ local function connectToDevtools(options_: ConnectOptions?)
 	end
 
 	local success, socket = pcall(function()
-		return WebSocketService:CreateClient(uri)
+		if FFlagReactDevtoolsUseHttpWebStream then
+			-- Try the internal method first to support cases where we need to
+			-- run on client (e.g. mpbundler).
+			local ok, socket = pcall(
+				HttpService.CreateWebStreamClientInternal,
+				HttpService,
+				Enum.WebStreamClientType.WebSocket,
+				{
+					Url = uri,
+				}
+			)
+
+			if ok then
+				return socket
+			end
+
+			-- Fall back to the public API.
+			return HttpService:CreateWebStreamClient(Enum.WebStreamClientType.WebSocket, {
+				Url = uri,
+			})
+		else
+			-- WebSocketClient has a near-identical API to WebStreamClient
+			local WebSocketService = game:GetService("WebSocketService")
+			return WebSocketService:CreateClient(uri)
+		end
 	end)
 
 	if success == false then
@@ -152,7 +182,11 @@ local function connectToDevtools(options_: ConnectOptions?)
 				end
 			end,
 			send = function(event: string, payload: any, transferable: Array<any>?)
-				if socket.ConnectionState == Enum.WebSocketState.Open then
+				local correctState = if FFlagReactDevtoolsUseHttpWebStream
+					then Enum.WebStreamClientState.Open
+					else Enum.WebSocketState.Open
+
+				if socket.ConnectionState == correctState then
 					debugPrint("wall.send()", event, payload)
 
 					payload = serializeTable(payload)
