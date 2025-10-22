@@ -8,6 +8,7 @@ files = ["*", "!**/__tests__/**"]
 
 [dependencies]
 LuauPolyfill = { workspace = true }
+SafeFlags = { workspace = true }
 ReactDevtoolsShared = { path = "../react-devtools-shared" }
 ReactGlobals = { path = "../react-globals" }
 ReactTelemetry = { path = "../react-telemetry" }
