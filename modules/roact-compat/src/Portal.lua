@@ -20,6 +20,7 @@ local ReactGlobals = require(Packages.ReactGlobals)
 
 local warnOnce = require(script.Parent.warnOnce)
 
+@[deprecated{ use = "ReactRoblox.createPortal()"}]
 local function PortalComponent(props)
 	if ReactGlobals.__DEV__ and ReactGlobals.__COMPAT_WARNINGS__ then
 		warnOnce("Roact.Portal", "Please use the createPortal API on ReactRoblox instead")
