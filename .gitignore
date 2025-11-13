@@ -17,3 +17,5 @@ site/
 
 default_modules
 modules_*
+
+**.log
