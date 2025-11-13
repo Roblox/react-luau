@@ -5,3 +5,4 @@ selene = { source = "Roblox/Kampfkarren-selene", version = "=0.28.0" }
 stylua = { source = "Roblox/JohnnyMorganz-StyLua", version = "=0.18.1" }
 testez = { source = "roblox/testez", version = "0.3.2" }
 rbx-aged-cli = { source = "Roblox/rbx-aged-tool", version = "=5.7.9" }
+lute = { github = "luau-lang/lute", version = "=0.1.0-nightly.20251108" }
