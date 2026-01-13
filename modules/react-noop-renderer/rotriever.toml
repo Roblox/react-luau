@@ -2,7 +2,6 @@
 name = "ReactNoopRenderer"
 version = { workspace = true }
 authors = { workspace = true }
-publish = false
 content_root = "src"
 files = ["*", "!**/__tests__/**"]
 
