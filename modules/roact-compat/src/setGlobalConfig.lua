@@ -18,7 +18,8 @@ local Packages = script.Parent.Parent
 local ReactGlobals = require(Packages.ReactGlobals)
 local warnOnce = require(script.Parent.warnOnce)
 
-return function(_config)
+@[deprecated{ use = "ReactGlobals.__DEV__"}]
+local function setGlobalConfig(_config)
 	if ReactGlobals.__DEV__ and ReactGlobals.__COMPAT_WARNINGS__ then
 		warnOnce(
 			"setGlobalConfig",
@@ -29,3 +30,5 @@ return function(_config)
 	end
 	-- No equivalent behavior can be applied here
 end
+
+return setGlobalConfig
