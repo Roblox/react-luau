@@ -1,7 +1,7 @@
-site_name: Roact Documentation
-site_url: https://roblox.github.io/roact-alignment/
-repo_name: Roblox/roact-alignment
-repo_url: https://github.com/Roblox/roact-alignment
+site_name: React Luau Documentation
+site_url: https://react-luau.dev/
+repo_name: Roblox/react-luau
+repo_url: https://github.com/Roblox/react-luau
 
 theme:
   name: material
@@ -28,15 +28,15 @@ nav:
   - Deviations: deviations.md
   - Configuration: configuration.md
   - Migrating From 1.x:
-    - Minimum Requirements: migrating-from-1x/minimum-requirements.md
-    - Add Roact 17 Dependency: migrating-from-1x/upgrading-to-roact-17.md
-    - Adopt New Features: migrating-from-1x/adopt-new-features.md
-    - Convert Legacy Conventions: migrating-from-1x/convert-legacy-conventions.md
+      - Minimum Requirements: migrating-from-1x/minimum-requirements.md
+      - Add Roact 17 Dependency: migrating-from-1x/upgrading-to-roact-17.md
+      - Adopt New Features: migrating-from-1x/adopt-new-features.md
+      - Convert Legacy Conventions: migrating-from-1x/convert-legacy-conventions.md
   - API Reference:
-    - React: api-reference/react.md
-    - ReactRoblox: api-reference/react-roblox.md
-    - RoactCompat: api-reference/roact-compat.md
-    - Additional Libraries: api-reference/additional-libraries.md
+      - React: api-reference/react.md
+      - ReactRoblox: api-reference/react-roblox.md
+      - RoactCompat: api-reference/roact-compat.md
+      - Additional Libraries: api-reference/additional-libraries.md
   - Benchmarks: bench.md
 
 extra_css:
