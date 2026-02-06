@@ -28,6 +28,7 @@ type RoactHandle = {
 	parent: any, -- ROBLOX TODO: Instance?
 }
 
+@[deprecated{ use = "ReactRoblox.createRoot()"}]
 local function mount(element: any, parent: any, key: string?): RoactHandle
 	if ReactGlobals.__DEV__ and ReactGlobals.__COMPAT_WARNINGS__ then
 		warnOnce("mount", "Please use the createRoot API in ReactRoblox")
@@ -95,6 +96,7 @@ local function mount(element: any, parent: any, key: string?): RoactHandle
 	}
 end
 
+@[deprecated{ use = "ReactRoblox.createRoot()"}]
 local function update(roactHandle: RoactHandle, element)
 	if ReactGlobals.__DEV__ and ReactGlobals.__COMPAT_WARNINGS__ then
 		warnOnce("update", "Please use the createRoot API in ReactRoblox")
@@ -119,6 +121,7 @@ local function update(roactHandle: RoactHandle, element)
 	return roactHandle
 end
 
+@[deprecated{ use = "ReactRoblox.createRoot()"}]
 local function unmount(roactHandle: RoactHandle)
 	if ReactGlobals.__DEV__ and ReactGlobals.__COMPAT_WARNINGS__ then
 		warnOnce("unmount", "Please use the createRoot API in ReactRoblox")
