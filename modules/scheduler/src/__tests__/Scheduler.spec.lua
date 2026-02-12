@@ -823,7 +823,7 @@ describe("yield catching", function()
 
 				jestExpect(function()
 					jestExpect(Scheduler).toFlushWithoutYielding()
-				end).toThrow("Yielding is not currently supported")
+				end).toThrow("Yielding is not allowed inside components or hooks.")
 			end)
 
 			it("throws if a continuation yields", function()
@@ -837,7 +837,7 @@ describe("yield catching", function()
 				jestExpect(Scheduler).toFlushAndYieldThrough({ "A" })
 				jestExpect(function()
 					jestExpect(Scheduler).toFlushWithoutYielding()
-				end).toThrow("Yielding is not currently supported")
+				end).toThrow("Yielding is not allowed inside components or hooks.")
 			end)
 		end)
 	end
