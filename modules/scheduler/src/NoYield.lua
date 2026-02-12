@@ -15,8 +15,15 @@
 	* limitations under the License.
 ]]
 
-local YIELD_ERROR =
-	"Yielding is not currently supported inside components or hooks. Move this yield into a new thread with `task.spawn` or `task.defer`."
+local YIELD_ERROR = [[
+
+Yielding is not allowed inside components or hooks.
+
+Yielding in a component stalls React's scheduler, freezing the entire application until the yield completes.
+Check the stack trace below to find the exact location of the yield.
+
+For more details and how to fix this, see: go/react-yield-error
+]]
 
 local function resultHandler(co: thread, ok: boolean, ...)
 	if not ok then
