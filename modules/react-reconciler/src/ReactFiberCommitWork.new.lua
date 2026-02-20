@@ -106,6 +106,7 @@ local enableProfilerCommitHooks = ReactFeatureFlags.enableProfilerCommitHooks
 local enableSuspenseCallback = ReactFeatureFlags.enableSuspenseCallback
 -- local enableScopeAPI = ReactFeatureFlags.enableScopeAPI
 local enableDoubleInvokingEffects = ReactFeatureFlags.enableDoubleInvokingEffects
+local enableNewTreeCleanupPath = ReactFeatureFlags.enableNewTreeCleanupPath
 local ReactWorkTags = require(script.Parent.ReactWorkTags)
 local FunctionComponent = ReactWorkTags.FunctionComponent
 local ForwardRef = ReactWorkTags.ForwardRef
@@ -1333,7 +1334,9 @@ local function detachFiberMutation(fiber: Fiber)
 	local alternate = fiber.alternate
 	if alternate ~= nil then
 		alternate.return_ = nil
-		fiber.alternate = nil
+		if not enableNewTreeCleanupPath then
+			fiber.alternate = nil
+		end
 	end
 	fiber.return_ = nil
 end
@@ -1774,9 +1777,12 @@ local function commitDeletion(
 	--     renderPriorityLevel
 	--   )
 	-- end
-	local alternate = current.alternate
+	local alternate
+	if not enableNewTreeCleanupPath then
+		alternate = current.alternate
+	end
 	detachFiberMutation(current)
-	if alternate ~= nil then
+	if not enableNewTreeCleanupPath and alternate ~= nil then
 		detachFiberMutation(alternate)
 	end
 end
