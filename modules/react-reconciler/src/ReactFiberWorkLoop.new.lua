@@ -57,6 +57,8 @@ local enableDebugTracing = ReactFeatureFlags.enableDebugTracing
 local enableSchedulingProfiler = ReactFeatureFlags.enableSchedulingProfiler
 local skipUnmountedBoundaries = ReactFeatureFlags.skipUnmountedBoundaries
 local enableDoubleInvokingEffects = ReactFeatureFlags.enableDoubleInvokingEffects
+local deletedTreeCleanUpLevel = ReactFeatureFlags.deletedTreeCleanUpLevel
+local enableNewTreeCleanupPath = ReactFeatureFlags.enableNewTreeCleanupPath
 local ReactShared = require(Packages.Shared)
 -- ROBLOX deviation: we pull in Dispatcher type because we need it for our lazy loading deviations to typecheck
 type Dispatcher = ReactShared.Dispatcher
@@ -154,6 +156,8 @@ type Flags = ReactFiberFlags.Flags
 -- local LayoutMask = ReactFiberFlags.LayoutMask
 -- local PassiveMask = ReactFiberFlags.PassiveMask
 -- local NoLane = ReactFiberLane.NoLane
+-- local getMostRecentEventTime = ReactFiberLane.getMostRecentEventTime
+-- local markRootSuspended_dontCallThisOneDirectly = ReactFiberLane.markRootSuspended
 local SyncLane = ReactFiberLane.SyncLane
 local SyncBatchedLane = ReactFiberLane.SyncBatchedLane
 local NoTimestamp = ReactFiberLane.NoTimestamp
@@ -176,9 +180,7 @@ local getCurrentUpdateLanePriority = ReactFiberLane.getCurrentUpdateLanePriority
 local markStarvedLanesAsExpired = ReactFiberLane.markStarvedLanesAsExpired
 local getLanesToRetrySynchronouslyOnError =
 	ReactFiberLane.getLanesToRetrySynchronouslyOnError
-local getMostRecentEventTime = ReactFiberLane.getMostRecentEventTime
 local markRootUpdated = ReactFiberLane.markRootUpdated
-local markRootSuspended_dontCallThisOneDirectly = ReactFiberLane.markRootSuspended
 local markRootPinged = ReactFiberLane.markRootPinged
 local markRootExpired = ReactFiberLane.markRootExpired
 local markDiscreteUpdatesExpired = ReactFiberLane.markDiscreteUpdatesExpired
@@ -1060,7 +1062,7 @@ mod.finishConcurrentRender = function(root, exitStatus, lanes)
 			-- the only reason we track the event time, then probably not.
 			-- Consider removing.
 
-			local mostRecentEventTime = getMostRecentEventTime(root, lanes)
+			local mostRecentEventTime = ReactFiberLane.getMostRecentEventTime(root, lanes)
 			local eventTimeMs = mostRecentEventTime
 			local timeElapsedMs = now() - eventTimeMs
 			local msUntilTimeout = jnd(timeElapsedMs) - timeElapsedMs
@@ -1092,7 +1094,7 @@ mod.markRootSuspended = function(root, suspendedLanes)
 	-- obnoxiously named function :)
 	suspendedLanes = removeLanes(suspendedLanes, workInProgressRootPingedLanes)
 	suspendedLanes = removeLanes(suspendedLanes, workInProgressRootUpdatedLanes)
-	markRootSuspended_dontCallThisOneDirectly(root, suspendedLanes)
+	ReactFiberLane.markRootSuspended(root, suspendedLanes)
 end
 
 -- This is the entry point for synchronous tasks that don't go
@@ -2891,8 +2893,38 @@ local function flushPassiveUnmountEffects(firstChild: Fiber): ()
 				local fiberToDelete = deletions[i]
 				mod.flushPassiveUnmountEffectsInsideOfDeletedTree(fiberToDelete, fiber)
 
-				-- Now that passive effects have been processed, it's safe to detach lingering pointers.
-				mod.detachFiberAfterEffects(fiberToDelete)
+				if not (enableNewTreeCleanupPath and deletedTreeCleanUpLevel >= 2) then
+					-- Now that passive effects have been processed, it's safe to detach lingering pointers.
+					mod.detachFiberAfterEffects(fiberToDelete)
+				end
+			end
+
+			if enableNewTreeCleanupPath then
+				if deletedTreeCleanUpLevel >= 1 then
+					-- A fiber was deleted from this parent fiber, but it's still part of
+					-- the previous (alternate) parent fiber's list of children. Because
+					-- children are a linked list, an earlier sibling that's still alive
+					-- will be connected to the deleted fiber via its `alternate`:
+					--
+					--   live fiber
+					--   --alternate--> previous live fiber
+					--   --sibling--> deleted fiber
+					--
+					-- We can't disconnect `alternate` on nodes that haven't been deleted
+					-- yet, but we can disconnect the `sibling` and `child` pointers.
+					local previousFiber = fiber.alternate
+					if previousFiber ~= nil then
+						local detachedChild = previousFiber.child
+						if detachedChild ~= nil then
+							previousFiber.child = nil
+							repeat
+								local detachedSibling = detachedChild.sibling
+								detachedChild.sibling = nil
+								detachedChild = detachedSibling
+							until detachedChild == nil
+						end
+					end
+				end
 			end
 		end
 
@@ -2927,7 +2959,8 @@ mod.flushPassiveUnmountEffectsInsideOfDeletedTree = function(
 )
 	if
 		bit32.band(fiberToDelete.subtreeFlags, ReactFiberFlags.PassiveStatic)
-		~= ReactFiberFlags.NoFlags
+			~= ReactFiberFlags.NoFlags
+		or (enableNewTreeCleanupPath and deletedTreeCleanUpLevel >= 2)
 	then
 		-- If any children have passive effects then traverse the subtree.
 		-- Note that this requires checking subtreeFlags of the current Fiber,
@@ -2935,11 +2968,12 @@ mod.flushPassiveUnmountEffectsInsideOfDeletedTree = function(
 		-- since that would not cover passive effects in siblings.
 		local child = fiberToDelete.child
 		while child ~= nil do
+			local childSibling = child.sibling
 			mod.flushPassiveUnmountEffectsInsideOfDeletedTree(
 				child,
 				nearestMountedAncestor
 			)
-			child = child.sibling
+			child = childSibling
 		end
 	end
 
@@ -2953,6 +2987,10 @@ mod.flushPassiveUnmountEffectsInsideOfDeletedTree = function(
 			nearestMountedAncestor
 		)
 		resetCurrentDebugFiberInDEV()
+	end
+
+	if enableNewTreeCleanupPath and deletedTreeCleanUpLevel >= 2 then
+		mod.detachFiberAfterEffects(fiberToDelete)
 	end
 end
 
@@ -4110,20 +4148,78 @@ exports.act = function(callback: () -> Thenable<any>): Thenable<any>
 end
 
 mod.detachFiberAfterEffects = function(fiber: Fiber)
-	-- Null out fields to improve GC for references that may be lingering (e.g. DevTools).
-	-- Note that we already cleared the return pointer in detachFiberMutation().
-	fiber.child = nil
-	fiber.deletions = nil
-	fiber.dependencies = nil
-	fiber.memoizedProps = nil
-	fiber.memoizedState = nil
-	fiber.pendingProps = nil
-	fiber.sibling = nil
-	fiber.stateNode = nil
-	fiber.updateQueue = nil
+	if enableNewTreeCleanupPath then
+		local alternate = fiber.alternate
+		if alternate ~= nil then
+			fiber.alternate = nil
+			mod.detachFiberAfterEffects(alternate)
+		end
+	end
 
-	if __DEV__ then
-		fiber._debugOwner = nil
+	-- Note: Defensively using negation instead of < in case
+	-- `deletedTreeCleanUpLevel` is undefined.
+	if not (enableNewTreeCleanupPath and deletedTreeCleanUpLevel >= 2) then
+		fiber.child = nil
+		fiber.deletions = nil
+		fiber.dependencies = nil
+		fiber.memoizedProps = nil
+		fiber.memoizedState = nil
+		fiber.pendingProps = nil
+		fiber.sibling = nil
+		fiber.stateNode = nil
+		fiber.updateQueue = nil
+
+		if __DEV__ then
+			fiber._debugOwner = nil
+		end
+	else
+		-- Clear cyclical Fiber fields. This level alone is designed to roughly
+		-- approximate the planned Fiber refactor. In that world, `setState` will be
+		-- bound to a special "instance" object instead of a Fiber. The Instance
+		-- object will not have any of these fields. It will only be connected to
+		-- the fiber tree via a single link at the root. So if this level alone is
+		-- sufficient to fix memory issues, that bodes well for our plans.
+		fiber.child = nil
+		fiber.deletions = nil
+		fiber.sibling = nil
+
+		-- I'm intentionally not clearing the `return` field in this level. We
+		-- already disconnect the `return` pointer at the root of the deleted
+		-- subtree (in `detachFiberMutation`). Besides, `return` by itself is not
+		-- cyclical — it's only cyclical when combined with `child`, `sibling`, and
+		-- `alternate`. But we'll clear it in the next level anyway, just in case.
+
+		if __DEV__ then
+			fiber._debugOwner = nil
+		end
+
+		if deletedTreeCleanUpLevel >= 3 then
+			-- Theoretically, nothing in here should be necessary, because we already
+			-- disconnected the fiber from the tree. So even if something leaks this
+			-- particular fiber, it won't leak anything else
+			--
+			-- The purpose of this branch is to be super aggressive so we can measure
+			-- if there's any difference in memory impact. If there is, that could
+			-- indicate a React leak we don't know about.
+
+			-- For host components, disconnect host instance -> fiber pointer.
+			-- ROBLOX deviation: we already uncache each instance recursively in removeChild
+			-- if fiber.tag == ReactWorkTags.HostComponent then
+			-- 	local hostInstance: Instance = fiber.stateNode
+			-- 	if hostInstance ~= nil then
+			-- 		ReactFiberHostConfig.detachDeletedInstance(hostInstance)
+			-- 	end
+			-- end
+
+			fiber.return_ = nil
+			fiber.dependencies = nil
+			fiber.memoizedProps = nil
+			fiber.memoizedState = nil
+			fiber.pendingProps = nil
+			fiber.stateNode = nil
+			-- TODO: Move to `commitPassiveUnmountInsideDeletedTreeOnFiber` instead.
+			fiber.updateQueue = nil
+		end
 	end
 end
 
