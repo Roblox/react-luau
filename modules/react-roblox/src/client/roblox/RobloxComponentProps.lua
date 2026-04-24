@@ -309,11 +309,31 @@ local function updateProperties(
 	end
 end
 
-local _, FFlagReactFixBindingMemoryLeak = xpcall(function()
-	return game:DefineFastFlag("ReactFixBindingMemoryLeak", false)
-end, function()
-	return true
-end)
+-- ============================================================================
+-- FASTFLAG INITIALIZATION WITH CONTEXT DETECTION
+-- DefineFastFlag requires RobloxScript capability (server-side only)
+-- Client scripts lack this capability and will throw un-catchable errors
+-- Sol-> Check context first, only call DefineFastFlag in server contexts
+-- ============================================================================
+
+local FFlagReactFixBindingMemoryLeak = true -- Safe default for all contexts
+
+-- Only attempt to DefineFastFlag in server contexts where the capability exists
+local RunService = game:GetService("RunService")
+local isServerContext = RunService:IsServer() and not RunService:IsClient()
+
+if isServerContext then
+	-- Were in a server context safely attempt to get the FastFlag
+	local success, result = pcall(function()
+		return game:DefineFastFlag("ReactFixBindingMemoryLeak", false)
+	end)
+	
+	if success and typeof(result) == "boolean" then
+		FFlagReactFixBindingMemoryLeak = result
+	end
+	-- if pcall fails we keep the safe default (true)
+end
+-- ^^^^^^ Note -> Client scripts always use true (the safe default with memory leak fix enabled)
 
 local function cleanupBindings(domElement: HostInstance)
 	local instanceBindings = instanceToBindings[domElement]
