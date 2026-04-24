@@ -148,18 +148,19 @@ return {
 	-- ROBLOX TODO: REACT_SCOPE_TYPE as unstable_Scope,
 	-- ROBLOX TODO: useOpaqueIdentifier as unstable_useOpaqueIdentifier,
 
-	-- ROBLOX deviation START: bindings support
+	-- ROBLOX DEVIATION START: bindings support
+	__subscribeToBinding = @[deprecated{ use = "ReactBinding:_subscribe()" }] function<T>(
+		binding: ReactBinding<T>,
+		f: (value: T) -> ()
+	): () -> ()
+		return binding:_subscribe()
+	end,
 	createBinding = ReactBinding.create,
 	joinBindings = ReactBinding.join,
-	-- ROBLOX deviation END
+	-- ROBLOX DEVIATION END
 
 	-- ROBLOX DEVIATION: export the `None` placeholder for use with setState
 	None = ReactNone,
-
-	-- ROBLOX FIXME: These aren't supposed to be exposed, but they're needed by
-	-- the renderer in order to update properly
-	__subscribeToBinding = ReactBinding.subscribe,
-
 	-- ROBLOX DEVIATION: export Change, Event, and Tag from React
 	Event = require(Packages.Shared).Event,
 	Change = require(Packages.Shared).Change,

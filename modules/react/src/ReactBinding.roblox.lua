@@ -17,217 +17,213 @@
 local Packages = script.Parent.Parent
 
 local ReactGlobals = require(Packages.ReactGlobals)
-local LuauPolyfill = require(Packages.LuauPolyfill)
-local ReactSymbols = require(Packages.Shared).ReactSymbols
+local Shared = require(Packages.Shared)
+local ReactSymbols = Shared.ReactSymbols
+local ReactTypes = Shared
 
-local ReactTypes = require(Packages.Shared)
-type Binding<T> = ReactTypes.ReactBinding<T>
-type BindingUpdater<T> = ReactTypes.ReactBindingUpdater<T>
-
-local Symbol = LuauPolyfill.Symbol
-local createSignal = require(script.Parent["createSignal.roblox"])
-
-local BindingImpl = Symbol("BindingImpl")
-
-type BindingInternal<T> = {
-	["$$typeof"]: typeof(ReactSymbols.REACT_BINDING_TYPE),
-	value: T,
-
-	getValue: (BindingInternal<T>) -> T,
-	-- FIXME Luau: can't define recursive types with different parameters
-	map: <U>(BindingInternal<T>, (T) -> U) -> any,
-
-	update: (T) -> (),
-	subscribe: ((T) -> ()) -> () -> (),
-}
-
-local BindingInternalApi = {}
-
-local bindingPrototype = {}
-
-function bindingPrototype.getValue<T>(binding: BindingInternal<T>): T
-	return BindingInternalApi.getValue(binding)
+local function IS_BINDING(value: unknown): boolean
+	-- stylua: ignore
+	return type(value) == "table"
+		and	value["$$typeof"] == ReactSymbols.REACT_BINDING_TYPE
 end
 
-function bindingPrototype.map<T, U>(
-	binding: BindingInternal<T>,
-	predicate: (T) -> U
-): Binding<U>
-	return BindingInternalApi.map(binding, predicate)
-end
+local ReactBinding = {}
 
-local BindingPublicMeta = {
-	__index = bindingPrototype,
-	__tostring = function(self)
-		return string.format("RoactBinding(%s)", tostring(self:getValue()))
-	end,
-}
+-- stylua: ignore
+local bindingPrototype = {} do
+	bindingPrototype["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE
+	bindingPrototype.__index = bindingPrototype
 
-function BindingInternalApi.update<T>(binding: any, newValue: T)
-	return (binding[BindingImpl] :: BindingInternal<T>).update(newValue)
-end
-
-function BindingInternalApi.subscribe<T>(binding: any, callback: (T) -> ())
-	return (binding[BindingImpl] :: BindingInternal<T>).subscribe(callback)
-end
-
-function BindingInternalApi.getValue<T>(binding: any): T
-	return (binding[BindingImpl] :: BindingInternal<T>):getValue()
-end
-
-function BindingInternalApi.create<T>(initialValue: T): (Binding<T>, BindingUpdater<T>)
-	local subscribe, fire = createSignal()
-	local impl = {
-		value = initialValue,
-		subscribe = subscribe,
-	}
-
-	function impl.update(newValue: T)
-		impl.value = newValue
-		fire(newValue)
+	function bindingPrototype.__tostring(binding)
+		return `RoactBinding({binding:getValue()})`
 	end
 
-	function impl.getValue()
-		return impl.value
+	function bindingPrototype._subscribe(binding, callback)
+		local callbacks = binding._callbacks
+		local callbackState = callbacks[callback]
+
+		if binding._firing and callbackState then
+			callbacks[callback] = false
+		elseif callbackState == nil then
+			callbacks[callback] = true
+		end
+
+		return function()
+			callbacks[callback] = nil
+		end
 	end
 
-	local source
-	if ReactGlobals.__DEV__ then
-		-- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for bindings
-		source = debug.traceback("Binding created at:", 3)
+	function bindingPrototype.getValue(binding)
+		return binding._value
 	end
 
-	return (setmetatable({
-		["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
-		[BindingImpl] = impl,
-		_source = source,
-	}, BindingPublicMeta) :: any) :: Binding<T>,
-		impl.update
+	function ReactBinding.create<T>(initialValue: T): (
+		ReactTypes.ReactBinding<T>,
+		ReactTypes.ReactBindingUpdater<T>
+	)
+		local callbacks = {}
+		local source
+
+		if ReactGlobals.__DEV__ then
+			-- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for bindings
+			source = debug.traceback("Binding created at:", 3)
+		end
+
+		local binding = {
+			_callbacks = callbacks,
+			_value = initialValue,
+			_source = source,
+			_firing = false,
+		}
+
+		local function update(newValue: T)
+			binding._value = newValue
+
+			binding._firing = true
+			for callback, notSuspended in callbacks do
+				if notSuspended then
+					callback(newValue)
+				else
+					callbacks[callback] = false
+				end
+			end
+			binding._firing = false
+		end
+
+		binding.update = update
+
+		return setmetatable(binding, bindingPrototype) :: any, update
+	end
 end
 
-function BindingInternalApi.map<T, U>(
-	upstreamBinding: BindingInternal<T>,
-	predicate: (T) -> U
-): Binding<U>
-	if ReactGlobals.__DEV__ then
-		-- ROBLOX TODO: More informative error messages here
-		assert(
-			typeof(upstreamBinding) == "table"
-				and upstreamBinding["$$typeof"] == ReactSymbols.REACT_BINDING_TYPE,
-			"Expected `self` to be a binding"
-		)
-		assert(typeof(predicate) == "function", "Expected arg #1 to be a function")
+do -- map binding
+	local mappedBindingPrototype = setmetatable({}, bindingPrototype)
+	mappedBindingPrototype.__index = mappedBindingPrototype
+
+	function mappedBindingPrototype.getValue(mappedBinding)
+		return mappedBinding._predicate(mappedBinding._upstreamBinding:getValue())
 	end
 
-	local impl = {}
+	function mappedBindingPrototype._subscribe(mappedBinding, callback)
+		local predicate = mappedBinding._predicate
 
-	function impl.subscribe(callback)
-		return BindingInternalApi.subscribe(upstreamBinding, function(newValue)
+		return mappedBinding._upstreamBinding:_subscribe(function(newValue)
 			callback(predicate(newValue))
 		end)
 	end
 
-	function impl.update(newValue)
-		error("Bindings created by Binding:map(fn) cannot be updated directly", 2)
+	function mappedBindingPrototype.update()
+		error("Bindings created by ReactBinding:map() cannot be updated directly", 2)
 	end
 
-	function impl.getValue()
-		return predicate(upstreamBinding:getValue())
-	end
+	local function mapBinding<T, U>(
+		upstreamBinding: ReactTypes.ReactBinding<T>,
+		predicate: (T) -> U
+	): ReactTypes.ReactBinding<U>
+		local source
 
-	local source
-	if ReactGlobals.__DEV__ then
-		-- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for bindings
-		source = debug.traceback("Mapped binding created at:", 3)
-	end
+		if ReactGlobals.__DEV__ then
+			-- ROBLOX TODO: More informative error messages here
+			assert(
+				IS_BINDING(upstreamBinding),
+				"Expected 'upstreamBinding' to be of type 'ReactBinding'"
+			)
+			assert(type(predicate) == "function", "Expected 'predicate' to be of type function")
 
-	return (
-		setmetatable({
-			["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
-			[BindingImpl] = impl,
+			-- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for bindings
+			source = debug.traceback("Mapped Binding created at:", 3)
+		end
+
+		return setmetatable({
+			_upstreamBinding = upstreamBinding,
+			_predicate = predicate,
 			_source = source,
-		}, BindingPublicMeta) :: any
-	) :: Binding<U>
+		}, mappedBindingPrototype) :: any
+	end
+
+
+	bindingPrototype.map = mapBinding
+	ReactBinding.map = mapBinding
+	table.freeze(mappedBindingPrototype)
+	table.freeze(bindingPrototype)
 end
 
--- The `join` API is used statically, so the input will be a table with values
--- typed as the public Binding type
-function BindingInternalApi.join<T>(
-	upstreamBindings: { [string | number]: Binding<any> }
-): Binding<T>
-	if ReactGlobals.__DEV__ then
-		assert(typeof(upstreamBindings) == "table", "Expected arg #1 to be of type table")
-
-		for key, value in upstreamBindings do
-			if
-				typeof(value) ~= "table"
-				or (value :: any)["$$typeof"] ~= ReactSymbols.REACT_BINDING_TYPE
-			then
-				local message = ("Expected arg #1 to contain only bindings, but key %q had a non-binding value"):format(
-					tostring(key)
-				)
-				error(message, 2)
-			end
-		end
-	end
-
-	local impl = {}
-
-	local function getValue()
+do -- join
+	local function getValueJoined(
+		upstreamBindings: { [string | number]: ReactTypes.ReactBinding<any> }
+	): { [string | number]: any }
 		local value = {}
 
-		-- ROBLOX FIXME Luau: needs CLI-56711 resolved to eliminate ipairs()
-		for key, upstream in pairs(upstreamBindings) do
+		for key, upstream in upstreamBindings do
 			value[key] = upstream:getValue()
 		end
 
 		return value
 	end
 
-	function impl.subscribe(callback)
-		-- ROBLOX FIXME: type refinements
-		local disconnects: any = {}
+	local joinedBindingPrototype = setmetatable({}, bindingPrototype)
+	joinedBindingPrototype.__index = joinedBindingPrototype
+
+	function joinedBindingPrototype.getValue(joinedBinding)
+		return getValueJoined(joinedBinding._upstreamBindings)
+	end
+
+	function joinedBindingPrototype._subscribe(joinedBinding, callback)
+		local upstreamBindings = joinedBinding._upstreamBindings
+		local disconnects = {} :: { () -> () }
 
 		for key, upstream in upstreamBindings do
-			disconnects[key] = BindingInternalApi.subscribe(upstream, function(newValue)
-				callback(getValue())
-			end)
+			table.insert(disconnects, upstream:_subscribe(function(newValue)
+				callback(getValueJoined(upstreamBindings))
+			end))
 		end
 
 		return function()
-			if disconnects == nil then
-				return
-			end
-
 			for _, disconnect in disconnects do
 				disconnect()
 			end
-
-			disconnects = nil
 		end
 	end
 
-	function impl.update(newValue)
-		error("Bindings created by joinBindings(...) cannot be updated directly", 2)
+	function joinedBindingPrototype.update()
+		error("Bindings created by React.joinBindings() cannot be updated directly", 2)
 	end
 
-	function impl.getValue()
-		return getValue()
-	end
+	-- The `join` API is used statically, so the input will be a table with values
+	-- typed as the public Binding type
+	function ReactBinding.join<T>(
+		upstreamBindings: { [string | number]: ReactTypes.ReactBinding<any> }
+	): ReactTypes.ReactBinding<T>
+		local source
 
-	local source
-	if ReactGlobals.__DEV__ then
-		-- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for bindings
-		source = debug.traceback("Joined binding created at:", 2)
-	end
+		if ReactGlobals.__DEV__ then
+			assert(
+				type(upstreamBindings) == "table",
+				"Expected 'upstreamBindings' to be of type table"
+			)
 
-	return (
-		setmetatable({
-			["$$typeof"] = ReactSymbols.REACT_BINDING_TYPE,
-			[BindingImpl] = impl,
+			for key, value in upstreamBindings do
+				if IS_BINDING(value) then
+					continue
+				end
+
+				error(
+					`Expected table 'upstreamBindings' to contain only bindings, but key "{key}" had a non-binding value`,
+					2
+				)
+			end
+
+			-- ROBLOX TODO: LUAFDN-619 - improve debug stacktraces for bindings
+			source = debug.traceback("Joined Binding created at:", 2)
+		end
+
+		return setmetatable({
+			_upstreamBindings = upstreamBindings,
 			_source = source,
-		}, BindingPublicMeta) :: any
-	) :: Binding<T>
+		}, joinedBindingPrototype) :: any
+	end
+
+	table.freeze(joinedBindingPrototype)
 end
 
-return BindingInternalApi
+return table.freeze(ReactBinding)
