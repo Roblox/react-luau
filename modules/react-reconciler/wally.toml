@@ -1,0 +1,19 @@
+[package]
+name = "roblox/react-reconciler"
+description = "The React reconciler — the renderer-agnostic core that powers React Luau renderers."
+version = "17.3.9"
+license = "MIT"
+authors = ["Roblox <no-reply@roblox.com>"]
+realm = "shared"
+registry = "https://github.com/UpliftGames/wally-index"
+repository = "https://github.com/Roblox/react-lua"
+exclude = ["rotriever.toml"]
+
+[dependencies]
+LuauPolyfill = "roblox/luau-polyfill@^1.2.5"
+Promise = "roblox/promise@^3.5.2"
+SafeFlags = "roblox/safe-flags@^0.1.2"
+ReactGlobals = "roblox/react-globals@^17"
+Scheduler = "roblox/react-scheduler@^17"
+Shared = "roblox/react-shared@^17"
+React = "roblox/react@^17"
