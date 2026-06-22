@@ -1,0 +1,22 @@
+[package]
+# This wally.toml is a transient install-test manifest, NOT a publishable
+# package. It exists solely to exercise `wally install` against the
+# configured registry after the React Luau packages are published there.
+# `private = true` prevents accidental publishing.
+name = "roblox/react-luau-install-test"
+description = "Install-test consumer for the React Luau Wally packages."
+version = "0.0.0"
+license = "MIT"
+authors = ["Roblox <no-reply@roblox.com>"]
+realm = "shared"
+registry = "https://github.com/UpliftGames/wally-index"
+private = true
+
+# Depend only on the consumer-facing entry points. The other five published
+# packages (react-globals, react-is, react-reconciler, react-scheduler,
+# react-shared, scheduler) will be pulled in transitively — which is what
+# we actually want to validate.
+[dependencies]
+React = "roblox/react@17.3.9"
+ReactRoblox = "roblox/react-roblox@17.3.9"
+RoactCompat = "roblox/roact-compat@17.3.9"

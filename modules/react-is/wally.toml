@@ -1,0 +1,15 @@
+[package]
+name = "roblox/react-is"
+description = "Runtime type-checking utilities for React Luau elements."
+version = "17.3.9"
+license = "MIT"
+authors = ["Roblox <no-reply@roblox.com>"]
+realm = "shared"
+registry = "https://github.com/UpliftGames/wally-index"
+repository = "https://github.com/Roblox/react-lua"
+exclude = ["rotriever.toml"]
+
+[dependencies]
+ReactGlobals = "roblox/react-globals@^17"
+SafeFlags = "roblox/safe-flags@^0.1.2"
+Shared = "roblox/react-shared@^17"

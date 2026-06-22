@@ -1,0 +1,18 @@
+[package]
+name = "roblox/react-roblox"
+description = "The Roblox-instance renderer for React Luau."
+version = "17.3.9"
+license = "MIT"
+authors = ["Roblox <no-reply@roblox.com>"]
+realm = "shared"
+registry = "https://github.com/UpliftGames/wally-index"
+repository = "https://github.com/Roblox/react-lua"
+exclude = ["rotriever.toml"]
+
+[dependencies]
+LuauPolyfill = "roblox/luau-polyfill@^1.2.5"
+Shared = "roblox/react-shared@^17"
+React = "roblox/react@^17"
+ReactGlobals = "roblox/react-globals@^17"
+ReactReconciler = "roblox/react-reconciler@^17"
+Scheduler = "roblox/react-scheduler@^17"
