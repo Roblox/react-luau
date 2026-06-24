@@ -19,7 +19,8 @@ local React = require(Packages.React)
 
 local warnOnce = require(script.Parent.warnOnce)
 
-return function(elements)
+@[deprecated{use = "React.createElement(React.Fragment, ...)"}]
+local function createFragment(elements)
 	if ReactGlobals.__DEV__ and ReactGlobals.__COMPAT_WARNINGS__ then
 		warnOnce(
 			"createFragment",
@@ -28,3 +29,5 @@ return function(elements)
 	end
 	return React.createElement(React.Fragment, nil, elements)
 end
+
+return createFragment

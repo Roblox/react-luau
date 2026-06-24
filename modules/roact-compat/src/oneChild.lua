@@ -19,6 +19,9 @@ local ReactGlobals = require(Packages.ReactGlobals)
 
 local warnOnce = require(script.Parent.warnOnce)
 
+@[deprecated{
+	reason = "You likely don't need this at all! If you were assigning children via `React.oneChild(someChildren)`, you can simply use `someChildren` directly."
+}]
 local function oneChild(children)
 	if ReactGlobals.__DEV__ and ReactGlobals.__COMPAT_WARNINGS__ then
 		warnOnce(

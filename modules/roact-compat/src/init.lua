@@ -25,10 +25,18 @@ return {
 	-- Overlapping contents of public `React` interface
 	Component = React.Component,
 	PureComponent = React.PureComponent,
-	createElement = React.createElement,
-	createRef = React.createRef,
-	forwardRef = React.forwardRef,
-	createContext = React.createContext,
+	createElement = @[deprecated{ use = "React.createElement"}] function(...)
+		return React.createElement(...)
+	end,
+	createRef = @[deprecated{ use = "React.createRef"}] function(...)
+		return React.createRef(...)
+	end,
+	forwardRef = @[deprecated{ use = "React.forwardRef"}] function(...)
+		return React.forwardRef(...)
+	end,
+	createContext = @[deprecated{ use = "React.createContext"}] function(...)
+		return React.createContext(...)
+	end,
 	-- This public interface is aligned but is a deviation in React. It's
 	-- necessary to accommodate lua table semantics when merging state
 	None = React.None,
@@ -59,8 +67,14 @@ return {
 	Change = Shared.Change,
 
 	-- Binding interface entry-point for Roact-specific 'bindings' feature
-	createBinding = React.createBinding,
-	joinBindings = React.joinBindings,
+	createBinding = @[deprecated{ use = "React.createBinding()"}] function(...)
+		return React.createBinding(...)
+	end,
+	joinBindings = @[deprecated{ use = "React.joinBindings()"}] function(...)
+		return React.joinBindings(...)
+	end,
 
-	act = ReactRoblox.act,
+	act = @[deprecated{ use = "ReactRoblox.act()"}] function(...)
+		return ReactRoblox.act(...)
+	end,
 }
