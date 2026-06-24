@@ -174,19 +174,32 @@ export type ReactScopeInstance = {
 -- FIXME Luau: can't create recursive type with different parameters, so we
 -- need to split the generic `map` method into a different type and then
 -- re-combine those types together
-type CoreReactBinding<T> = {
-	getValue: (self: CoreReactBinding<T>) -> T,
-	_source: string?,
-}
-type ReactBindingMap = {
-	map: <T, U>(
-		self: CoreReactBinding<T> & ReactBindingMap,
-		(T) -> U
-	) -> ReactBindingMap & CoreReactBinding<U>,
+type ReactBindingPrototype<T> = {
+	getValue: (self: ReactBindingPrototype<T>) -> T,
+	_subscribe: (
+		self: ReactBindingPrototype<T>,
+		callback: (newValue: T) -> ()
+	) -> () -> (),
+	__tostring: (self: ReactBindingPrototype<T>) -> string,
+	__index: ReactBindingPrototype<T>,
+	["$$typeof"]: any, -- userdatas from newproxy() are typed any
 }
 
-export type ReactBinding<T> = CoreReactBinding<T> & ReactBindingMap
-export type ReactBindingUpdater<T> = (T) -> ()
+type ReactBindingPrototypeMap = {
+	map: <T, U>(
+		self: ReactBindingPrototypeMap & ReactBindingPrototype<T>,
+		predicate: (value: T) -> U
+	) -> ReactBindingPrototypeMap & ReactBindingPrototype<U>,
+}
+
+-- stylua: ignore
+export type ReactBinding<T> =
+	& {
+		_source: string?,
+	}
+	& ReactBindingPrototypeMap
+	& ReactBindingPrototype<T>
+export type ReactBindingUpdater<T> = (newValue: T) -> ()
 -- ROBLOX deviation END
 
 -- Mutable source version can be anything (e.g. number, string, immutable data structure)

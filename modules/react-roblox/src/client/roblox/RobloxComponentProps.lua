@@ -125,9 +125,7 @@ local function attachBinding(hostInstance, key, newBinding): ()
 		instanceToBindings[hostInstance] = {}
 	end
 
-	instanceToBindings[hostInstance][key] =
-		React.__subscribeToBinding(newBinding, updateBoundProperty)
-
+	instanceToBindings[hostInstance][key] = newBinding:_subscribe(updateBoundProperty)
 	updateBoundProperty(newBinding:getValue())
 end
 
