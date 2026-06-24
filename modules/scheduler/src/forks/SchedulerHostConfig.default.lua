@@ -69,15 +69,10 @@ local targetMillisecondsPerFrame = desiredMillisecondsPerFrame
 local averageMillisecondsPerFrame = targetMillisecondsPerFrame
 
 local heartbeatConection: RBXScriptConnection? = nil
-local lookbackBuffer: { number? }? = nil
+local lookbackBuffer = if FFlagReactSchedulerLookbackUseRingBuffer
+	then table.create(FIntReactSchedulerNumberOfLookbackFrames)
+	else nil :: never
 local lookbackIndex = 1
-
-local function resetLookbackBuffer()
-	lookbackBuffer = if FFlagReactSchedulerLookbackUseRingBuffer
-		then table.create(FIntReactSchedulerNumberOfLookbackFrames)
-		else nil
-	lookbackIndex = 1
-end
 
 local function resetFrameBudgets()
 	desiredMillisecondsPerFrame =
@@ -87,8 +82,6 @@ local function resetFrameBudgets()
 	averageMillisecondsPerFrame = targetMillisecondsPerFrame
 end
 
-resetLookbackBuffer()
-
 local function createHeartbeatConnection()
 	if heartbeatConection then
 		heartbeatConection:Disconnect()
@@ -97,23 +90,18 @@ local function createHeartbeatConnection()
 		:Connect(function(step: number)
 			if FIntReactSchedulerNumberOfLookbackFrames > 1 then
 				if FFlagReactSchedulerLookbackUseRingBuffer then
-					if lookbackBuffer == nil then
-						resetLookbackBuffer()
-					end
-					local buffer = lookbackBuffer :: { number? }
-					buffer[lookbackIndex] = step * 1000
+					lookbackBuffer[lookbackIndex] = step * 1000
 					lookbackIndex = (
 						lookbackIndex % FIntReactSchedulerNumberOfLookbackFrames
 					) + 1
 					local totalFrameTime = 0
 					local totalFrames = FIntReactSchedulerNumberOfLookbackFrames
 					for i = 1, totalFrames do
-						local frameTime = buffer[i]
-						if frameTime == nil then
+						if lookbackBuffer[i] == nil then
 							totalFrames = i - 1
 							break
 						end
-						totalFrameTime += frameTime
+						totalFrameTime += lookbackBuffer[i]
 					end
 					averageMillisecondsPerFrame = totalFrameTime / totalFrames
 				else
@@ -199,13 +187,9 @@ local function setSchedulerFlags(flags: SchedulerFlags)
 	end
 	if flags.numberOfLookbackFrames ~= nil then
 		FIntReactSchedulerNumberOfLookbackFrames = flags.numberOfLookbackFrames
-		resetLookbackBuffer()
-		averageMillisecondsPerFrame = targetMillisecondsPerFrame
 	end
 	if flags.lookbackUseRingBuffer ~= nil then
 		FFlagReactSchedulerLookbackUseRingBuffer = flags.lookbackUseRingBuffer
-		resetLookbackBuffer()
-		averageMillisecondsPerFrame = targetMillisecondsPerFrame
 	end
 end
 
