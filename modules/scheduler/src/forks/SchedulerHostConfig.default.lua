@@ -57,14 +57,8 @@ local FFlagReactSchedulerLookbackUseRingBuffer =
 -- ROBLOX deviation: support deferred re-entrants before yielding to the next frame
 local isDeferred = false
 local frameStartTime = 0
-local function getMillisecondsPerFrame(frameRate: number): number
-	return 1000 / frameRate
-end
-
-local desiredMillisecondsPerFrame =
-	getMillisecondsPerFrame(FIntReactSchedulerDesiredFrameRate)
-local maxMillisecondsPerFrame =
-	getMillisecondsPerFrame(FIntReactSchedulerMinimumFrameRate)
+local desiredMillisecondsPerFrame = 1000 / FIntReactSchedulerDesiredFrameRate
+local maxMillisecondsPerFrame = 1000 / FIntReactSchedulerMinimumFrameRate
 local targetMillisecondsPerFrame = desiredMillisecondsPerFrame
 local averageMillisecondsPerFrame = targetMillisecondsPerFrame
 
@@ -75,9 +69,8 @@ local lookbackBuffer = if FFlagReactSchedulerLookbackUseRingBuffer
 local lookbackIndex = 1
 
 local function resetFrameBudgets()
-	desiredMillisecondsPerFrame =
-		getMillisecondsPerFrame(FIntReactSchedulerDesiredFrameRate)
-	maxMillisecondsPerFrame = getMillisecondsPerFrame(FIntReactSchedulerMinimumFrameRate)
+	desiredMillisecondsPerFrame = 1000 / FIntReactSchedulerDesiredFrameRate
+	maxMillisecondsPerFrame = 1000 / FIntReactSchedulerMinimumFrameRate
 	targetMillisecondsPerFrame = desiredMillisecondsPerFrame
 	averageMillisecondsPerFrame = targetMillisecondsPerFrame
 end
@@ -155,16 +148,12 @@ local function setSchedulerFlags(flags: SchedulerFlags)
 	if flags.yieldInterval ~= nil then
 		yieldInterval = flags.yieldInterval
 	end
-	local frameBudgetsDidChange = false
 	if flags.desiredFrameRate ~= nil then
 		FIntReactSchedulerDesiredFrameRate = flags.desiredFrameRate
-		frameBudgetsDidChange = true
+		resetFrameBudgets()
 	end
 	if flags.minimumFrameRate ~= nil then
 		FIntReactSchedulerMinimumFrameRate = flags.minimumFrameRate
-		frameBudgetsDidChange = true
-	end
-	if frameBudgetsDidChange then
 		resetFrameBudgets()
 	end
 	if flags.deferredWork ~= nil then
