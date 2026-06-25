@@ -16,6 +16,8 @@ local it = JestGlobals.it
 local jest = JestGlobals.jest
 
 local scheduleCallback
+local setSchedulerFlags
+local getSchedulerFlags
 local ImmediatePriority
 local UserBlockingPriority
 local NormalPriority
@@ -26,6 +28,8 @@ beforeEach(function()
 	local Scheduler = require(script.Parent.Parent.Scheduler)()
 
 	scheduleCallback = Scheduler.unstable_scheduleCallback
+	setSchedulerFlags = Scheduler.unstable_setSchedulerFlags
+	getSchedulerFlags = Scheduler.unstable_getSchedulerFlags
 	ImmediatePriority = Scheduler.unstable_ImmediatePriority
 	UserBlockingPriority = Scheduler.unstable_UserBlockingPriority
 	NormalPriority = Scheduler.unstable_NormalPriority
@@ -97,4 +101,15 @@ it("handles errors", function()
 		jest.runAllTimers()
 	end).toThrow("Oops C")
 	jestExpect(log).toEqual({ "B", "C" })
+end)
+
+it("updates scheduler frame-rate flags at runtime", function()
+	setSchedulerFlags({
+		desiredFrameRate = 45,
+		minimumFrameRate = 15,
+	})
+
+	local schedulerFlags = getSchedulerFlags()
+	jestExpect(schedulerFlags.desiredFrameRate).toBe(45)
+	jestExpect(schedulerFlags.minimumFrameRate).toBe(15)
 end)

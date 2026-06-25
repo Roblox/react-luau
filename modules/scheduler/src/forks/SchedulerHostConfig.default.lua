@@ -68,6 +68,13 @@ local lookbackBuffer = if FFlagReactSchedulerLookbackUseRingBuffer
 	else nil :: never
 local lookbackIndex = 1
 
+local function resetFrameBudgets()
+	desiredMillisecondsPerFrame = 1000 / FIntReactSchedulerDesiredFrameRate
+	maxMillisecondsPerFrame = 1000 / FIntReactSchedulerMinimumFrameRate
+	targetMillisecondsPerFrame = desiredMillisecondsPerFrame
+	averageMillisecondsPerFrame = targetMillisecondsPerFrame
+end
+
 local function createHeartbeatConnection()
 	if heartbeatConection then
 		heartbeatConection:Disconnect()
@@ -128,6 +135,8 @@ local deadline = 0
 
 type SchedulerFlags = {
 	yieldInterval: number?,
+	desiredFrameRate: number?,
+	minimumFrameRate: number?,
 	deferredWork: boolean?,
 	heartbeatFrameMarker: boolean?,
 	targetMsByHeartbeatDelta: boolean?,
@@ -138,6 +147,14 @@ type SchedulerFlags = {
 local function setSchedulerFlags(flags: SchedulerFlags)
 	if flags.yieldInterval ~= nil then
 		yieldInterval = flags.yieldInterval
+	end
+	if flags.desiredFrameRate ~= nil then
+		FIntReactSchedulerDesiredFrameRate = flags.desiredFrameRate
+		resetFrameBudgets()
+	end
+	if flags.minimumFrameRate ~= nil then
+		FIntReactSchedulerMinimumFrameRate = flags.minimumFrameRate
+		resetFrameBudgets()
 	end
 	if flags.deferredWork ~= nil then
 		FFlagReactSchedulerEnableDeferredWork = flags.deferredWork
@@ -168,6 +185,8 @@ end
 local function getSchedulerFlags(): SchedulerFlags
 	return {
 		yieldInterval = yieldInterval,
+		desiredFrameRate = FIntReactSchedulerDesiredFrameRate,
+		minimumFrameRate = FIntReactSchedulerMinimumFrameRate,
 		deferredWork = FFlagReactSchedulerEnableDeferredWork,
 		heartbeatFrameMarker = FFlagReactSchedulerSetFrameMarkerOnHeartbeatEnd,
 		targetMsByHeartbeatDelta = FFlagReactSchedulerSetTargetMsByHeartbeatDelta,
