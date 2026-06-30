@@ -21,6 +21,9 @@
 
 <div align="center">
 
+[![Get it on Creator Store](./.github/assets/link-creator-store.svg)](https://create.roblox.com/store/asset/15621638430)
+[![Wally (external link)](./.github/assets/link-wally.svg)](https://wally.run/package/roblox/react)
+
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/roblox/react-lua/blob/main/LICENSE)
 [![Tests](https://github.com/Roblox/roact-alignment/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/Roblox/roact-alignment/actions/workflows/test.yml) 
 [![Coverage Status](https://coveralls.io/repos/github/Roblox/roact-alignment/badge.svg?branch=master&t=TvTSze)](https://coveralls.io/github/Roblox/roact-alignment?branch=master)

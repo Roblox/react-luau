@@ -1,0 +1,30 @@
+# Multipack configuration for the React Luau monorepo.
+#
+# This repository is a Rotriever workspace with multiple publishable packages
+# under modules/. Multipack publishes them to Wally per-member via the
+# `members` glob, continues to publish them to Rotriever via the existing
+# rotriever workspace, and publishes the whole package to the Creator Store
+# as a single Roblox Package.
+
+[rotriever]
+publish_to = true
+
+[rbx_creator_store]
+publish_to = true
+asset_id   = 15621638430
+
+[wally]
+publish_to = true
+# Only the eight modules that ship a wally.toml are published to Wally.
+# The other directories under modules/* (devtools, test renderers, the
+# example app, etc.) are intentionally not Wally packages.
+members = [
+    "modules/react",
+    "modules/react-globals",
+    "modules/react-is",
+    "modules/react-reconciler",
+    "modules/react-roblox",
+    "modules/roact-compat",
+    "modules/scheduler",
+    "modules/shared",
+]
