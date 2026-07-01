@@ -60,7 +60,7 @@ while argNum < len(sys.argv):
 			parameters['directory'] = value
 		else:
 			print(f"Error: Argument for {arg} is missing, please specify an output directory")
-			sys.exit(1)
+			exit(1)
 
 		argNum += 2
 	elif arg == "-r" or arg == "--runs":
@@ -69,7 +69,7 @@ while argNum < len(sys.argv):
 			parameters['runs'] = int(value)
 		else:
 			print(f"Error: Argument for {arg} is missing, please specify a number of runs")
-			sys.exit(1)
+			exit(1)
 
 		argNum += 2
 	elif arg == "-d" or arg == "--dev":
@@ -78,7 +78,7 @@ while argNum < len(sys.argv):
 		argNum += 1
 	elif arg[0:1] == "-":
 		print(f"Error: Unsupported flag {arg}")
-		sys.exit(1)
+		exit(1)
 	else:
 		argNum += 1
 

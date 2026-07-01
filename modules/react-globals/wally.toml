@@ -1,0 +1,13 @@
+[package]
+name = "roblox/react-globals"
+description = "Shared globals (e.g. __DEV__) consumed across React Luau packages."
+version = "17.3.9"
+license = "MIT"
+authors = ["Roblox <no-reply@roblox.com>"]
+realm = "shared"
+registry = "https://github.com/UpliftGames/wally-index"
+repository = "https://github.com/Roblox/react-lua"
+exclude = ["rotriever.toml"]
+
+[dependencies]
+SafeFlags = "roblox/safe-flags@^0.1.2"
