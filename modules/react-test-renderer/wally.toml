@@ -1,0 +1,18 @@
+[package]
+name = "roblox/react-test-renderer"
+description = "A React renderer that outputs a JSON-serializable tree, used for testing React Luau components."
+version = "17.3.9"
+license = "MIT"
+authors = ["Roblox <no-reply@roblox.com>"]
+realm = "shared"
+registry = "https://github.com/UpliftGames/wally-index"
+repository = "https://github.com/Roblox/react-lua"
+exclude = ["rotriever.toml"]
+
+[dependencies]
+LuauPolyfill = "roblox/luau-polyfill@^1.2.5"
+React = "roblox/react@^17"
+ReactGlobals = "roblox/react-globals@^17"
+ReactReconciler = "roblox/react-reconciler@^17"
+Scheduler = "roblox/react-scheduler@^17"
+Shared = "roblox/react-shared@^17"
