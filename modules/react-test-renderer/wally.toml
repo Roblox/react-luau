@@ -1,7 +1,7 @@
 [package]
 name = "roblox/react-test-renderer"
 description = "A React renderer that outputs a JSON-serializable tree, used for testing React Luau components."
-version = "17.3.9"
+version = "17.3.11"
 license = "MIT"
 authors = ["Roblox <no-reply@roblox.com>"]
 realm = "shared"
