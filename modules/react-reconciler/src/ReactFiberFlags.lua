@@ -47,14 +47,17 @@ exports.Hydrating = --[[                    ]]
 	0b000000010000000000
 exports.HydratingAndUpdate = --[[           ]]
 	0b000000010000000100
+-- ROBLOX deviation: appended to preserve the values of existing flags.
+exports.StoreConsistency = --[[             ]]
+	0b1000000000000000000
 
--- Passive & Update & Callback & Ref & Snapshot
+-- Passive & Update & Callback & Ref & Snapshot & StoreConsistency
 exports.LifecycleEffectMask = --[[          ]]
-	0b000000001110100100
+	0b1000000001110100100
 
 -- Union of all host effects
 exports.HostEffectMask = --[[               ]]
-	0b000000011111111111
+	0b1000000011111111111
 
 -- These are not really side effects, but we still reuse this field.
 exports.Incomplete = --[[                   ]]
