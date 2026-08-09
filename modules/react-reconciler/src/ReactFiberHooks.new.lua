@@ -72,6 +72,8 @@ local enableDoubleInvokingEffects = ReactFeatureFlags.enableDoubleInvokingEffect
 local DebugTracingMode = require(script.Parent.ReactTypeOfMode).DebugTracingMode
 local NoLane = ReactFiberLane.NoLane
 local NoLanes = ReactFiberLane.NoLanes
+local SyncLane = ReactFiberLane.SyncLane
+local NoTimestamp = ReactFiberLane.NoTimestamp
 -- local InputContinuousLanePriority = ReactFiberLane.InputContinuousLanePriority
 local isSubsetOfLanes = ReactFiberLane.isSubsetOfLanes
 local mergeLanes = ReactFiberLane.mergeLanes
@@ -88,6 +90,7 @@ local ReactFiberFlags = require(script.Parent.ReactFiberFlags)
 local UpdateEffect = ReactFiberFlags.Update
 local PassiveEffect = ReactFiberFlags.Passive
 local PassiveStaticEffect = ReactFiberFlags.PassiveStatic
+local StoreConsistency = ReactFiberFlags.StoreConsistency
 local MountLayoutDevEffect = ReactFiberFlags.MountLayoutDev
 local MountPassiveDevEffect = ReactFiberFlags.MountPassiveDev
 local HookHasEffect = ReactHookEffectTags.HasEffect
@@ -174,6 +177,7 @@ type UpdateQueue<S, A> = {
 }
 
 local didWarnAboutMismatchedHooksForComponent
+local didWarnUncachedGetSnapshot = false
 local _didWarnAboutUseOpaqueIdentifier
 if __DEV__ then
 	_didWarnAboutUseOpaqueIdentifier = {}
@@ -184,7 +188,7 @@ export type Hook = {
 	memoizedState: any,
 	baseState: any,
 	baseQueue: Update<any, any> | nil,
-	queue: UpdateQueue<any, any> | nil,
+	queue: any,
 	next: Hook?,
 }
 
@@ -197,8 +201,19 @@ export type Effect = {
 	next: Effect,
 }
 
+type StoreInstance<T> = {
+	value: T,
+	getSnapshot: () -> T,
+}
+
+type StoreConsistencyCheck<T> = {
+	value: T,
+	getSnapshot: () -> T,
+}
+
 export type FunctionComponentUpdateQueue = {
 	lastEffect: Effect?,
+	stores: Array<StoreConsistencyCheck<any>>?,
 }
 
 type BasicStateAction<S> = ((S) -> S) | S
@@ -622,6 +637,7 @@ end
 -- local function createFunctionComponentUpdateQueue(): FunctionComponentUpdateQueue
 --   return {
 --     lastEffect = nil,
+--     stores = nil,
 --   }
 -- end
 
@@ -1228,6 +1244,7 @@ local function pushEffect(tag, create, destroy, deps)
 		-- componentUpdateQueue = createFunctionComponentUpdateQueue()
 		componentUpdateQueue = {
 			lastEffect = nil,
+			stores = nil,
 		}
 		currentlyRenderingFiber.updateQueue = componentUpdateQueue
 		effect.next = effect
@@ -1360,6 +1377,196 @@ local function updateEffect(
 		end
 	end
 	updateEffectImpl(PassiveEffect, HookPassive, create, deps)
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberHooks.new.js#L1263-L1500
+-- ROBLOX deviation: external store helpers follow effect helpers because Lua local functions are not hoisted.
+local function forceStoreRerender(fiber: Fiber): ()
+	scheduleUpdateOnFiber(fiber, SyncLane, NoTimestamp)
+end
+
+local function checkIfSnapshotChanged<T>(inst: StoreInstance<T>): boolean
+	local latestGetSnapshot = inst.getSnapshot
+	local prevValue = inst.value
+	local ok, nextValue = pcall(latestGetSnapshot)
+	if not ok then
+		return true
+	end
+	return not is(prevValue, nextValue)
+end
+
+local function subscribeToStore<T>(
+	fiber: Fiber,
+	inst: StoreInstance<T>,
+	subscribe: (() -> ()) -> () -> ()
+): () -> ()
+	local handleStoreChange = function()
+		if checkIfSnapshotChanged(inst) then
+			forceStoreRerender(fiber)
+		end
+	end
+	return subscribe(handleStoreChange)
+end
+
+local function updateStoreInstance<T>(
+	fiber: Fiber,
+	inst: StoreInstance<T>,
+	nextSnapshot: T,
+	getSnapshot: () -> T
+): ()
+	inst.value = nextSnapshot
+	inst.getSnapshot = getSnapshot
+	if checkIfSnapshotChanged(inst) then
+		forceStoreRerender(fiber)
+	end
+end
+
+local function pushStoreConsistencyCheck<T>(
+	fiber: Fiber,
+	getSnapshot: () -> T,
+	renderedSnapshot: T
+): ()
+	fiber.flags = bit32.bor(fiber.flags, StoreConsistency)
+	local check: StoreConsistencyCheck<T> = {
+		getSnapshot = getSnapshot,
+		value = renderedSnapshot,
+	}
+	local componentUpdateQueue: FunctionComponentUpdateQueue? =
+		currentlyRenderingFiber.updateQueue :: any
+	if componentUpdateQueue == nil then
+		-- ROBLOX performance: inline simple function in hot path
+		-- componentUpdateQueue = createFunctionComponentUpdateQueue()
+		componentUpdateQueue = {
+			lastEffect = nil,
+			stores = { check },
+		}
+		currentlyRenderingFiber.updateQueue = componentUpdateQueue
+	else
+		local stores = componentUpdateQueue.stores
+		if stores == nil then
+			componentUpdateQueue.stores = { check }
+		else
+			table.insert(stores, check)
+		end
+	end
+end
+
+local function mountSyncExternalStore<T>(
+	subscribe: (() -> ()) -> () -> (),
+	getSnapshot: () -> T,
+	getServerSnapshot: (() -> T)?
+): T
+	local fiber = currentlyRenderingFiber
+	local hook = mountWorkInProgressHook()
+	local nextSnapshot: T
+	if getIsHydrating() then
+		if getServerSnapshot == nil then
+			error(
+				Error.new(
+					"Missing getServerSnapshot, which is required for "
+						.. "server-rendered content. Will revert to client rendering."
+				)
+			)
+		end
+		nextSnapshot = getServerSnapshot()
+		if __DEV__ and not didWarnUncachedGetSnapshot then
+			local cachedSnapshot = getServerSnapshot()
+			if not is(nextSnapshot, cachedSnapshot) then
+				console.error(
+					"The result of getServerSnapshot should be cached to avoid an infinite loop"
+				)
+				didWarnUncachedGetSnapshot = true
+			end
+		end
+	else
+		nextSnapshot = getSnapshot()
+		if __DEV__ and not didWarnUncachedGetSnapshot then
+			local cachedSnapshot = getSnapshot()
+			if not is(nextSnapshot, cachedSnapshot) then
+				console.error(
+					"The result of getSnapshot should be cached to avoid an infinite loop"
+				)
+				didWarnUncachedGetSnapshot = true
+			end
+		end
+		invariant(
+			getWorkInProgressRoot() ~= nil,
+			"Expected a work-in-progress root. This is a bug in React. Please file an issue."
+		)
+		-- ROBLOX deviation: React 17 has no includesBlockingLane, so concurrent completion consumes all non-hydration checks.
+		pushStoreConsistencyCheck(fiber, getSnapshot, nextSnapshot)
+	end
+	hook.memoizedState = nextSnapshot
+	local inst: StoreInstance<T> = {
+		value = nextSnapshot,
+		getSnapshot = getSnapshot,
+	}
+	hook.queue = inst
+
+	mountEffect(function()
+		return subscribeToStore(fiber, inst, subscribe)
+	end, { subscribe } :: Array<any>)
+	fiber.flags = bit32.bor(fiber.flags, PassiveEffect)
+	pushEffect(bit32.bor(HookHasEffect, HookPassive), function()
+		updateStoreInstance(fiber, inst, nextSnapshot, getSnapshot)
+	end, nil, nil)
+	return nextSnapshot
+end
+
+local function updateSyncExternalStore<T>(
+	subscribe: (() -> ()) -> () -> (),
+	getSnapshot: () -> T,
+	getServerSnapshot: (() -> T)?
+): T
+	local fiber = currentlyRenderingFiber
+	local hook = updateWorkInProgressHook()
+	local nextSnapshot = getSnapshot()
+	if __DEV__ and not didWarnUncachedGetSnapshot then
+		local cachedSnapshot = getSnapshot()
+		if not is(nextSnapshot, cachedSnapshot) then
+			console.error(
+				"The result of getSnapshot should be cached to avoid an infinite loop"
+			)
+			didWarnUncachedGetSnapshot = true
+		end
+	end
+	-- ROBLOX upstream: https://github.com/facebook/react/commit/e9aa33ecc3715ebeacf28d453c6f18244719b359
+	local prevSnapshot = (currentHook or hook).memoizedState
+	local snapshotChanged = not is(prevSnapshot, nextSnapshot)
+	if snapshotChanged then
+		hook.memoizedState = nextSnapshot
+		markWorkInProgressReceivedUpdate()
+	end
+	local inst = hook.queue :: StoreInstance<T>
+	updateEffect(function()
+		return subscribeToStore(fiber, inst, subscribe)
+	end, { subscribe } :: Array<any>)
+	if
+		inst.getSnapshot ~= getSnapshot
+		or snapshotChanged
+		or (
+			workInProgressHook ~= nil
+			and bit32.band(
+					(workInProgressHook.memoizedState :: Effect).tag,
+					HookHasEffect
+				)
+				~= 0
+		)
+	then
+		fiber.flags = bit32.bor(fiber.flags, PassiveEffect)
+		pushEffect(bit32.bor(HookHasEffect, HookPassive), function()
+			updateStoreInstance(fiber, inst, nextSnapshot, getSnapshot)
+		end, nil, nil)
+		if not getIsHydrating() then
+			invariant(
+				getWorkInProgressRoot() ~= nil,
+				"Expected a work-in-progress root. This is a bug in React. Please file an issue."
+			)
+			pushStoreConsistencyCheck(fiber, getSnapshot, nextSnapshot)
+		end
+	end
+
+	return nextSnapshot
 end
 
 local function mountLayoutEffect(
@@ -1943,6 +2150,7 @@ local ContextOnlyDispatcher: Dispatcher = {
 	-- useDeferredValue = throwInvalidHookError,
 	-- useTransition = throwInvalidHookError,
 	useMutableSource = throwInvalidHookError :: any,
+	useSyncExternalStore = throwInvalidHookError :: any,
 	useOpaqueIdentifier = throwInvalidHookError :: any,
 
 	unstable_isNewReconciler = enableNewReconciler,
@@ -1967,6 +2175,7 @@ local HooksDispatcherOnMount: Dispatcher = {
 	-- useDeferredValue = mountDeferredValue,
 	-- useTransition = mountTransition,
 	useMutableSource = mountMutableSource,
+	useSyncExternalStore = mountSyncExternalStore,
 	useOpaqueIdentifier = mountOpaqueIdentifier,
 
 	unstable_isNewReconciler = enableNewReconciler,
@@ -1990,6 +2199,7 @@ local HooksDispatcherOnUpdate: Dispatcher = {
 	-- useDeferredValue = updateDeferredValue,
 	-- useTransition = updateTransition,
 	useMutableSource = updateMutableSource,
+	useSyncExternalStore = updateSyncExternalStore,
 	useOpaqueIdentifier = updateOpaqueIdentifier,
 
 	unstable_isNewReconciler = enableNewReconciler,
@@ -2013,6 +2223,7 @@ local HooksDispatcherOnRerender: Dispatcher = {
 	-- useDeferredValue = rerenderDeferredValue,
 	-- useTransition = rerenderTransition,
 	useMutableSource = updateMutableSource,
+	useSyncExternalStore = updateSyncExternalStore,
 	useOpaqueIdentifier = rerenderOpaqueIdentifier,
 
 	unstable_isNewReconciler = enableNewReconciler,
@@ -2182,6 +2393,15 @@ if __DEV__ then
 			mountHookTypesDev()
 			return mountMutableSource(source, getSnapshot, subscribe)
 		end,
+		useSyncExternalStore = function<T>(
+			subscribe: (() -> ()) -> () -> (),
+			getSnapshot: () -> T,
+			getServerSnapshot: (() -> T)?
+		): T
+			currentHookNameInDev = "useSyncExternalStore"
+			mountHookTypesDev()
+			return mountSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+		end,
 		useOpaqueIdentifier = function()
 			currentHookNameInDev = "useOpaqueIdentifier"
 			mountHookTypesDev()
@@ -2331,6 +2551,15 @@ if __DEV__ then
 			updateHookTypesDev()
 			return mountMutableSource(source, getSnapshot, subscribe)
 		end,
+		useSyncExternalStore = function<T>(
+			subscribe: (() -> ()) -> () -> (),
+			getSnapshot: () -> T,
+			getServerSnapshot: (() -> T)?
+		): T
+			currentHookNameInDev = "useSyncExternalStore"
+			updateHookTypesDev()
+			return mountSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+		end,
 		useOpaqueIdentifier = function()
 			currentHookNameInDev = "useOpaqueIdentifier"
 			updateHookTypesDev()
@@ -2478,6 +2707,15 @@ if __DEV__ then
 			currentHookNameInDev = "useMutableSource"
 			updateHookTypesDev()
 			return updateMutableSource(source, getSnapshot, subscribe)
+		end,
+		useSyncExternalStore = function<T>(
+			subscribe: (() -> ()) -> () -> (),
+			getSnapshot: () -> T,
+			getServerSnapshot: (() -> T)?
+		): T
+			currentHookNameInDev = "useSyncExternalStore"
+			updateHookTypesDev()
+			return updateSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 		end,
 		useOpaqueIdentifier = function(): OpaqueIDType
 			currentHookNameInDev = "useOpaqueIdentifier"
@@ -2627,6 +2865,15 @@ if __DEV__ then
 			currentHookNameInDev = "useMutableSource"
 			updateHookTypesDev()
 			return updateMutableSource(source, getSnapshot, subscribe)
+		end,
+		useSyncExternalStore = function<T>(
+			subscribe: (() -> ()) -> () -> (),
+			getSnapshot: () -> T,
+			getServerSnapshot: (() -> T)?
+		): T
+			currentHookNameInDev = "useSyncExternalStore"
+			updateHookTypesDev()
+			return updateSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 		end,
 		useOpaqueIdentifier = function(): OpaqueIDType
 			currentHookNameInDev = "useOpaqueIdentifier"
@@ -2790,6 +3037,16 @@ if __DEV__ then
 			warnInvalidHookAccess()
 			mountHookTypesDev()
 			return mountMutableSource(source, getSnapshot, subscribe)
+		end,
+		useSyncExternalStore = function<T>(
+			subscribe: (() -> ()) -> () -> (),
+			getSnapshot: () -> T,
+			getServerSnapshot: (() -> T)?
+		): T
+			currentHookNameInDev = "useSyncExternalStore"
+			warnInvalidHookAccess()
+			mountHookTypesDev()
+			return mountSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 		end,
 		useOpaqueIdentifier = function(): OpaqueIDType
 			currentHookNameInDev = "useOpaqueIdentifier"
@@ -2956,6 +3213,16 @@ if __DEV__ then
 			updateHookTypesDev()
 			return updateMutableSource(source, getSnapshot, subscribe)
 		end,
+		useSyncExternalStore = function<T>(
+			subscribe: (() -> ()) -> () -> (),
+			getSnapshot: () -> T,
+			getServerSnapshot: (() -> T)?
+		): T
+			currentHookNameInDev = "useSyncExternalStore"
+			warnInvalidHookAccess()
+			updateHookTypesDev()
+			return updateSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+		end,
 		useOpaqueIdentifier = function(): OpaqueIDType
 			currentHookNameInDev = "useOpaqueIdentifier"
 			warnInvalidHookAccess()
@@ -3120,6 +3387,16 @@ if __DEV__ then
 			warnInvalidHookAccess()
 			updateHookTypesDev()
 			return updateMutableSource(source, getSnapshot, subscribe)
+		end,
+		useSyncExternalStore = function<T>(
+			subscribe: (() -> ()) -> () -> (),
+			getSnapshot: () -> T,
+			getServerSnapshot: (() -> T)?
+		): T
+			currentHookNameInDev = "useSyncExternalStore"
+			warnInvalidHookAccess()
+			updateHookTypesDev()
+			return updateSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 		end,
 		useOpaqueIdentifier = function(): OpaqueIDType
 			currentHookNameInDev = "useOpaqueIdentifier"

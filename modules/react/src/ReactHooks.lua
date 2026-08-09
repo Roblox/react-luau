@@ -321,4 +321,14 @@ exports.useMutableSource = function<Source, Snapshot>(
 	return dispatcher.useMutableSource(source, getSnapshot, subscribe)
 end
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react/src/ReactHooks.js#L189-L200
+exports.useSyncExternalStore = function<T>(
+	subscribe: (() -> ()) -> () -> (),
+	getSnapshot: () -> T,
+	getServerSnapshot: (() -> T)?
+): T
+	local dispatcher = resolveDispatcher()
+	return dispatcher.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
+end
+
 return exports
