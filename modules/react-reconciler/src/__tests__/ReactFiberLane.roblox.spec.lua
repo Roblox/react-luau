@@ -86,6 +86,31 @@ describe("getHighestPriorityPendingLanes", function()
 	end)
 end)
 
+describe("transition lanes", function()
+	it("cycles through each transition lane", function()
+		local firstLane = ReactFiberLane.claimNextTransitionLane()
+		local claimedLanes = { [firstLane] = true }
+
+		jestExpect(ReactFiberLane.isTransitionLane(firstLane)).toBe(true)
+		for _ = 2, 9 do
+			local lane = ReactFiberLane.claimNextTransitionLane()
+			jestExpect(ReactFiberLane.isTransitionLane(lane)).toBe(true)
+			jestExpect(claimedLanes[lane]).toBeNil()
+			claimedLanes[lane] = true
+		end
+
+		jestExpect(ReactFiberLane.claimNextTransitionLane()).toBe(firstLane)
+	end)
+
+	it("distinguishes urgent work from transition work", function()
+		local transitionLane = ReactFiberLane.claimNextTransitionLane()
+		jestExpect(ReactFiberLane.includesOnlyNonUrgentLanes(transitionLane)).toBe(true)
+		jestExpect(ReactFiberLane.includesOnlyNonUrgentLanes(ReactFiberLane.DefaultLanes)).toBe(
+			false
+		)
+	end)
+end)
+
 describe("getNextLanes", function()
 	describe("given no pending lanes", function()
 		local root

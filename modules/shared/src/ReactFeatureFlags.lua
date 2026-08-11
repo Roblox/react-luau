@@ -155,4 +155,8 @@ exports.enableEagerRootListeners = false
 
 exports.enableDoubleInvokingEffects = false
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/shared/forks/ReactFeatureFlags.www.js
+-- ROBLOX deviation: Transition tracing is not available in React Lua.
+exports.enableTransitionTracing = false
+
 return exports

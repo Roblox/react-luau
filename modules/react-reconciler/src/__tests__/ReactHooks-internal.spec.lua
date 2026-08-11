@@ -1438,19 +1438,28 @@ describe("ReactHooks", function()
 		local function useStateHelper(): number
 			return React.useState(0)
 		end
+		local function useDeferredValueHelper()
+			return React.useDeferredValue(0)
+		end
+		local function useTransitionHelper()
+			return React.useTransition()
+		end
 		local orderedHooks: Array<Function> = {
 			useCallbackHelper,
 			useContextHelper,
 			useDebugValueHelper,
+			useDeferredValueHelper,
 			useEffectHelper,
 			useLayoutEffectHelper,
 			useMemoHelper,
 			useReducerHelper,
 			useRefHelper,
 			useStateHelper,
+			useTransitionHelper,
 		}
 		local hooksInList: Array<Function> = {
 			useCallbackHelper,
+			useDeferredValueHelper,
 			useEffectHelper,
 			useImperativeHandleHelper,
 			useLayoutEffectHelper,
@@ -1458,20 +1467,8 @@ describe("ReactHooks", function()
 			useReducerHelper,
 			useRefHelper,
 			useStateHelper,
+			useTransitionHelper,
 		}
-		-- ROBLOX TODO: unflag this when we implement useTransition and useDeferredValueHelper
-		if ReactGlobals.__EXPERIMENTAL__ then
-			-- local function useTransitionHelper()
-			-- 	return React.useTransition()
-			-- end
-			-- local function useDeferredValueHelper()
-			-- 	return React.useDeferredValue(0, { timeoutMs = 1000 })
-			-- end
-			-- table.insert(orderedHooks, useTransitionHelper)
-			-- table.insert(orderedHooks, useDeferredValueHelper)
-			-- table.insert(hooksInList, useTransitionHelper)
-			-- table.insert(hooksInList, useDeferredValueHelper)
-		end
 		local function formatHookNamesToMatchErrorMessage(hookNameA, hookNameB)
 			return string.format(
 				"use%s%s%s",

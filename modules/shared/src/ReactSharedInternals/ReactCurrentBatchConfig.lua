@@ -1,5 +1,5 @@
 --!strict
--- ROBLOX upstream: https://github.com/facebook/react/blob/92fcd46cc79bbf45df4ce86b0678dcef3b91078d/packages/react/src/ReactCurrentBatchConfig.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react/src/ReactCurrentBatchConfig.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -14,7 +14,7 @@
  * should suspend for if it needs to.
 ]]
 local ReactCurrentBatchConfig = {
-	transition = 0,
+	transition = nil,
 }
 
 return ReactCurrentBatchConfig

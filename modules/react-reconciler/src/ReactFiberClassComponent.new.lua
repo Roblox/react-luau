@@ -75,6 +75,7 @@ local ReplaceState = ReactUpdateQueue.ReplaceState
 local ForceUpdate = ReactUpdateQueue.ForceUpdate
 local initializeUpdateQueue = ReactUpdateQueue.initializeUpdateQueue
 local cloneUpdateQueue = ReactUpdateQueue.cloneUpdateQueue
+local entangleTransitions = ReactUpdateQueue.entangleTransitions
 local NoLanes = ReactFiberLane.NoLanes
 
 local ReactFiberContext = require(script.Parent["ReactFiberContext.new"])
@@ -267,7 +268,10 @@ local function initializeClassComponentUpdater()
 			end
 
 			enqueueUpdate(fiber, update)
-			scheduleUpdateOnFiber(fiber, lane, eventTime)
+			local root = scheduleUpdateOnFiber(fiber, lane, eventTime)
+			if root ~= nil then
+				entangleTransitions(root, fiber, lane)
+			end
 
 			if __DEV__ then
 				if enableDebugTracing then
@@ -299,7 +303,10 @@ local function initializeClassComponentUpdater()
 			end
 
 			enqueueUpdate(fiber, update)
-			scheduleUpdateOnFiber(fiber, lane, eventTime)
+			local root = scheduleUpdateOnFiber(fiber, lane, eventTime)
+			if root ~= nil then
+				entangleTransitions(root, fiber, lane)
+			end
 
 			if __DEV__ then
 				if enableDebugTracing then
@@ -330,7 +337,10 @@ local function initializeClassComponentUpdater()
 			end
 
 			enqueueUpdate(fiber, update)
-			scheduleUpdateOnFiber(fiber, lane, eventTime)
+			local root = scheduleUpdateOnFiber(fiber, lane, eventTime)
+			if root ~= nil then
+				entangleTransitions(root, fiber, lane)
+			end
 
 			if __DEV__ then
 				if enableDebugTracing then

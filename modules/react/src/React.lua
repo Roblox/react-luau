@@ -27,6 +27,7 @@ local ReactHooks = require(React.ReactHooks)
 local ReactMemo = require(React.ReactMemo)
 local ReactContext = require(React.ReactContext)
 local ReactLazy = require(React.ReactLazy)
+local ReactStartTransition = require(React.ReactStartTransition)
 type LazyComponent<T, P> = ReactLazy.LazyComponent<T, P>
 
 -- ROBLOX DEVIATION: Bindings
@@ -107,6 +108,9 @@ return {
 	-- ROBLOX deviation: bindings support
 	useBinding = ReactHooks.useBinding,
 	useState = ReactHooks.useState,
+	useTransition = ReactHooks.useTransition,
+	useDeferredValue = ReactHooks.useDeferredValue,
+	startTransition = ReactStartTransition.startTransition,
 	--[[
 		Lets you group elements without a wrapper node.
 
@@ -135,9 +139,6 @@ return {
 	-- Deprecated behind disableCreateFactory
 	-- ROBLOX TODO: createFactory,
 	-- Concurrent Mode
-	-- ROBLOX TODO: useTransition,
-	-- ROBLOX TODO: startTransition,
-	-- ROBLOX TODO: useDeferredValue,
 	-- ROBLOX TODO: REACT_SUSPENSE_LIST_TYPE as SuspenseList,
 	unstable_LegacyHidden = ReactSymbols.REACT_LEGACY_HIDDEN_TYPE,
 	-- enableBlocksAPI
