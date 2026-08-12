@@ -99,10 +99,12 @@ local console = require(Packages.Shared).console
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
+type FiberRoot = ReactInternalTypes.FiberRoot
 type Lane = ReactInternalTypes.Lane
 type Lanes = ReactInternalTypes.Lanes
 
 local ReactFiberLane = require(script.Parent.ReactFiberLane)
+local intersectLanes = ReactFiberLane.intersectLanes
 local NoLane = ReactFiberLane.NoLane
 local NoLanes = ReactFiberLane.NoLanes
 local isSubsetOfLanes = ReactFiberLane.isSubsetOfLanes
@@ -321,8 +323,7 @@ local function entangleTransitions(root: FiberRoot, fiber: Fiber, lane: Lane): (
 
 	local sharedQueue: SharedQueue<any> = (updateQueue :: any).shared
 	if isTransitionLane(lane) then
-		-- ROBLOX deviation: inline intersectLanes because the React 17 lane module does not export it.
-		local queueLanes = bit32.band(sharedQueue.lanes, root.pendingLanes)
+		local queueLanes = intersectLanes(sharedQueue.lanes, root.pendingLanes)
 		local newQueueLanes = mergeLanes(queueLanes, lane)
 		sharedQueue.lanes = newQueueLanes
 		markRootEntangled(root, newQueueLanes)

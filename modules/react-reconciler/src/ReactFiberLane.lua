@@ -733,6 +733,11 @@ exports.mergeLanes = (
 	if FFlagReactInlineMergeLanes then bit32.bor else mergeLanes
 ) :: MergeLanes
 
+local function intersectLanes(a: Lanes, b: Lanes): Lanes
+	return bit32.band(a, b)
+end
+exports.intersectLanes = intersectLanes
+
 local function removeLanes(set: Lanes, subset: Lanes | Lane): Lanes
 	return bit32.band(set, bit32.bnot(subset))
 end
@@ -926,15 +931,21 @@ end
 exports.markRootFinished = markRootFinished
 
 local function markRootEntangled(root: FiberRoot, entangledLanes: Lanes)
-	root.entangledLanes = bit32.bor(root.entangledLanes, entangledLanes)
+	local rootEntangledLanes = bit32.bor(root.entangledLanes, entangledLanes)
+	root.entangledLanes = rootEntangledLanes
 
 	local entanglements = root.entanglements
-	local lanes = entangledLanes
+	local lanes = rootEntangledLanes
 	while lanes > 0 do
 		local index = pickArbitraryLaneIndex(lanes)
 		local lane = bit32.lshift(1, index)
 
-		entanglements[index] = bit32.bor(entanglements[index], entangledLanes)
+		if
+			bit32.band(lane, entangledLanes) ~= NoLanes
+			or bit32.band(entanglements[index], entangledLanes) ~= NoLanes
+		then
+			entanglements[index] = bit32.bor(entanglements[index], entangledLanes)
+		end
 
 		lanes = bit32.band(lanes, bit32.bnot(lane))
 	end

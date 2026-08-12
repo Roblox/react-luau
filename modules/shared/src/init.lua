@@ -29,6 +29,9 @@ local ErrorHandling = require(script["ErrorHandling.roblox"])
 
 -- Re-export all top-level public types
 export type ReactEmpty = ReactTypes.ReactEmpty
+export type BatchConfigTransition = ReactTypes.BatchConfigTransition
+export type StartTransitionOptions = ReactTypes.StartTransitionOptions
+export type StartTransition = ReactTypes.StartTransition
 export type ReactFragment = ReactTypes.ReactFragment
 export type ReactNodeList = ReactTypes.ReactNodeList
 export type ReactProviderType<T> = ReactTypes.ReactProviderType<T>

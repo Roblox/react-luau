@@ -13,14 +13,12 @@ local Packages = script.Parent.Parent
 local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Set = LuauPolyfill.Set
-local console = require(Packages.Shared).console
-local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
-local ReactCurrentBatchConfig =
-	require(Packages.Shared).ReactSharedInternals.ReactCurrentBatchConfig
+local ReactTypes = require(Packages.Shared)
+local console = ReactTypes.console
+local ReactFeatureFlags = ReactTypes.ReactFeatureFlags
+local ReactCurrentBatchConfig = ReactTypes.ReactSharedInternals.ReactCurrentBatchConfig
 
-export type StartTransitionOptions = {
-	name: string?,
-}
+export type StartTransitionOptions = ReactTypes.StartTransitionOptions
 
 local function startTransition(scope: () -> (), options: StartTransitionOptions?): ()
 	local prevTransition = ReactCurrentBatchConfig.transition
@@ -53,7 +51,7 @@ local function startTransition(scope: () -> (), options: StartTransitionOptions?
 	end
 
 	if not ok then
-		error(result)
+		error(result, 0)
 	end
 end
 

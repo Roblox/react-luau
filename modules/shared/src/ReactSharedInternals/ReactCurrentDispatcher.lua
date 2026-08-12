@@ -39,10 +39,7 @@ type MutableSourceGetSnapshotFn<Source, Snapshot> = ReactTypes.MutableSourceGetS
 
 type BasicStateAction<S> = ((S) -> S) | S
 type Dispatch<A> = (A) -> ()
-type StartTransitionOptions = {
-	name: string?,
-}
-type StartTransition = (callback: () -> (), options: StartTransitionOptions?) -> ()
+type StartTransition = ReactTypes.StartTransition
 
 export type Dispatcher = {
 	readContext: <T>(

@@ -190,7 +190,6 @@ local lanePriorityToSchedulerPriority = ReactFiberLane.lanePriorityToSchedulerPr
 local ReactFiberTransition = require(script.Parent.ReactFiberTransition)
 -- deviation: Use properties directly instead of localizing to avoid 200 limit
 -- local requestCurrentTransition = ReactFiberTransition.requestCurrentTransition
--- local NoTransition = ReactFiberTransition.NoTransition
 
 local ReactFiberUnwindWork = require(script.Parent["ReactFiberUnwindWork.new"]) :: any
 local unwindWork = ReactFiberUnwindWork.unwindWork
@@ -544,7 +543,7 @@ exports.requestUpdateLane = function(fiber: Fiber): Lane
 
 	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberWorkLoop.new.js#L453-L476
 	local transition = ReactFiberTransition.requestCurrentTransition()
-	if transition ~= ReactFiberTransition.NoTransition then
+	if transition ~= nil then
 		if __DEV__ then
 			if transition._updatedFibers == nil then
 				transition._updatedFibers = Set.new()

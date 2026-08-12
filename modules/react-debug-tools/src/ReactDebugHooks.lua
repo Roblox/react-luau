@@ -52,10 +52,7 @@ type React_Node = ReactTypes.React_Node
 -- ROBLOX deviation START: add binding support
 type ReactBinding<T> = ReactTypes.ReactBinding<T>
 type ReactBindingUpdater<T> = ReactTypes.ReactBindingUpdater<T>
-type StartTransitionOptions = {
-	name: string?,
-}
-type StartTransition = (callback: () -> (), options: StartTransitionOptions?) -> ()
+type StartTransition = ReactTypes.StartTransition
 -- ROBLOX deviation END
 -- ROBLOX deviation START: fix import
 -- local reactReconcilerSrcReactInternalTypesModule =
@@ -221,7 +218,8 @@ local function getPrimitiveStackCache(): Map<string, Array<any>>
 end
 local currentHook: nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]] | Hook =
 	nil
-local function nextHook(): nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]] | Hook
+local function nextHook(
+): nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]] | Hook
 	local hook = currentHook
 	if hook ~= nil then
 		currentHook = hook.next

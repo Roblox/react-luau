@@ -45,6 +45,8 @@ type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscr
 	Source,
 	Snapshot
 >
+type StartTransition = ReactTypes.StartTransition
+type StartTransitionOptions = ReactTypes.StartTransitionOptions
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
@@ -73,15 +75,12 @@ local enableDoubleInvokingEffects = ReactFeatureFlags.enableDoubleInvokingEffect
 local DebugTracingMode = require(script.Parent.ReactTypeOfMode).DebugTracingMode
 local NoLane = ReactFiberLane.NoLane
 local NoLanes = ReactFiberLane.NoLanes
-local InputContinuousLanePriority = ReactFiberLane.InputContinuousLanePriority
 local isSubsetOfLanes = ReactFiberLane.isSubsetOfLanes
 local mergeLanes = ReactFiberLane.mergeLanes
+local intersectLanes = ReactFiberLane.intersectLanes
 local removeLanes = ReactFiberLane.removeLanes
 local markRootEntangled = ReactFiberLane.markRootEntangled
 local markRootMutableRead = ReactFiberLane.markRootMutableRead
-local getCurrentUpdateLanePriority = ReactFiberLane.getCurrentUpdateLanePriority
-local setCurrentUpdateLanePriority = ReactFiberLane.setCurrentUpdateLanePriority
-local higherLanePriority = ReactFiberLane.higherLanePriority
 local includesOnlyNonUrgentLanes = ReactFiberLane.includesOnlyNonUrgentLanes
 local claimNextTransitionLane = ReactFiberLane.claimNextTransitionLane
 local isTransitionLane = ReactFiberLane.isTransitionLane
@@ -123,12 +122,11 @@ local function is(x: any, y: any)
 end
 local markWorkInProgressReceivedUpdate =
 	require(script.Parent["ReactFiberBeginWork.new"]).markWorkInProgressReceivedUpdate :: any
--- local {
---   UserBlockingPriority,
---   NormalPriority,
---   runWithPriority,
---   getCurrentPriorityLevel,
--- } = require(script.Parent.SchedulerWithReactIntegration.new)
+local SchedulerWithReactIntegration =
+	require(script.Parent["SchedulerWithReactIntegration.new"])
+local UserBlockingPriority = SchedulerWithReactIntegration.UserBlockingPriority
+local getCurrentPriorityLevel = SchedulerWithReactIntegration.getCurrentPriorityLevel
+local runWithPriority = SchedulerWithReactIntegration.runWithPriority
 local getIsHydrating =
 	require(script.Parent["ReactFiberHydrationContext.new"]).getIsHydrating
 -- local {
@@ -209,10 +207,6 @@ export type FunctionComponentUpdateQueue = {
 type BasicStateAction<S> = ((S) -> S) | S
 
 type Dispatch<A> = (A) -> ()
-type StartTransitionOptions = {
-	name: string?,
-}
-type StartTransition = (callback: () -> (), options: StartTransitionOptions?) -> ()
 
 local exports: any = {}
 
@@ -1629,18 +1623,16 @@ updateDeferredValueImpl = function<T>(hook: Hook, prevValue: T, value: T): T
 end
 
 -- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberHooks.new.js#L1974-L2061
--- ROBLOX deviation: React 17 exposes update lane priorities instead of React 18 event priorities.
+-- ROBLOX deviation: React 17 selects update lanes from Scheduler priority.
 local function startTransition(
 	setPending: Dispatch<BasicStateAction<boolean>>,
 	callback: () -> (),
 	options: StartTransitionOptions?
 ): ()
-	local previousPriority = getCurrentUpdateLanePriority()
-	setCurrentUpdateLanePriority(
-		higherLanePriority(previousPriority, InputContinuousLanePriority)
-	)
-
-	setPending(true)
+	local pendingPriority = math.max(getCurrentPriorityLevel(), UserBlockingPriority)
+	runWithPriority(pendingPriority, function()
+		setPending(true)
+	end)
 
 	local prevTransition = ReactCurrentBatchConfig.transition
 	ReactCurrentBatchConfig.transition = {}
@@ -1661,7 +1653,6 @@ local function startTransition(
 		callback()
 	end)
 
-	setCurrentUpdateLanePriority(previousPriority)
 	ReactCurrentBatchConfig.transition = prevTransition
 
 	if __DEV__ and currentTransition._updatedFibers ~= nil then
@@ -1676,7 +1667,7 @@ local function startTransition(
 	end
 
 	if not ok then
-		error(result)
+		error(result, 0)
 	end
 end
 
@@ -1811,8 +1802,7 @@ local function entangleTransitionUpdate<S, A>(
 	lane: Lane
 ): ()
 	if isTransitionLane(lane) then
-		-- ROBLOX deviation: inline intersectLanes because the React 17 lane module does not export it.
-		local queueLanes = bit32.band(queue.lanes, root.pendingLanes)
+		local queueLanes = intersectLanes(queue.lanes, root.pendingLanes)
 		local newQueueLanes = mergeLanes(queueLanes, lane)
 		queue.lanes = newQueueLanes
 		markRootEntangled(root, newQueueLanes)

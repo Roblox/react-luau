@@ -41,10 +41,7 @@ local ReactCurrentDispatcher =
 
 type BasicStateAction<S> = ((S) -> S) | S
 type Dispatch<A> = (A) -> ()
-type StartTransitionOptions = {
-	name: string?,
-}
-type StartTransition = (callback: () -> (), options: StartTransitionOptions?) -> ()
+type StartTransition = ReactTypes.StartTransition
 
 -- ROBLOX FIXME Luau: we shouldn't need to explicitly annotate this
 local function resolveDispatcher(): Dispatcher

@@ -13,7 +13,14 @@
  * Keeps track of the current batch's configuration such as how long an update
  * should suspend for if it needs to.
 ]]
-local ReactCurrentBatchConfig = {
+local ReactTypes = require(script.Parent.Parent.ReactTypes)
+type BatchConfigTransition = ReactTypes.BatchConfigTransition
+
+type BatchConfig = {
+	transition: BatchConfigTransition?,
+}
+
+local ReactCurrentBatchConfig: BatchConfig = {
 	transition = nil,
 }
 

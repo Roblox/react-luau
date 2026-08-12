@@ -16,7 +16,6 @@ local ReactSharedInternals = require(Packages.Shared).ReactSharedInternals
 local ReactCurrentBatchConfig = ReactSharedInternals.ReactCurrentBatchConfig
 
 return {
-	NoTransition = nil,
 	requestCurrentTransition = function(): { [any]: any }?
 		return ReactCurrentBatchConfig.transition
 	end,
