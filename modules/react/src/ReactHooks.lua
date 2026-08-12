@@ -41,6 +41,7 @@ local ReactCurrentDispatcher =
 
 type BasicStateAction<S> = ((S) -> S) | S
 type Dispatch<A> = (A) -> ()
+type StartTransition = ReactTypes.StartTransition
 
 -- ROBLOX FIXME Luau: we shouldn't need to explicitly annotate this
 local function resolveDispatcher(): Dispatcher
@@ -289,17 +290,17 @@ exports.useDebugValue = useDebugValue
 
 exports.emptyObject = {}
 
--- ROBLOX TODO: enable useTransition later
--- exports.useTransition = function(): ((() -> ()) -> (), boolean)
--- 	local dispatcher = resolveDispatcher()
--- 	return dispatcher.useTransition()
--- end
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react/src/ReactHooks.js#L164-L176
+-- ROBLOX deviation: Luau represents the tuple as multiple return values.
+exports.useTransition = function(): (boolean, StartTransition)
+	local dispatcher = resolveDispatcher()
+	return dispatcher.useTransition()
+end
 
--- ROBLOX TODO: enable useDeferredValue later
--- exports.useDeferredValue = function<T>(value: T): T
--- 	local dispatcher = resolveDispatcher()
--- 	return dispatcher.useDeferredValue(value)
--- end
+exports.useDeferredValue = function<T>(value: T): T
+	local dispatcher = resolveDispatcher()
+	return dispatcher.useDeferredValue(value)
+end
 
 exports.useOpaqueIdentifier = function(): OpaqueIDType | nil
 	local dispatcher = resolveDispatcher()

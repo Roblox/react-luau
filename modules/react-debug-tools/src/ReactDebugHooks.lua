@@ -52,6 +52,7 @@ type React_Node = ReactTypes.React_Node
 -- ROBLOX deviation START: add binding support
 type ReactBinding<T> = ReactTypes.ReactBinding<T>
 type ReactBindingUpdater<T> = ReactTypes.ReactBindingUpdater<T>
+type StartTransition = ReactTypes.StartTransition
 -- ROBLOX deviation END
 -- ROBLOX deviation START: fix import
 -- local reactReconcilerSrcReactInternalTypesModule =
@@ -444,33 +445,28 @@ local function useMutableSource<Source, Snapshot>(
 	) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
 	return value
 end
--- ROBLOX deviation START: enable these once they are fully enabled in the Dispatcher type and in ReactFiberHooks' myriad dispatchers
--- local function useTransition(
--- ): any --[[ ROBLOX TODO: Unhandled node for type: TupleTypeAnnotation ]] --[[ [(() => void) => void, boolean] ]]
--- 	-- useTransition() composes multiple hooks internally.
--- 	-- Advance the current hook index the same number of times
--- 	-- so that subsequent hooks have the right memoized state.
--- 	nextHook() -- State
--- 	nextHook() -- Callback
--- 	table.insert(
--- 		hookLog,
--- 		{ primitive = "Transition", stackError = Error.new(), value = nil }
--- 	) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
--- 	return { function(callback) end, false }
--- end
--- local function useDeferredValue<T>(value: T): T
--- 	-- useDeferredValue() composes multiple hooks internally.
--- 	-- Advance the current hook index the same number of times
--- 	-- so that subsequent hooks have the right memoized state.
--- 	nextHook() -- State
--- 	nextHook() -- Effect
--- 	table.insert(
--- 		hookLog,
--- 		{ primitive = "DeferredValue", stackError = Error.new(), value = value }
--- 	) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
--- 	return value
--- end
--- ROBLOX deviation END
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-debug-tools/src/ReactDebugHooks.js#L298-L315
+-- ROBLOX deviation: Luau represents React's tuple as multiple return values.
+local function useTransition(): (boolean, StartTransition)
+	nextHook() -- State
+	nextHook() -- Callback
+	table.insert(
+		hookLog,
+		{ primitive = "Transition", stackError = Error.new(), value = nil }
+	)
+	return false, function(_callback, _options) end
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/72ebc703ac8abacd44fdeb1e3d66eb28b75e5a5b/packages/react-debug-tools/src/ReactDebugHooks.js#L312-L322
+local function useDeferredValue<T>(value: T): T
+	local hook = nextHook()
+	table.insert(hookLog, {
+		primitive = "DeferredValue",
+		stackError = Error.new(),
+		value = if hook ~= nil then hook.memoizedState else value,
+	})
+	return value
+end
 local function useOpaqueIdentifier(): OpaqueIDType | void
 	local hook = nextHook() -- State
 	-- ROBLOX deviation START: simplify
@@ -531,13 +527,9 @@ Dispatcher = {
 	-- useState = useState,
 	useState = useState :: any,
 	-- ROBLOX deviation END
-	-- ROBLOX deviation START: not implemented
-	-- useTransition = useTransition,
-	-- ROBLOX deviation END
+	useTransition = useTransition,
 	useMutableSource = useMutableSource,
-	-- ROBLOX deviation START: not implemented
-	-- useDeferredValue = useDeferredValue,
-	-- ROBLOX deviation END
+	useDeferredValue = useDeferredValue,
 	useOpaqueIdentifier = useOpaqueIdentifier,
 } -- Inspect
 export type HooksNode = {

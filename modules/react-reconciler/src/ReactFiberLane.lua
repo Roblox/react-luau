@@ -113,6 +113,20 @@ local TransitionHydrationLane: Lane = --[[              ]]
 	0b0000000000000000001000000000000
 local TransitionLanes: Lanes = --[[                     ]]
 	0b0000000001111111110000000000000
+local TransitionLane1: Lane = bit32.band(TransitionLanes, -TransitionLanes)
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/422d102bd58ab16f93b6d84a2a25c759b6a1288f/packages/react-reconciler/src/ReactFiberLane.new.js#L58-L62
+-- ROBLOX deviation: React 17 has lane families for each urgent priority.
+local UrgentLanes: Lanes = bit32.bor(
+	SyncLane,
+	SyncBatchedLane,
+	InputDiscreteHydrationLane,
+	InputDiscreteLanes,
+	InputContinuousHydrationLane,
+	InputContinuousLanes,
+	DefaultHydrationLane,
+	DefaultLanes
+)
 
 local RetryLanes: Lanes = --[[                          ]]
 	0b0000011110000000000000000000000
@@ -545,6 +559,17 @@ local function includesOnlyTransitions(lanes: Lanes)
 end
 exports.includesOnlyTransitions = includesOnlyTransitions
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/422d102bd58ab16f93b6d84a2a25c759b6a1288f/packages/react-reconciler/src/ReactFiberLane.new.js#L527-L531
+local function includesOnlyNonUrgentLanes(lanes: Lanes): boolean
+	return bit32.band(lanes, UrgentLanes) == NoLanes
+end
+exports.includesOnlyNonUrgentLanes = includesOnlyNonUrgentLanes
+
+local function isTransitionLane(lane: Lane): boolean
+	return bit32.band(lane, TransitionLanes) ~= NoLanes
+end
+exports.isTransitionLane = isTransitionLane
+
 -- deviation: pre-declare pickArbitraryLane to keep ordering
 local pickArbitraryLane
 
@@ -588,7 +613,7 @@ local function findUpdateLane(lanePriority: LanePriority, wipLanes: Lanes): Lane
 		end
 		return lane
 	elseif
-		lanePriority == TransitionPriority -- // Should be handled by findTransitionLane instead
+		lanePriority == TransitionPriority -- // Should be handled by claimNextTransitionLane instead
 		or lanePriority == RetryLanePriority -- // Should be handled by findRetryLane instead
 	then
 		-- break
@@ -626,6 +651,19 @@ local function findTransitionLane(wipLanes: Lanes, pendingLanes: Lanes): Lane
 	return lane
 end
 exports.findTransitionLane = findTransitionLane
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberLane.new.js#L491-L503
+local nextTransitionLane: Lane = TransitionLane1
+
+local function claimNextTransitionLane(): Lane
+	local lane = nextTransitionLane
+	nextTransitionLane = bit32.lshift(nextTransitionLane, 1)
+	if bit32.band(nextTransitionLane, TransitionLanes) == NoLanes then
+		nextTransitionLane = TransitionLane1
+	end
+	return lane
+end
+exports.claimNextTransitionLane = claimNextTransitionLane
 
 -- // To ensure consistency across multiple updates in the same event, this should
 -- // be pure function, so that it always returns the same lane for given inputs.
@@ -694,6 +732,11 @@ type MergeLanes = (a: Lanes | Lane, b: Lanes | Lane) -> Lanes
 exports.mergeLanes = (
 	if FFlagReactInlineMergeLanes then bit32.bor else mergeLanes
 ) :: MergeLanes
+
+local function intersectLanes(a: Lanes, b: Lanes): Lanes
+	return bit32.band(a, b)
+end
+exports.intersectLanes = intersectLanes
 
 local function removeLanes(set: Lanes, subset: Lanes | Lane): Lanes
 	return bit32.band(set, bit32.bnot(subset))
@@ -888,15 +931,21 @@ end
 exports.markRootFinished = markRootFinished
 
 local function markRootEntangled(root: FiberRoot, entangledLanes: Lanes)
-	root.entangledLanes = bit32.bor(root.entangledLanes, entangledLanes)
+	local rootEntangledLanes = bit32.bor(root.entangledLanes, entangledLanes)
+	root.entangledLanes = rootEntangledLanes
 
 	local entanglements = root.entanglements
-	local lanes = entangledLanes
+	local lanes = rootEntangledLanes
 	while lanes > 0 do
 		local index = pickArbitraryLaneIndex(lanes)
 		local lane = bit32.lshift(1, index)
 
-		entanglements[index] = bit32.bor(entanglements[index], entangledLanes)
+		if
+			bit32.band(lane, entangledLanes) ~= NoLanes
+			or bit32.band(entanglements[index], entangledLanes) ~= NoLanes
+		then
+			entanglements[index] = bit32.bor(entanglements[index], entangledLanes)
+		end
 
 		lanes = bit32.band(lanes, bit32.bnot(lane))
 	end

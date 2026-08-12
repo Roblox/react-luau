@@ -1,5 +1,5 @@
 --!strict
--- ROBLOX upstream: https://github.com/facebook/react/blob/ddd1faa1972b614dfbfae205f2aa4a6c0b39a759/packages/react-reconciler/src/ReactFiberTransition.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberTransition.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -16,8 +16,7 @@ local ReactSharedInternals = require(Packages.Shared).ReactSharedInternals
 local ReactCurrentBatchConfig = ReactSharedInternals.ReactCurrentBatchConfig
 
 return {
-	NoTransition = 0,
-	requestCurrentTransition = function(): number
+	requestCurrentTransition = function(): { [any]: any }?
 		return ReactCurrentBatchConfig.transition
 	end,
 }
