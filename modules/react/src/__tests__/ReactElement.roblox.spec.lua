@@ -2,6 +2,7 @@
 -- ROBLOX upstream: https://github.com/facebook/react/blob/702fad4b1b48ac8f626ed3f35e8f86f5ea728084/packages/react/src/__tests__/ReactElement-test.js
 
 local Packages = script.Parent.Parent.Parent
+local React = require(script.Parent.Parent)
 local ReactElement = require(script.Parent.Parent.ReactElement)
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
@@ -136,5 +137,29 @@ describe("should accept", function()
 
 		jestExpect(element).toBeDefined()
 		jestExpect(element.props.Value).toEqual(false)
+	end)
+end)
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/v19.0.0/packages/react/src/__tests__/ReactCreateElement-test.js#L126-L140
+describe("ReactCreateElement", function()
+	it("does not extract ref from the rest of the props", function()
+		local ComponentClass = React.Component:extend("ComponentClass")
+		local ref = React.createRef()
+		local elementWithRef = React.createElement(ComponentClass, {
+			key = "12",
+			ref = ref,
+			foo = "56",
+		})
+
+		jestExpect(elementWithRef.type).toBe(ComponentClass)
+		jestExpect(function()
+			jestExpect(elementWithRef.ref).toBe(ref)
+		end).toErrorDev("Accessing element.ref was removed in React 19", {
+			withoutStack = true,
+		})
+		jestExpect(elementWithRef.props).toEqual({
+			foo = "56",
+			ref = ref,
+		})
 	end)
 end)

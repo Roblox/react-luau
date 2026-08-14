@@ -44,6 +44,7 @@ local REACT_ELEMENT_TYPE = ReactSymbols.REACT_ELEMENT_TYPE
 
 local warnAboutSpreadingKeyToJSX =
 	require(Packages.Shared).ReactFeatureFlags.warnAboutSpreadingKeyToJSX
+local enableRefAsProp = require(Packages.Shared).ReactFeatureFlags.enableRefAsProp
 local checkPropTypes = require(Packages.Shared).checkPropTypes
 local ReactCurrentOwner = require(Packages.Shared).ReactSharedInternals.ReactCurrentOwner
 
@@ -361,7 +362,8 @@ local function validateFragmentProps<P>(fragment: ReactElement<P & Object, any>)
 			end
 		end
 
-		if fragment.ref ~= nil then
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/c46fc90b670fb93e9a5558a36d0367cc735f812e/packages/react/src/jsx/ReactJSXElement.js#L1047-L1057
+		if not enableRefAsProp and fragment.ref ~= nil then
 			setCurrentlyValidatingElement(fragment)
 			console.error("Invalid attribute `ref` supplied to `React.Fragment`.")
 			setCurrentlyValidatingElement(nil)
