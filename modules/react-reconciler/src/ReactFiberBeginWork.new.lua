@@ -397,6 +397,26 @@ local function updateForwardRef(
 	local render = Component.render
 	local ref = workInProgress.ref
 
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/v19.0.0/packages/react-reconciler/src/ReactFiberBeginWork.js#L397-L422
+	local propsWithoutRef
+	-- ROBLOX DEVIATION: A Luau table cannot contain a key whose value is nil, so
+	-- checking the value is equivalent to JavaScript's `in` check here.
+	-- ROBLOX DEVIATION: Access through the existing module table to avoid another
+	-- local in a file that is at Luau's local register limit.
+	if ReactFeatureFlags.enableRefAsProp and nextProps.ref ~= nil then
+		-- `ref` is just a prop now, but `forwardRef` expects it to not appear in
+		-- the props object. This used to happen in the JSX runtime, but now we do
+		-- it here.
+		propsWithoutRef = {}
+		for key, value in nextProps do
+			if key ~= "ref" then
+				propsWithoutRef[key] = value
+			end
+		end
+	else
+		propsWithoutRef = nextProps
+	end
+
 	-- The rest is a fork of updateFunctionComponent
 	local nextChildren
 	prepareToReadContext(
@@ -407,8 +427,14 @@ local function updateForwardRef(
 	if __DEV__ then
 		ReactCurrentOwner.current = workInProgress
 		setIsRendering(true)
-		nextChildren =
-			renderWithHooks(current, workInProgress, render, nextProps, ref, renderLanes)
+		nextChildren = renderWithHooks(
+			current,
+			workInProgress,
+			render,
+			propsWithoutRef,
+			ref,
+			renderLanes
+		)
 		if
 			debugRenderPhaseSideEffectsForStrictMode
 			and bit32.band(workInProgress.mode, StrictMode) ~= 0
@@ -420,7 +446,7 @@ local function updateForwardRef(
 				current,
 				workInProgress,
 				render,
-				nextProps,
+				propsWithoutRef,
 				ref,
 				renderLanes
 			)
@@ -436,8 +462,14 @@ local function updateForwardRef(
 		end
 		setIsRendering(false)
 	else
-		nextChildren =
-			renderWithHooks(current, workInProgress, render, nextProps, ref, renderLanes)
+		nextChildren = renderWithHooks(
+			current,
+			workInProgress,
+			render,
+			propsWithoutRef,
+			ref,
+			renderLanes
+		)
 	end
 
 	if current ~= nil and not didReceiveUpdate then
@@ -803,13 +835,24 @@ function updateProfiler(current: Fiber | nil, workInProgress: Fiber, renderLanes
 end
 
 local function markRef(current: Fiber | nil, workInProgress: Fiber)
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/v19.0.0/packages/react-reconciler/src/ReactFiberBeginWork.js#L1039-L1058
+	-- ROBLOX DEVIATION: This React 17 fork does not have the RefStatic flag.
 	local ref = workInProgress.ref
-	if
-		(current == nil and ref ~= nil)
-		or (current ~= nil and (current :: Fiber).ref ~= ref)
-	then
-		-- Schedule a Ref effect
-		workInProgress.flags = bit32.bor(workInProgress.flags, Ref)
+	if ref == nil then
+		if current ~= nil and (current :: Fiber).ref ~= nil then
+			-- Schedule a Ref effect
+			workInProgress.flags = bit32.bor(workInProgress.flags, Ref)
+		end
+	else
+		if type(ref) ~= "function" and type(ref) ~= "table" then
+			error(
+				"Expected ref to be a function, an object returned by React.createRef(), or undefined/null."
+			)
+		end
+		if current == nil or (current :: Fiber).ref ~= ref then
+			-- Schedule a Ref effect
+			workInProgress.flags = bit32.bor(workInProgress.flags, Ref)
+		end
 	end
 end
 
@@ -1357,7 +1400,12 @@ local function mountLazyComponent(
 	workInProgress.type = Component
 	workInProgress.tag = resolveLazyComponentTag(Component)
 	local resolvedTag = workInProgress.tag
-	local resolvedProps = resolveDefaultProps(Component, props)
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/v19.0.0/packages/react-reconciler/src/ReactFiberBeginWork.js#L1677-L1727
+	-- ROBLOX DEVIATION: Access through the existing module table to avoid another
+	-- local in a file that is at Luau's local register limit.
+	local resolvedProps = if resolvedTag == ClassComponent
+		then ReactFiberClassComponent.resolveClassComponentProps(Component, props, false)
+		else resolveDefaultProps(Component, props)
 	local child
 	if resolvedTag == FunctionComponent then
 		if __DEV__ then
@@ -1741,7 +1789,7 @@ function validateFunctionComponentInDev(workInProgress: Fiber, Component: any)
 		--     )
 		--   end
 		-- end
-		if workInProgress.ref ~= nil then
+		if not ReactFeatureFlags.enableRefAsProp and workInProgress.ref ~= nil then
 			local info = ""
 			local ownerName = getCurrentFiberOwnerNameInDevOrNull()
 			if ownerName then
@@ -3516,8 +3564,12 @@ local function beginWork(current: any, workInProgress: Fiber, renderLanes: Lanes
 	elseif workInProgress.tag == ClassComponent then
 		local Component = workInProgress.type
 		local unresolvedProps = workInProgress.pendingProps
-		local resolvedProps = workInProgress.elementType == Component and unresolvedProps
-			or resolveDefaultProps(Component, unresolvedProps)
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/v19.0.0/packages/react-reconciler/src/ReactFiberBeginWork.js#L3738-L3752
+		local resolvedProps = ReactFiberClassComponent.resolveClassComponentProps(
+			Component,
+			unresolvedProps,
+			workInProgress.elementType == Component
+		)
 		return updateClassComponent(
 			current,
 			workInProgress,
@@ -3600,8 +3652,12 @@ local function beginWork(current: any, workInProgress: Fiber, renderLanes: Lanes
 	elseif workInProgress.tag == IncompleteClassComponent then
 		local Component = workInProgress.type
 		local unresolvedProps = workInProgress.pendingProps
-		local resolvedProps = workInProgress.elementType == Component and unresolvedProps
-			or resolveDefaultProps(Component, unresolvedProps)
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/v19.0.0/packages/react-reconciler/src/ReactFiberBeginWork.js#L3827-L3844
+		local resolvedProps = ReactFiberClassComponent.resolveClassComponentProps(
+			Component,
+			unresolvedProps,
+			workInProgress.elementType == Component
+		)
 		return mountIncompleteClassComponent(
 			current,
 			workInProgress,

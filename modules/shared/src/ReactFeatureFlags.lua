@@ -101,6 +101,9 @@ exports.enableComponentStackLocations = true
 
 exports.enableNewReconciler = true
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/7b636d223838fd24b646ce19fece9f33b659d572/packages/shared/ReactFeatureFlags.js#L181-L187
+exports.enableRefAsProp = true
+
 -- Errors that are thrown while unmounting (or after in the case of passive effects)
 -- should bypass any error boundaries that are also unmounting (or have unmounted)
 -- and be handled by the nearest still-mounted boundary.
