@@ -27,6 +27,7 @@ type ReactPriorityLevel = ReactInternalTypes.ReactPriorityLevel
 local ReactFiberLane = require(script.Parent.ReactFiberLane)
 type Lanes = ReactFiberLane.Lanes
 type Lane = ReactFiberLane.Lane
+local ConcurrentRoot = require(script.Parent.ReactRootTags).ConcurrentRoot
 local ReactCapturedValue = require(script.Parent.ReactCapturedValue)
 type CapturedValue<T> = ReactCapturedValue.CapturedValue<T>
 local ReactUpdateQueue = require(script.Parent["ReactUpdateQueue.new"])
@@ -428,16 +429,24 @@ function throwException(
 			workInProgress = workInProgress.return_ :: Fiber -- ROBLOX TODO: Luau narrowing doesn't understand this loop until nil pattern
 		until workInProgress == nil
 
-		-- ROBLOX upstream: https://github.com/facebook/react/blob/v18.2.0/packages/react-reconciler/src/ReactFiberThrow.new.js#L464-L478
-		-- No boundary was found. Unless this is a sync update, this is OK.
-		-- We can suspend and wait for more data to arrive.
-		if bit32.band(rootRenderLanes, SyncLane) == 0 then
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberThrow.js#L524-L537
+		-- Concurrent roots can suspend without a boundary and keep their current UI.
+		if root.tag == ConcurrentRoot then
+			local currentSource = sourceFiber.alternate
+			if currentSource ~= nil then
+				sourceFiber.updateQueue = currentSource.updateQueue
+				sourceFiber.memoizedState = currentSource.memoizedState
+				sourceFiber.lanes = currentSource.lanes
+			else
+				sourceFiber.updateQueue = nil
+				sourceFiber.memoizedState = nil
+			end
 			attachPingListener(root, wakeable, rootRenderLanes)
 			renderDidSuspendDelayIfPossible()
 			return
 		end
 
-		-- No boundary was found for a sync update. Fallthrough to error mode.
+		-- No boundary was found for a legacy root. Fallthrough to error mode.
 		-- TODO: Use invariant so the message is stripped in prod?
 		value = (getComponentName(sourceFiber.type) or "A React component")
 			.. " suspended while rendering, but no fallback UI was specified.\n"

@@ -1586,12 +1586,14 @@ local function updateActionStateImpl<S, P>(
 	local actionResult =
 		updateReducerImpl(stateHook, currentStateHook, actionStateReducer)
 	local isPending = updateState(false)
+	-- ROBLOX DEVIATION: React 17 has no suspended-component replay dispatcher,
+	-- so traverse the queue hook before the action result can suspend.
+	local actionQueueHook = updateWorkInProgressHook()
 	local state = if typeof(actionResult) == "table"
 			and typeof(actionResult.andThen) == "function"
 		then readActionThenable(actionResult)
 		else actionResult
 
-	local actionQueueHook = updateWorkInProgressHook()
 	local actionQueue = actionQueueHook.queue
 	local dispatch = actionQueue.dispatch
 

@@ -27,9 +27,9 @@ View Transitions remain out of scope.
 | `ReactFiberHooks.js::updateReducerImpl` revert-lane processing | `ReactFiberHooks.new.lua::updateReducerImpl` | Direct | The React 17 update shape keeps eager reducer fields and gains `revertLane`. |
 | `ReactFiberHooks.js` optimistic hook mount/update/rerender | `ReactFiberHooks.new.lua` | Direct | Luau returns tuple members as multiple values. |
 | `ReactFiberHooks.js::dispatchOptimisticSetState` | `ReactFiberHooks.new.lua` | Adapted | The shared action-local lane allocator replaces the modern root scheduler. |
-| `ReactFiberHooks.js` Action-state queue | `ReactFiberHooks.new.lua` | Adapted | Action nodes expose `andThen`; generic `useThenable`, `SuspenseException`, and `SuspenseActionException` remain owned by Roblox/react-luau#32. `readActionThenable` is private to Actions until consolidation. |
+| `ReactFiberHooks.js` Action-state queue | `ReactFiberHooks.new.lua` | Adapted | Action nodes expose `andThen`; generic `useThenable`, `SuspenseException`, and `SuspenseActionException` remain owned by Roblox/react-luau#32. `readActionThenable` is private to Actions, and React 17 traverses the queue hook before it can suspend because it has no suspended-component replay dispatcher. |
 | `ReactFiberThenable.js` generic thenable state and suspension sentinel | No target in this branch | Excluded | Roblox/react-luau#32 owns the public `use` substrate. The Action runtime and Debug Tools use private, action-local adapters until consolidation. |
-| `ReactFiberThrow.new.js` non-sync suspension without a boundary | `ReactFiberThrow.new.lua` and `ReactFiberWorkLoop.new.lua` | Adapted | React 18.2's root suspension path keeps the current UI while an Action transition is pending. The generic `use` substrate remains owned by Roblox/react-luau#32. |
+| `ReactFiberThrow.js` concurrent suspension without a boundary | `ReactFiberThrow.new.lua` and `ReactFiberWorkLoop.new.lua` | Adapted | React 19's root suspension path restores the interrupted component and keeps the current UI while an Action transition is pending. The generic `use` substrate remains owned by Roblox/react-luau#32. |
 | `ReactFiberHooks.js` hook `startTransition` | `ReactFiberHooks.new.lua` | Direct | React 17 keeps its update queue and scheduler entry points. |
 | `ReactFiberClassUpdateQueue.js` entangled Action suspension | `ReactUpdateQueue.new.lua` | Direct | Module and update-field names follow React 17. |
 | `ReactFiberBeginWork.js` HostRoot Action suspension | `ReactFiberBeginWork.new.lua` | Direct | The check follows the existing root queue call. |
@@ -124,7 +124,7 @@ backports:
   `readActionThenable` with its generic `useThenable` path and replace Debug
   Tools' private `SuspenseException` with the shared thenable inspection path,
   retaining only Action-specific suspension mapping. Consolidate the temporary
-  React 18.2 non-sync root-suspension path with that branch's Work Loop and
+  React 19 concurrent-root suspension path with that branch's Work Loop and
   `ReactFiberThrow` integration.
 - If Roblox/react-luau#31 lands first, rebase and replace
   `ReactStartTransition.lua`'s local deferred-error fallback with Shared
