@@ -1,5 +1,13 @@
 --!strict
 -- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js#L13-L132
+--[[*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
+]]
 
 local Packages = script.Parent
 local React = require(Packages.React)
@@ -11,11 +19,18 @@ type Inst<Selection> = {
 }
 
 local function useSyncExternalStoreWithSelector<Snapshot, Selection>(
-	subscribe: (() -> ()) -> () -> (),
+	subscribe: (
+		() -> ()
+	) -> () -> (),
 	getSnapshot: () -> Snapshot,
 	getServerSnapshot: (() -> Snapshot)?,
-	selector: (Snapshot) -> Selection,
-	isEqual: ((Selection, Selection) -> boolean)?
+	selector: (
+		Snapshot
+	) -> Selection,
+	isEqual: ((
+		Selection,
+		Selection
+	) -> boolean)?
 ): Selection
 	local instRef = React.useRef(nil :: Inst<Selection>?)
 	local inst = instRef.current
@@ -27,6 +42,7 @@ local function useSyncExternalStoreWithSelector<Snapshot, Selection>(
 		instRef.current = inst
 	end
 
+	-- ROBLOX DEVIATION: Luau multiple returns replace the JavaScript function pair.
 	local getSelection, getServerSelection = React.useMemo(function()
 		local hasMemo = false
 		local memoizedSnapshot: Snapshot

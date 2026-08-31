@@ -1,6 +1,9 @@
 -- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShared-test.js#L681-L796
 -- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShared-test.js#L873-L957
 -- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShared-test.js#L958-L1078
+-- ROBLOX DEVIATION: ReactNoop host output and Scheduler yields replace DOM output and act.
+-- ROBLOX DEVIATION: Native useSyncExternalStore cases remain owned by dependency PR #24.
+-- ROBLOX DEVIATION: ReactRoblox has no server-rendering or hydration entry point.
 --[[*
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -67,7 +70,8 @@ local function loadModules()
 	React = require(Packages.React)
 	ReactNoop = require(Packages.Dev.ReactNoopRenderer)
 	Scheduler = require(Packages.Scheduler)
-	useSyncExternalStoreWithSelector = require(Packages.UseSyncExternalStore).useSyncExternalStoreWithSelector
+	useSyncExternalStoreWithSelector =
+		require(Packages.UseSyncExternalStore).useSyncExternalStoreWithSelector
 end
 
 local function createErrorBoundary()
@@ -114,7 +118,9 @@ describe("extra features implemented in user-space", function()
 		local root = ReactNoop.createRoot()
 		root.render(React.createElement(App))
 		jestExpect(Scheduler).toFlushAndYield({ "App", "Selector", "A0" })
-		jestExpect(root).toMatchRenderedOutput(React.createElement("span", { prop = "A0" }))
+		jestExpect(root).toMatchRenderedOutput(
+			React.createElement("span", { prop = "A0" })
+		)
 		ReactNoop.flushPassiveEffects()
 
 		store.set({
@@ -122,7 +128,9 @@ describe("extra features implemented in user-space", function()
 			b = 0,
 		})
 		jestExpect(Scheduler).toFlushAndYield({ "Selector", "App", "A1" })
-		jestExpect(root).toMatchRenderedOutput(React.createElement("span", { prop = "A1" }))
+		jestExpect(root).toMatchRenderedOutput(
+			React.createElement("span", { prop = "A1" })
+		)
 	end)
 
 	it("Using isEqual to bailout", function()
@@ -230,10 +238,13 @@ describe("extra features implemented in user-space", function()
 		local List = React.memo(function(props)
 			local children = {}
 			for _, text in props.items do
-				table.insert(children, React.createElement(Text, {
-					key = text,
-					text = text,
-				}))
+				table.insert(
+					children,
+					React.createElement(Text, {
+						key = text,
+						text = text,
+					})
+				)
 			end
 			return React.createElement(React.Fragment, nil, unpack(children))
 		end)
@@ -300,7 +311,9 @@ describe("extra features implemented in user-space", function()
 			local root = ReactNoop.createRoot()
 			root.render(React.createElement(ErrorBoundary, nil, React.createElement(App)))
 			jestExpect(Scheduler).toFlushAndYield({ "A" })
-			jestExpect(root).toMatchRenderedOutput(React.createElement("span", { prop = "A" }))
+			jestExpect(root).toMatchRenderedOutput(
+				React.createElement("span", { prop = "A" })
+			)
 			ReactNoop.flushPassiveEffects()
 
 			jestExpect(function()
@@ -343,7 +356,9 @@ describe("extra features implemented in user-space", function()
 			local root = ReactNoop.createRoot()
 			root.render(React.createElement(ErrorBoundary, nil, React.createElement(App)))
 			jestExpect(Scheduler).toFlushAndYield({ "A" })
-			jestExpect(root).toMatchRenderedOutput(React.createElement("span", { prop = "A" }))
+			jestExpect(root).toMatchRenderedOutput(
+				React.createElement("span", { prop = "A" })
+			)
 			ReactNoop.flushPassiveEffects()
 
 			jestExpect(function()
