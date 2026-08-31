@@ -191,7 +191,7 @@ local function createFiber(
 		index = 1,
 
 		-- node.ref = nil
-		-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiber.new.js#L151-L152
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiber.new.js#L145-L146
 		-- node.refCleanup = nil
 
 		pendingProps = pendingProps,
@@ -383,7 +383,7 @@ local function createWorkInProgress(current: Fiber, pendingProps: any): Fiber
 	workInProgress.sibling = current.sibling
 	workInProgress.index = current.index
 	workInProgress.ref = current.ref
-	-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiber.new.js#L339-L340
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiber.new.js#L317-L321
 	workInProgress.refCleanup = current.refCleanup
 
 	if enableProfilerTimer then
@@ -977,7 +977,7 @@ local function assignFiberPropertiesInDEV(target: Fiber, source: Fiber): Fiber
 	target.sibling = source.sibling
 	target.index = source.index
 	target.ref = source.ref
-	-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiber.new.js#L884-L885
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiber.new.js#L828-L838
 	target.refCleanup = source.refCleanup
 	target.pendingProps = source.pendingProps
 	target.memoizedProps = source.memoizedProps

@@ -195,7 +195,7 @@ export type Fiber = {
 		| { _stringRef: string?, [string]: any }
 		| RefObject,
 
-	-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactInternalTypes.js#L134-L140
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactInternalTypes.js#L118-L125
 	refCleanup: (() -> ())?,
 
 	-- Input is the data coming into process this fiber. Arguments. Props.

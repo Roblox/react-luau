@@ -1387,15 +1387,16 @@ local function updateLayoutEffect(
 	updateEffectImpl(UpdateEffect, HookLayout, create, deps)
 end
 
+-- ROBLOX DEVIATION: Luau narrows upstream's mixed callback result to the
+-- supported cleanup function or nil throughout these imperative-handle helpers.
 function imperativeHandleEffect<T>(
 	create: () -> T,
 	ref: { current: T | nil } | ((inst: T | nil) -> (() -> ())?) | nil
-	-- ROBLOX deviation: explicit type annotation needed due to mixed return
 ): nil | () -> ...any
 	if ref ~= nil and type(ref) == "function" then
 		local refCallback = ref
 		local inst = create()
-		-- ROBLOX upstream: https://github.com/facebook/react/blob/ed71a3ad2965617c27c6e7ca7577f15b8ca4152c/packages/react-reconciler/src/ReactFiberHooks.js#L2565-L2575
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ed71a3ad2965617c27c6e7ca7577f15b8ca4152c/packages/react-reconciler/src/ReactFiberHooks.js#L2405-L2420
 		local refCleanup = refCallback(inst)
 		return function()
 			if type(refCleanup) == "function" then

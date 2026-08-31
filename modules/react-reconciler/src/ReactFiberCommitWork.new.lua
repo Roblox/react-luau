@@ -308,10 +308,12 @@ end
 
 local function safelyDetachRef(current: Fiber, nearestMountedAncestor: Fiber): ()
 	local ref = current.ref
-	-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiberCommitWork.new.js#L289-L333
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiberCommitWork.new.js#L278-L334
 	local refCleanup = current.refCleanup
 	if ref ~= nil then
 		if typeof(refCleanup) == "function" then
+			-- ROBLOX DEVIATION: React-Luau keeps this older reconciler's untimed
+			-- ref-detach path; the upstream layout-effect profiler wrapper is not backported.
 			local ok, error_ = xpcall(refCleanup, describeError)
 			current.refCleanup = nil
 			local finishedWork = current.alternate
@@ -323,9 +325,15 @@ local function safelyDetachRef(current: Fiber, nearestMountedAncestor: Fiber): (
 			end
 		elseif typeof(ref) == "function" then
 			-- ROBLOX performance: eliminate the __DEV__ and invokeGuardedCallback, like React 18 has done
-			local ok, error_ = xpcall(ref, describeError)
+			local ok, result = xpcall(ref, describeError)
 			if not ok then
-				captureCommitPhaseError(current, nearestMountedAncestor, error_)
+				captureCommitPhaseError(current, nearestMountedAncestor, result)
+			elseif __DEV__ and typeof(result) == "function" then
+				console.error(
+					"Unexpected return value from a callback ref in %s. "
+						.. "A callback ref should not return a function.",
+					getComponentName(current.type) or "instance"
+				)
 			end
 		else
 			-- ROBLOX FIXME Luau: next line gets Expected type table, got 'RefObject | {| [string]: any, _stringRef: string? |}' instead
@@ -1165,7 +1173,7 @@ function commitAttachRef(finishedWork: Fiber)
 		--   instanceToUse = instance
 		-- end
 		if typeof(ref) == "function" then
-			-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiberCommitWork.new.js#L1598-L1612
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiberCommitWork.new.js#L1513-L1541
 			finishedWork.refCleanup = ref(instanceToUse)
 		else
 			if __DEV__ then

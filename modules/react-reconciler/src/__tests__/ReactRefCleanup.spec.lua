@@ -1,4 +1,4 @@
--- ROBLOX upstream: https://github.com/facebook/react/blob/d4e78c42a94be027b4dc7ed2659a5fddfbf9bd4e/packages/react-dom/src/__tests__/refs-test.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/d4e78c42a94be027b4dc7ed2659a5fddfbf9bd4e/packages/react-dom/src/__tests__/refs-test.js#L564-L755
 --[[*
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -223,6 +223,7 @@ describe("refs return clean up function", function()
 		jestExpect(nilHandler).toHaveBeenCalledTimes(0)
 	end)
 
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiberCommitWork.new.js#L304-L328
 	it("warns when a legacy detach callback returns a cleanup function", function()
 		local root = ReactNoop.createRoot()
 		local function ref(instance)
@@ -281,7 +282,7 @@ describe("refs return clean up function", function()
 	end)
 end)
 
--- ROBLOX upstream: https://github.com/facebook/react/blob/ed71a3ad2965617c27c6e7ca7577f15b8ca4152c/packages/react-dom/src/__tests__/refs-test.js#L785-L888
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ed71a3ad2965617c27c6e7ca7577f15b8ca4152c/packages/react-dom/src/__tests__/refs-test.js#L744-L830
 describe("useImerativeHandle refs", function()
 	beforeEach(function()
 		jest.resetModules()

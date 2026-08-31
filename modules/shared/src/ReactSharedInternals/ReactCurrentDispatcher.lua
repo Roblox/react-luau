@@ -71,6 +71,8 @@ export type Dispatcher = {
 	) -> (),
 	useCallback: <T>(callback: T, deps: Array<any> | nil) -> T,
 	useMemo: <T...>(nextCreate: () -> T..., deps: Array<any> | nil) -> T...,
+	-- ROBLOX DEVIATION: Luau narrows upstream's mixed callback result to the
+	-- supported cleanup function or nil.
 	useImperativeHandle: <T>(
 		ref: { current: T | nil } | ((inst: T | nil) -> (() -> ())?) | nil,
 		create: () -> T,
