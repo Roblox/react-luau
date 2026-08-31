@@ -34,8 +34,8 @@ The post-19.2 conditional-order warning in `cbb046ab92b` is not imported.
 | `packages/react/src/ReactClient.js`, public index exports | `modules/react/src/React.lua` | Ported | React-Luau has one public module table |
 | `packages/react-reconciler/src/ReactInternalTypes.js` | `ReactCurrentDispatcher.lua` | Ported | React-Luau duplicates the dispatcher type in Shared |
 | `packages/shared/ReactSymbols.js` | Existing `ReactSymbols.lua` | Reused | Existing `REACT_CONTEXT_TYPE` identifies Context values |
-| `packages/react-reconciler/src/ReactFiberHooks.js` | `ReactFiberHooks.new.lua` | Adapted | `use` allocates no Hook node; all dispatcher variants expose it; one-based thenable positions; full React 19 replay is excluded |
-| `packages/react-reconciler/src/ReactFiberThenable.js` | New `ReactFiberThenable.lua` | Adapted | Cached client thenables, `andThen`, one-based positions, no async debug metadata, act accounting, Actions, or commit resources |
+| `packages/react-reconciler/src/ReactFiberHooks.js` | `ReactFiberHooks.new.lua`, `ReactFiberThenable.lua` | Adapted | `use` allocates no Hook node; all dispatcher variants expose it; one-based thenable positions; React 17 has no replay dispatcher, so the post-`use` dispatcher switch is omitted |
+| `packages/react-reconciler/src/ReactFiberThenable.js` | New `ReactFiberThenable.lua` | Adapted | Cached client thenables and `andThen`; non-`nil` custom statuses replace the upstream string check; async-catch detection and retained uncached-Promise warnings are absent; without the infinite-ping guard, an uncached self-resolving Promise silently retries instead of throwing React 19's error; async debug metadata, act accounting, Actions, and commit resources are absent |
 | `packages/react-reconciler/src/ReactFiberWorkLoop.js` | `ReactFiberWorkLoop.new.lua` | Adapted | Opaque sentinel is converted before React 17's existing unwind path; there is no `SuspendedOnImmediate` replay state |
 | `packages/react-reconciler/src/ReactFiberThrow.js` | Existing `ReactFiberThrow.new.lua` | Reused | Existing `andThen` wakeable capture, ping listener, and retry path needs no change |
 | `packages/react-reconciler/src/ReactFiberNewContext.js` | Existing `ReactFiberNewContext.new.lua` | Reused | Existing context dependency and unwind behavior is sufficient |
@@ -55,16 +55,19 @@ The primary upstream suite is
 
 | Upstream test | Port status | React-Luau coverage or reason |
 | --- | --- | --- |
-| `basic use(promise)` | Ported | Multiple cached fulfilled thenables |
+| `does not infinite loop if already fulfilled thenable is thrown` | Adapted | Direct port; React 17 has no sibling prewarming, so it performs one suspension attempt before the fallback |
+| `basic use(promise)` | Adapted | Multiple cached, pre-instrumented fulfilled thenables preserve positional reads without importing transition replay |
 | Pending Promise fallback, ping, resolve, and retry behavior | Ported | Custom thenable and real Roblox Promise cases |
 | `using a promise that's not cached between attempts` | Excluded | Requires retained thenable state plus immediate component replay; callers must cache outside render |
 | `using a rejected promise will throw` | Ported | Pre-rejected and pending-then-rejected paths reach an Error Boundary |
-| `use(promise) in multiple components` | Ported | Parent and child read independent cached thenables |
+| `use(promise) in multiple components` | Adapted | The renamed parent/child case reads independent pre-instrumented fulfilled thenables and preserves the upstream yield assertion |
 | `use(promise) in multiple sibling components` | Covered by the same substrate | Per-component state resets on every successful render and unwind; sibling-prewarming ordering is excluded |
 | `erroring in the same component as an uncached promise does not result in an infinite loop` | Excluded | Uncached render-created Promises are unsupported |
 | `basic use(context)` | Ported | Provider and default Context values |
 | `interrupting while yielded should reset contexts` | Covered by existing Context unwind | Its upstream fixture depends on React 19 lazy/renderable-node behavior outside this port |
 | `warns if use(promise) is wrapped with try/catch block` | Ported | Identity-stable opaque exception and DEV warning |
+| `when waiting for data to resolve, a fresh update will trigger a restart` | Excluded | Gated off at the React 19.2 pin and depends on work-loop suspension during transitions |
+| `when waiting for data to resolve, an update on a different root does not cause work to be dropped` | Excluded | Gated off at the React 19.2 pin and depends on work-loop suspension during transitions |
 | `unwraps thenable that fulfills synchronously without suspending` | Ported | Custom synchronous `andThen` fixture |
 | `does not suspend indefinitely if an interleaved update was skipped` | Excluded | Depends on React 19 immediate replay and lane behavior |
 | `load multiple nested Suspense boundaries` | Covered by existing Suspense tests | React 19 sibling prewarming and log ordering are excluded |

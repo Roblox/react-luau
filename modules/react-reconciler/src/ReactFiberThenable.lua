@@ -58,6 +58,13 @@ local thenableState: ThenableState? = nil
 -- features and are not part of this cached client Promise backport.
 -- Roblox Promise cancellation does not notify ordinary `andThen` listeners,
 -- so a Promise passed to use must settle normally and must not be canceled.
+-- `status ~= nil` is broader than upstream's string-only custom status check;
+-- the Luau Thenable type only admits string states. Async Client Components
+-- are excluded, so rejected reasons omit `checkIfUseWrappedInAsyncCatch`.
+-- Without Fiber-retained replay state, the uncached-Promise warning cannot see
+-- replacements between attempts. React 17 also has no shell suspend counter,
+-- so an uncached self-resolving Promise silently retries instead of reaching
+-- React 19's infinite-ping error.
 local function trackUsedThenable<T>(
 	thenableState: ThenableState,
 	thenable: Thenable<T>,
@@ -114,9 +121,12 @@ local function trackUsedThenable<T>(
 	error(SuspenseException)
 end
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L1095-L1149
 -- ROBLOX DEVIATION: Keep the per-component counters in this module because
 -- ReactFiberHooks.new.lua is at Luau's local-register limit. Luau arrays are
--- one-indexed, so the first thenable occupies slot 1 instead of slot 0.
+-- one-indexed, so the first thenable occupies slot 1 instead of slot 0. React
+-- 17 has no suspended-component replay dispatcher, so the post-use switch back
+-- to a mount or update dispatcher is omitted.
 local function useThenable<T>(thenable: Thenable<T>): T
 	local index = thenableIndexCounter
 	thenableIndexCounter += 1

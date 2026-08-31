@@ -56,6 +56,11 @@ local function span(prop)
 	return { type = "span", hidden = false, children = {}, prop = prop }
 end
 
+local function Text(props)
+	Scheduler.unstable_yieldValue(props.text)
+	return React.createElement("span", { prop = props.text })
+end
+
 local function createErrorBoundary()
 	local ErrorBoundary = React.Component:extend("ErrorBoundary")
 	function ErrorBoundary:init()
@@ -66,7 +71,7 @@ local function createErrorBoundary()
 	end
 	function ErrorBoundary:render()
 		if self.state.error ~= nil then
-			return React.createElement("span", { prop = self.state.error.message })
+			return React.createElement(Text, { text = self.state.error.message })
 		end
 		return self.props.children
 	end
@@ -83,6 +88,40 @@ describe("ReactUse", function()
 		Promise = require(Packages.Promise)
 		use = React.use
 		useState = React.useState
+	end)
+
+	it("does not infinite loop if already fulfilled thenable is thrown", function()
+		-- An already fulfilled Promise should never be thrown. If it is, React
+		-- must show the fallback without retrying the render indefinitely.
+		local thenable = {
+			andThen = function() end,
+			status = "fulfilled",
+		}
+
+		local renderCount = 0
+		local function Async()
+			renderCount += 1
+			if renderCount > 50 then
+				error("Infinite loop detected")
+			end
+			Scheduler.unstable_yieldValue("Suspend!")
+			-- A userspace Suspense library made the implementation mistake that
+			-- this regression covers.
+			error(thenable)
+		end
+
+		ReactNoop.render(
+			React.createElement(
+				React.Suspense,
+				{ fallback = React.createElement(Text, { text = "Loading..." }) },
+				React.createElement(Async)
+			)
+		)
+
+		-- ROBLOX DEVIATION: React 17 has no sibling prewarming pass, so Async
+		-- renders once instead of React 19's second post-fallback attempt.
+		jestExpect(Scheduler).toFlushAndYield({ "Suspend!", "Loading..." })
+		jestExpect(ReactNoop.getChildren()).toEqual({ span("Loading...") })
 	end)
 
 	it("basic use(promise)", function()
@@ -102,11 +141,6 @@ describe("ReactUse", function()
 			andThen = function() end,
 		}
 
-		local function Text(props)
-			Scheduler.unstable_yieldValue(props.text)
-			return React.createElement("span", { prop = props.text })
-		end
-
 		local function Async()
 			local text = use(promiseA) .. use(promiseB) .. use(promiseC)
 			return React.createElement(Text, { text = text })
@@ -120,11 +154,6 @@ describe("ReactUse", function()
 
 	it("suspends until a pending promise resolves", function()
 		local promise, resolve = createTextThenable()
-
-		local function Text(props)
-			Scheduler.unstable_yieldValue(props.text)
-			return React.createElement("span", { prop = props.text })
-		end
 
 		local function Async()
 			return React.createElement(Text, { text = use(promise) })
@@ -154,23 +183,23 @@ describe("ReactUse", function()
 		end)
 
 		local function Async()
-			return React.createElement("span", { prop = use(promise) })
+			return React.createElement(Text, { text = use(promise) })
 		end
 
 		ReactNoop.render(
 			React.createElement(
 				React.Suspense,
-				{ fallback = React.createElement("span", { prop = "Loading..." }) },
+				{ fallback = React.createElement(Text, { text = "Loading..." }) },
 				React.createElement(Async)
 			)
 		)
-		Scheduler.unstable_flushAllWithoutAsserting()
+		jestExpect(Scheduler).toFlushAndYield({ "Loading..." })
 		jestExpect(ReactNoop.getChildren()).toEqual({ span("Loading...") })
 
 		assert(resolvePromise ~= nil, "Promise executor did not expose its resolver")
 		resolvePromise("Async")
 		return promise:andThen(function()
-			Scheduler.unstable_flushAllWithoutAsserting()
+			jestExpect(Scheduler).toFlushAndYield({ "Async" })
 			jestExpect(ReactNoop.getChildren()).toEqual({ span("Async") })
 		end)
 	end)
@@ -192,7 +221,7 @@ describe("ReactUse", function()
 		ReactNoop.render(
 			React.createElement(ErrorBoundary, nil, React.createElement(Async))
 		)
-		Scheduler.unstable_flushAllWithoutAsserting()
+		jestExpect(Scheduler).toFlushAndYield({ "Oops!", "Oops!" })
 
 		jestExpect(ReactNoop.getChildren()).toEqual({ span("Oops!") })
 	end)
@@ -203,7 +232,7 @@ describe("ReactUse", function()
 		local ErrorBoundary = createErrorBoundary()
 
 		local function Async()
-			return React.createElement("span", { prop = use(promise) })
+			return React.createElement(Text, { text = use(promise) })
 		end
 
 		ReactNoop.render(
@@ -212,16 +241,16 @@ describe("ReactUse", function()
 				nil,
 				React.createElement(
 					React.Suspense,
-					{ fallback = React.createElement("span", { prop = "Loading..." }) },
+					{ fallback = React.createElement(Text, { text = "Loading..." }) },
 					React.createElement(Async)
 				)
 			)
 		)
-		Scheduler.unstable_flushAllWithoutAsserting()
+		jestExpect(Scheduler).toFlushAndYield({ "Loading..." })
 		jestExpect(ReactNoop.getChildren()).toEqual({ span("Loading...") })
 
 		reject(Error.new("Rejected later"))
-		Scheduler.unstable_flushAllWithoutAsserting()
+		jestExpect(Scheduler).toFlushAndYield({ "Rejected later", "Rejected later" })
 
 		jestExpect(ReactNoop.getChildren()).toEqual({ span("Rejected later") })
 	end)
@@ -240,8 +269,8 @@ describe("ReactUse", function()
 		local promiseD = resolved("D")
 
 		local function Child(props)
-			return React.createElement("span", {
-				prop = props.prefix .. use(promiseC) .. use(promiseD),
+			return React.createElement(Text, {
+				text = props.prefix .. use(promiseC) .. use(promiseD),
 			})
 		end
 
@@ -252,7 +281,7 @@ describe("ReactUse", function()
 		end
 
 		ReactNoop.render(React.createElement(Parent))
-		Scheduler.unstable_flushAllWithoutAsserting()
+		jestExpect(Scheduler).toFlushAndYield({ "ABCD" })
 
 		jestExpect(ReactNoop.getChildren()).toEqual({ span("ABCD") })
 	end)
@@ -274,7 +303,7 @@ describe("ReactUse", function()
 				React.createElement(Sync)
 			)
 		)
-		Scheduler.unstable_flushAllWithoutAsserting()
+		jestExpect(Scheduler).toFlushAndYield({})
 
 		jestExpect(ReactNoop.getChildren()).toEqual({ span("AB") })
 	end)
@@ -285,15 +314,15 @@ describe("ReactUse", function()
 		local function App(props)
 			local prefix = if props.readContext then use(Context) else "Skipped"
 			local count = useState(0)
-			return React.createElement("span", { prop = prefix .. ":" .. count })
+			return React.createElement(Text, { text = prefix .. ":" .. count })
 		end
 
 		ReactNoop.render(React.createElement(App, { readContext = false }))
-		Scheduler.unstable_flushAllWithoutAsserting()
+		jestExpect(Scheduler).toFlushAndYield({ "Skipped:0" })
 		jestExpect(ReactNoop.getChildren()).toEqual({ span("Skipped:0") })
 
 		ReactNoop.render(React.createElement(App, { readContext = true }))
-		Scheduler.unstable_flushAllWithoutAsserting()
+		jestExpect(Scheduler).toFlushAndYield({ "Context:0" })
 		jestExpect(ReactNoop.getChildren()).toEqual({ span("Context:0") })
 	end)
 
@@ -310,11 +339,11 @@ describe("ReactUse", function()
 				value ..= use(context)
 			end
 			local count = useState(0)
-			return React.createElement("span", { prop = value .. count })
+			return React.createElement(Text, { text = value .. count })
 		end
 
 		ReactNoop.render(React.createElement(App))
-		Scheduler.unstable_flushAllWithoutAsserting()
+		jestExpect(Scheduler).toFlushAndYield({ "ABC0" })
 
 		jestExpect(ReactNoop.getChildren()).toEqual({ span("ABC0") })
 	end)
@@ -338,11 +367,11 @@ describe("ReactUse", function()
 			if count == 0 then
 				setCount(1)
 			end
-			return React.createElement("span", { prop = use(promises[count + 1]) })
+			return React.createElement(Text, { text = use(promises[count + 1]) })
 		end
 
 		ReactNoop.render(React.createElement(App))
-		Scheduler.unstable_flushAllWithoutAsserting()
+		jestExpect(Scheduler).toFlushAndYield({ "1" })
 
 		jestExpect(ReactNoop.getChildren()).toEqual({ span("1") })
 	end)
@@ -355,13 +384,14 @@ describe("ReactUse", function()
 		}
 
 		local function App()
-			return React.createElement("span", { prop = use(thenable) })
+			return React.createElement(Text, { text = use(thenable) })
 		end
 
 		ReactNoop.flushSync(function()
 			ReactNoop.render(React.createElement(App))
 		end)
 
+		jestExpect(Scheduler).toHaveYielded({ "Hi" })
 		jestExpect(ReactNoop.getChildren()).toEqual({ span("Hi") })
 	end)
 
@@ -372,12 +402,12 @@ describe("ReactUse", function()
 			pcall(function()
 				use(promise)
 			end)
-			return React.createElement("span", { prop = "Caught" })
+			return React.createElement(Text, { text = "Caught" })
 		end
 
 		jestExpect(function()
 			ReactNoop.render(React.createElement(App))
-			Scheduler.unstable_flushAllWithoutAsserting()
+			jestExpect(Scheduler).toFlushAndYield({ "Caught" })
 		end).toErrorDev(
 			"`use` was called from inside a try/catch block. This is not allowed "
 				.. "and can lead to unexpected behavior. To handle errors triggered "
@@ -396,11 +426,11 @@ describe("ReactUse", function()
 		ReactNoop.render(
 			React.createElement(
 				React.Suspense,
-				{ fallback = React.createElement("span", { prop = "Loading..." }) },
+				{ fallback = React.createElement(Text, { text = "Loading..." }) },
 				React.createElement(Async)
 			)
 		)
-		Scheduler.unstable_flushAllWithoutAsserting()
+		jestExpect(Scheduler).toFlushAndYield({ "Loading..." })
 
 		jestExpect(function()
 			useState(0)

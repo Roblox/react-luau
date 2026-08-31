@@ -248,7 +248,7 @@ local function readContext<T>(
 	return context._currentValue
 end
 
--- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/ReactDebugHooks.js#L182-L237
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/ReactDebugHooks.js#L192-L265
 -- ROBLOX DEVIATION: Cached Promise inspection reads the instrumented Promise
 -- directly because this fork does not retain uncached thenables after unwind.
 local function use<T>(usable: Usable<T>): T
