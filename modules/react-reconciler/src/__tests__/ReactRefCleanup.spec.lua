@@ -223,6 +223,30 @@ describe("refs return clean up function", function()
 		jestExpect(nilHandler).toHaveBeenCalledTimes(0)
 	end)
 
+	it("warns when a legacy detach callback returns a cleanup function", function()
+		local root = ReactNoop.createRoot()
+		local function ref(instance)
+			if instance == nil then
+				return function() end
+			end
+			return nil
+		end
+
+		ReactNoop.act(function()
+			root.render(React.createElement("div", { ref = ref }))
+		end)
+
+		jestExpect(function()
+			ReactNoop.act(function()
+				root.render(nil)
+			end)
+		end).toErrorDev(
+			"Unexpected return value from a callback ref in div. "
+				.. "A callback ref should not return a function.",
+			{ withoutStack = true }
+		)
+	end)
+
 	-- ROBLOX DEVIATION: The upstream suite exercises host refs. This parallel
 	-- public class-ref case covers React-Luau's class receiver path.
 	it("calls cleanup function for class refs", function()
