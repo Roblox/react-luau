@@ -199,7 +199,6 @@ local ReactFiberThrow = require(script.Parent["ReactFiberThrow.new"]) :: any
 local throwException = ReactFiberThrow.throwException
 local createRootErrorUpdate = ReactFiberThrow.createRootErrorUpdate
 local createClassErrorUpdate = ReactFiberThrow.createClassErrorUpdate
-local ReactFiberThenable = require(script.Parent.ReactFiberThenable)
 local ReactFiberCommitWork = require(script.Parent["ReactFiberCommitWork.new"])
 local commitBeforeMutationEffectOnFiber =
 	ReactFiberCommitWork.commitBeforeMutationLifeCycles
@@ -1611,6 +1610,9 @@ mod.prepareFreshStack = function(root: FiberRoot, lanes: Lanes)
 end
 
 mod.handleError = function(root, thrownValue): ()
+	-- ROBLOX DEVIATION: Keep this require off the module scope because this file
+	-- is at Luau's top-level local limit.
+	local ReactFiberThenable = require(script.Parent.ReactFiberThenable)
 	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L2230-L2245
 	-- ROBLOX DEVIATION: React 17 has no immediate replay state machine. Convert
 	-- the opaque exception before the existing unwind, Suspense capture, and
@@ -3486,6 +3488,9 @@ if __DEV__ and ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback
 			xpcall(originalBeginWork, describeError, current, unitOfWork, lanes)
 		if not ok then
 			local originalError = result
+			-- ROBLOX DEVIATION: Keep this require off the module scope because this
+			-- file is at Luau's top-level local limit.
+			local ReactFiberThenable = require(script.Parent.ReactFiberThenable)
 
 			if
 				originalError ~= nil
