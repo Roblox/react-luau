@@ -1649,7 +1649,7 @@ mod.handleError = function(root, thrownValue): ()
 				)
 			end
 
-			-- ROBLOX deviation, we pass in onUncaughtError and renderDidError here since throwException can't call them due to a require cycle
+			-- ROBLOX deviation, pass Work Loop callbacks since throwException can't call them due to a require cycle
 			throwException(
 				root,
 				(erroredWork :: Fiber).return_,
@@ -1657,7 +1657,8 @@ mod.handleError = function(root, thrownValue): ()
 				thrownValue,
 				workInProgressRootRenderLanes,
 				exports.onUncaughtError,
-				exports.renderDidError
+				exports.renderDidError,
+				exports.renderDidSuspendDelayIfPossible
 			)
 			mod.completeUnitOfWork(erroredWork)
 		end)

@@ -258,7 +258,8 @@ function throwException(
 	value: any,
 	rootRenderLanes: Lanes,
 	onUncaughtError,
-	renderDidError
+	renderDidError,
+	renderDidSuspendDelayIfPossible
 )
 	-- The source fiber did not complete.
 	sourceFiber.flags = bit32.bor(sourceFiber.flags, Incomplete)
@@ -427,7 +428,16 @@ function throwException(
 			workInProgress = workInProgress.return_ :: Fiber -- ROBLOX TODO: Luau narrowing doesn't understand this loop until nil pattern
 		until workInProgress == nil
 
-		-- No boundary was found. Fallthrough to error mode.
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/v18.2.0/packages/react-reconciler/src/ReactFiberThrow.new.js#L464-L478
+		-- No boundary was found. Unless this is a sync update, this is OK.
+		-- We can suspend and wait for more data to arrive.
+		if bit32.band(rootRenderLanes, SyncLane) == 0 then
+			attachPingListener(root, wakeable, rootRenderLanes)
+			renderDidSuspendDelayIfPossible()
+			return
+		end
+
+		-- No boundary was found for a sync update. Fallthrough to error mode.
 		-- TODO: Use invariant so the message is stripped in prod?
 		value = (getComponentName(sourceFiber.type) or "A React component")
 			.. " suspended while rendering, but no fallback UI was specified.\n"

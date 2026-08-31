@@ -29,7 +29,7 @@ View Transitions remain out of scope.
 | `ReactFiberHooks.js::dispatchOptimisticSetState` | `ReactFiberHooks.new.lua` | Adapted | The shared action-local lane allocator replaces the modern root scheduler. |
 | `ReactFiberHooks.js` Action-state queue | `ReactFiberHooks.new.lua` | Adapted | Action nodes expose `andThen`; generic `useThenable`, `SuspenseException`, and `SuspenseActionException` remain owned by Roblox/react-luau#32. `readActionThenable` is private to Actions until consolidation. |
 | `ReactFiberThenable.js` generic thenable state and suspension sentinel | No target in this branch | Excluded | Roblox/react-luau#32 owns the public `use` substrate. The Action runtime and Debug Tools use private, action-local adapters until consolidation. |
-| `ReactFiberThrow.js` generic wakeable capture | No target in this branch | Reused | React 17 already captures thrown `andThen` wakeables. Generic changes remain owned by Roblox/react-luau#32. |
+| `ReactFiberThrow.new.js` non-sync suspension without a boundary | `ReactFiberThrow.new.lua` and `ReactFiberWorkLoop.new.lua` | Adapted | React 18.2's root suspension path keeps the current UI while an Action transition is pending. The generic `use` substrate remains owned by Roblox/react-luau#32. |
 | `ReactFiberHooks.js` hook `startTransition` | `ReactFiberHooks.new.lua` | Direct | React 17 keeps its update queue and scheduler entry points. |
 | `ReactFiberClassUpdateQueue.js` entangled Action suspension | `ReactUpdateQueue.new.lua` | Direct | Module and update-field names follow React 17. |
 | `ReactFiberBeginWork.js` HostRoot Action suspension | `ReactFiberBeginWork.new.lua` | Direct | The check follows the existing root queue call. |
@@ -123,7 +123,9 @@ backports:
 - If Roblox/react-luau#32 lands first, rebase and replace
   `readActionThenable` with its generic `useThenable` path and replace Debug
   Tools' private `SuspenseException` with the shared thenable inspection path,
-  retaining only Action-specific suspension mapping.
+  retaining only Action-specific suspension mapping. Consolidate the temporary
+  React 18.2 non-sync root-suspension path with that branch's Work Loop and
+  `ReactFiberThrow` integration.
 - If Roblox/react-luau#31 lands first, rebase and replace
   `ReactStartTransition.lua`'s local deferred-error fallback with Shared
   `reportGlobalError`.
