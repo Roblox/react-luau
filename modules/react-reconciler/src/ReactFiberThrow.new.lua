@@ -117,7 +117,9 @@ local isAlreadyFailedLegacyErrorBoundary = function(...)
 	return isAlreadyFailedLegacyErrorBoundaryRef(...)
 end
 
-local logCapturedError = require(script.Parent.ReactFiberErrorLogger).logCapturedError
+local ReactFiberErrorLogger = require(script.Parent.ReactFiberErrorLogger)
+local logUncaughtError = ReactFiberErrorLogger.logUncaughtError
+local logCaughtError = ReactFiberErrorLogger.logCaughtError
 local logComponentSuspended = require(script.Parent.DebugTracing).logComponentSuspended
 local markComponentSuspended =
 	require(script.Parent.SchedulingProfiler).markComponentSuspended
@@ -131,11 +133,9 @@ local pickArbitraryLane = ReactFiberLane.pickArbitraryLane
 -- local PossiblyWeakMap = typeof WeakMap == 'function' ? WeakMap : Map
 
 function createRootErrorUpdate(
-	fiber: Fiber,
+	root: FiberRoot,
 	errorInfo: CapturedValue<Error>,
-	lane: Lane,
-	-- ROBLOX deviation: parameterize method to avoid circular dependency
-	onUncaughtError
+	lane: Lane
 ): Update<any>
 	local update = createUpdate(NoTimestamp, lane)
 	-- Unmount the root by rendering nil.
@@ -143,29 +143,36 @@ function createRootErrorUpdate(
 	-- Caution: React DevTools currently depends on this property
 	-- being called "element".
 	update.payload = { element = Object.None }
-	local _error = errorInfo.value
 	update.callback = function()
-		if onUncaughtError ~= nil then
-			onUncaughtError(_error)
-		end
-		logCapturedError(fiber, errorInfo)
+		logUncaughtError(root, errorInfo)
 	end
 	return update
 end
 
-function createClassErrorUpdate(
-	fiber: Fiber,
-	errorInfo: CapturedValue<Error>,
-	lane: Lane
-): Update<any>
+function createClassErrorUpdate(lane: Lane): Update<any>
 	local update = createUpdate(NoTimestamp, lane)
 	update.tag = CaptureUpdate
+	return update
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-reconciler/src/ReactFiberThrow.js#L111-L177
+function initializeClassErrorUpdate(
+	update: Update<any>,
+	root: FiberRoot,
+	fiber: Fiber,
+	errorInfo: CapturedValue<Error>
+)
 	local getDerivedStateFromError = (fiber.type :: React_Component<any, any>).getDerivedStateFromError
 	if typeof(getDerivedStateFromError) == "function" then
 		local error_ = errorInfo.value
 		update.payload = function()
-			logCapturedError(fiber, errorInfo)
 			return getDerivedStateFromError(error_)
+		end
+		update.callback = function()
+			if ReactGlobals.__DEV__ then
+				markFailedErrorBoundaryForHotReloading(fiber)
+			end
+			logCaughtError(root, fiber, errorInfo)
 		end
 	end
 
@@ -175,6 +182,7 @@ function createClassErrorUpdate(
 			if ReactGlobals.__DEV__ then
 				markFailedErrorBoundaryForHotReloading(fiber)
 			end
+			logCaughtError(root, fiber, errorInfo)
 			if typeof(getDerivedStateFromError) ~= "function" then
 				-- To preserve the preexisting retry behavior of error boundaries,
 				-- we keep track of which ones already failed during this batch.
@@ -183,9 +191,6 @@ function createClassErrorUpdate(
 				-- not defined.
 				-- ROBLOX FIXME: used to be `this` upstream, needs verification by ReactIncremental unwinding test
 				markLegacyErrorBoundaryAsFailed(inst)
-
-				-- Only log here if componentDidCatch is the only error boundary method defined
-				logCapturedError(fiber, errorInfo)
 			end
 			local error_ = errorInfo.value
 			local stack = errorInfo.stack
@@ -208,12 +213,7 @@ function createClassErrorUpdate(
 				end
 			end
 		end
-	elseif ReactGlobals.__DEV__ then
-		update.callback = function()
-			markFailedErrorBoundaryForHotReloading(fiber)
-		end
 	end
-	return update
 end
 
 local function attachPingListener(root: FiberRoot, wakeable: Wakeable, lanes: Lanes)
@@ -257,7 +257,6 @@ function throwException(
 	sourceFiber: Fiber,
 	value: any,
 	rootRenderLanes: Lanes,
-	onUncaughtError,
 	renderDidError
 )
 	-- The source fiber did not complete.
@@ -439,7 +438,14 @@ function throwException(
 	-- We didn't find a boundary that could handle this type of exception. Start
 	-- over and traverse parent path again, this time treating the exception
 	-- as an error.
-	renderDidError()
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-reconciler/src/ReactFiberThrow.js#L619-L625
+	local wrapperError = LuauPolyfill.Error.new(
+		"There was an error during concurrent rendering but React was able to recover by "
+			.. "instead synchronously rendering the entire root."
+	)
+	local wrapperErrorWithCause: any = wrapperError
+	wrapperErrorWithCause.cause = value
+	renderDidError(createCapturedValue(wrapperError, sourceFiber))
 
 	value = createCapturedValue(value, sourceFiber)
 	local workInProgress = returnFiber
@@ -449,9 +455,7 @@ function throwException(
 			workInProgress.flags = bit32.bor(workInProgress.flags, ShouldCapture)
 			local lane = pickArbitraryLane(rootRenderLanes)
 			workInProgress.lanes = mergeLanes(workInProgress.lanes, lane)
-			-- ROBLOX deviation: parameterize method onUncaughtError to avoid circular dependency
-			local update =
-				createRootErrorUpdate(workInProgress, errorInfo, lane, onUncaughtError)
+			local update = createRootErrorUpdate(root, errorInfo, lane)
 			enqueueCapturedUpdate(workInProgress, update)
 			return
 		elseif workInProgress.tag == ClassComponent then
@@ -474,7 +478,8 @@ function throwException(
 				local lane = pickArbitraryLane(rootRenderLanes)
 				workInProgress.lanes = mergeLanes(workInProgress.lanes, lane)
 				-- Schedule the error boundary to re-render using updated state
-				local update = createClassErrorUpdate(workInProgress, errorInfo, lane)
+				local update = createClassErrorUpdate(lane)
+				initializeClassErrorUpdate(update, root, workInProgress, errorInfo)
 				enqueueCapturedUpdate(workInProgress, update)
 				return
 			end
@@ -487,4 +492,5 @@ return {
 	throwException = throwException,
 	createRootErrorUpdate = createRootErrorUpdate,
 	createClassErrorUpdate = createClassErrorUpdate,
+	initializeClassErrorUpdate = initializeClassErrorUpdate,
 }

@@ -44,6 +44,9 @@ local unmarkContainerAsRoot = ReactRobloxComponentTree.unmarkContainerAsRoot
 local ReactFiberReconciler = require(script.Parent.Parent["ReactReconciler.roblox"])
 local createContainer = ReactFiberReconciler.createContainer
 local updateContainer = ReactFiberReconciler.updateContainer
+local defaultOnUncaughtError = ReactFiberReconciler.defaultOnUncaughtError
+local defaultOnCaughtError = ReactFiberReconciler.defaultOnCaughtError
+local defaultOnRecoverableError = ReactFiberReconciler.defaultOnRecoverableError
 -- local findHostInstanceWithNoPortals = ReactFiberReconciler.findHostInstanceWithNoPortals
 -- local registerMutableSourceForHydration = ReactFiberReconciler.registerMutableSourceForHydration
 local invariant = require(Packages.Shared).invariant
@@ -147,7 +150,30 @@ createRootImpl = function(container: Container, tag: RootTag, options: any)
 		and options.hydrationOptions ~= nil
 		and options.hydrationOptions.mutableSources
 	) or nil
-	local root = createContainer(container, tag, hydrate, hydrationCallbacks)
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-dom/src/client/ReactDOMRoot.js#L184-L246
+	local onUncaughtError = defaultOnUncaughtError
+	local onCaughtError = defaultOnCaughtError
+	local onRecoverableError = defaultOnRecoverableError
+	if options ~= nil then
+		if options.onUncaughtError ~= nil then
+			onUncaughtError = options.onUncaughtError
+		end
+		if options.onCaughtError ~= nil then
+			onCaughtError = options.onCaughtError
+		end
+		if options.onRecoverableError ~= nil then
+			onRecoverableError = options.onRecoverableError
+		end
+	end
+	local root = createContainer(
+		container,
+		tag,
+		hydrate,
+		hydrationCallbacks,
+		onUncaughtError,
+		onCaughtError,
+		onRecoverableError
+	)
 	markContainerAsRoot(root.current, container)
 	-- local containerNodeType = container.nodeType
 

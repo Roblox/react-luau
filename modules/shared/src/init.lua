@@ -113,6 +113,7 @@ return {
 	-- ROBLOX deviation: Instead of re-exporting from here, Shared actually owns
 	-- these files itself
 	ReactSharedInternals = ReactSharedInternals,
+	reportGlobalError = require(script.reportGlobalError),
 	-- ROBLOX deviation: Instead of extracting these out of the reconciler and
 	-- then re-injecting the host config _into_ the reconciler, export these
 	-- from shared for easier reuse

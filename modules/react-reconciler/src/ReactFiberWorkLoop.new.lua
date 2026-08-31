@@ -199,6 +199,7 @@ local ReactFiberThrow = require(script.Parent["ReactFiberThrow.new"]) :: any
 local throwException = ReactFiberThrow.throwException
 local createRootErrorUpdate = ReactFiberThrow.createRootErrorUpdate
 local createClassErrorUpdate = ReactFiberThrow.createClassErrorUpdate
+local initializeClassErrorUpdate = ReactFiberThrow.initializeClassErrorUpdate
 local ReactFiberCommitWork = require(script.Parent["ReactFiberCommitWork.new"])
 local commitBeforeMutationEffectOnFiber =
 	ReactFiberCommitWork.commitBeforeMutationLifeCycles
@@ -301,7 +302,9 @@ local getIsUpdatingOpaqueValueInRenderPhaseInDEV = function(): boolean?
 	return lazyInitRefs.getIsUpdatingOpaqueValueInRenderPhaseInDEVRef()
 end
 
-local createCapturedValue = require(script.Parent.ReactCapturedValue).createCapturedValue
+local ReactCapturedValue = require(script.Parent.ReactCapturedValue)
+type CapturedValue<T> = ReactCapturedValue.CapturedValue<T>
+local createCapturedValue = ReactCapturedValue.createCapturedValue
 local pushToStack = ReactFiberStack.push
 local popFromStack = ReactFiberStack.pop
 local createCursor = ReactFiberStack.createCursor
@@ -440,6 +443,8 @@ end
 
 local hasUncaughtError = false
 local firstUncaughtError = nil
+local workInProgressRootConcurrentErrors: Array<CapturedValue<any>>? = nil
+local workInProgressRootRecoverableErrors: Array<CapturedValue<any>>? = nil
 local legacyErrorBoundariesThatAlreadyFailed: Set<any> | nil = nil
 
 local rootDoesHavePassiveEffects: boolean = false
@@ -867,6 +872,19 @@ ensureRootIsScheduled = function(root: FiberRoot, currentTime: number)
 	root.callbackNode = newCallbackNode
 end
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1594-L1664
+local function recoverFromConcurrentError(root: FiberRoot, errorRetryLanes: Lanes)
+	local errorsFromFirstAttempt = workInProgressRootConcurrentErrors
+	workInProgressRootConcurrentErrors = nil
+	workInProgressRootRecoverableErrors = nil
+
+	local exitStatus = mod.renderRootSync(root, errorRetryLanes)
+	if exitStatus ~= RootExitStatus.Errored then
+		workInProgressRootRecoverableErrors = errorsFromFirstAttempt
+	end
+	return exitStatus
+end
+
 -- This is the entry point for every concurrent task, i.e. anything that
 -- goes through Scheduler.
 -- ROBLOX Luau FIXME: Luau needs explicit annotation with nil-able returns
@@ -941,7 +959,7 @@ mod.performConcurrentWorkOnRoot = function(root): (() -> ...any) | nil
 			-- attempt, we'll give up and commit the resulting tree.
 			lanes = getLanesToRetrySynchronouslyOnError(root)
 			if lanes ~= ReactFiberLane.NoLanes then
-				exitStatus = mod.renderRootSync(root, lanes)
+				exitStatus = recoverFromConcurrentError(root, lanes)
 			end
 		end
 
@@ -988,6 +1006,7 @@ function shouldForceFlushFallbacksInDEV()
 end
 
 mod.finishConcurrentRender = function(root, exitStatus, lanes)
+	local recoverableErrors = workInProgressRootRecoverableErrors
 	if
 		exitStatus == RootExitStatus.Incomplete
 		or exitStatus == RootExitStatus.FatalErrored
@@ -999,7 +1018,7 @@ mod.finishConcurrentRender = function(root, exitStatus, lanes)
 	elseif exitStatus == RootExitStatus.Errored then
 		-- We should have already attempted to retry this tree. If we reached
 		-- this point, it errored again. Commit it.
-		mod.commitRoot(root)
+		mod.commitRoot(root, recoverableErrors)
 	elseif exitStatus == RootExitStatus.Suspended then
 		mod.markRootSuspended(root, lanes)
 
@@ -1037,13 +1056,13 @@ mod.finishConcurrentRender = function(root, exitStatus, lanes)
 				-- lower priority work to do. Instead of committing the fallback
 				-- immediately, wait for more data to arrive.
 				root.timeoutHandle = ReactFiberHostConfig.scheduleTimeout(function()
-					return mod.commitRoot(root)
+					return mod.commitRoot(root, recoverableErrors)
 				end, msUntilTimeout)
 				return
 			end
 		end
 		-- The work expired. Commit immediately.
-		mod.commitRoot(root)
+		mod.commitRoot(root, recoverableErrors)
 	elseif exitStatus == RootExitStatus.SuspendedWithDelay then
 		mod.markRootSuspended(root, lanes)
 
@@ -1072,16 +1091,16 @@ mod.finishConcurrentRender = function(root, exitStatus, lanes)
 				-- Instead of committing the fallback immediately, wait for more data
 				-- to arrive.
 				root.timeoutHandle = ReactFiberHostConfig.scheduleTimeout(function()
-					return mod.commitRoot(root)
+					return mod.commitRoot(root, recoverableErrors)
 				end, msUntilTimeout)
 				return
 			end
 		end
 		-- Commit the placeholder.
-		mod.commitRoot(root)
+		mod.commitRoot(root, recoverableErrors)
 	elseif exitStatus == RootExitStatus.Completed then
 		-- The work completed. Ready to commit.
-		mod.commitRoot(root)
+		mod.commitRoot(root, recoverableErrors)
 	else
 		invariant(false, "Unknown root exit status.")
 	end
@@ -1155,7 +1174,7 @@ mod.performSyncWorkOnRoot = function(root)
 		-- attempt, we'll give up and commit the resulting tree.
 		lanes = getLanesToRetrySynchronouslyOnError(root)
 		if lanes ~= ReactFiberLane.NoLanes then
-			exitStatus = mod.renderRootSync(root, lanes)
+			exitStatus = recoverFromConcurrentError(root, lanes)
 		end
 	end
 
@@ -1172,7 +1191,7 @@ mod.performSyncWorkOnRoot = function(root)
 	local finishedWork: Fiber = root.current.alternate :: any
 	root.finishedWork = finishedWork
 	root.finishedLanes = lanes
-	mod.commitRoot(root)
+	mod.commitRoot(root, workInProgressRootRecoverableErrors)
 
 	-- Before exiting, make sure there's a callback scheduled for the next
 	-- pending level.
@@ -1599,6 +1618,8 @@ mod.prepareFreshStack = function(root: FiberRoot, lanes: Lanes)
 	workInProgressRootSkippedLanes(ReactFiberLane.NoLanes)
 	workInProgressRootUpdatedLanes = ReactFiberLane.NoLanes
 	workInProgressRootPingedLanes = ReactFiberLane.NoLanes
+	workInProgressRootConcurrentErrors = nil
+	workInProgressRootRecoverableErrors = nil
 
 	if ReactFeatureFlags.enableSchedulerTracing then
 		spawnedWorkDuringRender = nil
@@ -1658,14 +1679,13 @@ mod.handleError = function(root, thrownValue): ()
 				)
 			end
 
-			-- ROBLOX deviation, we pass in onUncaughtError and renderDidError here since throwException can't call them due to a require cycle
+			-- ROBLOX deviation: pass renderDidError to avoid the WorkLoop dependency cycle.
 			throwException(
 				root,
 				(erroredWork :: Fiber).return_,
 				erroredWork :: Fiber,
 				thrownValue,
 				workInProgressRootRenderLanes,
-				exports.onUncaughtError,
 				exports.renderDidError
 			)
 			mod.completeUnitOfWork(erroredWork)
@@ -1766,9 +1786,14 @@ exports.renderDidSuspendDelayIfPossible = function(): ()
 	end
 end
 
-exports.renderDidError = function()
+exports.renderDidError = function(errorInfo: CapturedValue<any>)
 	if workInProgressRootExitStatus ~= RootExitStatus.Completed then
 		workInProgressRootExitStatus = RootExitStatus.Errored
+	end
+	if workInProgressRootConcurrentErrors == nil then
+		workInProgressRootConcurrentErrors = { errorInfo }
+	else
+		table.insert(workInProgressRootConcurrentErrors, errorInfo)
 	end
 end
 
@@ -2100,12 +2125,12 @@ mod.completeUnitOfWork = function(unitOfWork: Fiber)
 	end
 end
 
-mod.commitRoot = function(root)
+mod.commitRoot = function(root, recoverableErrors: Array<CapturedValue<any>>?)
 	local renderPriorityLevel = getCurrentPriorityLevel()
 	runWithPriority(ImmediateSchedulerPriority, function()
 		-- ROBLOX deviation: RobloxReactProfiling
 		RobloxReactProfiling.profileCommitBefore()
-		local ret = mod.commitRootImpl(root, renderPriorityLevel)
+		local ret = mod.commitRootImpl(root, recoverableErrors, renderPriorityLevel)
 		RobloxReactProfiling.profileCommitAfter()
 		return ret
 	end)
@@ -2113,7 +2138,11 @@ mod.commitRoot = function(root)
 end
 
 -- ROBLOX Luau FIXME: Luau doesn't infer root as FiberRoot via the callgraph from ensureRootIsScheduled(root: FiberRoot)
-mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
+mod.commitRootImpl = function(
+	root: FiberRoot,
+	recoverableErrors: Array<CapturedValue<any>>?,
+	renderPriorityLevel
+)
 	repeat
 		-- `flushPassiveEffects` will call `flushSyncUpdateQueue` at the end, which
 		-- means `flushPassiveEffects` will sometimes result in additional
@@ -2456,11 +2485,19 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
 	-- additional work on this root is scheduled.
 	ensureRootIsScheduled(root, now())
 
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-reconciler/src/ReactFiberWorkLoop.js#L4089-L4108
+	if recoverableErrors ~= nil then
+		for _, recoverableError in recoverableErrors do
+			root.onRecoverableError(recoverableError.value, {
+				componentStack = recoverableError.stack,
+			})
+		end
+	end
+
 	if hasUncaughtError then
 		hasUncaughtError = false
 		local error_ = firstUncaughtError
 		firstUncaughtError = nil
-		-- ROBLOX FIXME: we lose the original stack trace when we re-throw this way
 		error(error_)
 	end
 
@@ -3081,20 +3118,18 @@ exports.markLegacyErrorBoundaryAsFailed = function(instance)
 	end
 end
 
--- ROBLOX TODO: this function and the related fields should be extracted/relocated to break a cycle
-local function prepareToThrowUncaughtError(error_)
+-- ROBLOX DEVIATION: Internal React 17 test renderers retain their synchronous
+-- default throw contract while public roots use React 19 global reporting.
+exports.legacyDefaultOnUncaughtError = function(error_)
 	if not hasUncaughtError then
 		hasUncaughtError = true
 		firstUncaughtError = error_
 	end
 end
-exports.onUncaughtError = prepareToThrowUncaughtError
 
 captureCommitPhaseErrorOnRoot = function(rootFiber: Fiber, sourceFiber: Fiber, error_)
 	local errorInfo = createCapturedValue(error_, sourceFiber)
-	-- ROBLOX deviation: parameterize method onUncaughtError to avoid circular dependency
-	local update =
-		createRootErrorUpdate(rootFiber, errorInfo, SyncLane, exports.onUncaughtError)
+	local update = createRootErrorUpdate(rootFiber.stateNode, errorInfo, SyncLane)
 	enqueueUpdate(rootFiber, update)
 	local eventTime = exports.requestEventTime()
 	local root = mod.markUpdateLaneFromFiberToRoot(rootFiber, SyncLane)
@@ -3145,11 +3180,12 @@ exports.captureCommitPhaseError = function(
 					)
 				then
 					local errorInfo = createCapturedValue(error_, sourceFiber)
-					local update = createClassErrorUpdate(fiber, errorInfo, SyncLane)
+					local update = createClassErrorUpdate(SyncLane)
 					enqueueUpdate(fiber, update)
 					local eventTime = exports.requestEventTime()
 					local root = mod.markUpdateLaneFromFiberToRoot(fiber, SyncLane)
 					if root ~= nil then
+						initializeClassErrorUpdate(update, root, fiber, errorInfo)
 						markRootUpdated(root, SyncLane, eventTime)
 						ensureRootIsScheduled(root, eventTime)
 						mod.schedulePendingInteractions(root, SyncLane)
