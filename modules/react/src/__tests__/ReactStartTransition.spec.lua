@@ -98,15 +98,27 @@ describe("ReactStartTransition", function()
 		end
 	)
 
-	it("preserves errors thrown by transition callbacks", function()
-		local globalSucceeded, globalError = pcall(function()
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react/src/ReactStartTransition.js
+	it("reports errors thrown by global transition callbacks", function()
+		local previousReportError = rawget(_G, "reportError")
+		local reportedError = nil
+		rawset(_G, "reportError", function(error_)
+			reportedError = error_
+		end)
+
+		local succeeded, transitionError = pcall(function()
 			React.startTransition(function()
 				error("global transition failure", 0)
 			end)
 		end)
-		jestExpect(globalSucceeded).toBe(false)
-		jestExpect(globalError).toBe("global transition failure")
 
+		rawset(_G, "reportError", previousReportError)
+		jestExpect(succeeded).toBe(true)
+		jestExpect(transitionError).toBe(nil)
+		jestExpect(reportedError).toBe("global transition failure")
+	end)
+
+	it("preserves errors thrown by hook transition callbacks", function()
 		local triggerHookTransition
 		local function Component()
 			local _, start = useTransition()

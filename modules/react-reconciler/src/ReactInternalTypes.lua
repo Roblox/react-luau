@@ -97,6 +97,8 @@ export type HookType =
 	| "useDebugValue"
 	| "useDeferredValue"
 	| "useTransition"
+	| "useOptimistic"
+	| "useActionState"
 	| "useMutableSource"
 	| "useOpaqueIdentifier"
 local ReactRootTags = require(script.Parent.ReactRootTags)

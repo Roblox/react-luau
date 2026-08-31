@@ -581,6 +581,66 @@ describe("ReactHooksInspectionIntegration", function()
 			},
 		})
 	end) -- @gate experimental
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js
+	it("should support useOptimistic hook", function()
+		local function Foo()
+			local state = React.useOptimistic("initial")
+			return React.createElement("Frame", nil, state)
+		end
+		local renderer = ReactTestRenderer.create(React.createElement(Foo))
+		local childFiber = renderer.root:findByType(Foo):_currentFiber()
+		local tree = ReactDebugTools.inspectHooksOfFiber(childFiber)
+		expect(tree).toEqual({
+			{
+				id = 1,
+				isStateEditable = false,
+				name = "Optimistic",
+				value = "initial",
+				subHooks = {},
+			},
+		})
+	end)
+
+	it("should support useActionState hook", function()
+		local function Foo()
+			local state = React.useActionState(function(previousState, increment)
+				return previousState + increment
+			end, 0)
+			React.useMemo(function()
+				return "memo"
+			end, {})
+			React.useMemo(function()
+				return "not used"
+			end, {})
+			return React.createElement("Frame", nil, tostring(state))
+		end
+		local renderer = ReactTestRenderer.create(React.createElement(Foo))
+		local childFiber = renderer.root:findByType(Foo):_currentFiber()
+		local tree = ReactDebugTools.inspectHooksOfFiber(childFiber)
+		expect(tree).toEqual({
+			{
+				id = 1,
+				isStateEditable = false,
+				name = "ActionState",
+				value = 0,
+				subHooks = {},
+			},
+			{
+				id = 2,
+				isStateEditable = false,
+				name = "Memo",
+				value = "memo",
+				subHooks = {},
+			},
+			{
+				id = 3,
+				isStateEditable = false,
+				name = "Memo",
+				value = "not used",
+				subHooks = {},
+			},
+		})
+	end)
 	-- ROBLOX upstream: https://github.com/facebook/react/blob/72ebc703ac8abacd44fdeb1e3d66eb28b75e5a5b/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js#L582-L626
 	it("should support composite useDeferredValue hook", function()
 		local function Foo(props)

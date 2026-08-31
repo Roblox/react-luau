@@ -104,6 +104,9 @@ local SharedModule = require(Packages.Shared)
 local ReactSharedInternals = SharedModule.ReactSharedInternals
 local ReactSymbols = SharedModule.ReactSymbols
 local REACT_OPAQUE_ID_TYPE = ReactSymbols.REACT_OPAQUE_ID_TYPE
+-- ROBLOX DEVIATION: ReactFiberThenable is owned by the public `use` backport.
+-- Keep this inspection-only sentinel local until that dependency is merged.
+local SuspenseException = Error.new("Suspended while inspecting pending Action state")
 -- ROBLOX deviation END
 -- ROBLOX deviation START: fix import - get from ReconcilerModule
 -- local reactReconcilerSrcReactWorkTagsModule =
@@ -218,8 +221,7 @@ local function getPrimitiveStackCache(): Map<string, Array<any>>
 end
 local currentHook: nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]] | Hook =
 	nil
-local function nextHook(
-): nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]] | Hook
+local function nextHook(): nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]] | Hook
 	local hook = currentHook
 	if hook ~= nil then
 		currentHook = hook.next
@@ -457,6 +459,47 @@ local function useTransition(): (boolean, StartTransition)
 	return false, function(_callback, _options) end
 end
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/ReactDebugHooks.js#L565-L724
+local function useOptimistic<T>(passthrough: T, _reducer): (T, (any) -> ())
+	local hook = nextHook()
+	local value = if hook ~= nil then hook.memoizedState else passthrough
+	table.insert(
+		hookLog,
+		{ primitive = "Optimistic", stackError = Error.new(), value = value }
+	)
+	return value, function() end
+end
+
+local function useActionState<T>(
+	_action,
+	initialState: T,
+	_permalink: string?
+): (T, (any) -> (), boolean)
+	local stateHook = nextHook()
+	nextHook() -- PendingState
+	nextHook() -- ActionQueue
+	local stackError = Error.new()
+	local value = if stateHook ~= nil then stateHook.memoizedState else initialState
+	local inspectionError = nil
+	if typeof(value) == "table" and typeof(value.andThen) == "function" then
+		if value.status == "fulfilled" then
+			value = value.value
+		elseif value.status == "rejected" then
+			inspectionError = value.reason
+		else
+			inspectionError = SuspenseException
+		end
+	end
+	table.insert(
+		hookLog,
+		{ primitive = "ActionState", stackError = stackError, value = value }
+	)
+	if inspectionError ~= nil then
+		error(inspectionError, 0)
+	end
+	return value, function() end, false
+end
+
 -- ROBLOX upstream: https://github.com/facebook/react/blob/72ebc703ac8abacd44fdeb1e3d66eb28b75e5a5b/packages/react-debug-tools/src/ReactDebugHooks.js#L312-L322
 local function useDeferredValue<T>(value: T): T
 	local hook = nextHook()
@@ -528,6 +571,8 @@ Dispatcher = {
 	useState = useState :: any,
 	-- ROBLOX deviation END
 	useTransition = useTransition,
+	useOptimistic = useOptimistic,
+	useActionState = useActionState,
 	useMutableSource = useMutableSource,
 	useDeferredValue = useDeferredValue,
 	useOpaqueIdentifier = useOpaqueIdentifier,
@@ -1059,7 +1104,7 @@ local function inspectHooks<Props>(
 		-- 	return result
 		-- end
 		-- ROBLOX deviation END
-		if not ok then
+		if not ok and result ~= SuspenseException then
 			error(result)
 		end
 	end
@@ -1134,7 +1179,7 @@ local function inspectHooksOfForwardRef<Props, Ref>(
 		-- 	return result
 		-- end
 		-- ROBLOX deviation END
-		if not ok then
+		if not ok and result ~= SuspenseException then
 			error(result)
 		end
 	end

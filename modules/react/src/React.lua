@@ -109,6 +109,8 @@ return {
 	useBinding = ReactHooks.useBinding,
 	useState = ReactHooks.useState,
 	useTransition = ReactHooks.useTransition,
+	useOptimistic = ReactHooks.useOptimistic,
+	useActionState = ReactHooks.useActionState,
 	useDeferredValue = ReactHooks.useDeferredValue,
 	startTransition = ReactStartTransition.startTransition,
 	--[[

@@ -42,6 +42,7 @@ local ReactCurrentDispatcher =
 type BasicStateAction<S> = ((S) -> S) | S
 type Dispatch<A> = (A) -> ()
 type StartTransition = ReactTypes.StartTransition
+type Thenable<T> = ReactTypes.Thenable<T>
 
 -- ROBLOX FIXME Luau: we shouldn't need to explicitly annotate this
 local function resolveDispatcher(): Dispatcher
@@ -295,6 +296,24 @@ exports.emptyObject = {}
 exports.useTransition = function(): (boolean, StartTransition)
 	local dispatcher = resolveDispatcher()
 	return dispatcher.useTransition()
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react/src/ReactHooks.js#L223-L241
+exports.useOptimistic = function<S, A>(
+	passthrough: S,
+	reducer: ((S, A) -> S)?
+): (S, Dispatch<A>)
+	local dispatcher = resolveDispatcher()
+	return dispatcher.useOptimistic(passthrough, reducer)
+end
+
+exports.useActionState = function<S, P>(
+	action: (S, P) -> S | Thenable<S>,
+	initialState: S,
+	permalink: string?
+): (S, Dispatch<P>, boolean)
+	local dispatcher = resolveDispatcher()
+	return dispatcher.useActionState(action, initialState, permalink)
 end
 
 exports.useDeferredValue = function<T>(value: T): T

@@ -162,7 +162,6 @@ local SyncLane = ReactFiberLane.SyncLane
 local SyncBatchedLane = ReactFiberLane.SyncBatchedLane
 local NoTimestamp = ReactFiberLane.NoTimestamp
 local findUpdateLane = ReactFiberLane.findUpdateLane
-local claimNextTransitionLane = ReactFiberLane.claimNextTransitionLane
 local findRetryLane = ReactFiberLane.findRetryLane
 local includesSomeLane = ReactFiberLane.includesSomeLane
 local isSubsetOfLanes = ReactFiberLane.isSubsetOfLanes
@@ -188,6 +187,10 @@ local markRootFinished = ReactFiberLane.markRootFinished
 local schedulerPriorityToLanePriority = ReactFiberLane.schedulerPriorityToLanePriority
 local lanePriorityToSchedulerPriority = ReactFiberLane.lanePriorityToSchedulerPriority
 local ReactFiberTransition = require(script.Parent.ReactFiberTransition)
+local ReactFiberAsyncAction = require(script.Parent.ReactFiberAsyncAction)
+local requestTransitionLane = ReactFiberAsyncAction.requestTransitionLane
+local resetCurrentEventTransitionLane =
+	ReactFiberAsyncAction.resetCurrentEventTransitionLane
 -- deviation: Use properties directly instead of localizing to avoid 200 limit
 -- local requestCurrentTransition = ReactFiberTransition.requestCurrentTransition
 
@@ -466,8 +469,6 @@ local spawnedWorkDuringRender: nil | Array<Lane | Lanes> = nil
 -- between the first and second call.
 local currentEventTime: number = NoTimestamp
 local currentEventWipLanes: Lanes = ReactFiberLane.NoLanes
--- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberWorkLoop.new.js#L407-L408
-local currentEventTransitionLane: Lane = ReactFiberLane.NoLane
 
 local focusedInstanceHandle: nil | Fiber = nil
 local shouldFireAfterActiveInstanceBlur: boolean = false
@@ -550,10 +551,7 @@ exports.requestUpdateLane = function(fiber: Fiber): Lane
 			end
 			transition._updatedFibers:add(fiber)
 		end
-		if currentEventTransitionLane == ReactFiberLane.NoLane then
-			currentEventTransitionLane = claimNextTransitionLane()
-		end
-		return currentEventTransitionLane
+		return requestTransitionLane(transition)
 	end
 
 	-- TODO: Remove this dependency on the Scheduler priority.
@@ -868,7 +866,7 @@ mod.performConcurrentWorkOnRoot = function(root): (() -> ...any) | nil
 	-- event time. The next update will compute a new event time.
 	currentEventTime = NoTimestamp
 	currentEventWipLanes = ReactFiberLane.NoLanes
-	currentEventTransitionLane = ReactFiberLane.NoLane
+	resetCurrentEventTransitionLane()
 
 	invariant(
 		bit32.band(executionContext, bit32.bor(RenderContext, CommitContext)) == NoContext,

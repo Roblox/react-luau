@@ -1,5 +1,5 @@
 --!strict
--- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberTransition.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberTransition.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -14,6 +14,19 @@ local Packages = script.Parent.Parent
 local ReactSharedInternals = require(Packages.Shared).ReactSharedInternals
 
 local ReactCurrentBatchConfig = ReactSharedInternals.ReactCurrentBatchConfig
+local entangleAsyncAction =
+	require(script.Parent.ReactFiberAsyncAction).entangleAsyncAction
+
+local previousOnStartTransitionFinish = ReactSharedInternals.onStartTransitionFinish
+ReactSharedInternals.onStartTransitionFinish = function(transition, returnValue)
+	if typeof(returnValue) == "table" and typeof(returnValue.andThen) == "function" then
+		entangleAsyncAction(transition, returnValue)
+	end
+
+	if previousOnStartTransitionFinish ~= nil then
+		previousOnStartTransitionFinish(transition, returnValue)
+	end
+end
 
 return {
 	requestCurrentTransition = function(): { [any]: any }?

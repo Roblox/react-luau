@@ -32,7 +32,7 @@ export type StartTransitionOptions = {
 }
 
 export type StartTransition = (
-	callback: () -> (),
+	callback: () -> any,
 	options: StartTransitionOptions?
 ) -> ()
 

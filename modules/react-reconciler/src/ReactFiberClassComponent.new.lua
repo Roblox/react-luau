@@ -66,6 +66,8 @@ local StrictMode = ReactTypeOfMode.StrictMode
 
 local enqueueUpdate = ReactUpdateQueue.enqueueUpdate
 local processUpdateQueue = ReactUpdateQueue.processUpdateQueue
+local suspendIfUpdateReadFromEntangledAsyncAction =
+	ReactUpdateQueue.suspendIfUpdateReadFromEntangledAsyncAction
 local checkHasForceUpdateAfterProcessing =
 	ReactUpdateQueue.checkHasForceUpdateAfterProcessing
 local resetHasForceUpdateBeforeProcessing =
@@ -1016,6 +1018,7 @@ local function mountClassInstance(
 	end
 
 	processUpdateQueue(workInProgress, newProps, instance, renderLanes)
+	suspendIfUpdateReadFromEntangledAsyncAction()
 	instance.state = workInProgress.memoizedState
 
 	-- ROBLOX deviation START: don't access field on a function, cache typeofCtor
@@ -1053,6 +1056,7 @@ local function mountClassInstance(
 		-- If we had additional state updates during this life-cycle, let's
 		-- process them now.
 		processUpdateQueue(workInProgress, newProps, instance, renderLanes)
+		suspendIfUpdateReadFromEntangledAsyncAction()
 		instance.state = workInProgress.memoizedState
 	end
 
@@ -1117,6 +1121,7 @@ function resumeMountClassInstance(
 	instance.state = oldState
 	local newState = oldState
 	processUpdateQueue(workInProgress, newProps, instance, renderLanes)
+	suspendIfUpdateReadFromEntangledAsyncAction()
 	newState = workInProgress.memoizedState
 	if
 		oldProps == newProps
@@ -1287,6 +1292,7 @@ local function updateClassInstance(
 	instance.state = oldState
 	local newState = instance.state
 	processUpdateQueue(workInProgress, newProps, instance, renderLanes)
+	suspendIfUpdateReadFromEntangledAsyncAction()
 	newState = workInProgress.memoizedState
 
 	if

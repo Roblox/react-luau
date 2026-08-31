@@ -1,5 +1,5 @@
 --!strict
--- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react/src/ReactStartTransition.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react/src/ReactStartTransition.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
  *
@@ -16,11 +16,26 @@ local Set = LuauPolyfill.Set
 local ReactTypes = require(Packages.Shared)
 local console = ReactTypes.console
 local ReactFeatureFlags = ReactTypes.ReactFeatureFlags
-local ReactCurrentBatchConfig = ReactTypes.ReactSharedInternals.ReactCurrentBatchConfig
+local ReactSharedInternals = ReactTypes.ReactSharedInternals
+local ReactCurrentBatchConfig = ReactSharedInternals.ReactCurrentBatchConfig
 
 export type StartTransitionOptions = ReactTypes.StartTransitionOptions
 
-local function startTransition(scope: () -> (), options: StartTransitionOptions?): ()
+-- ROBLOX DEVIATION: Shared reportGlobalError is owned by the root-error
+-- backport. Keep this host-aware fallback private until those branches merge.
+local function reportGlobalError(error_: any)
+	local reportError = rawget(_G, "reportError")
+	if typeof(reportError) == "function" then
+		reportError(error_)
+		return
+	end
+
+	task.defer(function()
+		error(error_, 0)
+	end)
+end
+
+local function startTransition(scope: () -> any, options: StartTransitionOptions?): ()
 	local prevTransition = ReactCurrentBatchConfig.transition
 	ReactCurrentBatchConfig.transition = {}
 	local currentTransition = ReactCurrentBatchConfig.transition
@@ -36,8 +51,25 @@ local function startTransition(scope: () -> (), options: StartTransitionOptions?
 		end
 	end
 
-	local ok, result = pcall(scope)
+	local ok, result = pcall(function()
+		local returnValue = scope()
+		local onStartTransitionFinish = ReactSharedInternals.onStartTransitionFinish
+		if onStartTransitionFinish ~= nil then
+			onStartTransitionFinish(currentTransition, returnValue)
+		end
+
+		if
+			typeof(returnValue) == "table"
+			and typeof(returnValue.andThen) == "function"
+		then
+			returnValue:andThen(function() end, reportGlobalError)
+		end
+		return returnValue
+	end)
 	ReactCurrentBatchConfig.transition = prevTransition
+	if not ok then
+		reportGlobalError(result)
+	end
 
 	if ReactGlobals.__DEV__ and currentTransition._updatedFibers ~= nil then
 		if prevTransition == nil and currentTransition._updatedFibers.size > 10 then
@@ -48,10 +80,6 @@ local function startTransition(scope: () -> (), options: StartTransitionOptions?
 			)
 		end
 		currentTransition._updatedFibers:clear()
-	end
-
-	if not ok then
-		error(result, 0)
 	end
 end
 

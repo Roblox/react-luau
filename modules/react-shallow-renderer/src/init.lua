@@ -380,6 +380,16 @@ function ReactShallowRenderer:_createDispatcher()
 		return value
 	end
 
+	local function useOptimistic(passthrough, _reducer)
+		self:_validateCurrentlyRenderingComponent()
+		return passthrough, function() end
+	end
+
+	local function useActionState(_action, initialState, _permalink)
+		self:_validateCurrentlyRenderingComponent()
+		return initialState, function() end, false
+	end
+
 	return {
 		readContext = readContext,
 		useCallback = identity,
@@ -399,6 +409,8 @@ function ReactShallowRenderer:_createDispatcher()
 		useResponder = useResponder,
 		useTransition = useTransition,
 		useDeferredValue = useDeferredValue,
+		useOptimistic = useOptimistic,
+		useActionState = useActionState,
 	}
 end
 

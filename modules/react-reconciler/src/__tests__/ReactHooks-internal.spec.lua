@@ -1444,7 +1444,16 @@ describe("ReactHooks", function()
 		local function useTransitionHelper()
 			return React.useTransition()
 		end
+		local function useOptimisticHelper()
+			return React.useOptimistic(0)
+		end
+		local function useActionStateHelper()
+			return React.useActionState(function(state)
+				return state
+			end, 0)
+		end
 		local orderedHooks: Array<Function> = {
+			useActionStateHelper,
 			useCallbackHelper,
 			useContextHelper,
 			useDebugValueHelper,
@@ -1452,18 +1461,21 @@ describe("ReactHooks", function()
 			useEffectHelper,
 			useLayoutEffectHelper,
 			useMemoHelper,
+			useOptimisticHelper,
 			useReducerHelper,
 			useRefHelper,
 			useStateHelper,
 			useTransitionHelper,
 		}
 		local hooksInList: Array<Function> = {
+			useActionStateHelper,
 			useCallbackHelper,
 			useDeferredValueHelper,
 			useEffectHelper,
 			useImperativeHandleHelper,
 			useLayoutEffectHelper,
 			useMemoHelper,
+			useOptimisticHelper,
 			useReducerHelper,
 			useRefHelper,
 			useStateHelper,

@@ -111,6 +111,9 @@ local isSubsetOfLanes = ReactFiberLane.isSubsetOfLanes
 local mergeLanes = ReactFiberLane.mergeLanes
 local isTransitionLane = ReactFiberLane.isTransitionLane
 local markRootEntangled = ReactFiberLane.markRootEntangled
+local ReactFiberAsyncAction = require(script.Parent.ReactFiberAsyncAction)
+local peekEntangledActionLane = ReactFiberAsyncAction.peekEntangledActionLane
+local peekEntangledActionThenable = ReactFiberAsyncAction.peekEntangledActionThenable
 
 -- ROBLOX deviation: lazy instantiate to avoid circular require
 local ReactFiberNewContext --= require(script.Parent["ReactFiberNewContext.new"])
@@ -175,6 +178,7 @@ exports.CaptureUpdate = CaptureUpdate
 -- It should only be read right after calling `processUpdateQueue`, via
 -- `checkHasForceUpdateAfterProcessing`.
 local hasForceUpdate = false
+local didReadFromEntangledAsyncAction = false
 
 local didWarnUpdateInsideUpdate
 local currentlyProcessingQueue: SharedQueue<any>?
@@ -527,6 +531,7 @@ local function processUpdateQueue<State>(
 	instance: any,
 	renderLanes: Lanes
 ): ()
+	didReadFromEntangledAsyncAction = false
 	-- This is always non-null on a ClassComponent or HostRoot
 	local queue: UpdateQueue<State> = workInProgress.updateQueue :: any
 
@@ -619,6 +624,9 @@ local function processUpdateQueue<State>(
 				-- Update the remaining priority in the queue.
 				newLanes = mergeLanes(newLanes, updateLane)
 			else
+				if updateLane ~= NoLane and updateLane == peekEntangledActionLane() then
+					didReadFromEntangledAsyncAction = true
+				end
 				-- This update does have sufficient priority.
 
 				if newLastBaseUpdate ~= nil then
@@ -712,6 +720,18 @@ local function processUpdateQueue<State>(
 	end
 end
 exports.processUpdateQueue = processUpdateQueue
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberClassUpdateQueue.js#L462-L484
+local function suspendIfUpdateReadFromEntangledAsyncAction()
+	if didReadFromEntangledAsyncAction then
+		local entangledActionThenable = peekEntangledActionThenable()
+		if entangledActionThenable ~= nil then
+			error(entangledActionThenable)
+		end
+	end
+end
+exports.suspendIfUpdateReadFromEntangledAsyncAction =
+	suspendIfUpdateReadFromEntangledAsyncAction
 
 local function callCallback(callback, context)
 	-- ROBLOX deviation START: use if-then-error, which avoid string format and function call overhead, as in React 18
