@@ -1,4 +1,4 @@
--- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShared-test.js#L681-L725
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShared-test.js#L681-L796
 --[[*
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -103,5 +103,92 @@ describe("extra features implemented in user-space", function()
 		})
 		jestExpect(Scheduler).toFlushAndYield({ "Selector", "App", "A1" })
 		jestExpect(root).toMatchRenderedOutput(React.createElement("span", { prop = "A1" }))
+	end)
+
+	it("Using isEqual to bailout", function()
+		local store = createExternalStore({
+			a = 0,
+			b = 0,
+		})
+		local function A()
+			local selection = useSyncExternalStoreWithSelector(
+				store.subscribe,
+				store.getState,
+				nil,
+				function(state)
+					return { a = state.a }
+				end,
+				function(state1, state2)
+					return state1.a == state2.a
+				end
+			)
+			return React.createElement(Text, {
+				text = "A" .. selection.a,
+			})
+		end
+		local function B()
+			local selection = useSyncExternalStoreWithSelector(
+				store.subscribe,
+				store.getState,
+				nil,
+				function(state)
+					return { b = state.b }
+				end,
+				function(state1, state2)
+					return state1.b == state2.b
+				end
+			)
+			return React.createElement(Text, {
+				text = "B" .. selection.b,
+			})
+		end
+		local function App()
+			return React.createElement(
+				React.Fragment,
+				nil,
+				React.createElement(A),
+				React.createElement(B)
+			)
+		end
+		local root = ReactNoop.createRoot()
+		root.render(React.createElement(App))
+		jestExpect(Scheduler).toFlushAndYield({ "A0", "B0" })
+		jestExpect(root).toMatchRenderedOutput(
+			React.createElement(
+				React.Fragment,
+				nil,
+				React.createElement("span", { prop = "A0" }),
+				React.createElement("span", { prop = "B0" })
+			)
+		)
+		ReactNoop.flushPassiveEffects()
+
+		store.set({
+			a = 0,
+			b = 1,
+		})
+		jestExpect(Scheduler).toFlushAndYield({ "B1" })
+		jestExpect(root).toMatchRenderedOutput(
+			React.createElement(
+				React.Fragment,
+				nil,
+				React.createElement("span", { prop = "A0" }),
+				React.createElement("span", { prop = "B1" })
+			)
+		)
+
+		store.set({
+			a = 1,
+			b = 1,
+		})
+		jestExpect(Scheduler).toFlushAndYield({ "A1" })
+		jestExpect(root).toMatchRenderedOutput(
+			React.createElement(
+				React.Fragment,
+				nil,
+				React.createElement("span", { prop = "A1" }),
+				React.createElement("span", { prop = "B1" })
+			)
+		)
 	end)
 end)

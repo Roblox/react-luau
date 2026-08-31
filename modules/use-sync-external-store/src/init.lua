@@ -29,9 +29,15 @@ local function useSyncExternalStoreWithSelector<Snapshot, Selection>(
 				return memoizedSelection
 			end
 
+			local nextSelection = selector(nextSnapshot)
+			if isEqual ~= nil and isEqual(memoizedSelection, nextSelection) then
+				memoizedSnapshot = nextSnapshot
+				return memoizedSelection
+			end
+
 			memoizedSnapshot = nextSnapshot
-			memoizedSelection = selector(nextSnapshot)
-			return memoizedSelection
+			memoizedSelection = nextSelection
+			return nextSelection
 		end
 
 		local function getSnapshotWithSelector(): Selection
