@@ -16,6 +16,7 @@ local describe = JestGlobals.describe
 local jest = JestGlobals.jest
 local jestExpect = JestGlobals.expect
 local it = JestGlobals.it
+local Object = require(Packages.LuauPolyfill).Object
 
 local React
 local ReactNoop
@@ -63,7 +64,8 @@ describe("refs return clean up function", function()
 
 		jestExpect(cleanUpMock).toHaveBeenCalledTimes(1)
 		jestExpect(setup).toHaveBeenCalledTimes(3)
-		jestExpect(setup.mock.calls[3][1]).toBe(nil)
+		-- ROBLOX DEVIATION: Jest-Lua records an explicit nil argument as Object.None.
+		jestExpect(setup.mock.calls[3][1]).toBe(Object.None)
 
 		cleanUpMock, cleanUp = jest.fn()
 		setup = jest.fn()
