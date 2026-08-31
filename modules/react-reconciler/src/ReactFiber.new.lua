@@ -191,6 +191,8 @@ local function createFiber(
 		index = 1,
 
 		-- node.ref = nil
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiber.new.js#L151-L152
+		-- node.refCleanup = nil
 
 		pendingProps = pendingProps,
 		-- memoizedProps = nil
@@ -381,6 +383,8 @@ local function createWorkInProgress(current: Fiber, pendingProps: any): Fiber
 	workInProgress.sibling = current.sibling
 	workInProgress.index = current.index
 	workInProgress.ref = current.ref
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiber.new.js#L339-L340
+	workInProgress.refCleanup = current.refCleanup
 
 	if enableProfilerTimer then
 		workInProgress.selfBaseDuration = current.selfBaseDuration
@@ -973,6 +977,8 @@ local function assignFiberPropertiesInDEV(target: Fiber, source: Fiber): Fiber
 	target.sibling = source.sibling
 	target.index = source.index
 	target.ref = source.ref
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiber.new.js#L884-L885
+	target.refCleanup = source.refCleanup
 	target.pendingProps = source.pendingProps
 	target.memoizedProps = source.memoizedProps
 	target.updateQueue = source.updateQueue

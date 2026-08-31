@@ -72,7 +72,7 @@ export type Dispatcher = {
 	useCallback: <T>(callback: T, deps: Array<any> | nil) -> T,
 	useMemo: <T...>(nextCreate: () -> T..., deps: Array<any> | nil) -> T...,
 	useImperativeHandle: <T>(
-		ref: { current: T | nil } | ((inst: T | nil) -> any) | nil,
+		ref: { current: T | nil } | ((inst: T | nil) -> (() -> ())?) | nil,
 		create: () -> T,
 		deps: Array<any> | nil
 	) -> (),

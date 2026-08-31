@@ -216,9 +216,9 @@ export type React_ElementProps<ElementType> = {
 -- ROBLOX FIXME Luau: if I make this Object, we run into normalization issues: '{| current: React_ElementRef<any>? |}' could not be converted into '(((?) -> any) | {| current: ? |})?
 export type React_ElementRef<C> = C
 
-export type React_Ref<ElementType> =
-	{ current: React_ElementRef<ElementType> | nil }
-	| ((React_ElementRef<ElementType> | nil) -> ())
+export type React_Ref<ElementType> = { current: React_ElementRef<ElementType> | nil } | ((
+	React_ElementRef<ElementType> | nil
+) -> (() -> ())?)
 -- ROBLOX deviation: we don't support string refs, and this is unsound flowtype when used with ref param of useImperativeHandle
 -- | string
 

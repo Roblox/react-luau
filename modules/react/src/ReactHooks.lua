@@ -259,7 +259,7 @@ exports.useMemo = useMemo
 	See [API reference for `useImperativeHandle`](https://react.dev/reference/react/useImperativeHandle).
 ]]
 local function useImperativeHandle<T>(
-	ref: { current: T | nil } | ((inst: T | nil) -> any) | nil,
+	ref: { current: T | nil } | ((inst: T | nil) -> (() -> ())?) | nil,
 	create: () -> T,
 	deps: Array<any> | nil
 ): ()
