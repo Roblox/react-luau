@@ -1,5 +1,5 @@
 --!strict
--- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-reconciler/src/__tests__/ReactConfigurableErrorLogging-test.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/__tests__/ReactConfigurableErrorLogging-test.js
 --[[*
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *

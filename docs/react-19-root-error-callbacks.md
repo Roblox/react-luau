@@ -3,7 +3,7 @@
 ## Upstream baseline
 
 The client contract is pinned to React `v19.2.0` commit
-[`861811347b8fa936b4a114fc022db9b8253b3d86`](https://github.com/facebook/react/tree/861811347b8fa936b4a114fc022db9b8253b3d86).
+[`ae74234eae6ebd62f19190731278e20bc1c37d51`](https://github.com/facebook/react/tree/ae74234eae6ebd62f19190731278e20bc1c37d51).
 Its relevant history is:
 
 - [`6786563f3cbbc9b16d5a8187207b5bd904386e53`](https://github.com/facebook/react/commit/6786563f3cbbc9b16d5a8187207b5bd904386e53)

@@ -70,7 +70,7 @@ local function FiberRootNode(
 		context = nil,
 		pendingContext = nil,
 		hydrate = hydrate,
-		-- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-reconciler/src/ReactFiberRoot.js#L94-L96
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberRoot.js#L94-L96
 		onUncaughtError = onUncaughtError,
 		onCaughtError = onCaughtError,
 		onRecoverableError = onRecoverableError,

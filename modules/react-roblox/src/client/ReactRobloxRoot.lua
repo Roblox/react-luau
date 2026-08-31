@@ -150,7 +150,7 @@ createRootImpl = function(container: Container, tag: RootTag, options: any)
 		and options.hydrationOptions ~= nil
 		and options.hydrationOptions.mutableSources
 	) or nil
-	-- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-dom/src/client/ReactDOMRoot.js#L184-L246
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-dom/src/client/ReactDOMRoot.js#L184-L246
 	local onUncaughtError = defaultOnUncaughtError
 	local onCaughtError = defaultOnCaughtError
 	local onRecoverableError = defaultOnRecoverableError

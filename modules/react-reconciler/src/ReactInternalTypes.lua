@@ -325,7 +325,7 @@ export type FiberRoot = {
 	-- Determines if we should attempt to hydrate on the initial mount
 	hydrate: boolean,
 
-	-- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-reconciler/src/ReactInternalTypes.js#L268-L283
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactInternalTypes.js#L268-L283
 	onUncaughtError: (error: any, errorInfo: ErrorInfo) -> (),
 	onCaughtError: (error: any, errorInfo: CaughtErrorInfo) -> (),
 	onRecoverableError: (error: any, errorInfo: ErrorInfo) -> (),

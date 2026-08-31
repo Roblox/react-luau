@@ -155,7 +155,7 @@ function createClassErrorUpdate(lane: Lane): Update<any>
 	return update
 end
 
--- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-reconciler/src/ReactFiberThrow.js#L111-L177
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberThrow.js#L111-L177
 function initializeClassErrorUpdate(
 	update: Update<any>,
 	root: FiberRoot,
@@ -438,7 +438,7 @@ function throwException(
 	-- We didn't find a boundary that could handle this type of exception. Start
 	-- over and traverse parent path again, this time treating the exception
 	-- as an error.
-	-- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-reconciler/src/ReactFiberThrow.js#L619-L625
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberThrow.js#L619-L625
 	local wrapperError = LuauPolyfill.Error.new(
 		"There was an error during concurrent rendering but React was able to recover by "
 			.. "instead synchronously rendering the entire root."

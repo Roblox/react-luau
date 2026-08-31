@@ -872,7 +872,7 @@ ensureRootIsScheduled = function(root: FiberRoot, currentTime: number)
 	root.callbackNode = newCallbackNode
 end
 
--- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1594-L1664
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1594-L1664
 local function recoverFromConcurrentError(root: FiberRoot, errorRetryLanes: Lanes)
 	local errorsFromFirstAttempt = workInProgressRootConcurrentErrors
 	workInProgressRootConcurrentErrors = nil
@@ -2485,7 +2485,7 @@ mod.commitRootImpl = function(
 	-- additional work on this root is scheduled.
 	ensureRootIsScheduled(root, now())
 
-	-- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-reconciler/src/ReactFiberWorkLoop.js#L4089-L4108
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L4089-L4108
 	if recoverableErrors ~= nil then
 		for _, recoverableError in recoverableErrors do
 			root.onRecoverableError(recoverableError.value, {

@@ -791,7 +791,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 	-- 	return children
 	-- }
 
-	-- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-noop-renderer/src/createReactNoop.js#L1147-L1150
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-noop-renderer/src/createReactNoop.js#L1147-L1150
 	local function onRecoverableError(_error, _errorInfo) end
 
 	local idCounter = 0
@@ -837,7 +837,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 		end,
 
 		-- TODO: Replace ReactNoop.render with createRoot + root.render
-		-- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-noop-renderer/src/createReactNoop.js#L1217-L1256
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-noop-renderer/src/createReactNoop.js#L1217-L1256
 		createRoot = function(options)
 			local container = {
 				rootID = tostring(idCounter),

@@ -305,7 +305,7 @@ exports.createContainer = function(
 	) -> ())?,
 	onRecoverableError: ((error: any, errorInfo: ErrorInfo) -> ())?
 ): OpaqueRoot
-	-- ROBLOX upstream: https://github.com/facebook/react/blob/861811347b8fa936b4a114fc022db9b8253b3d86/packages/react-reconciler/src/ReactFiberReconciler.js#L238-L278
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberReconciler.js#L238-L278
 	return createFiberRoot(
 		containerInfo,
 		tag,
