@@ -41,9 +41,11 @@ local function createExternalStore<T>(initialState: T): Store<T>
 	return {
 		set = function(nextState: T)
 			currentState = nextState
-			for _, listener in table.clone(listeners) do
-				listener()
-			end
+			ReactNoop.batchedUpdates(function()
+				for _, listener in table.clone(listeners) do
+					listener()
+				end
+			end)
 		end,
 		subscribe = function(listener: () -> ())
 			table.insert(listeners, listener)
@@ -91,9 +93,9 @@ local function createErrorBoundary()
 	return ErrorBoundary
 end
 
-describe("extra features implemented in user-space", function()
-	beforeEach(loadModules)
+beforeEach(loadModules)
 
+describe("extra features implemented in user-space", function()
 	it("memoized selectors are only called once per update", function()
 		local store = createExternalStore({
 			a = 0,
@@ -219,157 +221,157 @@ describe("extra features implemented in user-space", function()
 			)
 		)
 	end)
+end)
 
-	it("compares selection to rendered selection even if selector changes", function()
-		local store = createExternalStore({
-			items = { "A", "B" },
-		})
-		local function shallowEqualArray(a, b)
-			if #a ~= #b then
+it("compares selection to rendered selection even if selector changes", function()
+	local store = createExternalStore({
+		items = { "A", "B" },
+	})
+	local function shallowEqualArray(a, b)
+		if #a ~= #b then
+			return false
+		end
+		for index = 1, #a do
+			if a[index] ~= b[index] then
 				return false
 			end
-			for index = 1, #a do
-				if a[index] ~= b[index] then
-					return false
-				end
-			end
-			return true
 		end
-		local List = React.memo(function(props)
-			local children = {}
-			for _, text in props.items do
-				table.insert(
-					children,
-					React.createElement(Text, {
-						key = text,
-						text = text,
-					})
-				)
+		return true
+	end
+	local List = React.memo(function(props)
+		local children = {}
+		for _, text in props.items do
+			table.insert(
+				children,
+				React.createElement(Text, {
+					key = text,
+					text = text,
+				})
+			)
+		end
+		return React.createElement(React.Fragment, nil, unpack(children))
+	end)
+	local function App(props)
+		local function inlineSelector(state)
+			Scheduler.unstable_yieldValue("Inline selector")
+			local items = table.clone(state.items)
+			table.insert(items, "C")
+			return items
+		end
+		local items = useSyncExternalStoreWithSelector(
+			store.subscribe,
+			store.getState,
+			nil,
+			inlineSelector,
+			shallowEqualArray
+		)
+		return React.createElement(
+			React.Fragment,
+			nil,
+			React.createElement(List, { items = items }),
+			React.createElement(Text, { text = "Sibling: " .. props.step })
+		)
+	end
+	local root = ReactNoop.createRoot()
+	root.render(React.createElement(App, { step = 0 }))
+	jestExpect(Scheduler).toFlushAndYield({
+		"Inline selector",
+		"A",
+		"B",
+		"C",
+		"Sibling: 0",
+	})
+	ReactNoop.flushPassiveEffects()
+
+	root.render(React.createElement(App, { step = 1 }))
+	jestExpect(Scheduler).toFlushAndYield({
+		"Inline selector",
+		"Sibling: 1",
+	})
+end)
+
+describe("selector and isEqual error handling in extra", function()
+	it("selector can throw on update", function()
+		local store = createExternalStore({
+			a = "a",
+		})
+		local function selector(state)
+			if typeof(state.a) ~= "string" then
+				error(Error.new("Malformed state"))
 			end
-			return React.createElement(React.Fragment, nil, unpack(children))
-		end)
-		local function App(props)
-			local function inlineSelector(state)
-				Scheduler.unstable_yieldValue("Inline selector")
-				local items = table.clone(state.items)
-				table.insert(items, "C")
-				return items
-			end
-			local items = useSyncExternalStoreWithSelector(
+			return string.upper(state.a)
+		end
+		local function App()
+			local a = useSyncExternalStoreWithSelector(
 				store.subscribe,
 				store.getState,
 				nil,
-				inlineSelector,
-				shallowEqualArray
+				selector
 			)
-			return React.createElement(
-				React.Fragment,
-				nil,
-				React.createElement(List, { items = items }),
-				React.createElement(Text, { text = "Sibling: " .. props.step })
-			)
+			return React.createElement(Text, { text = a })
 		end
+		local ErrorBoundary = createErrorBoundary()
 		local root = ReactNoop.createRoot()
-		root.render(React.createElement(App, { step = 0 }))
-		jestExpect(Scheduler).toFlushAndYield({
-			"Inline selector",
-			"A",
-			"B",
-			"C",
-			"Sibling: 0",
-		})
+		root.render(React.createElement(ErrorBoundary, nil, React.createElement(App)))
+		jestExpect(Scheduler).toFlushAndYield({ "A" })
+		jestExpect(root).toMatchRenderedOutput(
+			React.createElement("span", { prop = "A" })
+		)
 		ReactNoop.flushPassiveEffects()
 
-		root.render(React.createElement(App, { step = 1 }))
-		jestExpect(Scheduler).toFlushAndYield({
-			"Inline selector",
-			"Sibling: 1",
+		jestExpect(function()
+			store.set({} :: any)
+			Scheduler.unstable_flushAllWithoutAsserting()
+		end).toErrorDev("The above error occurred in the <App> component:", {
+			logAllErrors = true,
 		})
+		jestExpect(root).toMatchRenderedOutput(
+			React.createElement("span", { prop = "Malformed state" })
+		)
 	end)
 
-	describe("selector and isEqual error handling in extra", function()
-		it("selector can throw on update", function()
-			local store = createExternalStore({
-				a = "a",
-			})
-			local function selector(state)
-				if typeof(state.a) ~= "string" then
-					error(Error.new("Malformed state"))
-				end
-				return string.upper(state.a)
+	it("isEqual can throw on update", function()
+		local store = createExternalStore({
+			a = "A",
+		})
+		local function selector(state)
+			return state.a
+		end
+		local function isEqual(left, right)
+			-- ROBLOX DEVIATION: Luau cannot safely read a missing property from a string primitive.
+			if typeof(left) ~= "string" or typeof(right) ~= "string" then
+				error(Error.new("Malformed state"))
 			end
-			local function App()
-				local a = useSyncExternalStoreWithSelector(
-					store.subscribe,
-					store.getState,
-					nil,
-					selector
-				)
-				return React.createElement(Text, { text = a })
-			end
-			local ErrorBoundary = createErrorBoundary()
-			local root = ReactNoop.createRoot()
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(App)))
-			jestExpect(Scheduler).toFlushAndYield({ "A" })
-			jestExpect(root).toMatchRenderedOutput(
-				React.createElement("span", { prop = "A" })
+			return string.gsub(left, "^%s*(.-)%s*$", "%1")
+				== string.gsub(right, "^%s*(.-)%s*$", "%1")
+		end
+		local function App()
+			local a = useSyncExternalStoreWithSelector(
+				store.subscribe,
+				store.getState,
+				nil,
+				selector,
+				isEqual
 			)
-			ReactNoop.flushPassiveEffects()
+			return React.createElement(Text, { text = a })
+		end
+		local ErrorBoundary = createErrorBoundary()
+		local root = ReactNoop.createRoot()
+		root.render(React.createElement(ErrorBoundary, nil, React.createElement(App)))
+		jestExpect(Scheduler).toFlushAndYield({ "A" })
+		jestExpect(root).toMatchRenderedOutput(
+			React.createElement("span", { prop = "A" })
+		)
+		ReactNoop.flushPassiveEffects()
 
-			jestExpect(function()
-				store.set({} :: any)
-				Scheduler.unstable_flushAllWithoutAsserting()
-			end).toErrorDev("The above error occurred in the <App> component:", {
-				logAllErrors = true,
-			})
-			jestExpect(root).toMatchRenderedOutput(
-				React.createElement("span", { prop = "Malformed state" })
-			)
-		end)
-
-		it("isEqual can throw on update", function()
-			local store = createExternalStore({
-				a = "A",
-			})
-			local function selector(state)
-				return state.a
-			end
-			local function isEqual(left, right)
-				-- ROBLOX DEVIATION: Luau cannot safely read a missing property from a string primitive.
-				if typeof(left) ~= "string" or typeof(right) ~= "string" then
-					error(Error.new("Malformed state"))
-				end
-				return string.gsub(left, "^%s*(.-)%s*$", "%1")
-					== string.gsub(right, "^%s*(.-)%s*$", "%1")
-			end
-			local function App()
-				local a = useSyncExternalStoreWithSelector(
-					store.subscribe,
-					store.getState,
-					nil,
-					selector,
-					isEqual
-				)
-				return React.createElement(Text, { text = a })
-			end
-			local ErrorBoundary = createErrorBoundary()
-			local root = ReactNoop.createRoot()
-			root.render(React.createElement(ErrorBoundary, nil, React.createElement(App)))
-			jestExpect(Scheduler).toFlushAndYield({ "A" })
-			jestExpect(root).toMatchRenderedOutput(
-				React.createElement("span", { prop = "A" })
-			)
-			ReactNoop.flushPassiveEffects()
-
-			jestExpect(function()
-				store.set({} :: any)
-				Scheduler.unstable_flushAllWithoutAsserting()
-			end).toErrorDev("The above error occurred in the <App> component:", {
-				logAllErrors = true,
-			})
-			jestExpect(root).toMatchRenderedOutput(
-				React.createElement("span", { prop = "Malformed state" })
-			)
-		end)
+		jestExpect(function()
+			store.set({} :: any)
+			Scheduler.unstable_flushAllWithoutAsserting()
+		end).toErrorDev("The above error occurred in the <App> component:", {
+			logAllErrors = true,
+		})
+		jestExpect(root).toMatchRenderedOutput(
+			React.createElement("span", { prop = "Malformed state" })
+		)
 	end)
 end)

@@ -1,5 +1,5 @@
 --!strict
--- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js#L13-L132
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js#L10-L132
 --[[*
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -44,6 +44,10 @@ local function useSyncExternalStoreWithSelector<Snapshot, Selection>(
 
 	-- ROBLOX DEVIATION: Luau multiple returns replace the JavaScript function pair.
 	local getSelection, getServerSelection = React.useMemo(function()
+		-- Track the memoized state using closure variables that are local to this
+		-- memoized instance of a getSnapshot function. Intentionally not using a
+		-- useRef hook, because that state would be shared across all concurrent
+		-- copies of the hook/component.
 		local hasMemo = false
 		local memoizedSnapshot: Snapshot
 		local memoizedSelection: Selection
@@ -70,6 +74,8 @@ local function useSyncExternalStoreWithSelector<Snapshot, Selection>(
 
 			local nextSelection = selector(nextSnapshot)
 			if isEqual ~= nil and isEqual(memoizedSelection, nextSelection) then
+				-- The snapshot still has changed, so make sure to update to not keep
+				-- old references alive
 				memoizedSnapshot = nextSnapshot
 				return memoizedSelection
 			end
