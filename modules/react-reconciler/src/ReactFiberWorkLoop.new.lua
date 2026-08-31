@@ -878,8 +878,8 @@ local function recoverFromConcurrentError(root: FiberRoot, errorRetryLanes: Lane
 	workInProgressRootConcurrentErrors = nil
 	workInProgressRootRecoverableErrors = nil
 
-	-- ROBLOX DEVIATION: This React 17 work loop has no hydration fallback or
-	-- uncached-thenable ping-listener state, so retry the client tree directly.
+	-- ROBLOX DEVIATION: React 17 callers perform hydration fallback before this
+	-- helper and have no uncached-thenable ping-listener state to handle here.
 	local exitStatus = mod.renderRootSync(root, errorRetryLanes)
 	if exitStatus ~= RootExitStatus.Errored then
 		-- ROBLOX DEVIATION: Only this recovery path populates recoverable errors
