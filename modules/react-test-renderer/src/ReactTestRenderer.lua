@@ -579,6 +579,8 @@ local function create(
 		rootArg,
 		false,
 		nil,
+		-- ROBLOX DEVIATION: Preserve the React 17 test renderer's synchronous
+		-- throw and legacy console-reporting contract.
 		ReactFiberReconciler.legacyDefaultOnUncaughtError
 	)
 

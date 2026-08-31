@@ -1,7 +1,7 @@
 --!strict
--- ROBLOX upstream: https://github.com/facebook/react/blob/702fad4b1b48ac8f626ed3f35e8f86f5ea728084/packages/react-reconciler/src/ReactFiberErrorLogger.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberErrorLogger.js
 --[[*
- * Copyright (c) Facebook, Inc. and its affiliates.
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
@@ -12,13 +12,11 @@
 local Packages = script.Parent.Parent
 local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
-type Error = LuauPolyfill.Error
 local inspect = LuauPolyfill.util.inspect
 local setTimeout = LuauPolyfill.setTimeout
 
 local Shared = require(Packages.Shared)
 local console = Shared.console
-local errorToString = Shared.errorToString
 local reportGlobalError = Shared.reportGlobalError
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
@@ -37,7 +35,7 @@ local exports = {}
 local componentName: string? = nil
 local errorBoundaryName: string? = nil
 
--- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberErrorLogger.js#L27-L128
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberErrorLogger.js#L27-L192
 exports.defaultOnUncaughtError = function(error_: any, _errorInfo: ErrorInfo)
 	reportGlobalError(error_)
 	if ReactGlobals.__DEV__ then
@@ -54,19 +52,32 @@ end
 
 exports.defaultOnCaughtError = function(error_: any, errorInfo: CaughtErrorInfo)
 	if ReactGlobals.__DEV__ then
+		-- ROBLOX DEVIATION: Retain React 17's testing escape hatch because
+		-- React-Luau has no browser error event whose default can be prevented.
 		if typeof(error_) == "table" and error_._suppressLogging then
 			return
 		end
+		-- ROBLOX DEVIATION: Retain the React 17 message shape so existing
+		-- renderer console contracts keep their component-focused output.
 		local componentNameMessage = if componentName ~= nil
 			then "The above error occurred in the <" .. componentName .. "> component:"
 			else "The above error occurred in one of your React components:"
-		local errorBoundaryMessage = if errorBoundaryName ~= nil
-			then "React will try to recreate this component tree from scratch "
+		local errorBoundaryMessage
+		if errorBoundaryName ~= nil then
+			errorBoundaryMessage = "React will try to recreate this component tree from scratch "
 				.. "using the error boundary you provided, "
 				.. errorBoundaryName
 				.. "."
-			else "Consider adding an error boundary to your tree to customize error handling behavior.\n"
+		else
+			-- ROBLOX DEVIATION: Legacy internal roots also use this formatter, so
+			-- retain React 17's no-boundary guidance instead of naming Anonymous.
+			errorBoundaryMessage = "Consider adding an error boundary to your tree to customize error handling behavior.\n"
+				-- ROBLOX DEVIATION: Retain the React 17 URL as part of the legacy
+				-- console message contract used by internal renderer tests.
 				.. "Visit https://reactjs.org/link/error-boundaries to learn more about error boundaries."
+		end
+		-- ROBLOX DEVIATION: React-Luau has no DevTools console wrapper that
+		-- appends component stacks, so include the stack in the message.
 		console["error"](
 			componentNameMessage
 				.. "\n"
@@ -75,6 +86,8 @@ exports.defaultOnCaughtError = function(error_: any, errorInfo: CaughtErrorInfo)
 				.. errorBoundaryMessage
 		)
 	else
+		-- ROBLOX DEVIATION: Retain React 17's string inspection because the
+		-- patched Luau console does not provide a browser-native object display.
 		console["error"](inspect(error_))
 	end
 end
@@ -84,8 +97,12 @@ exports.defaultOnRecoverableError = function(error_: any, _errorInfo: ErrorInfo)
 end
 
 local function scheduleRethrow(error_: any)
+	-- Error logging must not interrupt React's internal commit state. Surface a
+	-- handler failure outside the normal stack as a last resort instead.
+	-- https://github.com/facebook/react/issues/13188
 	setTimeout(function()
-		error(errorToString(error_), 0)
+		-- Preserve the original callback error value, matching upstream's throw.
+		error(error_, 0)
 	end)
 end
 

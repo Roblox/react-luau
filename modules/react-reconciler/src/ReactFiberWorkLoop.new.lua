@@ -872,14 +872,18 @@ ensureRootIsScheduled = function(root: FiberRoot, currentTime: number)
 	root.callbackNode = newCallbackNode
 end
 
--- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1594-L1664
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1256-L1328
 local function recoverFromConcurrentError(root: FiberRoot, errorRetryLanes: Lanes)
 	local errorsFromFirstAttempt = workInProgressRootConcurrentErrors
 	workInProgressRootConcurrentErrors = nil
 	workInProgressRootRecoverableErrors = nil
 
+	-- ROBLOX DEVIATION: This React 17 work loop has no hydration fallback or
+	-- uncached-thenable ping-listener state, so retry the client tree directly.
 	local exitStatus = mod.renderRootSync(root, errorRetryLanes)
 	if exitStatus ~= RootExitStatus.Errored then
+		-- ROBLOX DEVIATION: Only this recovery path populates recoverable errors
+		-- in React 17, so there is no second-attempt recoverable queue to merge.
 		workInProgressRootRecoverableErrors = errorsFromFirstAttempt
 	end
 	return exitStatus
@@ -3118,13 +3122,14 @@ exports.markLegacyErrorBoundaryAsFailed = function(instance)
 	end
 end
 
--- ROBLOX DEVIATION: Internal React 17 test renderers retain their synchronous
--- default throw contract while public roots use React 19 global reporting.
-exports.legacyDefaultOnUncaughtError = function(error_)
+-- ROBLOX DEVIATION: Internal React 17 renderers retain their synchronous throw
+-- and component-stack logging contracts while public roots use React 19 global reporting.
+exports.legacyDefaultOnUncaughtError = function(error_, errorInfo)
 	if not hasUncaughtError then
 		hasUncaughtError = true
 		firstUncaughtError = error_
 	end
+	require(script.Parent.ReactFiberErrorLogger).defaultOnCaughtError(error_, errorInfo)
 end
 
 captureCommitPhaseErrorOnRoot = function(rootFiber: Fiber, sourceFiber: Fiber, error_)

@@ -13,6 +13,7 @@ local Packages = script.Parent.Parent.Parent.Parent
 
 local React
 local ReactRoblox
+local ReactNoop
 local Scheduler
 local Error
 
@@ -28,11 +29,29 @@ beforeEach(function()
 	jest.useFakeTimers()
 	React = require(Packages.React)
 	ReactRoblox = require(Packages.ReactRoblox)
+	ReactNoop = require(Packages.Dev.ReactNoopRenderer)
 	Scheduler = require(Packages.Scheduler)
 	Error = require(Packages.LuauPolyfill).Error
 end)
 
 describe("ReactConfigurableErrorLogging", function()
+	it("preserves legacy ReactNoop uncaught error reporting", function()
+		local ErrorThrowingComponent = React.Component:extend("ErrorThrowingComponent")
+		function ErrorThrowingComponent:render()
+			error(Error.new("legacy render error"), 0)
+		end
+
+		jestExpect(function()
+			jestExpect(function()
+				ReactNoop.act(function()
+					ReactNoop.render(React.createElement(ErrorThrowingComponent))
+				end)
+			end).toErrorDev(
+				"The above error occurred in the <ErrorThrowingComponent> component:"
+			)
+		end).toThrow("legacy render error")
+	end)
+
 	it("should log errors that occur during the begin phase", function()
 		local ErrorThrowingComponent = React.Component:extend("ErrorThrowingComponent")
 		function ErrorThrowingComponent:init()
@@ -126,6 +145,7 @@ describe("ReactConfigurableErrorLogging", function()
 
 		local uncaughtErrors = {}
 		local caughtErrors = {}
+		local callbackError = Error.new("onCaughtError error")
 		local boundaryRef = React.createRef()
 		local root = ReactRoblox.createRoot(Instance.new("Folder"), {
 			onUncaughtError = function(error_, errorInfo)
@@ -135,7 +155,7 @@ describe("ReactConfigurableErrorLogging", function()
 			onCaughtError = function(error_, errorInfo)
 				table.insert(caughtErrors, error_)
 				table.insert(caughtErrors, errorInfo)
-				error(Error.new("onCaughtError error"), 0)
+				error(callbackError, 0)
 			end,
 		})
 
@@ -153,9 +173,11 @@ describe("ReactConfigurableErrorLogging", function()
 		jestExpect(caughtErrors[2].componentStack).toContain("ErrorThrowingComponent")
 		jestExpect(caughtErrors[2].componentStack).toContain("ErrorBoundary")
 		jestExpect(caughtErrors[2].errorBoundary).toBe(boundaryRef.current)
-		jestExpect(function()
+		local ok, thrownError = pcall(function()
 			jest.runAllTimers()
-		end).toThrow("onCaughtError error")
+		end)
+		jestExpect(ok).toBe(false)
+		jestExpect(thrownError).toBe(callbackError)
 	end)
 
 	it("should log errors caught by a derived-state boundary", function()

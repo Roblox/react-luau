@@ -827,6 +827,8 @@ local function createReactNoop(reconciler, useMutation: boolean)
 					tag,
 					false,
 					nil,
+					-- ROBLOX DEVIATION: Preserve the React 17 internal renderer's
+					-- synchronous throw and legacy console-reporting contract.
 					NoopRenderer.legacyDefaultOnUncaughtError,
 					nil,
 					onRecoverableError
@@ -850,10 +852,14 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				ConcurrentRoot,
 				false,
 				nil,
+				-- ROBLOX DEVIATION: Preserve the React 17 internal renderer default
+				-- while still honoring React 19's explicit uncaught handler option.
 				if options ~= nil and options.onUncaughtError ~= nil
 					then options.onUncaughtError
 					else NoopRenderer.legacyDefaultOnUncaughtError,
 				if options ~= nil then options.onCaughtError else nil,
+				-- ROBLOX DEVIATION: Unlike upstream's noop renderer, React-Luau
+				-- honors the supplied recoverable-error handler for parity with roots.
 				if options ~= nil and options.onRecoverableError ~= nil
 					then options.onRecoverableError
 					else onRecoverableError
@@ -884,6 +890,8 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				BlockingRoot,
 				false,
 				nil,
+				-- ROBLOX DEVIATION: Preserve the React 17 internal renderer's
+				-- synchronous throw and legacy console-reporting contract.
 				NoopRenderer.legacyDefaultOnUncaughtError,
 				nil,
 				onRecoverableError
@@ -914,6 +922,8 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				LegacyRoot,
 				false,
 				nil,
+				-- ROBLOX DEVIATION: Preserve the React 17 internal renderer's
+				-- synchronous throw and legacy console-reporting contract.
 				NoopRenderer.legacyDefaultOnUncaughtError,
 				nil,
 				onRecoverableError
