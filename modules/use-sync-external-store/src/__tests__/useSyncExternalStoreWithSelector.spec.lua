@@ -1,5 +1,6 @@
 -- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShared-test.js#L681-L796
 -- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShared-test.js#L873-L957
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShared-test.js#L958-L1078
 --[[*
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -10,6 +11,7 @@
 ]]
 
 local Packages = script.Parent.Parent.Parent
+local Error = require(Packages.LuauPolyfill).Error
 
 local React
 local ReactNoop
@@ -66,6 +68,23 @@ local function loadModules()
 	ReactNoop = require(Packages.Dev.ReactNoopRenderer)
 	Scheduler = require(Packages.Scheduler)
 	useSyncExternalStoreWithSelector = require(Packages.UseSyncExternalStore).useSyncExternalStoreWithSelector
+end
+
+local function createErrorBoundary()
+	local ErrorBoundary = React.Component:extend("ErrorBoundary")
+	function ErrorBoundary:init()
+		self.state = { error_ = nil }
+	end
+	function ErrorBoundary.getDerivedStateFromError(error_)
+		return { error_ = error_ }
+	end
+	function ErrorBoundary:render()
+		if self.state.error_ ~= nil then
+			return React.createElement(Text, { text = self.state.error_.message })
+		end
+		return self.props.children
+	end
+	return ErrorBoundary
 end
 
 describe("extra features implemented in user-space", function()
@@ -255,5 +274,87 @@ describe("extra features implemented in user-space", function()
 			"Inline selector",
 			"Sibling: 1",
 		})
+	end)
+
+	describe("selector and isEqual error handling in extra", function()
+		it("selector can throw on update", function()
+			local store = createExternalStore({
+				a = "a",
+			})
+			local function selector(state)
+				if typeof(state.a) ~= "string" then
+					error(Error.new("Malformed state"))
+				end
+				return string.upper(state.a)
+			end
+			local function App()
+				local a = useSyncExternalStoreWithSelector(
+					store.subscribe,
+					store.getState,
+					nil,
+					selector
+				)
+				return React.createElement(Text, { text = a })
+			end
+			local ErrorBoundary = createErrorBoundary()
+			local root = ReactNoop.createRoot()
+			root.render(React.createElement(ErrorBoundary, nil, React.createElement(App)))
+			jestExpect(Scheduler).toFlushAndYield({ "A" })
+			jestExpect(root).toMatchRenderedOutput(React.createElement("span", { prop = "A" }))
+			ReactNoop.flushPassiveEffects()
+
+			jestExpect(function()
+				store.set({} :: any)
+				Scheduler.unstable_flushAllWithoutAsserting()
+			end).toErrorDev("The above error occurred in the <App> component:", {
+				logAllErrors = true,
+			})
+			jestExpect(root).toMatchRenderedOutput(
+				React.createElement("span", { prop = "Malformed state" })
+			)
+		end)
+
+		it("isEqual can throw on update", function()
+			local store = createExternalStore({
+				a = "A",
+			})
+			local function selector(state)
+				return state.a
+			end
+			local function isEqual(left, right)
+				-- ROBLOX DEVIATION: Luau cannot safely read a missing property from a string primitive.
+				if typeof(left) ~= "string" or typeof(right) ~= "string" then
+					error(Error.new("Malformed state"))
+				end
+				return string.gsub(left, "^%s*(.-)%s*$", "%1")
+					== string.gsub(right, "^%s*(.-)%s*$", "%1")
+			end
+			local function App()
+				local a = useSyncExternalStoreWithSelector(
+					store.subscribe,
+					store.getState,
+					nil,
+					selector,
+					isEqual
+				)
+				return React.createElement(Text, { text = a })
+			end
+			local ErrorBoundary = createErrorBoundary()
+			local root = ReactNoop.createRoot()
+			root.render(React.createElement(ErrorBoundary, nil, React.createElement(App)))
+			jestExpect(Scheduler).toFlushAndYield({ "A" })
+			jestExpect(root).toMatchRenderedOutput(React.createElement("span", { prop = "A" }))
+			ReactNoop.flushPassiveEffects()
+
+			jestExpect(function()
+				store.set({} :: any)
+				Scheduler.unstable_flushAllWithoutAsserting()
+			end).toErrorDev("The above error occurred in the <App> component:", {
+				logAllErrors = true,
+			})
+			jestExpect(root).toMatchRenderedOutput(
+				React.createElement("span", { prop = "Malformed state" })
+			)
+		end)
 	end)
 end)
