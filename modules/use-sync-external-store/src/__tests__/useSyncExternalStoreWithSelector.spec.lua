@@ -1,4 +1,5 @@
 -- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShared-test.js#L681-L796
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShared-test.js#L873-L957
 --[[*
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -190,5 +191,69 @@ describe("extra features implemented in user-space", function()
 				React.createElement("span", { prop = "B1" })
 			)
 		)
+	end)
+
+	it("compares selection to rendered selection even if selector changes", function()
+		local store = createExternalStore({
+			items = { "A", "B" },
+		})
+		local function shallowEqualArray(a, b)
+			if #a ~= #b then
+				return false
+			end
+			for index = 1, #a do
+				if a[index] ~= b[index] then
+					return false
+				end
+			end
+			return true
+		end
+		local List = React.memo(function(props)
+			local children = {}
+			for _, text in props.items do
+				table.insert(children, React.createElement(Text, {
+					key = text,
+					text = text,
+				}))
+			end
+			return React.createElement(React.Fragment, nil, unpack(children))
+		end)
+		local function App(props)
+			local function inlineSelector(state)
+				Scheduler.unstable_yieldValue("Inline selector")
+				local items = table.clone(state.items)
+				table.insert(items, "C")
+				return items
+			end
+			local items = useSyncExternalStoreWithSelector(
+				store.subscribe,
+				store.getState,
+				nil,
+				inlineSelector,
+				shallowEqualArray
+			)
+			return React.createElement(
+				React.Fragment,
+				nil,
+				React.createElement(List, { items = items }),
+				React.createElement(Text, { text = "Sibling: " .. props.step })
+			)
+		end
+		local root = ReactNoop.createRoot()
+		root.render(React.createElement(App, { step = 0 }))
+		jestExpect(Scheduler).toFlushAndYield({
+			"Inline selector",
+			"A",
+			"B",
+			"C",
+			"Sibling: 0",
+		})
+		ReactNoop.flushPassiveEffects()
+
+		root.render(React.createElement(App, { step = 1 }))
+		jestExpect(Scheduler).toFlushAndYield({
+			"Inline selector",
+			"Sibling: 1",
+		})
 	end)
 end)

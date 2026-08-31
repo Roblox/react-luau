@@ -5,6 +5,11 @@ local Packages = script.Parent
 local React = require(Packages.React)
 local is = require(Packages.Shared).objectIs
 
+type Inst<Selection> = {
+	hasValue: boolean,
+	value: Selection?,
+}
+
 local function useSyncExternalStoreWithSelector<Snapshot, Selection>(
 	subscribe: (() -> ()) -> () -> (),
 	getSnapshot: () -> Snapshot,
@@ -12,6 +17,16 @@ local function useSyncExternalStoreWithSelector<Snapshot, Selection>(
 	selector: (Snapshot) -> Selection,
 	isEqual: ((Selection, Selection) -> boolean)?
 ): Selection
+	local instRef = React.useRef(nil :: Inst<Selection>?)
+	local inst = instRef.current
+	if inst == nil then
+		inst = {
+			hasValue = false,
+			value = nil,
+		}
+		instRef.current = inst
+	end
+
 	local getSelection, getServerSelection = React.useMemo(function()
 		local hasMemo = false
 		local memoizedSnapshot: Snapshot
@@ -21,8 +36,16 @@ local function useSyncExternalStoreWithSelector<Snapshot, Selection>(
 			if not hasMemo then
 				hasMemo = true
 				memoizedSnapshot = nextSnapshot
-				memoizedSelection = selector(nextSnapshot)
-				return memoizedSelection
+				local nextSelection = selector(nextSnapshot)
+				if isEqual ~= nil and inst.hasValue then
+					local currentSelection = inst.value :: Selection
+					if isEqual(currentSelection, nextSelection) then
+						memoizedSelection = currentSelection
+						return currentSelection
+					end
+				end
+				memoizedSelection = nextSelection
+				return nextSelection
 			end
 
 			if is(memoizedSnapshot, nextSnapshot) then
@@ -54,6 +77,10 @@ local function useSyncExternalStoreWithSelector<Snapshot, Selection>(
 	end, { getSnapshot, getServerSnapshot, selector, isEqual })
 
 	local value = React.useSyncExternalStore(subscribe, getSelection, getServerSelection)
+	React.useEffect(function()
+		inst.hasValue = true
+		inst.value = value
+	end, { value })
 	React.useDebugValue(value)
 	return value
 end
