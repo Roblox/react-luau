@@ -31,6 +31,7 @@ type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscr
 >
 type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
 type ReactContext<T> = ReactTypes.ReactContext<T>
+type Usable<T> = ReactTypes.Usable<T>
 local ReactFiberHostConfig = require(Packages.Shared)
 type OpaqueIDType = ReactFiberHostConfig.OpaqueIDType
 
@@ -65,6 +66,13 @@ local function resolveDispatcher(): Dispatcher
 end
 
 local exports = {}
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react/src/ReactHooks.js#L206-L210
+local function use<T>(usable: Usable<T>): T
+	local dispatcher = resolveDispatcher()
+	return dispatcher.use(usable)
+end
+exports.use = use
 
 --[[
 	Accepts a context object (the value returned from `React.createContext`)

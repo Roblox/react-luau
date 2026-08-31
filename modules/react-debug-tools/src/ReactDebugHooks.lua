@@ -43,6 +43,7 @@ type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscr
 >
 type ReactContext<T> = ReactTypes.ReactContext<T>
 type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
+type Usable<T> = ReactTypes.Usable<T>
 
 -- ROBLOX deviation END
 -- ROBLOX deviation START: add import type that is a built-in in flow
@@ -102,7 +103,9 @@ local ErrorStackParser = {
 local SharedModule = require(Packages.Shared)
 local ReactSharedInternals = SharedModule.ReactSharedInternals
 local ReactSymbols = SharedModule.ReactSymbols
+local REACT_CONTEXT_TYPE = ReactSymbols.REACT_CONTEXT_TYPE
 local REACT_OPAQUE_ID_TYPE = ReactSymbols.REACT_OPAQUE_ID_TYPE
+local SuspenseException = Error.new("Suspended while inspecting a pending Promise")
 -- ROBLOX deviation END
 -- ROBLOX deviation START: fix import - get from ReconcilerModule
 -- local reactReconcilerSrcReactWorkTagsModule =
@@ -177,6 +180,18 @@ local function getPrimitiveStackCache(): Map<string, Array<any>>
 					-- ROBLOX deviation END
 					return nil
 				end)
+				Dispatcher.use({
+					["$$typeof"] = REACT_CONTEXT_TYPE,
+					_currentValue = nil,
+				} :: any)
+				Dispatcher.use({
+					andThen = function() end,
+					status = "fulfilled",
+					value = nil,
+				} :: any)
+				pcall(function()
+					Dispatcher.use({ andThen = function() end } :: any)
+				end)
 			end)
 			do
 				readHookLog = hookLog
@@ -232,6 +247,45 @@ local function readContext<T>(
 	-- For now we don't expose readContext usage in the hooks debugging info.
 	return context._currentValue
 end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/ReactDebugHooks.js#L182-L237
+-- ROBLOX DEVIATION: Cached Promise inspection reads the instrumented Promise
+-- directly because this fork does not retain uncached thenables after unwind.
+local function use<T>(usable: Usable<T>): T
+	if usable ~= nil and typeof(usable) == "table" then
+		if typeof((usable :: any).andThen) == "function" then
+			if (usable :: any).status == "fulfilled" then
+				local value = (usable :: any).value :: T
+				table.insert(hookLog, {
+					primitive = "Promise",
+					stackError = Error.new(),
+					value = value,
+				})
+				return value
+			elseif (usable :: any).status == "rejected" then
+				error((usable :: any).reason)
+			end
+
+			table.insert(hookLog, {
+				primitive = "Unresolved",
+				stackError = Error.new(),
+				value = usable,
+			})
+			error(SuspenseException)
+		elseif (usable :: any)["$$typeof"] == REACT_CONTEXT_TYPE then
+			local value = readContext(usable :: ReactContext<T>, nil)
+			table.insert(hookLog, {
+				primitive = "Context (use)",
+				stackError = Error.new(),
+				value = value,
+			})
+			return value
+		end
+	end
+
+	error(Error.new("An unsupported type was passed to use(): " .. tostring(usable)))
+end
+
 local function useContext<T>(
 	context: ReactContext<T>,
 	observedBits: void | number | boolean
@@ -509,6 +563,7 @@ end
 Dispatcher = {
 	-- ROBLOX deviation END
 	readContext = readContext,
+	use = use,
 	useCallback = useCallback,
 	useContext = useContext,
 	useEffect = useEffect,
@@ -648,7 +703,11 @@ local function isReactWrapper(functionName, primitiveName)
 		-- ROBLOX deviation END
 		return false
 	end
-	local expectedPrimitiveName = "use" .. tostring(primitiveName)
+	local expectedPrimitiveName = if primitiveName == "Context (use)"
+			or primitiveName == "Promise"
+			or primitiveName == "Unresolved"
+		then "use"
+		else "use" .. tostring(primitiveName)
 	-- ROBLOX deviation START: fix length implementation + Luau doesn't understand the guard above
 	-- if
 	-- 	functionName.length
@@ -941,7 +1000,11 @@ local function buildTree(rootStack, readHookLog: Array<any>): HooksTree
 		-- For now, the "id" of stateful hooks is just the stateful hook index.
 		-- Custom hooks have no ids, nor do non-stateful native hooks (e.g. Context, DebugValue).
 		-- ROBLOX FIXME Luau: Luau doesn't infer number | nil like it should
-		local id = if primitive == "Context" or primitive == "DebugValue"
+		local id = if primitive == "Context"
+				or primitive == "Context (use)"
+				or primitive == "DebugValue"
+				or primitive == "Promise"
+				or primitive == "Unresolved"
 			then nil
 			else POSTFIX_INCREMENT()
 		-- For the time being, only State and Reducer hooks support runtime overrides.
@@ -1067,7 +1130,7 @@ local function inspectHooks<Props>(
 		-- 	return result
 		-- end
 		-- ROBLOX deviation END
-		if not ok then
+		if not ok and result ~= SuspenseException then
 			error(result)
 		end
 	end
@@ -1142,7 +1205,7 @@ local function inspectHooksOfForwardRef<Props, Ref>(
 		-- 	return result
 		-- end
 		-- ROBLOX deviation END
-		if not ok then
+		if not ok and result ~= SuspenseException then
 			error(result)
 		end
 	end

@@ -60,6 +60,7 @@ export type MutableSourceGetVersionFn = ReactTypes.MutableSourceGetVersionFn
 export type MutableSource<Source> = ReactTypes.MutableSource<Source>
 export type Wakeable = ReactTypes.Wakeable
 export type Thenable<R> = ReactTypes.Thenable<R>
+export type Usable<T> = ReactTypes.Usable<T>
 export type Source = ReactElementType.Source
 export type ReactElement<P = Object, T = any> = ReactElementType.ReactElement<P, T>
 export type OpaqueIDType = ReactFiberHostConfig.OpaqueIDType
