@@ -199,7 +199,6 @@ local ReactFiberThrow = require(script.Parent["ReactFiberThrow.new"]) :: any
 local throwException = ReactFiberThrow.throwException
 local createRootErrorUpdate = ReactFiberThrow.createRootErrorUpdate
 local createClassErrorUpdate = ReactFiberThrow.createClassErrorUpdate
-local initializeClassErrorUpdate = ReactFiberThrow.initializeClassErrorUpdate
 local ReactFiberCommitWork = require(script.Parent["ReactFiberCommitWork.new"])
 local commitBeforeMutationEffectOnFiber =
 	ReactFiberCommitWork.commitBeforeMutationLifeCycles
@@ -302,9 +301,14 @@ local getIsUpdatingOpaqueValueInRenderPhaseInDEV = function(): boolean?
 	return lazyInitRefs.getIsUpdatingOpaqueValueInRenderPhaseInDEVRef()
 end
 
-local ReactCapturedValue = require(script.Parent.ReactCapturedValue)
-type CapturedValue<T> = ReactCapturedValue.CapturedValue<T>
-local createCapturedValue = ReactCapturedValue.createCapturedValue
+-- ROBLOX DEVIATION: Repeat this erased type shape instead of retaining another
+-- module local because this file is at Luau's top-level local limit.
+type CapturedValue<T> = {
+	value: T,
+	source: Fiber | nil,
+	stack: string | nil,
+}
+local createCapturedValue = require(script.Parent.ReactCapturedValue).createCapturedValue
 local pushToStack = ReactFiberStack.push
 local popFromStack = ReactFiberStack.pop
 local createCursor = ReactFiberStack.createCursor
@@ -443,8 +447,10 @@ end
 
 local hasUncaughtError = false
 local firstUncaughtError = nil
-local workInProgressRootConcurrentErrors: Array<CapturedValue<any>>? = nil
-local workInProgressRootRecoverableErrors: Array<CapturedValue<any>>? = nil
+-- ROBLOX DEVIATION: Store new React 19 recovery state on the predeclared module
+-- table because this file is at Luau's top-level local limit.
+mod.workInProgressRootConcurrentErrors = nil :: Array<CapturedValue<any>>?
+mod.workInProgressRootRecoverableErrors = nil :: Array<CapturedValue<any>>?
 local legacyErrorBoundariesThatAlreadyFailed: Set<any> | nil = nil
 
 local rootDoesHavePassiveEffects: boolean = false
@@ -874,9 +880,9 @@ end
 
 -- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1256-L1328
 local function recoverFromConcurrentError(root: FiberRoot, errorRetryLanes: Lanes)
-	local errorsFromFirstAttempt = workInProgressRootConcurrentErrors
-	workInProgressRootConcurrentErrors = nil
-	workInProgressRootRecoverableErrors = nil
+	local errorsFromFirstAttempt = mod.workInProgressRootConcurrentErrors
+	mod.workInProgressRootConcurrentErrors = nil
+	mod.workInProgressRootRecoverableErrors = nil
 
 	-- ROBLOX DEVIATION: React 17 callers perform hydration fallback before this
 	-- helper and have no uncached-thenable ping-listener state to handle here.
@@ -884,7 +890,7 @@ local function recoverFromConcurrentError(root: FiberRoot, errorRetryLanes: Lane
 	if exitStatus ~= RootExitStatus.Errored then
 		-- ROBLOX DEVIATION: Only this recovery path populates recoverable errors
 		-- in React 17, so there is no second-attempt recoverable queue to merge.
-		workInProgressRootRecoverableErrors = errorsFromFirstAttempt
+		mod.workInProgressRootRecoverableErrors = errorsFromFirstAttempt
 	end
 	return exitStatus
 end
@@ -1010,7 +1016,7 @@ function shouldForceFlushFallbacksInDEV()
 end
 
 mod.finishConcurrentRender = function(root, exitStatus, lanes)
-	local recoverableErrors = workInProgressRootRecoverableErrors
+	local recoverableErrors = mod.workInProgressRootRecoverableErrors
 	if
 		exitStatus == RootExitStatus.Incomplete
 		or exitStatus == RootExitStatus.FatalErrored
@@ -1195,7 +1201,7 @@ mod.performSyncWorkOnRoot = function(root)
 	local finishedWork: Fiber = root.current.alternate :: any
 	root.finishedWork = finishedWork
 	root.finishedLanes = lanes
-	mod.commitRoot(root, workInProgressRootRecoverableErrors)
+	mod.commitRoot(root, mod.workInProgressRootRecoverableErrors)
 
 	-- Before exiting, make sure there's a callback scheduled for the next
 	-- pending level.
@@ -1622,8 +1628,8 @@ mod.prepareFreshStack = function(root: FiberRoot, lanes: Lanes)
 	workInProgressRootSkippedLanes(ReactFiberLane.NoLanes)
 	workInProgressRootUpdatedLanes = ReactFiberLane.NoLanes
 	workInProgressRootPingedLanes = ReactFiberLane.NoLanes
-	workInProgressRootConcurrentErrors = nil
-	workInProgressRootRecoverableErrors = nil
+	mod.workInProgressRootConcurrentErrors = nil
+	mod.workInProgressRootRecoverableErrors = nil
 
 	if ReactFeatureFlags.enableSchedulerTracing then
 		spawnedWorkDuringRender = nil
@@ -1794,10 +1800,10 @@ exports.renderDidError = function(errorInfo: CapturedValue<any>)
 	if workInProgressRootExitStatus ~= RootExitStatus.Completed then
 		workInProgressRootExitStatus = RootExitStatus.Errored
 	end
-	if workInProgressRootConcurrentErrors == nil then
-		workInProgressRootConcurrentErrors = { errorInfo }
+	if mod.workInProgressRootConcurrentErrors == nil then
+		mod.workInProgressRootConcurrentErrors = { errorInfo }
 	else
-		table.insert(workInProgressRootConcurrentErrors, errorInfo)
+		table.insert(mod.workInProgressRootConcurrentErrors, errorInfo)
 	end
 end
 
@@ -3190,7 +3196,12 @@ exports.captureCommitPhaseError = function(
 					local eventTime = exports.requestEventTime()
 					local root = mod.markUpdateLaneFromFiberToRoot(fiber, SyncLane)
 					if root ~= nil then
-						initializeClassErrorUpdate(update, root, fiber, errorInfo)
+						ReactFiberThrow.initializeClassErrorUpdate(
+							update,
+							root,
+							fiber,
+							errorInfo
+						)
 						markRootUpdated(root, SyncLane, eventTime)
 						ensureRootIsScheduled(root, eventTime)
 						mod.schedulePendingInteractions(root, SyncLane)
