@@ -1,3 +1,6 @@
+--!optimize 0
+-- ROBLOX DEVIATION: Debug Tools inspection requires custom-hook stack frames
+-- that optimized Luau can elide.
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.2/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -298,10 +301,7 @@ describe("ReactHooksInspectionIntegration", function()
 				id = 7,
 				-- ROBLOX deviation END
 				name = "Memo",
-				-- ROBLOX deviation START: useMemo wraps a value
-				-- value = "ab",
-				value = { "ab" },
-				-- ROBLOX deviation END
+				value = "ab",
 				subHooks = {},
 			},
 			{
@@ -385,10 +385,7 @@ describe("ReactHooksInspectionIntegration", function()
 				id = 7,
 				-- ROBLOX deviation END
 				name = "Memo",
-				-- ROBLOX deviation START: useMemo wraps a value
-				-- value = "Ab",
-				value = { "Ab" },
-				-- ROBLOX deviation END
+				value = "Ab",
 				subHooks = {},
 			},
 			{
@@ -403,6 +400,218 @@ describe("ReactHooksInspectionIntegration", function()
 			},
 		})
 	end)
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js#L271-L445
+	it(
+		"should inspect the current state of all stateful hooks, including useInsertionEffect",
+		function()
+			local outsideRef = React.createRef()
+			local function effect() end
+			local function effectEvent() end
+			local function Foo()
+				local state1, setState = React.useState("a")
+				local state2, dispatch = React.useReducer(function(_, action)
+					return action.value
+				end, "b")
+				local ref = React.useRef("c")
+
+				React.useInsertionEffect(effect)
+				React.useLayoutEffect(effect)
+				React.useEffect(effect)
+				-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/ReactDebugHooks.js#L748-L760
+				-- ROBLOX DEVIATION: React 19 has no matching Debug Tools integration case,
+				-- so its Effect Event primitive extends this pinned React 18 hook inventory.
+				React.useEffectEvent(effectEvent)
+
+				React.useImperativeHandle(outsideRef, function()
+					return function() end
+				end, {})
+
+				React.useMemo(function()
+					return state1 .. state2
+				end, { state1 })
+
+				local function update()
+					act(function()
+						setState("A")
+					end)
+					act(function()
+						dispatch({ value = "B" })
+					end)
+					ref.current = "C"
+				end
+				local memoizedUpdate = React.useCallback(update, {})
+				return React.createElement(
+					"Frame",
+					{ onClick = memoizedUpdate },
+					state1,
+					" ",
+					state2
+				)
+			end
+
+			local renderer
+			act(function()
+				renderer =
+					ReactTestRenderer.create(React.createElement(Foo, { prop = "prop" }))
+			end)
+
+			local childFiber = renderer.root:findByType(Foo):_currentFiber()
+			local updateStates = renderer.root:findByType("Frame").props.onClick
+			local tree = ReactDebugTools.inspectHooksOfFiber(childFiber)
+			expect(tree).toEqual({
+				{
+					isStateEditable = true,
+					id = 1,
+					name = "State",
+					value = "a" :: any,
+					subHooks = {},
+				},
+				{
+					isStateEditable = true,
+					id = 2,
+					name = "Reducer",
+					value = "b",
+					subHooks = {},
+				},
+				{
+					isStateEditable = false,
+					id = 3,
+					name = "Ref",
+					value = "c",
+					subHooks = {},
+				},
+				{
+					isStateEditable = false,
+					id = 4,
+					name = "InsertionEffect",
+					value = effect,
+					subHooks = {},
+				},
+				{
+					isStateEditable = false,
+					id = 5,
+					name = "LayoutEffect",
+					value = effect,
+					subHooks = {},
+				},
+				{
+					isStateEditable = false,
+					id = 6,
+					name = "Effect",
+					value = effect,
+					subHooks = {},
+				},
+				-- ROBLOX DEVIATION: React-Luau's one-based IDs are shifted again after
+				-- the injected Effect Event; all subsequent React 18 IDs move by one.
+				{
+					isStateEditable = false,
+					id = 7,
+					name = "EffectEvent",
+					value = effectEvent,
+					subHooks = {},
+				},
+				{
+					isStateEditable = false,
+					id = 8,
+					name = "ImperativeHandle",
+					value = outsideRef.current,
+					subHooks = {},
+				},
+				{
+					isStateEditable = false,
+					id = 9,
+					name = "Memo",
+					value = "ab",
+					subHooks = {},
+				},
+				{
+					isStateEditable = false,
+					id = 10,
+					name = "Callback",
+					value = updateStates,
+					subHooks = {},
+				},
+			})
+
+			updateStates()
+			childFiber = renderer.root:findByType(Foo):_currentFiber()
+			tree = ReactDebugTools.inspectHooksOfFiber(childFiber)
+			expect(tree).toEqual({
+				{
+					isStateEditable = true,
+					id = 1,
+					name = "State",
+					value = "A" :: any,
+					subHooks = {},
+				},
+				{
+					isStateEditable = true,
+					id = 2,
+					name = "Reducer",
+					value = "B",
+					subHooks = {},
+				},
+				{
+					isStateEditable = false,
+					id = 3,
+					name = "Ref",
+					value = "C",
+					subHooks = {},
+				},
+				{
+					isStateEditable = false,
+					id = 4,
+					name = "InsertionEffect",
+					value = effect,
+					subHooks = {},
+				},
+				{
+					isStateEditable = false,
+					id = 5,
+					name = "LayoutEffect",
+					value = effect,
+					subHooks = {},
+				},
+				{
+					isStateEditable = false,
+					id = 6,
+					name = "Effect",
+					value = effect,
+					subHooks = {},
+				},
+				-- ROBLOX DEVIATION: The injected Effect Event shifts the remaining
+				-- one-based React 18 hook IDs in this updated inspection as well.
+				{
+					isStateEditable = false,
+					id = 7,
+					name = "EffectEvent",
+					value = effectEvent,
+					subHooks = {},
+				},
+				{
+					isStateEditable = false,
+					id = 8,
+					name = "ImperativeHandle",
+					value = outsideRef.current,
+					subHooks = {},
+				},
+				{
+					isStateEditable = false,
+					id = 9,
+					name = "Memo",
+					value = "Ab",
+					subHooks = {},
+				},
+				{
+					isStateEditable = false,
+					id = 10,
+					name = "Callback",
+					value = updateStates,
+					subHooks = {},
+				},
+			})
+		end
+	)
 	it("should inspect the value of the current provider in useContext", function()
 		local MyContext = React.createContext("default")
 		local function Foo(props)
@@ -496,6 +705,8 @@ describe("ReactHooksInspectionIntegration", function()
 			},
 		})
 	end)
+	-- ROBLOX DEVIATION: This upstream custom-hook assertion also covers Roblox's
+	-- current [string "..."] stack-frame format used to build the hook tree.
 	it("should inspect custom hooks", function()
 		local function useCustom()
 			-- ROBLOX deviation START: useState returns 2 values
@@ -538,6 +749,30 @@ describe("ReactHooksInspectionIntegration", function()
 			},
 		})
 	end) -- @gate experimental
+	-- ROBLOX DEVIATION: A single nil Luau memo result must not be exposed as its
+	-- packed return table.
+	it("should inspect a nil useMemo value", function()
+		local function Foo()
+			React.useMemo(function()
+				return nil
+			end, {})
+			return React.createElement("Frame")
+		end
+
+		local renderer = ReactTestRenderer.create(React.createElement(Foo))
+		local childFiber = renderer.root:findByType(Foo):_currentFiber()
+		local tree = ReactDebugTools.inspectHooksOfFiber(childFiber)
+
+		expect(tree).toEqual({
+			{
+				id = 1,
+				isStateEditable = false,
+				name = "Memo",
+				value = nil :: any,
+				subHooks = {},
+			},
+		})
+	end)
 	-- ROBLOX deviation START: unstable_useTransition is not implemented
 	-- it("should support composite useTransition hook", function()
 	it.skip("should support composite useTransition hook", function()
