@@ -405,14 +405,16 @@ describe("ReactUse", function()
 			return React.createElement(Text, { text = "Caught" })
 		end
 
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/__tests__/ReactUse-test.js#L534-L568
+		-- ROBLOX DEVIATION: React 17 appends the component stack through the
+		-- console harness; toErrorDev preserves the upstream warning count and text.
 		jestExpect(function()
 			ReactNoop.render(React.createElement(App))
 			jestExpect(Scheduler).toFlushAndYield({ "Caught" })
 		end).toErrorDev(
 			"`use` was called from inside a try/catch block. This is not allowed "
 				.. "and can lead to unexpected behavior. To handle errors triggered "
-				.. "by `use`, wrap your component in a error boundary.",
-			{ withoutStack = true }
+				.. "by `use`, wrap your component in a error boundary."
 		)
 		jestExpect(ReactNoop.getChildren()).toEqual({ span("Caught") })
 	end)
