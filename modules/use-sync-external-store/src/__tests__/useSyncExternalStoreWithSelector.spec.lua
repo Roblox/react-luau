@@ -67,6 +67,15 @@ local function Text(props)
 	return React.createElement("span", { prop = props.text })
 end
 
+-- ROBLOX DEVIATION: ReactNoop host props replace DOM textContent.
+local function textContent(root)
+	local content = ""
+	for _, child in root.getChildren() do
+		content ..= child.prop
+	end
+	return content
+end
+
 local function loadModules()
 	jest.resetModules()
 	React = require(Packages.React)
@@ -188,14 +197,7 @@ describe("extra features implemented in user-space", function()
 			root.render(React.createElement(App))
 		end)
 		jestExpect(Scheduler).toHaveYielded({ "A0", "B0" })
-		jestExpect(root).toMatchRenderedOutput(
-			React.createElement(
-				React.Fragment,
-				nil,
-				React.createElement("span", { prop = "A0" }),
-				React.createElement("span", { prop = "B0" })
-			)
-		)
+		jestExpect(textContent(root)).toEqual("A0B0")
 
 		ReactNoop.act(function()
 			store.set({
@@ -204,14 +206,7 @@ describe("extra features implemented in user-space", function()
 			})
 		end)
 		jestExpect(Scheduler).toHaveYielded({ "B1" })
-		jestExpect(root).toMatchRenderedOutput(
-			React.createElement(
-				React.Fragment,
-				nil,
-				React.createElement("span", { prop = "A0" }),
-				React.createElement("span", { prop = "B1" })
-			)
-		)
+		jestExpect(textContent(root)).toEqual("A0B1")
 
 		ReactNoop.act(function()
 			store.set({
@@ -220,14 +215,7 @@ describe("extra features implemented in user-space", function()
 			})
 		end)
 		jestExpect(Scheduler).toHaveYielded({ "A1" })
-		jestExpect(root).toMatchRenderedOutput(
-			React.createElement(
-				React.Fragment,
-				nil,
-				React.createElement("span", { prop = "A1" }),
-				React.createElement("span", { prop = "B1" })
-			)
-		)
+		jestExpect(textContent(root)).toEqual("A1B1")
 	end)
 end)
 
@@ -331,11 +319,15 @@ describe("selector and isEqual error handling in extra", function()
 			React.createElement("span", { prop = "A" })
 		)
 
+		-- ROBLOX DEVIATION: React 17 reports the concurrent recovery attempt twice.
 		jestExpect(function()
 			ReactNoop.act(function()
 				store.set({} :: any)
 			end)
-		end).toErrorDev("The above error occurred in the <App> component:", {
+		end).toErrorDev({
+			"The above error occurred in the <App> component:",
+			"The above error occurred in the <App> component:",
+		}, {
 			logAllErrors = true,
 		})
 		jestExpect(Scheduler).toHaveYielded({ "Malformed state" })
@@ -379,11 +371,15 @@ describe("selector and isEqual error handling in extra", function()
 			React.createElement("span", { prop = "A" })
 		)
 
+		-- ROBLOX DEVIATION: React 17 reports the concurrent recovery attempt twice.
 		jestExpect(function()
 			ReactNoop.act(function()
 				store.set({} :: any)
 			end)
-		end).toErrorDev("The above error occurred in the <App> component:", {
+		end).toErrorDev({
+			"The above error occurred in the <App> component:",
+			"The above error occurred in the <App> component:",
+		}, {
 			logAllErrors = true,
 		})
 		jestExpect(Scheduler).toHaveYielded({ "Malformed state" })
