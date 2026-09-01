@@ -1,7 +1,7 @@
 -- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShared-test.js#L681-L796
 -- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShared-test.js#L873-L957
 -- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/__tests__/useSyncExternalStoreShared-test.js#L958-L1078
--- ROBLOX DEVIATION: ReactNoop host output and Scheduler yields replace DOM output and act.
+-- ROBLOX DEVIATION: ReactNoop act/host output and Scheduler yields replace DOM act/output.
 -- ROBLOX DEVIATION: Native useSyncExternalStore cases remain owned by dependency PR #24.
 -- ROBLOX DEVIATION: ReactRoblox has no server-rendering or hydration entry point.
 --[[*
@@ -118,18 +118,21 @@ describe("extra features implemented in user-space", function()
 			})
 		end
 		local root = ReactNoop.createRoot()
-		root.render(React.createElement(App))
-		jestExpect(Scheduler).toFlushAndYield({ "App", "Selector", "A0" })
+		ReactNoop.act(function()
+			root.render(React.createElement(App))
+		end)
+		jestExpect(Scheduler).toHaveYielded({ "App", "Selector", "A0" })
 		jestExpect(root).toMatchRenderedOutput(
 			React.createElement("span", { prop = "A0" })
 		)
-		ReactNoop.flushPassiveEffects()
 
-		store.set({
-			a = 1,
-			b = 0,
-		})
-		jestExpect(Scheduler).toFlushAndYield({ "Selector", "App", "A1" })
+		ReactNoop.act(function()
+			store.set({
+				a = 1,
+				b = 0,
+			})
+		end)
+		jestExpect(Scheduler).toHaveYielded({ "Selector", "App", "A1" })
 		jestExpect(root).toMatchRenderedOutput(
 			React.createElement("span", { prop = "A1" })
 		)
@@ -181,8 +184,10 @@ describe("extra features implemented in user-space", function()
 			)
 		end
 		local root = ReactNoop.createRoot()
-		root.render(React.createElement(App))
-		jestExpect(Scheduler).toFlushAndYield({ "A0", "B0" })
+		ReactNoop.act(function()
+			root.render(React.createElement(App))
+		end)
+		jestExpect(Scheduler).toHaveYielded({ "A0", "B0" })
 		jestExpect(root).toMatchRenderedOutput(
 			React.createElement(
 				React.Fragment,
@@ -191,13 +196,14 @@ describe("extra features implemented in user-space", function()
 				React.createElement("span", { prop = "B0" })
 			)
 		)
-		ReactNoop.flushPassiveEffects()
 
-		store.set({
-			a = 0,
-			b = 1,
-		})
-		jestExpect(Scheduler).toFlushAndYield({ "B1" })
+		ReactNoop.act(function()
+			store.set({
+				a = 0,
+				b = 1,
+			})
+		end)
+		jestExpect(Scheduler).toHaveYielded({ "B1" })
 		jestExpect(root).toMatchRenderedOutput(
 			React.createElement(
 				React.Fragment,
@@ -207,11 +213,13 @@ describe("extra features implemented in user-space", function()
 			)
 		)
 
-		store.set({
-			a = 1,
-			b = 1,
-		})
-		jestExpect(Scheduler).toFlushAndYield({ "A1" })
+		ReactNoop.act(function()
+			store.set({
+				a = 1,
+				b = 1,
+			})
+		end)
+		jestExpect(Scheduler).toHaveYielded({ "A1" })
 		jestExpect(root).toMatchRenderedOutput(
 			React.createElement(
 				React.Fragment,
@@ -273,18 +281,21 @@ it("compares selection to rendered selection even if selector changes", function
 		)
 	end
 	local root = ReactNoop.createRoot()
-	root.render(React.createElement(App, { step = 0 }))
-	jestExpect(Scheduler).toFlushAndYield({
+	ReactNoop.act(function()
+		root.render(React.createElement(App, { step = 0 }))
+	end)
+	jestExpect(Scheduler).toHaveYielded({
 		"Inline selector",
 		"A",
 		"B",
 		"C",
 		"Sibling: 0",
 	})
-	ReactNoop.flushPassiveEffects()
 
-	root.render(React.createElement(App, { step = 1 }))
-	jestExpect(Scheduler).toFlushAndYield({
+	ReactNoop.act(function()
+		root.render(React.createElement(App, { step = 1 }))
+	end)
+	jestExpect(Scheduler).toHaveYielded({
 		"Inline selector",
 		"Sibling: 1",
 	})
@@ -312,19 +323,22 @@ describe("selector and isEqual error handling in extra", function()
 		end
 		local ErrorBoundary = createErrorBoundary()
 		local root = ReactNoop.createRoot()
-		root.render(React.createElement(ErrorBoundary, nil, React.createElement(App)))
-		jestExpect(Scheduler).toFlushAndYield({ "A" })
+		ReactNoop.act(function()
+			root.render(React.createElement(ErrorBoundary, nil, React.createElement(App)))
+		end)
+		jestExpect(Scheduler).toHaveYielded({ "A" })
 		jestExpect(root).toMatchRenderedOutput(
 			React.createElement("span", { prop = "A" })
 		)
-		ReactNoop.flushPassiveEffects()
 
 		jestExpect(function()
-			store.set({} :: any)
-			Scheduler.unstable_flushAllWithoutAsserting()
+			ReactNoop.act(function()
+				store.set({} :: any)
+			end)
 		end).toErrorDev("The above error occurred in the <App> component:", {
 			logAllErrors = true,
 		})
+		jestExpect(Scheduler).toHaveYielded({ "Malformed state" })
 		jestExpect(root).toMatchRenderedOutput(
 			React.createElement("span", { prop = "Malformed state" })
 		)
@@ -357,19 +371,22 @@ describe("selector and isEqual error handling in extra", function()
 		end
 		local ErrorBoundary = createErrorBoundary()
 		local root = ReactNoop.createRoot()
-		root.render(React.createElement(ErrorBoundary, nil, React.createElement(App)))
-		jestExpect(Scheduler).toFlushAndYield({ "A" })
+		ReactNoop.act(function()
+			root.render(React.createElement(ErrorBoundary, nil, React.createElement(App)))
+		end)
+		jestExpect(Scheduler).toHaveYielded({ "A" })
 		jestExpect(root).toMatchRenderedOutput(
 			React.createElement("span", { prop = "A" })
 		)
-		ReactNoop.flushPassiveEffects()
 
 		jestExpect(function()
-			store.set({} :: any)
-			Scheduler.unstable_flushAllWithoutAsserting()
+			ReactNoop.act(function()
+				store.set({} :: any)
+			end)
 		end).toErrorDev("The above error occurred in the <App> component:", {
 			logAllErrors = true,
 		})
+		jestExpect(Scheduler).toHaveYielded({ "Malformed state" })
 		jestExpect(root).toMatchRenderedOutput(
 			React.createElement("span", { prop = "Malformed state" })
 		)
