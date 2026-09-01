@@ -34,6 +34,8 @@ local console = require(Packages.Shared).console
 
 local ReactTypes = require(Packages.Shared)
 type ReactContext<T> = ReactTypes.ReactContext<T>
+type Thenable<T> = ReactTypes.Thenable<T>
+type Usable<T> = ReactTypes.Usable<T>
 type ReactBinding<T> = ReactTypes.ReactBinding<T>
 type ReactBindingUpdater<T> = ReactTypes.ReactBindingUpdater<T>
 type MutableSource<T> = ReactTypes.MutableSource<T>
@@ -154,6 +156,9 @@ local peekEntangledActionLane = ReactFiberAsyncAction.peekEntangledActionLane
 local peekEntangledActionThenable = ReactFiberAsyncAction.peekEntangledActionThenable
 local requestTransitionLane = ReactFiberAsyncAction.requestTransitionLane
 
+local REACT_CONTEXT_TYPE = require(Packages.Shared).ReactSymbols.REACT_CONTEXT_TYPE
+local ReactFiberThenable = require(script.Parent.ReactFiberThenable)
+
 local FFlagReactCleanQueueOnUpdateBailout =
 	require(Packages.SafeFlags).createGetFFlag("ReactCleanQueueOnUpdateBailout")()
 
@@ -179,10 +184,12 @@ type UpdateQueue<S, A> = {
 }
 
 local didWarnAboutMismatchedHooksForComponent
+local didWarnAboutUseWrappedInTryCatch
 local _didWarnAboutUseOpaqueIdentifier
 if __DEV__ then
 	_didWarnAboutUseOpaqueIdentifier = {}
 	didWarnAboutMismatchedHooksForComponent = {}
+	didWarnAboutUseWrappedInTryCatch = {}
 end
 
 export type Hook = {
@@ -531,6 +538,11 @@ exports.resetHooksAfterThrow = function(): ()
 	end
 
 	didScheduleRenderPhaseUpdateDuringThisPass = false
+	-- ROBLOX DEVIATION: React 17's work loop always unwinds a suspended
+	-- component instead of replaying it in place. Clear positional thenable
+	-- state on unwind; callers must pass a stable cached Promise so its
+	-- instrumented status survives the retry.
+	ReactFiberThenable.resetThenableState()
 end
 
 local function mountWorkInProgressHook(): Hook
@@ -2431,10 +2443,24 @@ function dispatchAction<S, A>(fiber: Fiber, queue: UpdateQueue<S, A>, action: A,
 	return
 end
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L1151-L1166
+local function use<T>(usable: Usable<T>): T
+	if usable ~= nil and typeof(usable) == "table" then
+		if typeof((usable :: any).andThen) == "function" then
+			return ReactFiberThenable.useThenable(usable :: Thenable<T>)
+		elseif (usable :: any)["$$typeof"] == REACT_CONTEXT_TYPE then
+			return readContext(usable :: ReactContext<T>, nil)
+		end
+	end
+
+	error(Error.new("An unsupported type was passed to use(): " .. tostring(usable)))
+end
+
 -- deviation: Move these to the top so they're in scope for above functions
 local ContextOnlyDispatcher: Dispatcher = {
 	readContext = readContext,
 
+	use = use,
 	useCallback = throwInvalidHookError :: any,
 	useContext = throwInvalidHookError :: any,
 	useEffect = throwInvalidHookError :: any,
@@ -2460,6 +2486,7 @@ exports.ContextOnlyDispatcher = ContextOnlyDispatcher
 local HooksDispatcherOnMount: Dispatcher = {
 	readContext = readContext,
 
+	use = use,
 	useCallback = mountCallback,
 	useContext = readContext,
 	useEffect = mountEffect,
@@ -2485,6 +2512,7 @@ local HooksDispatcherOnMount: Dispatcher = {
 local HooksDispatcherOnUpdate: Dispatcher = {
 	readContext = readContext,
 
+	use = use,
 	useCallback = updateCallback,
 	useContext = readContext,
 	useEffect = updateEffect,
@@ -2510,6 +2538,7 @@ local HooksDispatcherOnUpdate: Dispatcher = {
 local HooksDispatcherOnRerender: Dispatcher = {
 	readContext = readContext,
 
+	use = use,
 	useCallback = updateCallback,
 	useContext = readContext,
 	useEffect = updateEffect,
@@ -2558,6 +2587,7 @@ if __DEV__ then
 		): T
 			return readContext(context, observedBits)
 		end,
+		use = use,
 		useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 			currentHookNameInDev = "useCallback"
 			mountHookTypesDev()
@@ -2729,6 +2759,7 @@ if __DEV__ then
 		): T
 			return readContext(context, observedBits)
 		end,
+		use = use,
 		useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 			currentHookNameInDev = "useCallback"
 			updateHookTypesDev()
@@ -2895,6 +2926,7 @@ if __DEV__ then
 		): T
 			return readContext(context, observedBits)
 		end,
+		use = use,
 		useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 			currentHookNameInDev = "useCallback"
 			updateHookTypesDev()
@@ -3060,6 +3092,7 @@ if __DEV__ then
 		): T
 			return readContext(context, observedBits)
 		end,
+		use = use,
 		useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 			currentHookNameInDev = "useCallback"
 			updateHookTypesDev()
@@ -3226,6 +3259,10 @@ if __DEV__ then
 		): T
 			warnInvalidContextAccess()
 			return readContext(context, observedBits)
+		end,
+		use = function<T>(usable: Usable<T>): T
+			warnInvalidHookAccess()
+			return use(usable)
 		end,
 		useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 			currentHookNameInDev = "useCallback"
@@ -3410,6 +3447,10 @@ if __DEV__ then
 			warnInvalidContextAccess()
 			return readContext(context, observedBits)
 		end,
+		use = function<T>(usable: Usable<T>): T
+			warnInvalidHookAccess()
+			return use(usable)
+		end,
 		useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 			currentHookNameInDev = "useCallback"
 			warnInvalidHookAccess()
@@ -3593,6 +3634,10 @@ if __DEV__ then
 		): T
 			warnInvalidContextAccess()
 			return readContext(context, observedBits)
+		end,
+		use = function<T>(usable: Usable<T>): T
+			warnInvalidHookAccess()
+			return use(usable)
 		end,
 		useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 			currentHookNameInDev = "useCallback"
@@ -3841,6 +3886,7 @@ local function renderWithHooks<Props, SecondArg>(
 		local numberOfReRenders: number = 0
 		repeat
 			didScheduleRenderPhaseUpdateDuringThisPass = false
+			ReactFiberThenable.resetThenableState()
 			-- ROBLOX performance: use React 18 approach to avoid invariant in hot path
 			if numberOfReRenders >= RE_RENDER_LIMIT then
 				error(
@@ -3903,6 +3949,19 @@ local function renderWithHooks<Props, SecondArg>(
 	end
 
 	didScheduleRenderPhaseUpdate = false
+	ReactFiberThenable.resetThenableState()
+
+	if __DEV__ and ReactFiberThenable.checkIfUseWrappedInTryCatch() then
+		local componentName = getComponentName(workInProgress.type) or "Unknown"
+		if not didWarnAboutUseWrappedInTryCatch[componentName] then
+			didWarnAboutUseWrappedInTryCatch[componentName] = true
+			console.error(
+				"`use` was called from inside a try/catch block. This is not allowed "
+					.. "and can lead to unexpected behavior. To handle errors triggered "
+					.. "by `use`, wrap your component in a error boundary."
+			)
+		end
+	end
 
 	-- ROBLOX performance: use React 18 approach that avoid invariant in hot paths
 	if didRenderTooFewHooks then

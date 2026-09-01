@@ -1632,6 +1632,17 @@ mod.prepareFreshStack = function(root: FiberRoot, lanes: Lanes)
 end
 
 mod.handleError = function(root, thrownValue): ()
+	-- ROBLOX DEVIATION: Keep this require off the module scope because this file
+	-- is at Luau's top-level local limit.
+	local ReactFiberThenable = require(script.Parent.ReactFiberThenable)
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L2230-L2245
+	-- ROBLOX DEVIATION: React 17 has no immediate replay state machine. Convert
+	-- the opaque exception before the existing unwind, Suspense capture, and
+	-- ping path; cached Promise status carries the result into the retry.
+	if thrownValue == ReactFiberThenable.SuspenseException then
+		thrownValue = ReactFiberThenable.getSuspendedThenable()
+	end
+
 	while true do
 		local erroredWork = workInProgress
 		-- ROBLOX FIXME Luau: CLI-49835, "Function only returns 1 value, 2 are required"
@@ -3528,13 +3539,19 @@ if __DEV__ and ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback
 			xpcall(originalBeginWork, describeError, current, unitOfWork, lanes)
 		if not ok then
 			local originalError = result
+			-- ROBLOX DEVIATION: Keep this require off the module scope because this
+			-- file is at Luau's top-level local limit.
+			local ReactFiberThenable = require(script.Parent.ReactFiberThenable)
 
 			if
 				originalError ~= nil
 				and typeof(originalError) == "table"
-				and typeof(originalError.andThen) == "function"
+				and (
+					typeof(originalError.andThen) == "function"
+					or originalError == ReactFiberThenable.SuspenseException
+				)
 			then
-				-- Don't replay promises. Treat everything else like an error.
+				-- Don't replay promises or use's opaque suspension exception.
 				error(originalError)
 			end
 

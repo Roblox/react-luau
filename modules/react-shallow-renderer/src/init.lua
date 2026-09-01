@@ -30,6 +30,7 @@ local checkPropTypes = require(Packages.Shared).checkPropTypes
 local ReactSharedInternals = require(Packages.Shared).ReactSharedInternals
 local consoleWithStackDev = require(Packages.Shared).consoleWithStackDev
 local is = require(Packages.Shared).objectIs
+local REACT_CONTEXT_TYPE = require(Packages.Shared).ReactSymbols.REACT_CONTEXT_TYPE
 
 local ReactCurrentDispatcher = ReactSharedInternals.ReactCurrentDispatcher
 local ReactDebugCurrentFrame = ReactSharedInternals.ReactDebugCurrentFrame
@@ -350,6 +351,26 @@ function ReactShallowRenderer:_createDispatcher()
 		return context._currentValue
 	end
 
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L1151-L1166
+	-- ROBLOX DEVIATION: The shallow renderer has no Suspense work loop. Pending
+	-- thenables are rethrown directly for the caller to handle.
+	local function use(usable)
+		self:_validateCurrentlyRenderingComponent()
+		if usable ~= nil and typeof(usable) == "table" then
+			if typeof(usable.andThen) == "function" then
+				if usable.status == "fulfilled" then
+					return usable.value
+				elseif usable.status == "rejected" then
+					error(usable.reason)
+				end
+				error(usable)
+			elseif usable["$$typeof"] == REACT_CONTEXT_TYPE then
+				return readContext(usable)
+			end
+		end
+		error(Error("An unsupported type was passed to use(): " .. tostring(usable)))
+	end
+
 	local function noOp()
 		self:_validateCurrentlyRenderingComponent()
 	end
@@ -392,6 +413,7 @@ function ReactShallowRenderer:_createDispatcher()
 
 	return {
 		readContext = readContext,
+		use = use,
 		useCallback = identity,
 		useContext = function(context)
 			self:_validateCurrentlyRenderingComponent()

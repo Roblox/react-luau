@@ -270,6 +270,8 @@ export type _Thenable<R> = {
 	) -> (),
 }
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/shared/ReactTypes.js#L103-L145
+-- ROBLOX DEVIATION: Roblox Promise-compatible thenables expose `andThen` instead of `then`.
 export type Thenable<R> = {
 	andThen: <U>(
 		self: Thenable<R>,
@@ -277,6 +279,11 @@ export type Thenable<R> = {
 		onReject: (error: any) -> ...(_Thenable<U> | U)
 		-- ROBLOX FIXME Luau: need union type packs to parse () | Thenable<U>: CLI-49836
 	) -> nil | _Thenable<U>,
+	status: string?,
+	value: R?,
+	reason: any?,
 }
+
+export type Usable<T> = Thenable<T> | ReactContext<T>
 
 return exports

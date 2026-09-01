@@ -168,6 +168,48 @@ describe("ReactHooksInspectionIntegration", function()
 			},
 		})
 	end)
+	it("should inspect committed use calls for Promise and Context", function()
+		local promise = {
+			andThen = function() end,
+			status = "fulfilled",
+			value = "resolved",
+		}
+		local Context = React.createContext("context")
+		local function Foo()
+			React.use(promise)
+			React.use(Context)
+			React.useState("state")
+			return React.createElement("Frame")
+		end
+
+		local renderer = ReactTestRenderer.create(React.createElement(Foo))
+		local childFiber = renderer.root:findByType(Foo):_currentFiber()
+		local tree = ReactDebugTools.inspectHooksOfFiber(childFiber)
+
+		expect(tree).toEqual({
+			{
+				isStateEditable = false,
+				id = nil :: number | nil,
+				name = "Promise",
+				value = "resolved" :: any,
+				subHooks = {},
+			},
+			{
+				isStateEditable = false,
+				id = nil :: number | nil,
+				name = "Context (use)",
+				value = "context" :: any,
+				subHooks = {},
+			},
+			{
+				isStateEditable = true,
+				id = 1,
+				name = "State",
+				value = "state",
+				subHooks = {},
+			},
+		})
+	end)
 	it("should inspect the current state of all stateful hooks", function()
 		local outsideRef = React.createRef()
 		local function effect() end

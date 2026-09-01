@@ -96,6 +96,7 @@ return {
 	lazy = ReactLazy.lazy,
 	memo = ReactMemo.memo,
 	useCallback = ReactHooks.useCallback,
+	use = ReactHooks.use,
 	useContext = ReactHooks.useContext,
 	useEffect = ReactHooks.useEffect,
 	useImperativeHandle = ReactHooks.useImperativeHandle,
