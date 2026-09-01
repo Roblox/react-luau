@@ -101,6 +101,7 @@ local act = ReactFiberWorkLoop.act :: (() -> ()) -> ()
 local ReactUpdateQueue = require(script.Parent["ReactUpdateQueue.new"])
 local createUpdate = ReactUpdateQueue.createUpdate
 local enqueueUpdate = ReactUpdateQueue.enqueueUpdate
+local entangleTransitions = ReactUpdateQueue.entangleTransitions
 local ReactCurrentFiber = require(script.Parent.ReactCurrentFiber)
 local ReactCurrentFiberIsRendering = ReactCurrentFiber.isRendering
 -- deviation: this property would be captured as values instead of bound
@@ -376,7 +377,10 @@ exports.updateContainer = function(
 	end
 
 	enqueueUpdate(current, update)
-	scheduleUpdateOnFiber(current, lane, eventTime)
+	local root = scheduleUpdateOnFiber(current, lane, eventTime)
+	if root ~= nil then
+		entangleTransitions(root, current, lane)
+	end
 
 	return lane
 end

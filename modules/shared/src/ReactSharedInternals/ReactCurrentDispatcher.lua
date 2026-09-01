@@ -39,6 +39,7 @@ type MutableSourceGetSnapshotFn<Source, Snapshot> = ReactTypes.MutableSourceGetS
 
 type BasicStateAction<S> = ((S) -> S) | S
 type Dispatch<A> = (A) -> ()
+type StartTransition = ReactTypes.StartTransition
 
 export type Dispatcher = {
 	readContext: <T>(
@@ -77,9 +78,10 @@ export type Dispatcher = {
 		deps: Array<any> | nil
 	) -> (),
 	useDebugValue: <T>(value: T, formatterFn: ((value: T) -> any)?) -> (),
-	-- ROBLOX TODO: make these non-optional and implement them in the dispatchers
-	useDeferredValue: (<T>(value: T) -> T)?,
-	useTransition: (() -> ((() -> ()) -> (), boolean))?, -- ROBLOX deviation: Luau doesn't support jagged array types [(() -> ()) -> (), boolean],
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactInternalTypes.js#L430
+	useDeferredValue: <T>(value: T, initialValue: T?) -> T,
+	-- ROBLOX deviation: Luau represents React's tuple as multiple return values.
+	useTransition: () -> (boolean, StartTransition),
 	useMutableSource: <Source, Snapshot>(
 		source: MutableSource<Source>,
 		getSnapshot: MutableSourceGetSnapshotFn<Source, Snapshot>,
