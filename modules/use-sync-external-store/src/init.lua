@@ -1,0 +1,112 @@
+--!strict
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/use-sync-external-store/src/useSyncExternalStoreWithSelector.js#L10-L132
+--[[*
+ * Copyright (c) Meta Platforms, Inc. and affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @flow
+]]
+
+local Packages = script.Parent
+local React = require(Packages.React)
+local is = require(Packages.Shared).objectIs
+
+type Inst<Selection> = {
+	hasValue: boolean,
+	value: Selection?,
+}
+
+local function useSyncExternalStoreWithSelector<Snapshot, Selection>(
+	subscribe: (
+		() -> ()
+	) -> () -> (),
+	getSnapshot: () -> Snapshot,
+	getServerSnapshot: (() -> Snapshot)?,
+	selector: (
+		Snapshot
+	) -> Selection,
+	isEqual: ((
+		Selection,
+		Selection
+	) -> boolean)?
+): Selection
+	local instRef = React.useRef(nil :: Inst<Selection>?)
+	local inst = instRef.current
+	if inst == nil then
+		inst = {
+			hasValue = false,
+			value = nil,
+		}
+		instRef.current = inst
+	end
+
+	-- ROBLOX DEVIATION: Luau multiple returns replace the JavaScript function pair.
+	local getSelection, getServerSelection = React.useMemo(function()
+		-- Track the memoized state using closure variables that are local to this
+		-- memoized instance of a getSnapshot function. Intentionally not using a
+		-- useRef hook, because that state would be shared across all concurrent
+		-- copies of the hook/component.
+		local hasMemo = false
+		local memoizedSnapshot: Snapshot
+		local memoizedSelection: Selection
+
+		local function memoizedSelector(nextSnapshot: Snapshot): Selection
+			if not hasMemo then
+				hasMemo = true
+				memoizedSnapshot = nextSnapshot
+				local nextSelection = selector(nextSnapshot)
+				if isEqual ~= nil and inst.hasValue then
+					local currentSelection = inst.value :: Selection
+					if isEqual(currentSelection, nextSelection) then
+						memoizedSelection = currentSelection
+						return currentSelection
+					end
+				end
+				memoizedSelection = nextSelection
+				return nextSelection
+			end
+
+			if is(memoizedSnapshot, nextSnapshot) then
+				return memoizedSelection
+			end
+
+			local nextSelection = selector(nextSnapshot)
+			if isEqual ~= nil and isEqual(memoizedSelection, nextSelection) then
+				-- The snapshot still has changed, so make sure to update to not keep
+				-- old references alive
+				memoizedSnapshot = nextSnapshot
+				return memoizedSelection
+			end
+
+			memoizedSnapshot = nextSnapshot
+			memoizedSelection = nextSelection
+			return nextSelection
+		end
+
+		local function getSnapshotWithSelector(): Selection
+			return memoizedSelector(getSnapshot())
+		end
+
+		local getServerSnapshotWithSelector = if getServerSnapshot == nil
+			then nil
+			else function(): Selection
+				return memoizedSelector(getServerSnapshot())
+			end
+
+		return getSnapshotWithSelector, getServerSnapshotWithSelector
+	end, { getSnapshot, getServerSnapshot, selector, isEqual })
+
+	local value = React.useSyncExternalStore(subscribe, getSelection, getServerSelection)
+	React.useEffect(function()
+		inst.hasValue = true
+		inst.value = value
+	end, { value })
+	React.useDebugValue(value)
+	return value
+end
+
+return {
+	useSyncExternalStoreWithSelector = useSyncExternalStoreWithSelector,
+}

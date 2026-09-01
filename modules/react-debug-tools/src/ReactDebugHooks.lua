@@ -173,6 +173,14 @@ local function getPrimitiveStackCache(): Map<string, Array<any>>
 				-- Dispatcher:useMemo(function()
 				Dispatcher.useDebugValue(nil)
 				Dispatcher.useCallback(function() end)
+				-- ROBLOX upstream: https://github.com/facebook/react/pull/28399
+				Dispatcher.useSyncExternalStore(function()
+					return function() end
+				end, function()
+					return nil
+				end, function()
+					return nil
+				end)
 				Dispatcher.useMemo(function()
 					-- ROBLOX deviation END
 					return nil
@@ -444,6 +452,24 @@ local function useMutableSource<Source, Snapshot>(
 	) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
 	return value
 end
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-debug-tools/src/ReactDebugHooks.js#L276-L294
+local function useSyncExternalStore<T>(
+	subscribe: (() -> ()) -> () -> (),
+	getSnapshot: () -> T,
+	getServerSnapshot: (() -> T)?
+): T
+	-- useSyncExternalStore() composes multiple hooks internally.
+	-- Advance the current hook index the same number of times
+	-- so that subsequent hooks have the right memoized state.
+	nextHook() -- SyncExternalStore
+	nextHook() -- Effect
+	local value = getSnapshot()
+	table.insert(
+		hookLog,
+		{ primitive = "SyncExternalStore", stackError = Error.new(), value = value }
+	)
+	return value
+end
 -- ROBLOX deviation START: enable these once they are fully enabled in the Dispatcher type and in ReactFiberHooks' myriad dispatchers
 -- local function useTransition(
 -- ): any --[[ ROBLOX TODO: Unhandled node for type: TupleTypeAnnotation ]] --[[ [(() => void) => void, boolean] ]]
@@ -535,6 +561,7 @@ Dispatcher = {
 	-- useTransition = useTransition,
 	-- ROBLOX deviation END
 	useMutableSource = useMutableSource,
+	useSyncExternalStore = useSyncExternalStore,
 	-- ROBLOX deviation START: not implemented
 	-- useDeferredValue = useDeferredValue,
 	-- ROBLOX deviation END
