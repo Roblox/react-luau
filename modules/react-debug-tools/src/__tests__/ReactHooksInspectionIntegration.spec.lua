@@ -585,6 +585,12 @@ describe("ReactHooksInspectionIntegration", function()
 	it("should support useOptimistic hook", function()
 		local function Foo()
 			local state = React.useOptimistic("initial")
+			React.useMemo(function()
+				return "memo"
+			end, {})
+			React.useMemo(function()
+				return "not used"
+			end, {})
 			return React.createElement("Frame", nil, state)
 		end
 		local renderer = ReactTestRenderer.create(React.createElement(Foo))
@@ -596,6 +602,20 @@ describe("ReactHooksInspectionIntegration", function()
 				isStateEditable = false,
 				name = "Optimistic",
 				value = "initial",
+				subHooks = {},
+			},
+			{
+				id = 2,
+				isStateEditable = false,
+				name = "Memo",
+				value = "memo",
+				subHooks = {},
+			},
+			{
+				id = 3,
+				isStateEditable = false,
+				name = "Memo",
+				value = "not used",
 				subHooks = {},
 			},
 		})

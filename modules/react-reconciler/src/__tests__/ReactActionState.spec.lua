@@ -223,6 +223,7 @@ describe("useActionState", function()
 				root.render(React.createElement(App))
 			end)
 			jestExpect(Scheduler).toHaveYielded({ "0" })
+			jestExpect(root).toMatchRenderedOutput("0")
 
 			ReactNoop.act(function()
 				React.startTransition(function()
@@ -233,6 +234,7 @@ describe("useActionState", function()
 				"Async action started [1]",
 				"Pending 0",
 			})
+			jestExpect(root).toMatchRenderedOutput("Pending 0")
 
 			for _, actionType in { "increment", "decrement", "increment" } do
 				ReactNoop.act(function()
@@ -327,14 +329,20 @@ describe("useActionState", function()
 		end)
 		jestExpect(Scheduler).toHaveYielded({ "A" })
 
-		for _, value in { "B", "C", "D" } do
+		ReactNoop.act(function()
+			React.startTransition(function()
+				action("B")
+			end)
+		end)
+		jestExpect(Scheduler).toHaveYielded({ "Pending A" })
+		for _, value in { "C", "D" } do
 			ReactNoop.act(function()
 				React.startTransition(function()
 					action(value)
 				end)
 			end)
 		end
-		jestExpect(Scheduler).toHaveYielded({ "Pending A" })
+		jestExpect(Scheduler).toHaveYielded({})
 
 		for _, value in { "B", "C", "D" } do
 			ReactNoop.act(function()
@@ -453,14 +461,20 @@ describe("useActionState", function()
 		end)
 		jestExpect(Scheduler).toHaveYielded({ "A" })
 
-		for _, value in { getText("B"), "C", getText("D"), "E" } do
+		ReactNoop.act(function()
+			React.startTransition(function()
+				action(getText("B"))
+			end)
+		end)
+		jestExpect(Scheduler).toHaveYielded({ "Pending A" })
+		for _, value in { "C", getText("D"), "E" } do
 			ReactNoop.act(function()
 				React.startTransition(function()
 					action(value)
 				end)
 			end)
 		end
-		jestExpect(Scheduler).toHaveYielded({ "Pending A" })
+		jestExpect(Scheduler).toHaveYielded({})
 
 		ReactNoop.act(function()
 			resolveText("B")
@@ -636,16 +650,19 @@ describe("useActionState", function()
 			)
 		end)
 		jestExpect(Scheduler).toHaveYielded({ "0" })
+		jestExpect(root).toMatchRenderedOutput("0")
 		ReactNoop.act(function()
 			React.startTransition(function()
 				dispatch("increment")
 			end)
 		end)
 		jestExpect(Scheduler).toHaveYielded({ "Async action started [1]", "Pending 0" })
+		jestExpect(root).toMatchRenderedOutput("Pending 0")
 		ReactNoop.act(function()
 			resolveText("Wait [1]")
 		end)
 		jestExpect(Scheduler).toHaveYielded({ "1" })
+		jestExpect(root).toMatchRenderedOutput("1")
 	end)
 
 	it(
@@ -685,6 +702,7 @@ describe("useActionState", function()
 				resolveText("Count: 1")
 			end)
 			jestExpect(Scheduler).toHaveYielded({ "Count: 1" })
+			jestExpect(root).toMatchRenderedOutput("Count: 1")
 
 			ReactNoop.act(function()
 				React.startTransition(dispatch)
@@ -695,6 +713,7 @@ describe("useActionState", function()
 				resolveText("Count: 2")
 			end)
 			jestExpect(Scheduler).toHaveYielded({ "Count: 2" })
+			jestExpect(root).toMatchRenderedOutput("Count: 2")
 		end
 	)
 
