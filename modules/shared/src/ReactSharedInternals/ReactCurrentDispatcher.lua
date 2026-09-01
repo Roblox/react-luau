@@ -78,7 +78,8 @@ export type Dispatcher = {
 		deps: Array<any> | nil
 	) -> (),
 	useDebugValue: <T>(value: T, formatterFn: ((value: T) -> any)?) -> (),
-	useDeferredValue: <T>(value: T) -> T,
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactInternalTypes.js#L430
+	useDeferredValue: <T>(value: T, initialValue: T?) -> T,
 	-- ROBLOX deviation: Luau represents React's tuple as multiple return values.
 	useTransition: () -> (boolean, StartTransition),
 	useMutableSource: <Source, Snapshot>(

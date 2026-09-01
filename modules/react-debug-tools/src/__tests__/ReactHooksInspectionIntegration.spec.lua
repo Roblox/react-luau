@@ -1,3 +1,6 @@
+--!optimize 0
+-- ROBLOX DEVIATION: Debug Tools inspection requires custom-hook stack frames
+-- that optimized Luau can elide. Shared with PR #28.
 -- ROBLOX upstream: https://github.com/facebook/react/blob/v17.0.2/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -168,6 +171,8 @@ describe("ReactHooksInspectionIntegration", function()
 			},
 		})
 	end)
+	-- ROBLOX DEVIATION: Shared with PR #28, scalar Luau useMemo results are
+	-- inspected as values rather than packed return tables.
 	it("should inspect the current state of all stateful hooks", function()
 		local outsideRef = React.createRef()
 		local function effect() end
@@ -298,10 +303,7 @@ describe("ReactHooksInspectionIntegration", function()
 				id = 7,
 				-- ROBLOX deviation END
 				name = "Memo",
-				-- ROBLOX deviation START: useMemo wraps a value
-				-- value = "ab",
-				value = { "ab" },
-				-- ROBLOX deviation END
+				value = "ab",
 				subHooks = {},
 			},
 			{
@@ -385,10 +387,7 @@ describe("ReactHooksInspectionIntegration", function()
 				id = 7,
 				-- ROBLOX deviation END
 				name = "Memo",
-				-- ROBLOX deviation START: useMemo wraps a value
-				-- value = "Ab",
-				value = { "Ab" },
-				-- ROBLOX deviation END
+				value = "Ab",
 				subHooks = {},
 			},
 			{
@@ -538,6 +537,31 @@ describe("ReactHooksInspectionIntegration", function()
 			},
 		})
 	end) -- @gate experimental
+	-- ROBLOX DEVIATION: A single nil Luau memo result must not be exposed as its
+	-- packed return table. This shared PR #28 normalization is deduplicated when
+	-- the branches are stacked.
+	it("should inspect a nil useMemo value", function()
+		local function Foo()
+			React.useMemo(function()
+				return nil
+			end, {})
+			return React.createElement("Frame")
+		end
+
+		local renderer = ReactTestRenderer.create(React.createElement(Foo))
+		local childFiber = renderer.root:findByType(Foo):_currentFiber()
+		local tree = ReactDebugTools.inspectHooksOfFiber(childFiber)
+
+		expect(tree).toEqual({
+			{
+				id = 1,
+				isStateEditable = false,
+				name = "Memo",
+				value = nil :: any,
+				subHooks = {},
+			},
+		})
+	end)
 	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js
 	it("should support composite useTransition hook", function()
 		local function Foo(props)
@@ -632,6 +656,217 @@ describe("ReactHooksInspectionIntegration", function()
 			},
 		})
 	end) -- @gate experimental
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/7268dacf70cd6a7f5705a19053aad46b5289ab72/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js#L1209-L1465
+	it("should return the deferred value", function()
+		local unsuspend
+		local function Lazy()
+			return nil
+		end
+		local Suspender = React.lazy(function()
+			-- ROBLOX DEVIATION: Use the Luau Promise constructor and resolve with the
+			-- lazy module table instead of a JavaScript Promise.
+			return Promise.new(function(resolve)
+				unsuspend = function()
+					resolve({ default = Lazy })
+				end
+			end)
+		end)
+		local Context = React.createContext("default")
+		local ReactSharedInternals =
+			React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED
+		local isInspectingHooks = false
+		local function inspectHooks(fiber)
+			isInspectingHooks = true
+			local tree = ReactDebugTools.inspectHooksOfFiber(fiber)
+			isInspectingHooks = false
+			return tree
+		end
+		local setShow
+		local function Foo(props)
+			local show, setShow_ = React.useState(false)
+			local deferredShow = React.useDeferredValue(show)
+			local isPending = show ~= deferredShow
+			local contextDisplay = "<none>"
+			if isPending then
+				local dispatcher = ReactSharedInternals.ReactCurrentDispatcher.current
+				-- ROBLOX DEVIATION: React 17 has no conditional use API. Inline the
+				-- slotless renderer read and inspection useContext so Debug Tools logs
+				-- the Context primitive without an adapter custom-hook frame.
+				contextDisplay = if isInspectingHooks
+					then dispatcher.useContext(Context)
+					else dispatcher.readContext(Context)
+			end
+			React.useMemo(function()
+				return "hello"
+			end, {})
+			React.useMemo(function()
+				return "not used"
+			end, {})
+
+			-- ROBLOX DEVIATION: React 17 concurrent roots replay mounts in StrictMode.
+			-- Capture every renderer setter without accepting the Debug Tools setter.
+			if not isInspectingHooks then
+				setShow = setShow_
+			end
+
+			local output = "Context: "
+				.. contextDisplay
+				.. ", "
+				.. (if isPending then "Pending" else "Nothing Pending")
+			if deferredShow then
+				output ..= ", Lazy"
+			end
+
+			-- ROBLOX DEVIATION: Represent upstream text output with a TextLabel
+			-- prop because Roblox host text nodes are not concatenated.
+			return React.createElement(
+				React.Suspense,
+				{
+					fallback = React.createElement("TextLabel", { Text = "Loading" }),
+				},
+				React.createElement(
+					"TextLabel",
+					{ Text = output },
+					if deferredShow then React.createElement(Suspender) else nil
+				)
+			)
+		end
+
+		local renderer
+		-- ROBLOX DEVIATION: This React 17 Jest-Lua act is synchronous; upstream
+		-- awaits each act scope.
+		act(function()
+			renderer = ReactTestRenderer.create(
+				React.createElement(
+					Context.Provider,
+					{ value = "provided" },
+					React.createElement(Foo)
+				),
+				-- ROBLOX DEVIATION: React 17 TestRenderer uses the unstable option name.
+				{ unstable_isConcurrent = true }
+			)
+		end)
+		local childFiber = renderer.root:findByType(Foo):_currentFiber()
+		local tree = inspectHooks(childFiber)
+		expect(renderer:toJSON().props.Text).toBe("Context: <none>, Nothing Pending")
+		-- ROBLOX DEVIATION: This port exposes hook IDs with 1-based indexing.
+		-- React 17's HooksNode also lacks React 19's debugInfo and hookSource schema.
+		expect(tree).toEqual({
+			{
+				id = 1,
+				isStateEditable = true,
+				name = "State",
+				subHooks = {},
+				value = false,
+			},
+			{
+				id = 2,
+				isStateEditable = false,
+				name = "DeferredValue",
+				subHooks = {},
+				value = false,
+			},
+			{
+				id = 3,
+				isStateEditable = false,
+				name = "Memo",
+				subHooks = {},
+				value = "hello",
+			},
+			{
+				id = 4,
+				isStateEditable = false,
+				name = "Memo",
+				subHooks = {},
+				value = "not used",
+			},
+		})
+
+		act(function()
+			setShow(true)
+		end)
+
+		expect(renderer:toJSON().props.Text).toBe("Context: provided, Pending")
+		childFiber = renderer.root:findByType(Foo):_currentFiber()
+		tree = inspectHooks(childFiber)
+		expect(tree).toEqual({
+			{
+				id = 1,
+				isStateEditable = true,
+				name = "State",
+				subHooks = {},
+				value = true,
+			},
+			{
+				id = 2,
+				isStateEditable = false,
+				name = "DeferredValue",
+				subHooks = {},
+				value = false,
+			},
+			{
+				id = nil,
+				isStateEditable = false,
+				name = "Context",
+				subHooks = {},
+				value = "provided",
+			},
+			{
+				id = 3,
+				isStateEditable = false,
+				name = "Memo",
+				subHooks = {},
+				value = "hello",
+			},
+			{
+				id = 4,
+				isStateEditable = false,
+				name = "Memo",
+				subHooks = {},
+				value = "not used",
+			},
+		})
+
+		act(function()
+			unsuspend()
+		end)
+
+		expect(renderer:toJSON().props.Text).toBe(
+			"Context: <none>, Nothing Pending, Lazy"
+		)
+		childFiber = renderer.root:findByType(Foo):_currentFiber()
+		tree = inspectHooks(childFiber)
+		expect(tree).toEqual({
+			{
+				id = 1,
+				isStateEditable = true,
+				name = "State",
+				subHooks = {},
+				value = true,
+			},
+			{
+				id = 2,
+				isStateEditable = false,
+				name = "DeferredValue",
+				subHooks = {},
+				value = true,
+			},
+			{
+				id = 3,
+				isStateEditable = false,
+				name = "Memo",
+				subHooks = {},
+				value = "hello",
+			},
+			{
+				id = 4,
+				isStateEditable = false,
+				name = "Memo",
+				subHooks = {},
+				value = "not used",
+			},
+		})
+	end)
 	-- ROBLOX deviation START: unstable_useOpaqueIdentifier not implemented
 	-- it("should support composite useOpaqueIdentifier hook", function()
 	it.skip("should support composite useOpaqueIdentifier hook", function()

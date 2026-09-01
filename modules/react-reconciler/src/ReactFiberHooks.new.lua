@@ -82,7 +82,7 @@ local removeLanes = ReactFiberLane.removeLanes
 local markRootEntangled = ReactFiberLane.markRootEntangled
 local markRootMutableRead = ReactFiberLane.markRootMutableRead
 local includesOnlyNonUrgentLanes = ReactFiberLane.includesOnlyNonUrgentLanes
-local claimNextTransitionLane = ReactFiberLane.claimNextTransitionLane
+local includesDeferredLane = ReactFiberLane.includesDeferredLane
 local isTransitionLane = ReactFiberLane.isTransitionLane
 -- local DefaultLanePriority = ReactFiberLane.DefaultLanePriority
 local ReactFiberNewContext = require(script.Parent["ReactFiberNewContext.new"])
@@ -97,6 +97,7 @@ local HookHasEffect = ReactHookEffectTags.HasEffect
 local HookLayout = ReactHookEffectTags.Layout
 local HookPassive = ReactHookEffectTags.Passive
 local ReactFiberWorkLoop = require(script.Parent["ReactFiberWorkLoop.new"]) :: any
+local requestDeferredLane = ReactFiberWorkLoop.requestDeferredLane
 local warnIfNotCurrentlyActingUpdatesInDEV =
 	ReactFiberWorkLoop.warnIfNotCurrentlyActingUpdatesInDEV
 local scheduleUpdateOnFiber = ReactFiberWorkLoop.scheduleUpdateOnFiber
@@ -1576,25 +1577,46 @@ function updateMemo<T...>(nextCreate: () -> T..., deps: Array<any> | nil): ...an
 end
 
 -- ROBLOX upstream: https://github.com/facebook/react/blob/22edb9f777d27369fd2c1fad378f74e237b6dfd3/packages/react-reconciler/src/ReactFiberHooks.new.js#L1933-L2001
-local function mountDeferredValue<T>(value: T): T
-	local hook = mountWorkInProgressHook()
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L2963-L3080
+-- ROBLOX DEVIATION: React 17 has no spare DeferredLane discriminator or
+-- separate root and entangled render-lane sets. Reserved transition-deferred
+-- lanes identify renders spawned by this hook without leaking that identity
+-- through ordinary transition entanglement.
+local function mountDeferredValueImpl<T>(hook: Hook, value: T, initialValue: T?): T
+	-- ROBLOX DEVIATION: Luau cannot distinguish an omitted argument from explicit nil.
+	if initialValue ~= nil and not includesDeferredLane(renderLanes) then
+		hook.memoizedState = initialValue
+
+		local deferredLane = requestDeferredLane()
+		currentlyRenderingFiber.lanes =
+			mergeLanes(currentlyRenderingFiber.lanes, deferredLane)
+		markSkippedUpdateLanes(deferredLane)
+		hook.baseState = true
+
+		return initialValue
+	end
+
 	hook.memoizedState = value
 	return value
 end
 
+local function mountDeferredValue<T>(value: T, initialValue: T?): T
+	local hook = mountWorkInProgressHook()
+	return mountDeferredValueImpl(hook, value, initialValue)
+end
+
 local updateDeferredValueImpl
 
-local function updateDeferredValue<T>(value: T): T
+local function updateDeferredValue<T>(value: T, _initialValue: T?): T
 	local hook = updateWorkInProgressHook()
 	local prevValue: T = currentHook.memoizedState
 	return updateDeferredValueImpl(hook, prevValue, value)
 end
 
-local function rerenderDeferredValue<T>(value: T): T
+local function rerenderDeferredValue<T>(value: T, initialValue: T?): T
 	local hook = updateWorkInProgressHook()
 	if currentHook == nil then
-		hook.memoizedState = value
-		return value
+		return mountDeferredValueImpl(hook, value, initialValue)
 	else
 		local prevValue: T = currentHook.memoizedState
 		return updateDeferredValueImpl(hook, prevValue, value)
@@ -1602,15 +1624,20 @@ local function rerenderDeferredValue<T>(value: T): T
 end
 
 updateDeferredValueImpl = function<T>(hook: Hook, prevValue: T, value: T): T
+	if is(value, prevValue) then
+		return value
+	end
+
+	-- ROBLOX DEVIATION: Hidden-tree initial-value prerendering is omitted because
+	-- this branch has no React 19 hidden-context or Activity contract.
 	local shouldDeferValue = not includesOnlyNonUrgentLanes(renderLanes)
+		and not includesDeferredLane(renderLanes)
 	if shouldDeferValue then
-		if not is(value, prevValue) then
-			local deferredLane = claimNextTransitionLane()
-			currentlyRenderingFiber.lanes =
-				mergeLanes(currentlyRenderingFiber.lanes, deferredLane)
-			markSkippedUpdateLanes(deferredLane)
-			hook.baseState = true
-		end
+		local deferredLane = requestDeferredLane()
+		currentlyRenderingFiber.lanes =
+			mergeLanes(currentlyRenderingFiber.lanes, deferredLane)
+		markSkippedUpdateLanes(deferredLane)
+		hook.baseState = true
 		return prevValue
 	else
 		if hook.baseState then
@@ -2176,10 +2203,11 @@ if __DEV__ then
 			mountHookTypesDev()
 			return mountDebugValue(value, formatterFn)
 		end,
-		useDeferredValue = function<T>(value: T): T
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L4114-L4118
+		useDeferredValue = function<T>(value: T, initialValue: T?): T
 			currentHookNameInDev = "useDeferredValue"
 			mountHookTypesDev()
-			return mountDeferredValue(value)
+			return mountDeferredValue(value, initialValue)
 		end,
 		useTransition = function(): (boolean, StartTransition)
 			currentHookNameInDev = "useTransition"
@@ -2325,10 +2353,11 @@ if __DEV__ then
 			updateHookTypesDev()
 			return mountDebugValue(value, formatterFn)
 		end,
-		useDeferredValue = function<T>(value: T): T
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L4281-L4285
+		useDeferredValue = function<T>(value: T, initialValue: T?): T
 			currentHookNameInDev = "useDeferredValue"
 			updateHookTypesDev()
-			return mountDeferredValue(value)
+			return mountDeferredValue(value, initialValue)
 		end,
 		useTransition = function(): (boolean, StartTransition)
 			currentHookNameInDev = "useTransition"
@@ -2473,10 +2502,11 @@ if __DEV__ then
 			updateHookTypesDev()
 			return updateDebugValue(value, formatterFn)
 		end,
-		useDeferredValue = function<T>(value: T): T
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L4448-L4452
+		useDeferredValue = function<T>(value: T, initialValue: T?): T
 			currentHookNameInDev = "useDeferredValue"
 			updateHookTypesDev()
-			return updateDeferredValue(value)
+			return updateDeferredValue(value, initialValue)
 		end,
 		useTransition = function(): (boolean, StartTransition)
 			currentHookNameInDev = "useTransition"
@@ -2622,10 +2652,11 @@ if __DEV__ then
 			updateHookTypesDev()
 			return updateDebugValue(value, formatterFn)
 		end,
-		useDeferredValue = function<T>(value: T): T
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L4615-L4619
+		useDeferredValue = function<T>(value: T, initialValue: T?): T
 			currentHookNameInDev = "useDeferredValue"
 			updateHookTypesDev()
-			return rerenderDeferredValue(value)
+			return rerenderDeferredValue(value, initialValue)
 		end,
 		useTransition = function(): (boolean, StartTransition)
 			currentHookNameInDev = "useTransition"
@@ -2782,11 +2813,12 @@ if __DEV__ then
 			mountHookTypesDev()
 			return mountDebugValue(value, formatterFn)
 		end,
-		useDeferredValue = function<T>(value: T): T
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L4797-L4802
+		useDeferredValue = function<T>(value: T, initialValue: T?): T
 			currentHookNameInDev = "useDeferredValue"
 			warnInvalidHookAccess()
 			mountHookTypesDev()
-			return mountDeferredValue(value)
+			return mountDeferredValue(value, initialValue)
 		end,
 		useTransition = function(): (boolean, StartTransition)
 			currentHookNameInDev = "useTransition"
@@ -2947,11 +2979,12 @@ if __DEV__ then
 			updateHookTypesDev()
 			return updateDebugValue(value, formatterFn)
 		end,
-		useDeferredValue = function<T>(value: T): T
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L4989-L4994
+		useDeferredValue = function<T>(value: T, initialValue: T?): T
 			currentHookNameInDev = "useDeferredValue"
 			warnInvalidHookAccess()
 			updateHookTypesDev()
-			return updateDeferredValue(value)
+			return updateDeferredValue(value, initialValue)
 		end,
 		useTransition = function(): (boolean, StartTransition)
 			currentHookNameInDev = "useTransition"
@@ -3112,11 +3145,12 @@ if __DEV__ then
 			updateHookTypesDev()
 			return updateDebugValue(value, formatterFn)
 		end,
-		useDeferredValue = function<T>(value: T): T
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L5181-L5186
+		useDeferredValue = function<T>(value: T, initialValue: T?): T
 			currentHookNameInDev = "useDeferredValue"
 			warnInvalidHookAccess()
 			updateHookTypesDev()
-			return rerenderDeferredValue(value)
+			return rerenderDeferredValue(value, initialValue)
 		end,
 		useTransition = function(): (boolean, StartTransition)
 			currentHookNameInDev = "useTransition"

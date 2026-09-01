@@ -111,9 +111,19 @@ exports.DefaultLanes = DefaultLanes
 
 local TransitionHydrationLane: Lane = --[[              ]]
 	0b0000000000000000001000000000000
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L61-L95
 local TransitionLanes: Lanes = --[[                     ]]
 	0b0000000001111111110000000000000
-local TransitionLane1: Lane = bit32.band(TransitionLanes, -TransitionLanes)
+local TransitionUpdateLanes: Lanes = --[[               ]]
+	0b0000000000011111110000000000000
+local TransitionDeferredLanes: Lanes = --[[             ]]
+	0b0000000001100000000000000000000
+-- ROBLOX DEVIATION: React 17 has nine transition bits. Seven retain their
+-- existing update allocation and the two highest bits form the smallest
+-- rotating deferred family that keeps overlapping deferred tasks distinct.
+local TransitionLane1: Lane = bit32.band(TransitionUpdateLanes, -TransitionUpdateLanes)
+local TransitionDeferredLane1: Lane =
+	bit32.band(TransitionDeferredLanes, -TransitionDeferredLanes)
 
 -- ROBLOX upstream: https://github.com/facebook/react/blob/422d102bd58ab16f93b6d84a2a25c759b6a1288f/packages/react-reconciler/src/ReactFiberLane.new.js#L58-L62
 -- ROBLOX deviation: React 17 has lane families for each urgent priority.
@@ -126,6 +136,19 @@ local UrgentLanes: Lanes = bit32.bor(
 	InputContinuousLanes,
 	DefaultHydrationLane,
 	DefaultLanes
+)
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L113-L114
+-- ROBLOX DEVIATION: React 17 retains separate update-lane families and a
+-- SyncBatchedLane. Hydration lanes are intentionally absent, matching
+-- React 19's rule that spawned work entangles only with update lanes.
+local UpdateLanes: Lanes = bit32.bor(
+	SyncLane,
+	SyncBatchedLane,
+	InputDiscreteLanes,
+	InputContinuousLanes,
+	DefaultLanes,
+	TransitionUpdateLanes
 )
 
 local RetryLanes: Lanes = --[[                          ]]
@@ -210,10 +233,16 @@ local function getHighestPriorityLanes(lanes: Lanes | Lane): Lanes
 		return_highestLanePriority = TransitionHydrationPriority
 		return TransitionHydrationLane
 	end
-	local transitionLanes = bit32.band(TransitionLanes, lanes)
+	local transitionLanes = bit32.band(TransitionUpdateLanes, lanes)
 	if transitionLanes ~= NoLanes then
 		return_highestLanePriority = TransitionPriority
 		return transitionLanes
+	end
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L199-L216
+	local deferredLanes = bit32.band(TransitionDeferredLanes, lanes)
+	if deferredLanes ~= NoLanes then
+		return_highestLanePriority = TransitionPriority
+		return deferredLanes
 	end
 	local retryLanes = bit32.band(RetryLanes, lanes)
 	if retryLanes ~= NoLanes then
@@ -375,6 +404,27 @@ local function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes
 	nextLanes =
 		bit32.band(pendingLanes, bit32.lshift(getLowestPriorityLane(nextLanes), 1) - 1)
 
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L423-L470
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L2164-L2192
+	-- ROBLOX DEVIATION: React 17 collapses task lanes and entangled render lanes.
+	-- When a boundaryless parent and its spawned task ping together, restore the
+	-- deferred task identity so a fresh mount does not replay the initial preview.
+	local entangledLanes = root.entangledLanes
+	local pingedDeferredLanes =
+		bit32.band(pingedLanes, TransitionDeferredLanes, entangledLanes)
+	local selectedPingedLanes = bit32.band(nextLanes, pingedLanes)
+	if pingedDeferredLanes ~= NoLanes and selectedPingedLanes ~= NoLanes then
+		local entanglements = root.entanglements
+		while pingedDeferredLanes > 0 do
+			local index = pickArbitraryLaneIndex(pingedDeferredLanes)
+			local lane = bit32.lshift(1, index)
+			if bit32.band(entanglements[index], selectedPingedLanes) ~= NoLanes then
+				nextLanes = bit32.bor(nextLanes, lane)
+			end
+			pingedDeferredLanes = bit32.band(pingedDeferredLanes, bit32.bnot(lane))
+		end
+	end
+
 	-- // If we're already in the middle of a render, switching lanes will interrupt
 	-- // it and we'll lose our progress. We should only do this if the new lanes are
 	-- // higher priority.
@@ -411,7 +461,6 @@ local function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes
 	-- // For those exceptions where entanglement is semantically important, like
 	-- // useMutableSource, we should ensure that there is no partial work at the
 	-- // time we apply the entanglement.
-	local entangledLanes = root.entangledLanes
 	if entangledLanes ~= NoLanes then
 		local entanglements = root.entanglements
 		local lanes = bit32.band(nextLanes, entangledLanes)
@@ -549,6 +598,14 @@ local function includesNonIdleWork(lanes: Lanes)
 end
 exports.includesNonIdleWork = includesNonIdleWork
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L90-L91
+-- ROBLOX DEVIATION: The reserved family replaces React 19's DeferredLane
+-- discriminator in this smaller React 17 lane model.
+local function includesDeferredLane(lanes: Lanes): boolean
+	return bit32.band(lanes, TransitionDeferredLanes) ~= NoLanes
+end
+exports.includesDeferredLane = includesDeferredLane
+
 local function includesOnlyRetries(lanes: Lanes)
 	return bit32.band(lanes, RetryLanes) == lanes
 end
@@ -603,7 +660,10 @@ local function findUpdateLane(lanePriority: LanePriority, wipLanes: Lanes): Lane
 		if lane == NoLane then
 			-- // If all the default lanes are already being worked on, look for a
 			-- // lane in the transition range.
-			lane = pickArbitraryLane(bit32.band(TransitionLanes, bit32.bnot(wipLanes)))
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L79-L90
+			-- ROBLOX DEVIATION: Ordinary updates cannot claim the reserved deferred family.
+			lane =
+				pickArbitraryLane(bit32.band(TransitionUpdateLanes, bit32.bnot(wipLanes)))
 			if lane == NoLane then
 				-- // All the transition lanes are taken, too. This should be very
 				-- // rare, but as a last resort, pick a default lane. This will have
@@ -634,18 +694,22 @@ exports.findUpdateLane = findUpdateLane
 
 -- // To ensure consistency across multiple updates in the same event, this should
 -- // be pure function, so that it always returns the same lane for given inputs.
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L79-L90
+-- ROBLOX DEVIATION: Keep React 17's allocator helper but exclude the reserved
+-- deferred family from ordinary transition updates.
 local function findTransitionLane(wipLanes: Lanes, pendingLanes: Lanes): Lane
 	-- // First look for lanes that are completely unclaimed, i.e. have no
 	-- // pending work.
-	local lane = pickArbitraryLane(bit32.band(TransitionLanes, bit32.bnot(pendingLanes)))
+	local lane =
+		pickArbitraryLane(bit32.band(TransitionUpdateLanes, bit32.bnot(pendingLanes)))
 	if lane == NoLane then
 		-- // If all lanes have pending work, look for a lane that isn't currently
 		-- // being worked on.
-		lane = pickArbitraryLane(bit32.band(TransitionLanes, bit32.bnot(wipLanes)))
+		lane = pickArbitraryLane(bit32.band(TransitionUpdateLanes, bit32.bnot(wipLanes)))
 		if lane == NoLane then
 			-- // If everything is being worked on, pick any lane. This has the
 			-- // effect of interrupting the current work-in-progress.
-			lane = pickArbitraryLane(TransitionLanes)
+			lane = pickArbitraryLane(TransitionUpdateLanes)
 		end
 	end
 	return lane
@@ -653,17 +717,32 @@ end
 exports.findTransitionLane = findTransitionLane
 
 -- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberLane.new.js#L491-L503
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L721-L730
+-- ROBLOX DEVIATION: Retain React 17's public allocator name.
 local nextTransitionLane: Lane = TransitionLane1
 
 local function claimNextTransitionLane(): Lane
 	local lane = nextTransitionLane
 	nextTransitionLane = bit32.lshift(nextTransitionLane, 1)
-	if bit32.band(nextTransitionLane, TransitionLanes) == NoLanes then
+	if bit32.band(nextTransitionLane, TransitionUpdateLanes) == NoLanes then
 		nextTransitionLane = TransitionLane1
 	end
 	return lane
 end
 exports.claimNextTransitionLane = claimNextTransitionLane
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L733-L740
+local nextTransitionDeferredLane: Lane = TransitionDeferredLane1
+
+local function claimNextTransitionDeferredLane(): Lane
+	local lane = nextTransitionDeferredLane
+	nextTransitionDeferredLane = bit32.lshift(nextTransitionDeferredLane, 1)
+	if bit32.band(nextTransitionDeferredLane, TransitionDeferredLanes) == NoLanes then
+		nextTransitionDeferredLane = TransitionDeferredLane1
+	end
+	return lane
+end
+exports.claimNextTransitionDeferredLane = claimNextTransitionDeferredLane
 
 -- // To ensure consistency across multiple updates in the same event, this should
 -- // be pure function, so that it always returns the same lane for given inputs.
@@ -850,7 +929,16 @@ local function markRootUpdated(root: FiberRoot, updateLane: Lane, eventTime: num
 end
 exports.markRootUpdated = markRootUpdated
 
-local function markRootSuspended(root: FiberRoot, suspendedLanes: Lanes)
+local markSpawnedDeferredLane
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L846-L886
+-- ROBLOX DEVIATION: React 17 has neither warm lanes nor didAttemptEntireTree
+-- prewarming state, so only spawned-lane bookkeeping is added here.
+local function markRootSuspended(
+	root: FiberRoot,
+	suspendedLanes: Lanes,
+	spawnedLane: Lane
+)
 	root.suspendedLanes = bit32.bor(root.suspendedLanes, suspendedLanes)
 	root.pingedLanes = bit32.band(root.pingedLanes, bit32.bnot(suspendedLanes))
 
@@ -864,6 +952,10 @@ local function markRootSuspended(root: FiberRoot, suspendedLanes: Lanes)
 		expirationTimes[index] = NoTimestamp
 
 		lanes = bit32.band(lanes, bit32.bnot(lane))
+	end
+
+	if spawnedLane ~= NoLane then
+		markSpawnedDeferredLane(root, spawnedLane, suspendedLanes)
 	end
 end
 exports.markRootSuspended = markRootSuspended
@@ -897,7 +989,10 @@ local function markRootMutableRead(root: FiberRoot, updateLane: Lane)
 end
 exports.markRootMutableRead = markRootMutableRead
 
-local function markRootFinished(root: FiberRoot, remainingLanes: Lanes)
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L889-L989
+-- ROBLOX DEVIATION: Retain React 17's smaller root-lane state shape while
+-- threading the spawned lane through its existing finished-work cleanup.
+local function markRootFinished(root: FiberRoot, remainingLanes: Lanes, spawnedLane: Lane)
 	local noLongerPendingLanes = bit32.band(root.pendingLanes, bit32.bnot(remainingLanes))
 
 	root.pendingLanes = remainingLanes
@@ -927,8 +1022,35 @@ local function markRootFinished(root: FiberRoot, remainingLanes: Lanes)
 
 		lanes = bit32.band(lanes, bit32.bnot(lane))
 	end
+
+	if spawnedLane ~= NoLane then
+		markSpawnedDeferredLane(root, spawnedLane, NoLanes)
+	end
 end
 exports.markRootFinished = markRootFinished
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L991-L1020
+-- ROBLOX DEVIATION: The reserved transition-deferred family itself replaces
+-- React 19's extra DeferredLane discriminator. Only suspended parent update
+-- lanes need entanglement; a completed parent leaves the spawned lane pending
+-- independently.
+markSpawnedDeferredLane = function(
+	root: FiberRoot,
+	spawnedLane: Lane,
+	entangledLanes: Lanes
+)
+	root.pendingLanes = bit32.bor(root.pendingLanes, spawnedLane)
+	root.suspendedLanes = bit32.band(root.suspendedLanes, bit32.bnot(spawnedLane))
+
+	if entangledLanes ~= NoLanes then
+		local spawnedLaneIndex = 31 - bit32.countlz(spawnedLane)
+		root.entangledLanes = bit32.bor(root.entangledLanes, spawnedLane)
+		root.entanglements[spawnedLaneIndex] = bit32.bor(
+			root.entanglements[spawnedLaneIndex],
+			bit32.band(entangledLanes, UpdateLanes)
+		)
+	end
+end
 
 local function markRootEntangled(root: FiberRoot, entangledLanes: Lanes)
 	local rootEntangledLanes = bit32.bor(root.entangledLanes, entangledLanes)

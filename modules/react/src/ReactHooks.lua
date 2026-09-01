@@ -297,9 +297,11 @@ exports.useTransition = function(): (boolean, StartTransition)
 	return dispatcher.useTransition()
 end
 
-exports.useDeferredValue = function<T>(value: T): T
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react/src/ReactHooks.js#L178-L180
+-- ROBLOX DEVIATION: Luau cannot distinguish an omitted argument from explicit nil.
+exports.useDeferredValue = function<T>(value: T, initialValue: T?): T
 	local dispatcher = resolveDispatcher()
-	return dispatcher.useDeferredValue(value)
+	return dispatcher.useDeferredValue(value, initialValue)
 end
 
 exports.useOpaqueIdentifier = function(): OpaqueIDType | nil

@@ -27,6 +27,7 @@ type ReactPriorityLevel = ReactInternalTypes.ReactPriorityLevel
 local ReactFiberLane = require(script.Parent.ReactFiberLane)
 type Lanes = ReactFiberLane.Lanes
 type Lane = ReactFiberLane.Lane
+local ConcurrentRoot = require(script.Parent.ReactRootTags).ConcurrentRoot
 local ReactCapturedValue = require(script.Parent.ReactCapturedValue)
 type CapturedValue<T> = ReactCapturedValue.CapturedValue<T>
 local ReactUpdateQueue = require(script.Parent["ReactUpdateQueue.new"])
@@ -258,7 +259,8 @@ function throwException(
 	value: any,
 	rootRenderLanes: Lanes,
 	onUncaughtError,
-	renderDidError
+	renderDidError,
+	renderDidSuspendDelayIfPossible
 )
 	-- The source fiber did not complete.
 	sourceFiber.flags = bit32.bor(sourceFiber.flags, Incomplete)
@@ -427,7 +429,23 @@ function throwException(
 			workInProgress = workInProgress.return_ :: Fiber -- ROBLOX TODO: Luau narrowing doesn't understand this loop until nil pattern
 		until workInProgress == nil
 
-		-- No boundary was found. Fallthrough to error mode.
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberThrow.js#L524-L537
+		-- Concurrent roots can suspend without a boundary and keep their current UI.
+		if root.tag == ConcurrentRoot then
+			local currentSource = sourceFiber.alternate
+			if currentSource ~= nil then
+				-- ROBLOX DEVIATION: The older work loop restores interrupted mounted
+				-- fibers here. A new mount has no alternate and retains its suspended hooks.
+				sourceFiber.updateQueue = currentSource.updateQueue
+				sourceFiber.memoizedState = currentSource.memoizedState
+				sourceFiber.lanes = currentSource.lanes
+			end
+			attachPingListener(root, wakeable, rootRenderLanes)
+			renderDidSuspendDelayIfPossible()
+			return
+		end
+
+		-- No boundary was found for a legacy root. Fallthrough to error mode.
 		-- TODO: Use invariant so the message is stripped in prod?
 		value = (getComponentName(sourceFiber.type) or "A React component")
 			.. " suspended while rendering, but no fallback UI was specified.\n"
