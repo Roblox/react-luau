@@ -254,7 +254,7 @@ end
 
 function throwException(
 	root: FiberRoot,
-	returnFiber: Fiber,
+	returnFiber: Fiber?,
 	sourceFiber: Fiber,
 	value: any,
 	rootRenderLanes: Lanes,
@@ -309,7 +309,7 @@ function throwException(
 
 		-- Schedule the nearest Suspense to re-render the timed out view.
 		local workInProgress = returnFiber
-		repeat
+		while workInProgress ~= nil do
 			if
 				workInProgress.tag == SuspenseComponent
 				and shouldCaptureSuspense(workInProgress, hasInvisibleParentBoundary)
@@ -426,8 +426,8 @@ function throwException(
 			end
 			-- This boundary already captured during this render. Continue to the next
 			-- boundary.
-			workInProgress = workInProgress.return_ :: Fiber -- ROBLOX TODO: Luau narrowing doesn't understand this loop until nil pattern
-		until workInProgress == nil
+			workInProgress = workInProgress.return_
+		end
 
 		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberThrow.js#L524-L537
 		-- Concurrent roots can suspend without a boundary and keep their current UI.

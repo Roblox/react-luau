@@ -1613,7 +1613,14 @@ mod.handleError = function(root, thrownValue): ()
 			-- separate issue. Write a regression test using string refs.
 			ReactCurrentOwner.current = nil
 
-			if erroredWork == nil or erroredWork.return_ == nil then
+			local isRootWakeable = erroredWork ~= nil
+				and erroredWork.return_ == nil
+				and root.tag ~= LegacyRoot
+				and typeof(thrownValue) == "table"
+				and typeof(thrownValue.andThen) == "function"
+			if
+				erroredWork == nil or (erroredWork.return_ == nil and not isRootWakeable)
+			then
 				-- Expected to be working on a non-root fiber. This is a fatal error
 				-- because there's no ancestor that can handle it; the root is
 				-- supposed to capture all errors that weren't caught by an error
