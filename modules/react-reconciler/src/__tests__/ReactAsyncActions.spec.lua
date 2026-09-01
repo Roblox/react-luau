@@ -189,7 +189,7 @@ describe("ReactAsyncActions", function()
 			React.Fragment,
 			nil,
 			React.createElement("span", nil, "Pending: " .. tostring(pending)),
-			React.createElement("span", nil, a, ", ", b, ", ", c)
+			React.createElement("span", nil, a .. ", " .. b .. ", " .. c)
 		)
 	end
 
@@ -400,6 +400,8 @@ describe("ReactAsyncActions", function()
 				"Async action ended",
 				"Pending: false",
 				"Suspend! [A1]",
+				"Suspend! [B1]",
+				"Suspend! [C1]",
 			})
 			jestExpect(root).toMatchRenderedOutput(
 				entangledOutput(true, "A0", "B0", "C0")
@@ -412,6 +414,7 @@ describe("ReactAsyncActions", function()
 				"Pending: false",
 				"A1",
 				"Suspend! [B1]",
+				"Suspend! [C1]",
 			})
 			jestExpect(root).toMatchRenderedOutput(
 				entangledOutput(true, "A0", "B0", "C0")
@@ -1299,7 +1302,6 @@ describe("ReactAsyncActions", function()
 			jestExpect(Scheduler).toHaveYielded({
 				"Async action started",
 				"Pending: true, ",
-				"A",
 			})
 			jestExpect(root).toMatchRenderedOutput("Pending: true, A")
 
@@ -1379,7 +1381,6 @@ describe("ReactAsyncActions", function()
 			jestExpect(Scheduler).toHaveYielded({
 				"Async action started",
 				"Pending: true, ",
-				"A",
 			})
 			jestExpect(root).toMatchRenderedOutput("Pending: true, A")
 
@@ -1456,7 +1457,6 @@ describe("ReactAsyncActions", function()
 			jestExpect(Scheduler).toHaveYielded({
 				"Async action started",
 				"Pending: true, ",
-				"A",
 			})
 			jestExpect(root).toMatchRenderedOutput("Pending: true, A")
 

@@ -18,8 +18,10 @@ local useState
 local useTransition
 local ReactCurrentBatchConfig
 local reportedError
+local transitionDuringReport
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
+local Error = LuauPolyfill.Error
 local Set = LuauPolyfill.Set
 
 local JestGlobals = require(Packages.Dev.JestGlobals)
@@ -35,11 +37,13 @@ describe("ReactStartTransition", function()
 	beforeEach(function()
 		jest.resetModules()
 		reportedError = nil
+		transitionDuringReport = nil
 		local Shared = require(Packages.Shared)
+		ReactCurrentBatchConfig = Shared.ReactSharedInternals.ReactCurrentBatchConfig
 		Shared.reportGlobalError = function(error_)
 			reportedError = error_
+			transitionDuringReport = ReactCurrentBatchConfig.transition
 		end
-		ReactCurrentBatchConfig = Shared.ReactSharedInternals.ReactCurrentBatchConfig
 		React = require(Packages.React)
 		ReactTestRenderer = require(Packages.Dev.ReactTestRenderer)
 		act = ReactTestRenderer.unstable_concurrentAct
@@ -108,45 +112,81 @@ describe("ReactStartTransition", function()
 
 	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react/src/ReactStartTransition.js
 	it("reports errors thrown by global transition callbacks", function()
+		local expectedError = Error("global transition failure")
+		local transitionDuringCallback
+		local transitionAfterCallback = {}
 		local succeeded, transitionError = pcall(function()
 			React.startTransition(function()
-				error("global transition failure", 0)
+				transitionDuringCallback = ReactCurrentBatchConfig.transition
+				error(expectedError, 0)
 			end)
+			transitionAfterCallback = ReactCurrentBatchConfig.transition
 		end)
 
 		jestExpect(succeeded).toBe(true)
 		jestExpect(transitionError).toBe(nil)
-		jestExpect(reportedError).toBe("global transition failure")
+		jestExpect(reportedError).toBe(expectedError)
+		jestExpect(transitionDuringReport).toBe(transitionDuringCallback)
+		jestExpect(transitionDuringReport).never.toBe(nil)
+		jestExpect(transitionAfterCallback).toBe(nil)
 	end)
 
-	it("preserves errors thrown by hook transition callbacks", function()
-		local triggerHookTransition
-		local transitionDuringCallback
-		local transitionAfterCallback = {}
-		local function Component()
-			local _, start = useTransition()
-			triggerHookTransition = start
-			return nil
-		end
+	it(
+		"routes hook transition errors through the renderer after restoring context",
+		function()
+			local triggerHookTransition
+			local caughtError
+			local transitionDuringCallback
+			local transitionAfterCallback = {}
+			local transitionDuringCatch = {}
+			local expectedError = Error("hook transition failure")
 
-		act(function()
-			ReactTestRenderer.create(React.createElement(Component), {
-				unstable_isConcurrent = true,
-			})
-		end)
+			local ErrorBoundary = React.Component:extend("HookTransitionErrorBoundary")
+			function ErrorBoundary:init()
+				self.state = { failed = false }
+			end
+			function ErrorBoundary.getDerivedStateFromError()
+				return { failed = true }
+			end
+			function ErrorBoundary:componentDidCatch(error_)
+				caughtError = error_
+				transitionDuringCatch = ReactCurrentBatchConfig.transition
+			end
+			function ErrorBoundary:render()
+				if self.state.failed then
+					return nil
+				end
+				return self.props.children
+			end
 
-		local hookSucceeded, hookError = pcall(function()
+			local function Component()
+				local _, start = useTransition()
+				triggerHookTransition = start
+				return nil
+			end
+
+			act(function()
+				ReactTestRenderer.create(
+					React.createElement(
+						ErrorBoundary,
+						nil,
+						React.createElement(Component)
+					),
+					{ unstable_isConcurrent = true }
+				)
+			end)
+
 			act(function()
 				triggerHookTransition(function()
 					transitionDuringCallback = ReactCurrentBatchConfig.transition
-					error("hook transition failure", 0)
+					error(expectedError, 0)
 				end)
 				transitionAfterCallback = ReactCurrentBatchConfig.transition
 			end)
-		end)
-		jestExpect(transitionDuringCallback).never.toBe(nil)
-		jestExpect(transitionAfterCallback).toBe(nil)
-		jestExpect(hookSucceeded).toBe(false)
-		jestExpect(hookError).toBe("hook transition failure")
-	end)
+			jestExpect(transitionDuringCallback).never.toBe(nil)
+			jestExpect(transitionAfterCallback).toBe(nil)
+			jestExpect(caughtError).toBe(expectedError)
+			jestExpect(transitionDuringCatch).toBe(nil)
+		end
+	)
 end)

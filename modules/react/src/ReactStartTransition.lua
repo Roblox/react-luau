@@ -39,25 +39,24 @@ local function startTransition(scope: () -> any, options: StartTransitionOptions
 	end
 
 	local ok, result = pcall(function()
-		local returnValue = scope()
-		local onStartTransitionFinish = ReactSharedInternals.onStartTransitionFinish
-		if onStartTransitionFinish ~= nil then
-			onStartTransitionFinish(currentTransition, returnValue)
-		end
+		local scopeOk, scopeError = pcall(function()
+			local returnValue = scope()
+			local onStartTransitionFinish = ReactSharedInternals.onStartTransitionFinish
+			if onStartTransitionFinish ~= nil then
+				onStartTransitionFinish(currentTransition, returnValue)
+			end
 
-		if
-			typeof(returnValue) == "table"
-			and typeof(returnValue.andThen) == "function"
-		then
-			returnValue:andThen(function() end, reportGlobalError)
+			if
+				typeof(returnValue) == "table"
+				and typeof(returnValue.andThen) == "function"
+			then
+				returnValue:andThen(function() end, reportGlobalError)
+			end
+		end)
+		if not scopeOk then
+			reportGlobalError(scopeError)
 		end
-		return returnValue
 	end)
-	ReactCurrentBatchConfig.transition = prevTransition
-	if not ok then
-		reportGlobalError(result)
-	end
-
 	if ReactGlobals.__DEV__ and currentTransition._updatedFibers ~= nil then
 		if prevTransition == nil and currentTransition._updatedFibers.size > 10 then
 			console.warn(
@@ -67,6 +66,12 @@ local function startTransition(scope: () -> any, options: StartTransitionOptions
 			)
 		end
 		currentTransition._updatedFibers:clear()
+	end
+
+	ReactCurrentBatchConfig.transition = prevTransition
+
+	if not ok then
+		error(result, 0)
 	end
 end
 

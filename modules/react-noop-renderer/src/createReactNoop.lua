@@ -745,6 +745,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 		end
 	end
 
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/e7b255341b059b4e2a109847395d0d0ba2633999/packages/react-noop-renderer/src/createReactNoop.js#L688-L705
 	local function getChildrenAsJSX(root)
 		local children = childToJSX(getChildren(root))
 		if children == nil then
@@ -760,7 +761,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				type = REACT_FRAGMENT_TYPE,
 				key = nil,
 				ref = nil,
-				props = { children },
+				props = { children = children },
 				_owner = nil,
 				_store = store,
 			}

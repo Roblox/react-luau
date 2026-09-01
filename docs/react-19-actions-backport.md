@@ -38,7 +38,15 @@ task recovery, while this branch checks whether the processed HostRoot queue
 read from an entangled Action. When either sibling lands, the other must rebase,
 drop the duplicate generic suspension hunks, and preserve both additive
 HostRoot behaviors. The merged runtime contains one concurrent-root suspension
-substrate, not parallel copies.
+substrate, not parallel copies. The copies are not byte-identical: this branch
+also permits an Action wakeable thrown by HostRoot's nil-parent update queue, so
+that extension remains when the common component-wakeable substrate is deduplicated.
+
+Roblox/react-luau#28 owns the parsed-stack ancestor guard and single-return
+`useMemo` inspection normalization in Debug Tools. This branch temporarily
+carries the same minimal adapters so the Actions inspection tests run
+independently; whichever pull request lands second must remove the duplicates
+without taking on the unrelated inspection changes from that branch.
 
 ## Source ledger
 
@@ -58,15 +66,16 @@ substrate, not parallel copies.
 | `ReactFiberClassComponent.js` class Action suspension | `ReactFiberClassComponent.new.lua` | Adapted | React 17 processes class queues at four separate mount, resume, and update sites, so each site receives the post-processing suspension check. |
 | `ReactFiberWorkLoop.js::requestUpdateLane` | `ReactFiberWorkLoop.new.lua` | Adapted | Transition lanes are requested from the action-local event cache because React 17 has no `ReactFiberRootScheduler`. |
 | `ReactFiberTransition.js` renderer transition-finish registration | `ReactFiberTransition.lua` | Adapted | React-Luau has one client renderer registration point and preserves any previous callback. |
-| `ReactStartTransition.js` async completion and failure reporting | `modules/react/src/ReactStartTransition.lua` | Adapted | Rejected async transitions report through the canonical Shared `reportGlobalError` supplied by Roblox/react-luau#31. |
+| `ReactStartTransition.js` async completion and failure reporting | `modules/react/src/ReactStartTransition.lua` | Adapted | Synchronous failures report while the current transition is installed and restore it afterward; rejected async transitions report later through the canonical Shared `reportGlobalError` supplied by Roblox/react-luau#31. |
 | `ReactHooks.js` public hooks | `modules/react/src/ReactHooks.lua` | Adapted | Luau tuples are multiple return values. Luau has no `Awaited` utility, so the Action callback returns either `S` or `Thenable<S>` while state remains `S`. |
 | React client exports | `modules/react/src/React.lua` | Adapted | React-Luau adds the APIs to its existing table-based public module rather than upstream's ES module exports. |
 | Dispatcher and transition types | `modules/shared/src/ReactSharedInternals`, `ReactCurrentDispatcher.lua`, and `ReactTypes.lua` | Adapted | React 17 shared-internals names are retained. |
 | `ReactInternalTypes.js` HookType Action names | `modules/react-reconciler/src/ReactInternalTypes.lua` | Adapted | The Action names extend React 17's existing Luau `HookType` union. |
-| `ReactDebugHooks.js` | `modules/react-debug-tools/src/ReactDebugHooks.lua` | Adapted | Inspection reads fulfilled values, rethrows rejected reasons, and stops at pending Action state with the canonical inspection sentinel already supplied by Roblox/react-luau#32. |
-| `ReactHooksInspectionIntegration-test.js` | `modules/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration.spec.lua` | Adapted | React-Luau hook IDs are one-based; trailing memo hooks verify all three Action-state hook slots are consumed. |
+| `ReactDebugHooks.js` | `modules/react-debug-tools/src/ReactDebugHooks.lua` | Adapted | Inspection reads fulfilled values, rethrows rejected reasons, and stops at pending Action state with the canonical inspection sentinel already supplied by Roblox/react-luau#32. The parsed-stack ancestor guard and scalar display of a single packed Luau memo return are temporary dependency adapters owned by Roblox/react-luau#28 and must be deduplicated after that pull request lands. |
+| `ReactHooksInspectionIntegration-test.js` | `modules/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration.spec.lua` | Adapted | React-Luau hook IDs are one-based; trailing memo hooks verify all three Action-state hook slots are consumed, using Roblox/react-luau#28's canonical scalar display for a single packed Luau return. |
 | `ReactHooks-test.internal.js` hook-order coverage | `modules/react-reconciler/src/__tests__/ReactHooks-internal.spec.lua` | Adapted | Existing Jest-Lua hook-order helpers cover `useOptimistic` and `useActionState`. |
 | `ReactStartTransition.js` error reporting contract | `modules/react/src/__tests__/ReactStartTransition.spec.lua` | Adapted | Global callback errors use a scoped Shared reporter; hook transition errors continue through the render error path after transition context is restored. |
+| `createReactNoop.js::getChildrenAsJSX` | `modules/react-noop-renderer/src/createReactNoop.lua` | Direct | The named `props.children` field fixes the older positional-table translation so upstream fragment output assertions compare through the public ReactNoop matcher. |
 | Shallow renderer dispatcher | `modules/react-shallow-renderer/src/init.lua` | Adapted | Shallow rendering exposes stable no-op Action dispatchers. |
 
 ## Async Actions test ledger
@@ -80,7 +89,7 @@ upstream order.
 | ---: | --- | --- | --- |
 | 1 | `isPending remains true until async action finishes` | Adapted | A controlled Luau `andThen` wakeable replaces the JavaScript Promise while preserving pending lifetime. |
 | 2 | `multiple updates in an async action scope are entangled together` | Adapted | ReactNoop host elements use `React.createElement`, and a controlled `andThen` wakeable replaces the JavaScript Promise. |
-| 3 | `multiple async action updates in the same scope are entangled together` | Adapted | The React 17 Suspense implementation retries siblings sequentially and has no React 19 sibling prewarming. The controlled cache invokes handlers synchronously for already fulfilled A0/B0/C0 resources; staged A1/B1/C1 suspension and final atomic commit remain covered. |
+| 3 | `multiple async action updates in the same scope are entangled together` | Adapted | The controlled cache invokes handlers synchronously for already fulfilled A0/B0/C0 resources. The expected host text preserves upstream's single JSX literal child, and the upstream A1/B1/C1 sibling prewarming yields and final atomic commit remain covered. |
 | 4 | `urgent updates are not blocked during an async action` | Adapted | ReactNoop and a controlled `andThen` wakeable preserve the separate A/B bailout and log contract. |
 | 5 | `if a sync action throws, it's rethrown from the useTransition` | Adapted | LuauPolyfill `Error` and a React-Luau class boundary replace JavaScript error and class syntax. |
 | 6 | `if an async action throws, it's rethrown from the useTransition` | Adapted | A rejected controlled Luau wakeable replaces the JavaScript async function. |
@@ -125,7 +134,7 @@ hook callback directly upstream and do not depend on HTML form behavior.
 | 9 | `useActionState: error handling (async action)` | Adapted | A controlled wakeable, React-Luau class boundary, and LuauPolyfill `Error` replace the upstream async and class syntax. |
 | 10 | `useActionState: when an action errors, subsequent actions are canceled` | Adapted | Controlled wakeables and a React-Luau class boundary preserve queue poisoning and committed fallback behavior. |
 | 11 | `useActionState works in StrictMode` | Adapted | A controlled `andThen` wakeable replaces the JavaScript async Action under React-Luau Strict Mode. |
-| 12 | `useActionState does not wrap action in a transition unless dispatch is in a transition` | Adapted | A ReactNoop Suspense resource replaces the DOM resource; React 17 has no sibling prewarming, so assertions follow its single-pass retry order. |
+| 12 | `useActionState does not wrap action in a transition unless dispatch is in a transition` | Adapted | A ReactNoop Suspense resource replaces the DOM resource; React 17 has no sibling prewarming, so assertions follow its single-pass retry order. React 17's internal ReactNoop Act has no shared Act queue, so the urgent path briefly retains `Count: 0` until the pending JND timer commits `Loading...`; the transition attempt renders `Loading...` without committing it and retains `Count: 1`. |
 | 13 | `useActionState warns if async action is dispatched outside of a transition` | Adapted | A ReactNoop Suspense resource and Jest-Lua `toErrorDev` replace the DOM resource and console helper; a pending controlled thenable preserves the upstream async lifetime and resolves in a later `act`. |
 
 ## Supporting public regression suites

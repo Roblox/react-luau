@@ -468,7 +468,14 @@ local function useMemo<T...>(nextCreate: () -> T..., inputs: Array<any> | nil): 
 	local value = if hook ~= nil then hook.memoizedState[1] else { nextCreate() }
 	-- ROBLOX deviation END
 
-	table.insert(hookLog, { primitive = "Memo", stackError = Error.new(), value = value }) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
+	-- Roblox/react-luau#28 owns this normalization; remove this duplicate after that PR lands.
+	-- ROBLOX DEVIATION: DevTools displays a single Luau memo return as its value,
+	-- but preserves the packed table when useMemo returns multiple values.
+	local inspectedValue = if #value <= 1 then value[1] else value
+	table.insert(
+		hookLog,
+		{ primitive = "Memo", stackError = Error.new(), value = inspectedValue }
+	) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
 	-- ROBLOX deviation START: unwrap memoized values in a table
 	-- return value
 	return table.unpack(value)
@@ -661,7 +668,13 @@ local function findSharedIndex(hookStack, rootStack, rootIndex: number)
 	-- ROBLOX deviation END
 	-- ROBLOX deviation START: don't use tostring
 	-- local source = rootStack[tostring(rootIndex)].source
-	local source = rootStack[rootIndex].source
+	-- Roblox/react-luau#28 owns this guard; remove this duplicate after that PR lands.
+	-- ROBLOX DEVIATION: Roblox can omit the ancestor frame from a parsed stack.
+	local rootFrame = rootStack[rootIndex]
+	if rootFrame == nil then
+		return -1
+	end
+	local source = rootFrame.source
 	-- ROBLOX deviation END
 	-- ROBLOX deviation START: implement LabeledStatement
 	-- 	error("not implemented") --[[ ROBLOX TODO: Unhandled node for type: LabeledStatement ]] --[[ hookSearch: for (let i = 0; i < hookStack.length; i++) {

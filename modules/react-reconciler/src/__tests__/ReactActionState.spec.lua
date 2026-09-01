@@ -17,6 +17,7 @@ local useActionState
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
 local JestGlobals = require(Packages.Dev.JestGlobals)
+local afterEach = JestGlobals.afterEach
 local beforeEach = JestGlobals.beforeEach
 local describe = JestGlobals.describe
 local it = JestGlobals.it
@@ -127,6 +128,10 @@ end
 
 describe("useActionState", function()
 	local textCache
+
+	afterEach(function()
+		jest.useRealTimers()
+	end)
 
 	beforeEach(function()
 		jest.resetModules()
@@ -668,6 +673,10 @@ describe("useActionState", function()
 	it(
 		"useActionState does not wrap action in a transition unless dispatch is in a transition",
 		function()
+			-- ROBLOX DEVIATION: React 17 schedules the urgent fallback on its JND
+			-- timer because its internal ReactNoop act has no shared Act queue.
+			jest.useFakeTimers()
+
 			local dispatch
 			local function App()
 				local state
@@ -697,6 +706,9 @@ describe("useActionState", function()
 
 			ReactNoop.act(dispatch)
 			jestExpect(Scheduler).toHaveYielded({ "Suspend! [Count: 1]", "Loading..." })
+			jestExpect(root).toMatchRenderedOutput("Count: 0")
+			jest.runOnlyPendingTimers()
+			jestExpect(Scheduler).toHaveYielded({})
 			jestExpect(root).toMatchRenderedOutput("Loading...")
 			ReactNoop.act(function()
 				resolveText("Count: 1")
@@ -707,7 +719,11 @@ describe("useActionState", function()
 			ReactNoop.act(function()
 				React.startTransition(dispatch)
 			end)
-			jestExpect(Scheduler).toHaveYielded({ "Count: 1", "Suspend! [Count: 2]" })
+			jestExpect(Scheduler).toHaveYielded({
+				"Count: 1",
+				"Suspend! [Count: 2]",
+				"Loading...",
+			})
 			jestExpect(root).toMatchRenderedOutput("Count: 1")
 			ReactNoop.act(function()
 				resolveText("Count: 2")
