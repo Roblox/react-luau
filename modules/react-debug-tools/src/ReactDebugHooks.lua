@@ -43,6 +43,7 @@ type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscr
 >
 type ReactContext<T> = ReactTypes.ReactContext<T>
 type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
+type Usable<T> = ReactTypes.Usable<T>
 
 -- ROBLOX deviation END
 -- ROBLOX deviation START: add import type that is a built-in in flow
@@ -52,6 +53,7 @@ type React_Node = ReactTypes.React_Node
 -- ROBLOX deviation START: add binding support
 type ReactBinding<T> = ReactTypes.ReactBinding<T>
 type ReactBindingUpdater<T> = ReactTypes.ReactBindingUpdater<T>
+type StartTransition = ReactTypes.StartTransition
 -- ROBLOX deviation END
 -- ROBLOX deviation START: fix import
 -- local reactReconcilerSrcReactInternalTypesModule =
@@ -102,7 +104,9 @@ local ErrorStackParser = {
 local SharedModule = require(Packages.Shared)
 local ReactSharedInternals = SharedModule.ReactSharedInternals
 local ReactSymbols = SharedModule.ReactSymbols
+local REACT_CONTEXT_TYPE = ReactSymbols.REACT_CONTEXT_TYPE
 local REACT_OPAQUE_ID_TYPE = ReactSymbols.REACT_OPAQUE_ID_TYPE
+local SuspenseException = Error.new("Suspended while inspecting a pending Promise")
 -- ROBLOX deviation END
 -- ROBLOX deviation START: fix import - get from ReconcilerModule
 -- local reactReconcilerSrcReactWorkTagsModule =
@@ -177,6 +181,18 @@ local function getPrimitiveStackCache(): Map<string, Array<any>>
 					-- ROBLOX deviation END
 					return nil
 				end)
+				Dispatcher.use({
+					["$$typeof"] = REACT_CONTEXT_TYPE,
+					_currentValue = nil,
+				} :: any)
+				Dispatcher.use({
+					andThen = function() end,
+					status = "fulfilled",
+					value = nil,
+				} :: any)
+				pcall(function()
+					Dispatcher.use({ andThen = function() end } :: any)
+				end)
 			end)
 			do
 				readHookLog = hookLog
@@ -232,6 +248,45 @@ local function readContext<T>(
 	-- For now we don't expose readContext usage in the hooks debugging info.
 	return context._currentValue
 end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/ReactDebugHooks.js#L192-L265
+-- ROBLOX DEVIATION: Cached Promise inspection reads the instrumented Promise
+-- directly because this fork does not retain uncached thenables after unwind.
+local function use<T>(usable: Usable<T>): T
+	if usable ~= nil and typeof(usable) == "table" then
+		if typeof((usable :: any).andThen) == "function" then
+			if (usable :: any).status == "fulfilled" then
+				local value = (usable :: any).value :: T
+				table.insert(hookLog, {
+					primitive = "Promise",
+					stackError = Error.new(),
+					value = value,
+				})
+				return value
+			elseif (usable :: any).status == "rejected" then
+				error((usable :: any).reason)
+			end
+
+			table.insert(hookLog, {
+				primitive = "Unresolved",
+				stackError = Error.new(),
+				value = usable,
+			})
+			error(SuspenseException)
+		elseif (usable :: any)["$$typeof"] == REACT_CONTEXT_TYPE then
+			local value = readContext(usable :: ReactContext<T>, nil)
+			table.insert(hookLog, {
+				primitive = "Context (use)",
+				stackError = Error.new(),
+				value = value,
+			})
+			return value
+		end
+	end
+
+	error(Error.new("An unsupported type was passed to use(): " .. tostring(usable)))
+end
+
 local function useContext<T>(
 	context: ReactContext<T>,
 	observedBits: void | number | boolean
@@ -413,7 +468,14 @@ local function useMemo<T...>(nextCreate: () -> T..., inputs: Array<any> | nil): 
 	local value = if hook ~= nil then hook.memoizedState[1] else { nextCreate() }
 	-- ROBLOX deviation END
 
-	table.insert(hookLog, { primitive = "Memo", stackError = Error.new(), value = value }) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
+	-- Roblox/react-luau#28 owns this normalization; remove this duplicate after that PR lands.
+	-- ROBLOX DEVIATION: DevTools displays a single Luau memo return as its value,
+	-- but preserves the packed table when useMemo returns multiple values.
+	local inspectedValue = if #value <= 1 then value[1] else value
+	table.insert(
+		hookLog,
+		{ primitive = "Memo", stackError = Error.new(), value = inspectedValue }
+	) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
 	-- ROBLOX deviation START: unwrap memoized values in a table
 	-- return value
 	return table.unpack(value)
@@ -444,33 +506,70 @@ local function useMutableSource<Source, Snapshot>(
 	) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
 	return value
 end
--- ROBLOX deviation START: enable these once they are fully enabled in the Dispatcher type and in ReactFiberHooks' myriad dispatchers
--- local function useTransition(
--- ): any --[[ ROBLOX TODO: Unhandled node for type: TupleTypeAnnotation ]] --[[ [(() => void) => void, boolean] ]]
--- 	-- useTransition() composes multiple hooks internally.
--- 	-- Advance the current hook index the same number of times
--- 	-- so that subsequent hooks have the right memoized state.
--- 	nextHook() -- State
--- 	nextHook() -- Callback
--- 	table.insert(
--- 		hookLog,
--- 		{ primitive = "Transition", stackError = Error.new(), value = nil }
--- 	) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
--- 	return { function(callback) end, false }
--- end
--- local function useDeferredValue<T>(value: T): T
--- 	-- useDeferredValue() composes multiple hooks internally.
--- 	-- Advance the current hook index the same number of times
--- 	-- so that subsequent hooks have the right memoized state.
--- 	nextHook() -- State
--- 	nextHook() -- Effect
--- 	table.insert(
--- 		hookLog,
--- 		{ primitive = "DeferredValue", stackError = Error.new(), value = value }
--- 	) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
--- 	return value
--- end
--- ROBLOX deviation END
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-debug-tools/src/ReactDebugHooks.js#L298-L315
+-- ROBLOX deviation: Luau represents React's tuple as multiple return values.
+local function useTransition(): (boolean, StartTransition)
+	nextHook() -- State
+	nextHook() -- Callback
+	table.insert(
+		hookLog,
+		{ primitive = "Transition", stackError = Error.new(), value = nil }
+	)
+	return false, function(_callback, _options) end
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/ReactDebugHooks.js#L565-L585
+local function useOptimistic<T>(passthrough: T, _reducer): (T, (any) -> ())
+	local hook = nextHook()
+	local value = if hook ~= nil then hook.memoizedState else passthrough
+	table.insert(
+		hookLog,
+		{ primitive = "Optimistic", stackError = Error.new(), value = value }
+	)
+	return value, function() end
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/ReactDebugHooks.js#L657-L725
+local function useActionState<T>(
+	_action,
+	initialState: T,
+	_permalink: string?
+): (T, (any) -> (), boolean)
+	local stateHook = nextHook()
+	nextHook() -- PendingState
+	nextHook() -- ActionQueue
+	local stackError = Error.new()
+	local value = if stateHook ~= nil then stateHook.memoizedState else initialState
+	local inspectionError = nil
+	if typeof(value) == "table" and typeof(value.andThen) == "function" then
+		if value.status == "fulfilled" then
+			value = value.value
+		elseif value.status == "rejected" then
+			inspectionError = value.reason
+		else
+			inspectionError = SuspenseException
+		end
+	end
+	table.insert(
+		hookLog,
+		{ primitive = "ActionState", stackError = stackError, value = value }
+	)
+	if inspectionError ~= nil then
+		error(inspectionError, 0)
+	end
+	return value, function() end, false
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/72ebc703ac8abacd44fdeb1e3d66eb28b75e5a5b/packages/react-debug-tools/src/ReactDebugHooks.js#L312-L322
+local function useDeferredValue<T>(value: T): T
+	local hook = nextHook()
+	table.insert(hookLog, {
+		primitive = "DeferredValue",
+		stackError = Error.new(),
+		value = if hook ~= nil then hook.memoizedState else value,
+	})
+	return value
+end
 local function useOpaqueIdentifier(): OpaqueIDType | void
 	local hook = nextHook() -- State
 	-- ROBLOX deviation START: simplify
@@ -509,6 +608,7 @@ end
 Dispatcher = {
 	-- ROBLOX deviation END
 	readContext = readContext,
+	use = use,
 	useCallback = useCallback,
 	useContext = useContext,
 	useEffect = useEffect,
@@ -531,13 +631,11 @@ Dispatcher = {
 	-- useState = useState,
 	useState = useState :: any,
 	-- ROBLOX deviation END
-	-- ROBLOX deviation START: not implemented
-	-- useTransition = useTransition,
-	-- ROBLOX deviation END
+	useTransition = useTransition,
+	useOptimistic = useOptimistic,
+	useActionState = useActionState,
 	useMutableSource = useMutableSource,
-	-- ROBLOX deviation START: not implemented
-	-- useDeferredValue = useDeferredValue,
-	-- ROBLOX deviation END
+	useDeferredValue = useDeferredValue,
 	useOpaqueIdentifier = useOpaqueIdentifier,
 } -- Inspect
 export type HooksNode = {
@@ -570,7 +668,13 @@ local function findSharedIndex(hookStack, rootStack, rootIndex: number)
 	-- ROBLOX deviation END
 	-- ROBLOX deviation START: don't use tostring
 	-- local source = rootStack[tostring(rootIndex)].source
-	local source = rootStack[rootIndex].source
+	-- Roblox/react-luau#28 owns this guard; remove this duplicate after that PR lands.
+	-- ROBLOX DEVIATION: Roblox can omit the ancestor frame from a parsed stack.
+	local rootFrame = rootStack[rootIndex]
+	if rootFrame == nil then
+		return -1
+	end
+	local source = rootFrame.source
 	-- ROBLOX deviation END
 	-- ROBLOX deviation START: implement LabeledStatement
 	-- 	error("not implemented") --[[ ROBLOX TODO: Unhandled node for type: LabeledStatement ]] --[[ hookSearch: for (let i = 0; i < hookStack.length; i++) {
@@ -648,7 +752,11 @@ local function isReactWrapper(functionName, primitiveName)
 		-- ROBLOX deviation END
 		return false
 	end
-	local expectedPrimitiveName = "use" .. tostring(primitiveName)
+	local expectedPrimitiveName = if primitiveName == "Context (use)"
+			or primitiveName == "Promise"
+			or primitiveName == "Unresolved"
+		then "use"
+		else "use" .. tostring(primitiveName)
 	-- ROBLOX deviation START: fix length implementation + Luau doesn't understand the guard above
 	-- if
 	-- 	functionName.length
@@ -941,7 +1049,11 @@ local function buildTree(rootStack, readHookLog: Array<any>): HooksTree
 		-- For now, the "id" of stateful hooks is just the stateful hook index.
 		-- Custom hooks have no ids, nor do non-stateful native hooks (e.g. Context, DebugValue).
 		-- ROBLOX FIXME Luau: Luau doesn't infer number | nil like it should
-		local id = if primitive == "Context" or primitive == "DebugValue"
+		local id = if primitive == "Context"
+				or primitive == "Context (use)"
+				or primitive == "DebugValue"
+				or primitive == "Promise"
+				or primitive == "Unresolved"
 			then nil
 			else POSTFIX_INCREMENT()
 		-- For the time being, only State and Reducer hooks support runtime overrides.
@@ -1067,7 +1179,7 @@ local function inspectHooks<Props>(
 		-- 	return result
 		-- end
 		-- ROBLOX deviation END
-		if not ok then
+		if not ok and result ~= SuspenseException then
 			error(result)
 		end
 	end
@@ -1142,7 +1254,7 @@ local function inspectHooksOfForwardRef<Props, Ref>(
 		-- 	return result
 		-- end
 		-- ROBLOX deviation END
-		if not ok then
+		if not ok and result ~= SuspenseException then
 			error(result)
 		end
 	end

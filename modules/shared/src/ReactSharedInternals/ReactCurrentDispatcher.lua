@@ -22,6 +22,7 @@ type Source = ReactElementType.Source
 local ReactTypes = require(script.Parent.Parent.ReactTypes)
 type RefObject = ReactTypes.RefObject
 type ReactContext<T> = ReactTypes.ReactContext<T>
+type Usable<T> = ReactTypes.Usable<T>
 -- ROBLOX deviation START: binding support
 type ReactBinding<T> = ReactTypes.ReactBinding<T>
 type ReactBindingUpdater<T> = ReactTypes.ReactBindingUpdater<T>
@@ -39,8 +40,11 @@ type MutableSourceGetSnapshotFn<Source, Snapshot> = ReactTypes.MutableSourceGetS
 
 type BasicStateAction<S> = ((S) -> S) | S
 type Dispatch<A> = (A) -> ()
+type StartTransition = ReactTypes.StartTransition
+type Thenable<T> = ReactTypes.Thenable<T>
 
 export type Dispatcher = {
+	use: <T>(usable: Usable<T>) -> T,
 	readContext: <T>(
 		context: ReactContext<T>,
 		observedBits: nil | number | boolean
@@ -77,9 +81,15 @@ export type Dispatcher = {
 		deps: Array<any> | nil
 	) -> (),
 	useDebugValue: <T>(value: T, formatterFn: ((value: T) -> any)?) -> (),
-	-- ROBLOX TODO: make these non-optional and implement them in the dispatchers
-	useDeferredValue: (<T>(value: T) -> T)?,
-	useTransition: (() -> ((() -> ()) -> (), boolean))?, -- ROBLOX deviation: Luau doesn't support jagged array types [(() -> ()) -> (), boolean],
+	useDeferredValue: <T>(value: T) -> T,
+	-- ROBLOX deviation: Luau represents React's tuple as multiple return values.
+	useTransition: () -> (boolean, StartTransition),
+	useOptimistic: <S, A>(passthrough: S, reducer: ((S, A) -> S)?) -> (S, Dispatch<A>),
+	useActionState: <S, P>(
+		action: (S, P) -> S | Thenable<S>,
+		initialState: S,
+		permalink: string?
+	) -> (S, Dispatch<P>, boolean),
 	useMutableSource: <Source, Snapshot>(
 		source: MutableSource<Source>,
 		getSnapshot: MutableSourceGetSnapshotFn<Source, Snapshot>,

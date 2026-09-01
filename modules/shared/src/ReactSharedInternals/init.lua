@@ -42,6 +42,8 @@ local IsSomeRendererActing = require(script.IsSomeRendererActing)
 local ReactSharedInternals = {
 	ReactCurrentDispatcher = ReactCurrentDispatcher,
 	ReactCurrentBatchConfig = ReactCurrentBatchConfig,
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react/src/ReactSharedInternalsClient.js#L28
+	onStartTransitionFinish = nil :: ((any, any) -> ())?,
 	ReactCurrentOwner = ReactCurrentOwner,
 	IsSomeRendererActing = IsSomeRendererActing,
 	-- ROBLOX deviation: Luau type checking requires us to have a consistent export shape regardless of __DEV__

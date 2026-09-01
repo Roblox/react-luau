@@ -745,6 +745,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 		end
 	end
 
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/e7b255341b059b4e2a109847395d0d0ba2633999/packages/react-noop-renderer/src/createReactNoop.js#L688-L705
 	local function getChildrenAsJSX(root)
 		local children = childToJSX(getChildren(root))
 		if children == nil then
@@ -760,7 +761,7 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				type = REACT_FRAGMENT_TYPE,
 				key = nil,
 				ref = nil,
-				props = { children },
+				props = { children = children },
 				_owner = nil,
 				_store = store,
 			}
@@ -791,6 +792,9 @@ local function createReactNoop(reconciler, useMutation: boolean)
 	-- 	return children
 	-- }
 
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-noop-renderer/src/createReactNoop.js#L1147-L1150
+	local function onRecoverableError(_error, _errorInfo) end
+
 	local idCounter = 0
 
 	local ReactNoop
@@ -819,22 +823,48 @@ local function createReactNoop(reconciler, useMutation: boolean)
 					children = {},
 				}
 				rootContainers[rootID] = container
-				root = NoopRenderer.createContainer(container, tag, false)
+				root = NoopRenderer.createContainer(
+					container,
+					tag,
+					false,
+					nil,
+					-- ROBLOX DEVIATION: Preserve the React 17 internal renderer's
+					-- synchronous throw and legacy console-reporting contract.
+					NoopRenderer.legacyDefaultOnUncaughtError,
+					nil,
+					onRecoverableError
+				)
 				roots[rootID] = root
 			end
 			return root.current.stateNode.containerInfo
 		end,
 
 		-- TODO: Replace ReactNoop.render with createRoot + root.render
-		createRoot = function()
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-noop-renderer/src/createReactNoop.js#L1217-L1256
+		createRoot = function(options)
 			local container = {
 				rootID = tostring(idCounter),
 				pendingChildren = {},
 				children = {},
 			}
 			idCounter += 1
-			local fiberRoot =
-				NoopRenderer.createContainer(container, ConcurrentRoot, false, nil)
+			local fiberRoot = NoopRenderer.createContainer(
+				container,
+				ConcurrentRoot,
+				false,
+				nil,
+				-- ROBLOX DEVIATION: Preserve the React 17 internal renderer default
+				-- while still honoring React 19's explicit uncaught handler option.
+				if options ~= nil and options.onUncaughtError ~= nil
+					then options.onUncaughtError
+					else NoopRenderer.legacyDefaultOnUncaughtError,
+				if options ~= nil then options.onCaughtError else nil,
+				-- ROBLOX DEVIATION: Unlike upstream's noop renderer, React-Luau
+				-- honors the supplied recoverable-error handler for parity with roots.
+				if options ~= nil and options.onRecoverableError ~= nil
+					then options.onRecoverableError
+					else onRecoverableError
+			)
 			return {
 				_Scheduler = Scheduler,
 				render = function(children)
@@ -856,8 +886,17 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				children = {},
 			}
 			idCounter += 1
-			local fiberRoot =
-				NoopRenderer.createContainer(container, BlockingRoot, false, nil)
+			local fiberRoot = NoopRenderer.createContainer(
+				container,
+				BlockingRoot,
+				false,
+				nil,
+				-- ROBLOX DEVIATION: Preserve the React 17 internal renderer's
+				-- synchronous throw and legacy console-reporting contract.
+				NoopRenderer.legacyDefaultOnUncaughtError,
+				nil,
+				onRecoverableError
+			)
 			return {
 				_Scheduler = Scheduler,
 				render = function(children)
@@ -879,8 +918,17 @@ local function createReactNoop(reconciler, useMutation: boolean)
 				children = {},
 			}
 			idCounter += 1
-			local fiberRoot =
-				NoopRenderer.createContainer(container, LegacyRoot, false, nil)
+			local fiberRoot = NoopRenderer.createContainer(
+				container,
+				LegacyRoot,
+				false,
+				nil,
+				-- ROBLOX DEVIATION: Preserve the React 17 internal renderer's
+				-- synchronous throw and legacy console-reporting contract.
+				NoopRenderer.legacyDefaultOnUncaughtError,
+				nil,
+				onRecoverableError
+			)
 			return {
 				_Scheduler = Scheduler,
 				render = function(children)

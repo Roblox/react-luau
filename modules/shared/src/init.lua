@@ -29,6 +29,9 @@ local ErrorHandling = require(script["ErrorHandling.roblox"])
 
 -- Re-export all top-level public types
 export type ReactEmpty = ReactTypes.ReactEmpty
+export type BatchConfigTransition = ReactTypes.BatchConfigTransition
+export type StartTransitionOptions = ReactTypes.StartTransitionOptions
+export type StartTransition = ReactTypes.StartTransition
 export type ReactFragment = ReactTypes.ReactFragment
 export type ReactNodeList = ReactTypes.ReactNodeList
 export type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
@@ -60,6 +63,7 @@ export type MutableSourceGetVersionFn = ReactTypes.MutableSourceGetVersionFn
 export type MutableSource<Source> = ReactTypes.MutableSource<Source>
 export type Wakeable = ReactTypes.Wakeable
 export type Thenable<R> = ReactTypes.Thenable<R>
+export type Usable<T> = ReactTypes.Usable<T>
 export type Source = ReactElementType.Source
 export type ReactElement<P = Object, T = any> = ReactElementType.ReactElement<P, T>
 export type OpaqueIDType = ReactFiberHostConfig.OpaqueIDType
@@ -113,6 +117,7 @@ return {
 	-- ROBLOX deviation: Instead of re-exporting from here, Shared actually owns
 	-- these files itself
 	ReactSharedInternals = ReactSharedInternals,
+	reportGlobalError = require(script.reportGlobalError),
 	-- ROBLOX deviation: Instead of extracting these out of the reconciler and
 	-- then re-injecting the host config _into_ the reconciler, export these
 	-- from shared for easier reuse

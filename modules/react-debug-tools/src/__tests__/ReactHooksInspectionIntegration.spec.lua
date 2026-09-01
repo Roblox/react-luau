@@ -168,6 +168,48 @@ describe("ReactHooksInspectionIntegration", function()
 			},
 		})
 	end)
+	it("should inspect committed use calls for Promise and Context", function()
+		local promise = {
+			andThen = function() end,
+			status = "fulfilled",
+			value = "resolved",
+		}
+		local Context = React.createContext("context")
+		local function Foo()
+			React.use(promise)
+			React.use(Context)
+			React.useState("state")
+			return React.createElement("Frame")
+		end
+
+		local renderer = ReactTestRenderer.create(React.createElement(Foo))
+		local childFiber = renderer.root:findByType(Foo):_currentFiber()
+		local tree = ReactDebugTools.inspectHooksOfFiber(childFiber)
+
+		expect(tree).toEqual({
+			{
+				isStateEditable = false,
+				id = nil :: number | nil,
+				name = "Promise",
+				value = "resolved" :: any,
+				subHooks = {},
+			},
+			{
+				isStateEditable = false,
+				id = nil :: number | nil,
+				name = "Context (use)",
+				value = "context" :: any,
+				subHooks = {},
+			},
+			{
+				isStateEditable = true,
+				id = 1,
+				name = "State",
+				value = "state",
+				subHooks = {},
+			},
+		})
+	end)
 	it("should inspect the current state of all stateful hooks", function()
 		local outsideRef = React.createRef()
 		local function effect() end
@@ -538,14 +580,10 @@ describe("ReactHooksInspectionIntegration", function()
 			},
 		})
 	end) -- @gate experimental
-	-- ROBLOX deviation START: unstable_useTransition is not implemented
-	-- it("should support composite useTransition hook", function()
-	it.skip("should support composite useTransition hook", function()
-		-- ROBLOX deviation END
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js
+	it("should support composite useTransition hook", function()
 		local function Foo(props)
-			-- ROBLOX deviation START: not supported
-			-- React.unstable_useTransition()
-			-- ROBLOX deviation END
+			React.useTransition()
 			local memoizedValue = React.useMemo(function()
 				return "hello"
 			end, {})
@@ -585,23 +623,102 @@ describe("ReactHooksInspectionIntegration", function()
 			},
 		})
 	end) -- @gate experimental
-	-- ROBLOX deviation START: unstable_useDeferredValue not implemented
-	-- it("should support composite useDeferredValue hook", function()
-	it.skip("should support composite useDeferredValue hook", function()
-		-- ROBLOX deviation END
-		local function Foo(props)
-			-- ROBLOX deviation START: not implemented
-			-- React.unstable_useDeferredValue("abc", { timeoutMs = 500 })
-			-- ROBLOX deviation END
-			local state = React.useState(function()
-				return "hello"
-				-- ROBLOX deviation START: useState returns 2 values
-				-- end, {})[1]
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js#L2530-L2593
+	it("should support useOptimistic hook", function()
+		local function Foo()
+			local state = React.useOptimistic("abc", function(currentState)
+				return currentState
+			end)
+			React.useMemo(function()
+				return "memo"
 			end, {})
-			-- ROBLOX deviation END
-			-- ROBLOX deviation START: use Frame instead
-			-- return React.createElement("div", nil, state)
+			React.useMemo(function()
+				return "not used"
+			end, {})
 			return React.createElement("Frame", nil, state)
+		end
+		local renderer = ReactTestRenderer.create(React.createElement(Foo))
+		local childFiber = renderer.root:findByType(Foo):_currentFiber()
+		local tree = ReactDebugTools.inspectHooksOfFiber(childFiber)
+		expect(tree).toEqual({
+			{
+				id = 1,
+				isStateEditable = false,
+				name = "Optimistic",
+				value = "abc",
+				subHooks = {},
+			},
+			{
+				id = 2,
+				isStateEditable = false,
+				name = "Memo",
+				value = "memo",
+				subHooks = {},
+			},
+			{
+				id = 3,
+				isStateEditable = false,
+				name = "Memo",
+				value = "not used",
+				subHooks = {},
+			},
+		})
+	end)
+
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js#L2595-L2660
+	it("should support useActionState hook", function()
+		local function Foo()
+			local state = React.useActionState(function(value)
+				return value
+			end, 0)
+			React.useMemo(function()
+				return "memo"
+			end, {})
+			React.useMemo(function()
+				return "not used"
+			end, {})
+			return React.createElement("Frame", nil, tostring(state))
+		end
+		local renderer = ReactTestRenderer.create(React.createElement(Foo))
+		local childFiber = renderer.root:findByType(Foo):_currentFiber()
+		local tree = ReactDebugTools.inspectHooksOfFiber(childFiber)
+		expect(tree).toEqual({
+			{
+				id = 1,
+				isStateEditable = false,
+				name = "ActionState",
+				value = 0,
+				subHooks = {},
+			},
+			{
+				id = 2,
+				isStateEditable = false,
+				name = "Memo",
+				value = "memo",
+				subHooks = {},
+			},
+			{
+				id = 3,
+				isStateEditable = false,
+				name = "Memo",
+				value = "not used",
+				subHooks = {},
+			},
+		})
+	end)
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/72ebc703ac8abacd44fdeb1e3d66eb28b75e5a5b/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js#L582-L626
+	it("should support composite useDeferredValue hook", function()
+		local function Foo(props)
+			React.useDeferredValue("abc")
+			local memoizedValue = React.useMemo(function()
+				return "hello"
+			end, {})
+			React.useMemo(function()
+				return "world"
+			end, {})
+			-- ROBLOX deviation START: use Frame instead
+			-- return React.createElement("div", nil, memoizedValue)
+			return React.createElement("Frame", nil, memoizedValue)
 			-- ROBLOX deviation END
 		end
 		local renderer = ReactTestRenderer.create(React.createElement(Foo, nil))
@@ -626,9 +743,16 @@ describe("ReactHooksInspectionIntegration", function()
 				-- id = 1,
 				id = 2,
 				-- ROBLOX deviation END
-				isStateEditable = true,
-				name = "State",
+				isStateEditable = false,
+				name = "Memo",
 				value = "hello",
+				subHooks = {},
+			},
+			{
+				id = 3,
+				isStateEditable = false,
+				name = "Memo",
+				value = "world",
 				subHooks = {},
 			},
 		})
