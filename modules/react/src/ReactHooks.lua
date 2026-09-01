@@ -202,6 +202,24 @@ local function useEffect(
 end
 exports.useEffect = useEffect
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react/src/ReactHooks.js#L218-L224
+local function useEffectEvent<Args..., Return...>(callback: (Args...) -> Return...): (Args...) -> Return...
+	local dispatcher = resolveDispatcher()
+	return (dispatcher.useEffectEvent :: any)(callback)
+end
+exports.useEffectEvent = useEffectEvent
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react/src/ReactHooks.js#L109-L115
+local function useInsertionEffect(
+	-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+	create: (() -> ()) | (() -> () -> ()),
+	deps: Array<any> | nil
+): ()
+	local dispatcher = resolveDispatcher()
+	return (dispatcher.useInsertionEffect :: any)(create, deps)
+end
+exports.useInsertionEffect = useInsertionEffect
+
 --[[
 	The signature is identical to `useEffect`, but it fires synchronously after
 	all DOM mutations. Use this to read layout from the DOM and synchronously

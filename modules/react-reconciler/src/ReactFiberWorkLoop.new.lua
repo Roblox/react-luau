@@ -1197,6 +1197,11 @@ exports.getExecutionContext = function(): ExecutionContext
 	return executionContext
 end
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1871-L1874
+exports.isInvalidExecutionContextForEventFunction = function(): boolean
+	return bit32.band(executionContext, RenderContext) ~= NoContext
+end
+
 exports.flushDiscreteUpdates = function()
 	-- TODO: Should be able to flush inside batchedUpdates, but not inside `act`.
 	-- However, `act` uses `batchedUpdates`, so there's no way to distinguish
@@ -2560,7 +2565,13 @@ mod.commitBeforeMutationEffectsImpl = function(fiber: Fiber)
 		end
 	end
 
-	if bit32.band(flags, ReactFiberFlags.Snapshot) ~= ReactFiberFlags.NoFlags then
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberFlags.js#L95-L108
+	-- ROBLOX DEVIATION: This React 17 work loop retains an explicit per-fiber
+	-- before-mutation gate, so Effect Event Update work joins Snapshot here.
+	if
+		bit32.band(flags, bit32.bor(ReactFiberFlags.Snapshot, ReactFiberFlags.Update))
+		~= ReactFiberFlags.NoFlags
+	then
 		setCurrentDebugFiberInDEV(fiber)
 		commitBeforeMutationEffectOnFiber(current, fiber)
 		resetCurrentDebugFiberInDEV()

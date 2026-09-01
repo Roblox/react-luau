@@ -1,4 +1,4 @@
--- ROBLOX upstream: https://github.com/facebook/react/blob/16654436039dd8f16a63928e71081c7745872e8f/packages/react-reconciler/src/ReactHookEffectTags.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactHookEffectTags.js#L12-L20
 --!strict
 --[[*
  * Copyright (c) Facebook, Inc. and its affiliates.
@@ -13,15 +13,17 @@ export type HookFlags = number
 
 return {
 	--[[  ]]
-	NoFlags = 0b000,
+	NoFlags = 0b0000,
 
 	-- Represents whether effect should fire.
 	--[[ ]]
-	HasEffect = 0b001,
+	HasEffect = 0b0001,
 
 	-- Represents the phase in which the effect (not the clean-up) fires.
+	--[[ ]]
+	Insertion = 0b0010,
 	--[[    ]]
-	Layout = 0b010,
+	Layout = 0b0100,
 	--[[   ]]
-	Passive = 0b100,
+	Passive = 0b1000,
 }

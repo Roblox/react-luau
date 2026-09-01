@@ -89,6 +89,10 @@ export type HookType =
 	-- ROBLOX deviation: Bindings are a feature unique to Roact
 	| "useBinding"
 	| "useEffect"
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactInternalTypes.js#L51
+	| "useEffectEvent"
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactInternalTypes.js#L38
+	| "useInsertionEffect"
 	| "useLayoutEffect"
 	| "useCallback"
 	| "useMemo"

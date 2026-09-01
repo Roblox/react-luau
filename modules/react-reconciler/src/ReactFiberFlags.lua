@@ -73,8 +73,11 @@ exports.PassiveStatic = --[[                ]]
 	0b001000000000000000
 
 -- Union of side effect groupings as pertains to subtreeFlags
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberFlags.js#L95-L108
+-- ROBLOX DEVIATION: The single React-Luau build enables Effect Events, so the
+-- upstream feature-flagged Update bit is baked into this older numeric mask.
 exports.BeforeMutationMask = --[[           ]]
-	0b000000001100001010
+	0b000000001100001110
 exports.MutationMask = --[[                 ]]
 	0b000000010010011110
 exports.LayoutMask = --[[                   ]]

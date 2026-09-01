@@ -91,6 +91,7 @@ local PassiveStaticEffect = ReactFiberFlags.PassiveStatic
 local MountLayoutDevEffect = ReactFiberFlags.MountLayoutDev
 local MountPassiveDevEffect = ReactFiberFlags.MountPassiveDev
 local HookHasEffect = ReactHookEffectTags.HasEffect
+local HookInsertion = ReactHookEffectTags.Insertion
 local HookLayout = ReactHookEffectTags.Layout
 local HookPassive = ReactHookEffectTags.Passive
 local ReactFiberWorkLoop = require(script.Parent["ReactFiberWorkLoop.new"]) :: any
@@ -156,6 +157,7 @@ local FFlagReactCleanQueueOnUpdateBailout =
 
 -- deviation: common types
 type Array<T> = { [number]: T }
+type Function = (...any) -> ...any
 
 type Update<S, A> = {
 	lane: Lane,
@@ -197,8 +199,19 @@ export type Effect = {
 	next: Effect,
 }
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L239-L250
+-- ROBLOX DEVIATION: The local ref type models the initialized client value;
+-- upstream's uninitialized eventFn type field is not read by this runtime.
+export type EventFunctionPayload = {
+	ref: { impl: Function },
+	nextImpl: Function,
+}
+
 export type FunctionComponentUpdateQueue = {
 	lastEffect: Effect?,
+	-- ROBLOX DEVIATION: This React 17 queue has no v19 store-consistency or
+	-- memo-cache slots; Effect Events add only the events slot they consume.
+	events: Array<EventFunctionPayload>?,
 }
 
 type BasicStateAction<S> = ((S) -> S) | S
@@ -1228,6 +1241,7 @@ local function pushEffect(tag, create, destroy, deps)
 		-- componentUpdateQueue = createFunctionComponentUpdateQueue()
 		componentUpdateQueue = {
 			lastEffect = nil,
+			events = nil,
 		}
 		currentlyRenderingFiber.updateQueue = componentUpdateQueue
 		effect.next = effect
@@ -1360,6 +1374,75 @@ local function updateEffect(
 		end
 	end
 	updateEffectImpl(PassiveEffect, HookPassive, create, deps)
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L2703-L2755
+local function useEffectEventImpl(payload: EventFunctionPayload)
+	currentlyRenderingFiber.flags = bit32.bor(currentlyRenderingFiber.flags, UpdateEffect)
+	local componentUpdateQueue: FunctionComponentUpdateQueue =
+		currentlyRenderingFiber.updateQueue :: any
+	if componentUpdateQueue == nil then
+		-- ROBLOX DEVIATION: The existing React-Luau hot-path optimization inlines
+		-- createFunctionComponentUpdateQueue while preserving its nil fields.
+		componentUpdateQueue = {
+			lastEffect = nil,
+			events = { payload },
+		}
+		currentlyRenderingFiber.updateQueue = componentUpdateQueue
+	elseif componentUpdateQueue.events == nil then
+		componentUpdateQueue.events = { payload }
+	else
+		table.insert(componentUpdateQueue.events, payload)
+	end
+end
+
+local function mountEvent(callback)
+	local hook = mountWorkInProgressHook()
+	local ref = { impl = callback }
+	hook.memoizedState = ref
+	return function(...)
+		if ReactFiberWorkLoop.isInvalidExecutionContextForEventFunction() then
+			error(
+				Error.new(
+					"A function wrapped in useEffectEvent can't be called during rendering."
+				)
+			)
+		end
+		return ref.impl(...)
+	end
+end
+
+local function updateEvent(callback)
+	local hook = updateWorkInProgressHook()
+	local ref = hook.memoizedState
+	useEffectEventImpl({ ref = ref, nextImpl = callback })
+	return function(...)
+		if ReactFiberWorkLoop.isInvalidExecutionContextForEventFunction() then
+			error(
+				Error.new(
+					"A function wrapped in useEffectEvent can't be called during rendering."
+				)
+			)
+		end
+		return ref.impl(...)
+	end
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberHooks.new.js#L1734-L1746
+local function mountInsertionEffect(
+	-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+	create: (() -> ()) | (() -> () -> ()),
+	deps: Array<any>?
+): ()
+	mountEffectImpl(UpdateEffect, HookInsertion, create, deps)
+end
+
+local function updateInsertionEffect(
+	-- ROBLOX TODO: Luau needs union type packs for this type to translate idiomatically
+	create: (() -> ()) | (() -> () -> ()),
+	deps: Array<any>?
+): ()
+	updateEffectImpl(UpdateEffect, HookInsertion, create, deps)
 end
 
 local function mountLayoutEffect(
@@ -1932,6 +2015,8 @@ local ContextOnlyDispatcher: Dispatcher = {
 	useCallback = throwInvalidHookError :: any,
 	useContext = throwInvalidHookError :: any,
 	useEffect = throwInvalidHookError :: any,
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberHooks.new.js#L2399-L2414
+	useInsertionEffect = throwInvalidHookError :: any,
 	useImperativeHandle = throwInvalidHookError :: any,
 	useLayoutEffect = throwInvalidHookError :: any,
 	useMemo = throwInvalidHookError :: any,
@@ -1947,6 +2032,10 @@ local ContextOnlyDispatcher: Dispatcher = {
 
 	unstable_isNewReconciler = enableNewReconciler,
 }
+if ReactFeatureFlags.enableUseEffectEventHook then
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L3890-L3892
+	ContextOnlyDispatcher.useEffectEvent = throwInvalidHookError :: any
+end
 exports.ContextOnlyDispatcher = ContextOnlyDispatcher
 
 local HooksDispatcherOnMount: Dispatcher = {
@@ -1955,6 +2044,8 @@ local HooksDispatcherOnMount: Dispatcher = {
 	useCallback = mountCallback,
 	useContext = readContext,
 	useEffect = mountEffect,
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberHooks.new.js#L2427-L2443
+	useInsertionEffect = mountInsertionEffect,
 	useImperativeHandle = mountImperativeHandle,
 	useLayoutEffect = mountLayoutEffect,
 	-- ROBLOX FIXME Luau: work around 'Failed to unify type packs' error: CLI-51338
@@ -1978,6 +2069,8 @@ local HooksDispatcherOnUpdate: Dispatcher = {
 	useCallback = updateCallback,
 	useContext = readContext,
 	useEffect = updateEffect,
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberHooks.new.js#L2454-L2470
+	useInsertionEffect = updateInsertionEffect,
 	useImperativeHandle = updateImperativeHandle,
 	useLayoutEffect = updateLayoutEffect,
 	-- ROBLOX FIXME Luau: work around 'Failed to unify type packs' error: CLI-51338
@@ -2001,6 +2094,8 @@ local HooksDispatcherOnRerender: Dispatcher = {
 	useCallback = updateCallback,
 	useContext = readContext,
 	useEffect = updateEffect,
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberHooks.new.js#L2482-L2498
+	useInsertionEffect = updateInsertionEffect,
 	useImperativeHandle = updateImperativeHandle,
 	useLayoutEffect = updateLayoutEffect,
 	-- ROBLOX FIXME Luau: work around 'Failed to unify type packs' error: CLI-51338
@@ -2017,6 +2112,18 @@ local HooksDispatcherOnRerender: Dispatcher = {
 
 	unstable_isNewReconciler = enableNewReconciler,
 }
+
+if ReactFeatureFlags.enableUseEffectEventHook then
+	local effectEventDispatcher = HooksDispatcherOnMount
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L3920-L3922
+	effectEventDispatcher.useEffectEvent = mountEvent
+	effectEventDispatcher = HooksDispatcherOnUpdate
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L3950-L3952
+	effectEventDispatcher.useEffectEvent = updateEvent
+	effectEventDispatcher = HooksDispatcherOnRerender
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L3980-L3982
+	effectEventDispatcher.useEffectEvent = updateEvent
+end
 
 if __DEV__ then
 	local warnInvalidContextAccess = function()
@@ -3130,6 +3237,117 @@ if __DEV__ then
 
 		unstable_isNewReconciler = enableNewReconciler,
 	}
+
+	-- ROBLOX DEVIATION: React-Luau augments its legacy DEV dispatcher tables
+	-- after construction rather than duplicating the complete upstream tables.
+	local insertionEffectDispatcher = HooksDispatcherOnMountInDEV :: Dispatcher
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberHooks.new.js#L2571-L2579
+	insertionEffectDispatcher.useInsertionEffect = function(create, deps)
+		currentHookNameInDev = "useInsertionEffect"
+		mountHookTypesDev()
+		checkDepsAreArrayDev(deps)
+		return mountInsertionEffect(create, deps)
+	end
+	insertionEffectDispatcher = HooksDispatcherOnMountWithHookTypesInDEV :: Dispatcher
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberHooks.new.js#L2716-L2723
+	insertionEffectDispatcher.useInsertionEffect = function(create, deps)
+		currentHookNameInDev = "useInsertionEffect"
+		updateHookTypesDev()
+		return mountInsertionEffect(create, deps)
+	end
+	insertionEffectDispatcher = HooksDispatcherOnUpdateInDEV :: Dispatcher
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberHooks.new.js#L2858-L2865
+	insertionEffectDispatcher.useInsertionEffect = function(create, deps)
+		currentHookNameInDev = "useInsertionEffect"
+		updateHookTypesDev()
+		return updateInsertionEffect(create, deps)
+	end
+	insertionEffectDispatcher = HooksDispatcherOnRerenderInDEV :: Dispatcher
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberHooks.new.js#L3001-L3008
+	insertionEffectDispatcher.useInsertionEffect = function(create, deps)
+		currentHookNameInDev = "useInsertionEffect"
+		updateHookTypesDev()
+		return updateInsertionEffect(create, deps)
+	end
+	insertionEffectDispatcher = InvalidNestedHooksDispatcherOnMountInDEV :: Dispatcher
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberHooks.new.js#L3148-L3156
+	insertionEffectDispatcher.useInsertionEffect = function(create, deps)
+		currentHookNameInDev = "useInsertionEffect"
+		warnInvalidHookAccess()
+		mountHookTypesDev()
+		return mountInsertionEffect(create, deps)
+	end
+	insertionEffectDispatcher = InvalidNestedHooksDispatcherOnUpdateInDEV :: Dispatcher
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberHooks.new.js#L3307-L3315
+	insertionEffectDispatcher.useInsertionEffect = function(create, deps)
+		currentHookNameInDev = "useInsertionEffect"
+		warnInvalidHookAccess()
+		updateHookTypesDev()
+		return updateInsertionEffect(create, deps)
+	end
+	insertionEffectDispatcher = InvalidNestedHooksDispatcherOnRerenderInDEV :: Dispatcher
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberHooks.new.js#L3467-L3475
+	insertionEffectDispatcher.useInsertionEffect = function(create, deps)
+		currentHookNameInDev = "useInsertionEffect"
+		warnInvalidHookAccess()
+		updateHookTypesDev()
+		return updateInsertionEffect(create, deps)
+	end
+
+	if ReactFeatureFlags.enableUseEffectEventHook then
+		local effectEventDispatcher = HooksDispatcherOnMountInDEV :: Dispatcher
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L4173-L4182
+		effectEventDispatcher.useEffectEvent = function(callback)
+			currentHookNameInDev = "useEffectEvent"
+			mountHookTypesDev()
+			return mountEvent(callback)
+		end
+		effectEventDispatcher = HooksDispatcherOnMountWithHookTypesInDEV :: Dispatcher
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L4340-L4349
+		effectEventDispatcher.useEffectEvent = function(callback)
+			currentHookNameInDev = "useEffectEvent"
+			updateHookTypesDev()
+			return mountEvent(callback)
+		end
+		effectEventDispatcher = HooksDispatcherOnUpdateInDEV :: Dispatcher
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L4507-L4516
+		effectEventDispatcher.useEffectEvent = function(callback)
+			currentHookNameInDev = "useEffectEvent"
+			updateHookTypesDev()
+			return updateEvent(callback)
+		end
+		effectEventDispatcher = HooksDispatcherOnRerenderInDEV :: Dispatcher
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L4674-L4683
+		effectEventDispatcher.useEffectEvent = function(callback)
+			currentHookNameInDev = "useEffectEvent"
+			updateHookTypesDev()
+			return updateEvent(callback)
+		end
+		effectEventDispatcher = InvalidNestedHooksDispatcherOnMountInDEV :: Dispatcher
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L4865-L4875
+		effectEventDispatcher.useEffectEvent = function(callback)
+			currentHookNameInDev = "useEffectEvent"
+			warnInvalidHookAccess()
+			mountHookTypesDev()
+			return mountEvent(callback)
+		end
+		effectEventDispatcher = InvalidNestedHooksDispatcherOnUpdateInDEV :: Dispatcher
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L5057-L5067
+		effectEventDispatcher.useEffectEvent = function(callback)
+			currentHookNameInDev = "useEffectEvent"
+			warnInvalidHookAccess()
+			updateHookTypesDev()
+			return updateEvent(callback)
+		end
+		effectEventDispatcher = InvalidNestedHooksDispatcherOnRerenderInDEV :: Dispatcher
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L5249-L5259
+		effectEventDispatcher.useEffectEvent = function(callback)
+			currentHookNameInDev = "useEffectEvent"
+			warnInvalidHookAccess()
+			updateHookTypesDev()
+			return updateEvent(callback)
+		end
+	end
 end
 
 local function renderWithHooks<Props, SecondArg>(
