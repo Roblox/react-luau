@@ -151,8 +151,9 @@ local resetCurrentDebugFiberInDEV = ReactCurrentFiber.resetCurrentFiber
 local setCurrentDebugFiberInDEV = ReactCurrentFiber.setCurrentFiber
 local onCommitUnmount =
 	require(script.Parent["ReactFiberDevToolsHook.new"]).onCommitUnmount
-local resolveDefaultProps =
-	require(script.Parent["ReactFiberLazyComponent.new"]).resolveDefaultProps
+-- ROBLOX upstream: https://github.com/facebook/react/blob/6121c95baf590e6c4ab0ea697f4f4a07e1d898f0/packages/react-reconciler/src/ReactFiberCommitWork.js#L104-L107
+local resolveClassComponentProps =
+	require(script.Parent["ReactFiberClassComponent.new"]).resolveClassComponentProps
 local ReactProfilerTimer = require(script.Parent["ReactProfilerTimer.new"])
 local startLayoutEffectTimer = ReactProfilerTimer.startLayoutEffectTimer
 local recordPassiveEffectDuration = ReactProfilerTimer.recordPassiveEffectDuration
@@ -260,7 +261,12 @@ local nearestProfilerOnStack: Fiber | nil = nil
 -- local PossiblyWeakSet = typeof WeakSet == 'function' ? WeakSet : Set
 
 local function callComponentWillUnmountWithTimer(current, instance)
-	instance.props = current.memoizedProps
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/bc1fac0e9da23990469d328e330aafdd364759b8/packages/react-reconciler/src/ReactFiberCommitWork.js#L244-L252
+	instance.props = resolveClassComponentProps(
+		current.type,
+		current.memoizedProps,
+		current.elementType == current.type
+	)
 	instance.state = current.memoizedState
 	if
 		enableProfilerTimer
@@ -302,12 +308,32 @@ end
 
 local function safelyDetachRef(current: Fiber, nearestMountedAncestor: Fiber): ()
 	local ref = current.ref
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiberCommitWork.new.js#L278-L334
+	local refCleanup = current.refCleanup
 	if ref ~= nil then
-		if typeof(ref) == "function" then
-			-- ROBLOX performance: eliminate the __DEV__ and invokeGuardedCallback, like React 18 has done
-			local ok, error_ = xpcall(ref, describeError)
+		if typeof(refCleanup) == "function" then
+			-- ROBLOX DEVIATION: React-Luau keeps this older reconciler's untimed
+			-- ref-detach path; the upstream layout-effect profiler wrapper is not backported.
+			local ok, error_ = xpcall(refCleanup, describeError)
+			current.refCleanup = nil
+			local finishedWork = current.alternate
+			if finishedWork ~= nil then
+				finishedWork.refCleanup = nil
+			end
 			if not ok then
 				captureCommitPhaseError(current, nearestMountedAncestor, error_)
+			end
+		elseif typeof(ref) == "function" then
+			-- ROBLOX performance: eliminate the __DEV__ and invokeGuardedCallback, like React 18 has done
+			local ok, result = xpcall(ref, describeError)
+			if not ok then
+				captureCommitPhaseError(current, nearestMountedAncestor, result)
+			elseif __DEV__ and typeof(result) == "function" then
+				console.error(
+					"Unexpected return value from a callback ref in %s. "
+						.. "A callback ref should not return a function.",
+					getComponentName(current.type) or "instance"
+				)
 			end
 		else
 			-- ROBLOX FIXME Luau: next line gets Expected type table, got 'RefObject | {| [string]: any, _stringRef: string? |}' instead
@@ -349,8 +375,13 @@ local function commitBeforeMutationLifeCycles(
 				-- but instead we rely on them being set during last render.
 				-- TODO: revisit this when we implement resuming.
 				if __DEV__ then
+					-- ROBLOX upstream: https://github.com/facebook/react/blob/8a13ea0b7a4b161add410779e0abe2cd4cc230d2/packages/react-reconciler/src/ReactFiberCommitWork.js#L472-L481
+					-- ROBLOX DEVIATION: Luau cannot distinguish an absent `ref` key from
+					-- one set to nil. The same value check is used in the lifecycle and
+					-- callback warning guards below.
 					if
-						finishedWork.type == finishedWork.elementType
+						not finishedWork.type.defaultProps
+						and finishedWork.memoizedProps.ref == nil
 						and not didWarnAboutReassigningProps
 					then
 						if instance.props ~= finishedWork.memoizedProps then
@@ -377,8 +408,11 @@ local function commitBeforeMutationLifeCycles(
 				end
 				-- deviation: Call with ':' instead of '.' so that self is available
 				local snapshot = instance:getSnapshotBeforeUpdate(
-					finishedWork.elementType == finishedWork.type and prevProps
-						or resolveDefaultProps(finishedWork.type, prevProps),
+					resolveClassComponentProps(
+						finishedWork.type,
+						prevProps,
+						finishedWork.elementType == finishedWork.type
+					),
 					prevState
 				)
 				if __DEV__ then
@@ -887,7 +921,8 @@ function commitLayoutEffectsForClassComponent(finishedWork: Fiber)
 			-- TODO: revisit this when we implement resuming.
 			if __DEV__ then
 				if
-					finishedWork.type == finishedWork.elementType
+					not finishedWork.type.defaultProps
+					and finishedWork.memoizedProps.ref == nil
 					and not didWarnAboutReassigningProps
 				then
 					if instance.props ~= finishedWork.memoizedProps then
@@ -932,16 +967,19 @@ function commitLayoutEffectsForClassComponent(finishedWork: Fiber)
 				instance:componentDidMount()
 			end
 		else
-			local prevProps = finishedWork.elementType == finishedWork.type
-					and current.memoizedProps
-				or resolveDefaultProps(finishedWork.type, current.memoizedProps)
+			local prevProps = resolveClassComponentProps(
+				finishedWork.type,
+				current.memoizedProps,
+				finishedWork.elementType == finishedWork.type
+			)
 			local prevState = current.memoizedState
 			-- We could update instance props and state here,
 			-- but instead we rely on them being set during last render.
 			-- TODO: revisit this when we implement resuming.
 			if __DEV__ then
 				if
-					finishedWork.type == finishedWork.elementType
+					not finishedWork.type.defaultProps
+					and finishedWork.memoizedProps.ref == nil
 					and not didWarnAboutReassigningProps
 				then
 					if instance.props ~= finishedWork.memoizedProps then
@@ -1002,7 +1040,8 @@ function commitLayoutEffectsForClassComponent(finishedWork: Fiber)
 	if updateQueue ~= nil then
 		if __DEV__ then
 			if
-				finishedWork.type == finishedWork.elementType
+				not finishedWork.type.defaultProps
+				and finishedWork.memoizedProps.ref == nil
 				and not didWarnAboutReassigningProps
 			then
 				if instance.props ~= finishedWork.memoizedProps then
@@ -1134,7 +1173,8 @@ function commitAttachRef(finishedWork: Fiber)
 		--   instanceToUse = instance
 		-- end
 		if typeof(ref) == "function" then
-			ref(instanceToUse)
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactFiberCommitWork.new.js#L1513-L1541
+			finishedWork.refCleanup = ref(instanceToUse)
 		else
 			if __DEV__ then
 				-- ROBLOX FIXME: We won't be able to recognize a ref object by checking
@@ -1160,7 +1200,18 @@ end
 function commitDetachRef(current: Fiber)
 	local currentRef = current.ref
 	if currentRef ~= nil then
-		if typeof(currentRef) == "function" then
+		-- ROBLOX DEVIATION: React-Luau's React 17 work loop still calls this
+		-- unguarded detach path when a ref changes. Mirror safelyDetachRef's cleanup
+		-- selection and alternate nulling while retaining the existing error behavior.
+		local refCleanup = current.refCleanup
+		if typeof(refCleanup) == "function" then
+			current.refCleanup = nil
+			local finishedWork = current.alternate
+			if finishedWork ~= nil then
+				finishedWork.refCleanup = nil
+			end
+			refCleanup()
+		elseif typeof(currentRef) == "function" then
 			currentRef(nil)
 		else
 			currentRef.current = nil
