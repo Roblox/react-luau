@@ -18,13 +18,24 @@ type Thenable<T> = ReactTypes.Thenable<T>
 local __DEV__ = ReactGlobals.__DEV__
 
 -- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberThenable.js#L31-L49
--- ROBLOX DEVIATION: This client-only port always uses the development object
--- shape. The production array shape is an allocation optimization rather than
--- a behavior difference.
-export type ThenableState = {
+type ThenableStateDev = {
 	didWarnAboutUncachedPromise: boolean,
 	thenables: { Thenable<any> },
 }
+
+type ThenableStateProd = { Thenable<any> }
+
+export type ThenableState = ThenableStateDev | ThenableStateProd
+
+local function getThenablesFromState(state: ThenableState): { Thenable<any> }
+	if __DEV__ then
+		local devState = (state :: any) :: ThenableStateDev
+		return devState.thenables
+	else
+		local prodState = (state :: any) :: ThenableStateProd
+		return prodState
+	end
+end
 
 -- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberThenable.js#L51-L61
 local SuspenseException = Error.new(
@@ -39,11 +50,16 @@ local SuspenseException = Error.new(
 
 local function noop() end
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberThenable.js#L89-L102
 local function createThenableState(): ThenableState
-	return {
-		didWarnAboutUncachedPromise = false,
-		thenables = {},
-	}
+	if __DEV__ then
+		return {
+			didWarnAboutUncachedPromise = false,
+			thenables = {},
+		}
+	else
+		return {}
+	end
 end
 
 local suspendedThenable: Thenable<any>? = nil
@@ -70,17 +86,21 @@ local function trackUsedThenable<T>(
 	thenable: Thenable<T>,
 	index: number
 ): T
-	local previous = thenableState.thenables[index]
+	local trackedThenables = getThenablesFromState(thenableState)
+	local previous = trackedThenables[index]
 	if previous == nil then
-		thenableState.thenables[index] = thenable
+		trackedThenables[index] = thenable
 	elseif previous ~= thenable then
-		if __DEV__ and not thenableState.didWarnAboutUncachedPromise then
-			thenableState.didWarnAboutUncachedPromise = true
-			console.error(
-				"A component was suspended by an uncached promise. Creating "
-					.. "promises inside a Client Component or hook is not yet "
-					.. "supported, except via a Suspense-compatible library or framework."
-			)
+		if __DEV__ then
+			local thenableStateDev = (thenableState :: any) :: ThenableStateDev
+			if not thenableStateDev.didWarnAboutUncachedPromise then
+				thenableStateDev.didWarnAboutUncachedPromise = true
+				console.error(
+					"A component was suspended by an uncached promise. Creating "
+						.. "promises inside a Client Component or hook is not yet "
+						.. "supported, except via a Suspense-compatible library or framework."
+				)
+			end
 		end
 
 		thenable:andThen(noop, noop)
