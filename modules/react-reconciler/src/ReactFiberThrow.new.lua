@@ -436,9 +436,6 @@ function throwException(
 				sourceFiber.updateQueue = currentSource.updateQueue
 				sourceFiber.memoizedState = currentSource.memoizedState
 				sourceFiber.lanes = currentSource.lanes
-			else
-				sourceFiber.updateQueue = nil
-				sourceFiber.memoizedState = nil
 			end
 			attachPingListener(root, wakeable, rootRenderLanes)
 			renderDidSuspendDelayIfPossible()

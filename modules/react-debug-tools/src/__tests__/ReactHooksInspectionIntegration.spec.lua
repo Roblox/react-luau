@@ -623,10 +623,12 @@ describe("ReactHooksInspectionIntegration", function()
 			},
 		})
 	end) -- @gate experimental
-	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js#L2530-L2593
 	it("should support useOptimistic hook", function()
 		local function Foo()
-			local state = React.useOptimistic("initial")
+			local state = React.useOptimistic("abc", function(currentState)
+				return currentState
+			end)
 			React.useMemo(function()
 				return "memo"
 			end, {})
@@ -643,7 +645,7 @@ describe("ReactHooksInspectionIntegration", function()
 				id = 1,
 				isStateEditable = false,
 				name = "Optimistic",
-				value = "initial",
+				value = "abc",
 				subHooks = {},
 			},
 			{
@@ -663,10 +665,11 @@ describe("ReactHooksInspectionIntegration", function()
 		})
 	end)
 
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js#L2595-L2660
 	it("should support useActionState hook", function()
 		local function Foo()
-			local state = React.useActionState(function(previousState, increment)
-				return previousState + increment
+			local state = React.useActionState(function(value)
+				return value
 			end, 0)
 			React.useMemo(function()
 				return "memo"

@@ -1369,19 +1369,7 @@ local function pushEffect(tag, create, destroy, deps)
 	return effect
 end
 
--- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L2044-L2558
--- ROBLOX DEVIATION: This action-only thenable reader preserves the Actions
--- contract without exposing the separately owned generic `use` primitive.
-local function readActionThenable(thenable: any): any
-	if thenable.status == "fulfilled" then
-		return thenable.value
-	elseif thenable.status == "rejected" then
-		error(thenable.reason, 0)
-	else
-		error(thenable)
-	end
-end
-
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L2041-L2561
 local runActionStateAction
 
 local function notifyActionListeners(actionNode)
@@ -1603,7 +1591,7 @@ local function updateActionStateImpl<S, P>(
 	local actionQueueHook = updateWorkInProgressHook()
 	local state = if typeof(actionResult) == "table"
 			and typeof(actionResult.andThen) == "function"
-		then readActionThenable(actionResult)
+		then ReactFiberThenable.useThenable(actionResult)
 		else actionResult
 
 	local actionQueue = actionQueueHook.queue
@@ -2112,6 +2100,9 @@ local function startTransition(
 
 	dispatchOptimisticSetState(fiber, false, queue, true)
 
+	-- ROBLOX DEVIATION: The outer protected call is Luau's `finally`: callback,
+	-- thenable chaining, and both dispatch paths finish before transition restore,
+	-- while a failure from any of them is rethrown only after restoration.
 	local ok, result = pcall(function()
 		local transitionOk, transitionResult = pcall(function()
 			local returnValue = callback()
@@ -2177,7 +2168,7 @@ local function updateTransition(): (boolean, StartTransition)
 	local start: StartTransition = hook.memoizedState
 	local isPending = if typeof(booleanOrThenable) == "table"
 			and typeof(booleanOrThenable.andThen) == "function"
-		then readActionThenable(booleanOrThenable)
+		then ReactFiberThenable.useThenable(booleanOrThenable)
 		else booleanOrThenable
 	return isPending, start
 end
@@ -2188,7 +2179,7 @@ local function rerenderTransition(): (boolean, StartTransition)
 	local start: StartTransition = hook.memoizedState
 	local isPending = if typeof(booleanOrThenable) == "table"
 			and typeof(booleanOrThenable.andThen) == "function"
-		then readActionThenable(booleanOrThenable)
+		then ReactFiberThenable.useThenable(booleanOrThenable)
 		else booleanOrThenable
 	return isPending, start
 end

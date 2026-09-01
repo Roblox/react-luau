@@ -1655,6 +1655,9 @@ mod.handleError = function(root, thrownValue): ()
 			-- separate issue. Write a regression test using string refs.
 			ReactCurrentOwner.current = nil
 
+			-- ROBLOX DEVIATION: React 17 treats every HostRoot throw as fatal before
+			-- `throwException`. An entangled Action can suspend while HostRoot processes
+			-- its update queue, so non-legacy HostRoot wakeables use the suspension path.
 			local isRootWakeable = erroredWork ~= nil
 				and erroredWork.return_ == nil
 				and root.tag ~= LegacyRoot

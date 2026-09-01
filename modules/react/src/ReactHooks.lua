@@ -306,7 +306,7 @@ exports.useTransition = function(): (boolean, StartTransition)
 	return dispatcher.useTransition()
 end
 
--- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react/src/ReactHooks.js#L223-L241
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react/src/ReactHooks.js#L226-L241
 exports.useOptimistic = function<S, A>(
 	passthrough: S,
 	reducer: ((S, A) -> S)?

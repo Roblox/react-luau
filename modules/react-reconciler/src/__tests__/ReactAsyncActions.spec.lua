@@ -1,5 +1,5 @@
 --!strict
--- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/__tests__/ReactAsyncActions-test.js
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/__tests__/ReactAsyncActions-test.js#L1-L1792
 --[[*
  * Copyright (c) Meta Platforms, Inc. and affiliates.
  *
@@ -19,12 +19,10 @@ local useState
 local useTransition
 local useOptimistic
 local textCache
-local previousReportError
 
 local JestGlobals = require(Packages.Dev.JestGlobals)
 local Error = require(Packages.LuauPolyfill).Error
 local beforeEach = JestGlobals.beforeEach
-local afterEach = JestGlobals.afterEach
 local describe = JestGlobals.describe
 local it = JestGlobals.it
 local jest = JestGlobals.jest
@@ -135,21 +133,17 @@ end
 describe("ReactAsyncActions", function()
 	beforeEach(function()
 		jest.resetModules()
+		Scheduler = require(Packages.Scheduler)
+		local Shared = require(Packages.Shared)
+		Shared.reportGlobalError = function(error_)
+			Scheduler.unstable_yieldValue("reportError: " .. error_.message)
+		end
 		React = require(Packages.React)
 		ReactNoop = require(Packages.Dev.ReactNoopRenderer)
-		Scheduler = require(Packages.Scheduler)
 		useState = React.useState
 		useTransition = React.useTransition
 		useOptimistic = React.useOptimistic
 		textCache = {}
-		previousReportError = rawget(_G, "reportError")
-		rawset(_G, "reportError", function(error_)
-			Scheduler.unstable_yieldValue("reportError: " .. error_.message)
-		end)
-	end)
-
-	afterEach(function()
-		rawset(_G, "reportError", previousReportError)
 	end)
 
 	local function Text(props)
@@ -1195,10 +1189,12 @@ describe("ReactAsyncActions", function()
 			end
 
 			local function App(props)
+				-- ROBLOX DEVIATION: createElement drops nil varargs, so false preserves
+				-- the upstream empty slot and sibling identity when Updater unmounts.
 				return React.createElement(
 					React.Fragment,
 					nil,
-					if props.showUpdater then React.createElement(Updater) else nil,
+					if props.showUpdater then React.createElement(Updater) else false,
 					React.createElement(Sibling)
 				)
 			end
@@ -1269,10 +1265,12 @@ describe("ReactAsyncActions", function()
 			end
 
 			local function App(props)
+				-- ROBLOX DEVIATION: createElement drops nil varargs, so false preserves
+				-- the upstream empty slot and sibling identity when Updater unmounts.
 				return React.createElement(
 					React.Fragment,
 					nil,
-					if props.showUpdater then React.createElement(Updater) else nil,
+					if props.showUpdater then React.createElement(Updater) else false,
 					React.createElement(Sibling)
 				)
 			end
@@ -1347,10 +1345,12 @@ describe("ReactAsyncActions", function()
 			end
 
 			local function App(props)
+				-- ROBLOX DEVIATION: createElement drops nil varargs, so false preserves
+				-- the upstream empty slot and sibling identity when Updater unmounts.
 				return React.createElement(
 					React.Fragment,
 					nil,
-					if props.showUpdater then React.createElement(Updater) else nil,
+					if props.showUpdater then React.createElement(Updater) else false,
 					React.createElement(Sibling)
 				)
 			end
@@ -1422,10 +1422,12 @@ describe("ReactAsyncActions", function()
 			local function App(props)
 				local showUpdater, updateShowUpdater = useState(true)
 				setShowUpdater = updateShowUpdater
+				-- ROBLOX DEVIATION: createElement drops nil varargs, so false preserves
+				-- the upstream empty slot and text identity when Updater unmounts.
 				return React.createElement(
 					React.Fragment,
 					nil,
-					if showUpdater then React.createElement(Updater) else nil,
+					if showUpdater then React.createElement(Updater) else false,
 					React.createElement(Text, { text = props.text })
 				)
 			end

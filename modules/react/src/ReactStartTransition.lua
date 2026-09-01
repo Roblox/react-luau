@@ -17,23 +17,10 @@ local ReactTypes = require(Packages.Shared)
 local console = ReactTypes.console
 local ReactFeatureFlags = ReactTypes.ReactFeatureFlags
 local ReactSharedInternals = ReactTypes.ReactSharedInternals
+local reportGlobalError = ReactTypes.reportGlobalError
 local ReactCurrentBatchConfig = ReactSharedInternals.ReactCurrentBatchConfig
 
 export type StartTransitionOptions = ReactTypes.StartTransitionOptions
-
--- ROBLOX DEVIATION: Shared reportGlobalError is owned by the root-error
--- backport. Keep this host-aware fallback private until those branches merge.
-local function reportGlobalError(error_: any)
-	local reportError = rawget(_G, "reportError")
-	if typeof(reportError) == "function" then
-		reportError(error_)
-		return
-	end
-
-	task.defer(function()
-		error(error_, 0)
-	end)
-end
 
 local function startTransition(scope: () -> any, options: StartTransitionOptions?): ()
 	local prevTransition = ReactCurrentBatchConfig.transition

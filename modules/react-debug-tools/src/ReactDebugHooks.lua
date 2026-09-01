@@ -233,7 +233,8 @@ local function getPrimitiveStackCache(): Map<string, Array<any>>
 end
 local currentHook: nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]] | Hook =
 	nil
-local function nextHook(): nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]] | Hook
+local function nextHook(
+): nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]] | Hook
 	local hook = currentHook
 	if hook ~= nil then
 		currentHook = hook.next
@@ -510,7 +511,7 @@ local function useTransition(): (boolean, StartTransition)
 	return false, function(_callback, _options) end
 end
 
--- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/ReactDebugHooks.js#L565-L724
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/ReactDebugHooks.js#L565-L585
 local function useOptimistic<T>(passthrough: T, _reducer): (T, (any) -> ())
 	local hook = nextHook()
 	local value = if hook ~= nil then hook.memoizedState else passthrough
@@ -521,6 +522,7 @@ local function useOptimistic<T>(passthrough: T, _reducer): (T, (any) -> ())
 	return value, function() end
 end
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/ReactDebugHooks.js#L657-L725
 local function useActionState<T>(
 	_action,
 	initialState: T,

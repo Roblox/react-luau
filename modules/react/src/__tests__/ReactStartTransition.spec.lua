@@ -16,6 +16,8 @@ local ReactTestRenderer
 local act
 local useState
 local useTransition
+local ReactCurrentBatchConfig
+local reportedError
 
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Set = LuauPolyfill.Set
@@ -32,6 +34,12 @@ local SUSPICIOUS_NUMBER_OF_FIBERS_UPDATED = 10
 describe("ReactStartTransition", function()
 	beforeEach(function()
 		jest.resetModules()
+		reportedError = nil
+		local Shared = require(Packages.Shared)
+		Shared.reportGlobalError = function(error_)
+			reportedError = error_
+		end
+		ReactCurrentBatchConfig = Shared.ReactSharedInternals.ReactCurrentBatchConfig
 		React = require(Packages.React)
 		ReactTestRenderer = require(Packages.Dev.ReactTestRenderer)
 		act = ReactTestRenderer.unstable_concurrentAct
@@ -100,19 +108,12 @@ describe("ReactStartTransition", function()
 
 	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react/src/ReactStartTransition.js
 	it("reports errors thrown by global transition callbacks", function()
-		local previousReportError = rawget(_G, "reportError")
-		local reportedError = nil
-		rawset(_G, "reportError", function(error_)
-			reportedError = error_
-		end)
-
 		local succeeded, transitionError = pcall(function()
 			React.startTransition(function()
 				error("global transition failure", 0)
 			end)
 		end)
 
-		rawset(_G, "reportError", previousReportError)
 		jestExpect(succeeded).toBe(true)
 		jestExpect(transitionError).toBe(nil)
 		jestExpect(reportedError).toBe("global transition failure")
@@ -120,6 +121,8 @@ describe("ReactStartTransition", function()
 
 	it("preserves errors thrown by hook transition callbacks", function()
 		local triggerHookTransition
+		local transitionDuringCallback
+		local transitionAfterCallback = {}
 		local function Component()
 			local _, start = useTransition()
 			triggerHookTransition = start
@@ -135,10 +138,14 @@ describe("ReactStartTransition", function()
 		local hookSucceeded, hookError = pcall(function()
 			act(function()
 				triggerHookTransition(function()
+					transitionDuringCallback = ReactCurrentBatchConfig.transition
 					error("hook transition failure", 0)
 				end)
+				transitionAfterCallback = ReactCurrentBatchConfig.transition
 			end)
 		end)
+		jestExpect(transitionDuringCallback).never.toBe(nil)
+		jestExpect(transitionAfterCallback).toBe(nil)
 		jestExpect(hookSucceeded).toBe(false)
 		jestExpect(hookError).toBe("hook transition failure")
 	end)
