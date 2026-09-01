@@ -63,8 +63,8 @@ describe("refs return clean up function", function()
 
 		jestExpect(cleanUpMock).toHaveBeenCalledTimes(1)
 		jestExpect(setup).toHaveBeenCalledTimes(3)
-		-- ROBLOX DEVIATION: Jest-Lua records an explicit nil argument as its nil sentinel.
-		jestExpect(tostring(setup.mock.calls[3][1])).toBe("Symbol($$nil)")
+		-- ROBLOX DEVIATION: Jest-Lua's mock matcher preserves explicit nil arguments.
+		jestExpect(setup).toHaveBeenNthCalledWith(3, nil)
 
 		cleanUpMock, cleanUp = jest.fn()
 		setup = jest.fn()
