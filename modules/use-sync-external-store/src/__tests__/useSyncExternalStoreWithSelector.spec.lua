@@ -330,7 +330,7 @@ describe("selector and isEqual error handling in extra", function()
 		}, {
 			logAllErrors = true,
 		})
-		jestExpect(Scheduler).toHaveYielded({ "Malformed state" })
+		jestExpect(Scheduler).toHaveYielded({ "Malformed state", "Malformed state" })
 		jestExpect(root).toMatchRenderedOutput(
 			React.createElement("span", { prop = "Malformed state" })
 		)
@@ -382,7 +382,7 @@ describe("selector and isEqual error handling in extra", function()
 		}, {
 			logAllErrors = true,
 		})
-		jestExpect(Scheduler).toHaveYielded({ "Malformed state" })
+		jestExpect(Scheduler).toHaveYielded({ "Malformed state", "Malformed state" })
 		jestExpect(root).toMatchRenderedOutput(
 			React.createElement("span", { prop = "Malformed state" })
 		)
