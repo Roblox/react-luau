@@ -25,6 +25,7 @@ local JestGlobals = require(Packages.Dev.JestGlobals)
 local jestExpect = JestGlobals.expect
 local jest = JestGlobals.jest
 local waitForEvents = require(script.Parent.waitForEvents)
+local RobloxComponentProps = require(script.Parent.Parent.RobloxComponentProps)
 local beforeEach = JestGlobals.beforeEach
 local afterEach = JestGlobals.afterEach
 local it = JestGlobals.it
@@ -276,6 +277,24 @@ describe("removing tags", function()
 		jestExpect(tag2RemovedMock).toHaveBeenCalledTimes(1)
 		jestExpect(CollectionService:GetTagged("tag1")).toEqual({})
 		jestExpect(CollectionService:GetTagged("tag2")).toEqual({})
+	end)
+
+	it("should remove tags from descendants during cleanup", function()
+		local hostInstance = Instance.new("Frame")
+		local descendant = Instance.new("TextLabel")
+		descendant.Parent = hostInstance
+		hostInstance.Parent = game:GetService("Workspace")
+
+		CollectionService:AddTag(hostInstance, "tag1")
+		CollectionService:AddTag(descendant, "tag2")
+		RobloxComponentProps.cleanupHostComponent(hostInstance)
+
+		jestExpect(tag1RemovedMock).toHaveBeenCalledWith(hostInstance)
+		jestExpect(tag2RemovedMock).toHaveBeenCalledWith(descendant)
+		jestExpect(CollectionService:GetTagged("tag1")).toEqual({})
+		jestExpect(CollectionService:GetTagged("tag2")).toEqual({})
+
+		hostInstance:Destroy()
 	end)
 
 	it("should remove tags when provided an empty tag string", function()

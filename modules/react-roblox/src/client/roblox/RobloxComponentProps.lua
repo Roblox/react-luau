@@ -362,7 +362,7 @@ local function cleanupHostComponent(domElement: HostInstance)
 				instanceToBindings[descElement] = nil
 			end
 		end
-		removeAllTags(domElement)
+		removeAllTags(descElement)
 	end
 end
 
