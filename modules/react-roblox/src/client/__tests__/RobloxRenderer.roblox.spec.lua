@@ -47,6 +47,25 @@ describe("mounting instances", function()
 		jestExpect(rootInstance.Name).toBe(key)
 	end)
 
+	it("does not unhide instances when a deferred tree becomes visible", function()
+		local function renderWithMode(mode)
+			return React.createElement(React.unstable_LegacyHidden, {
+				mode = mode,
+			}, {
+				Child = React.createElement("Folder"),
+			})
+		end
+
+		reactRobloxRoot:render(renderWithMode("unstable-defer-without-hiding"))
+		Scheduler.unstable_flushAllWithoutAsserting()
+		local child = parent:FindFirstChild("Child")
+		jestExpect(child).toBeDefined()
+
+		reactRobloxRoot:render(renderWithMode("visible"))
+		Scheduler.unstable_flushAllWithoutAsserting()
+		jestExpect(parent:FindFirstChild("Child")).toBe(child)
+	end)
+
 	it("names instances with their key value using legacy key syntax", function()
 		local key = "Some Key"
 
