@@ -18,6 +18,8 @@ local Map = LuauPolyfill.Map
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
 type FiberRoot = ReactInternalTypes.FiberRoot
+type ErrorInfo = ReactInternalTypes.ErrorInfo
+type CaughtErrorInfo = ReactInternalTypes.CaughtErrorInfo
 type SuspenseHydrationCallbacks = ReactInternalTypes.SuspenseHydrationCallbacks
 local ReactRootTags = require(script.Parent.ReactRootTags)
 type RootTag = ReactRootTags.RootTag
@@ -27,6 +29,7 @@ local noTimeout = ReactFiberHostConfig.noTimeout
 local supportsHydration = ReactFiberHostConfig.supportsHydration
 local ReactFiber = require(script.Parent["ReactFiber.new"])
 local createHostRootFiber = ReactFiber.createHostRootFiber
+local ReactFiberErrorLogger = require(script.Parent.ReactFiberErrorLogger)
 local ReactFiberLane = require(script.Parent.ReactFiberLane)
 local NoLanes = ReactFiberLane.NoLanes
 local NoLanePriority = ReactFiberLane.NoLanePriority
@@ -46,7 +49,14 @@ local ConcurrentRoot = ReactRootTags.ConcurrentRoot
 
 local exports = {}
 
-local function FiberRootNode(containerInfo, tag, hydrate)
+local function FiberRootNode(
+	containerInfo,
+	tag,
+	hydrate,
+	onUncaughtError,
+	onCaughtError,
+	onRecoverableError
+)
 	-- ROBLOX performance: See if this kind of object init is faster in Luau
 	local rootNode = {
 		tag = tag,
@@ -60,6 +70,10 @@ local function FiberRootNode(containerInfo, tag, hydrate)
 		context = nil,
 		pendingContext = nil,
 		hydrate = hydrate,
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberRoot.js#L94-L96
+		onUncaughtError = onUncaughtError,
+		onCaughtError = onCaughtError,
+		onRecoverableError = onRecoverableError,
 		callbackNode = nil,
 		callbackPriority = NoLanePriority,
 		eventTimes = createLaneMap(NoLanes),
@@ -106,9 +120,22 @@ exports.createFiberRoot = function(
 	containerInfo: any,
 	tag: RootTag,
 	hydrate: boolean,
-	hydrationCallbacks: SuspenseHydrationCallbacks?
+	hydrationCallbacks: SuspenseHydrationCallbacks?,
+	onUncaughtError: ((error: any, errorInfo: ErrorInfo) -> ())?,
+	onCaughtError: ((
+		error: any,
+		errorInfo: CaughtErrorInfo
+	) -> ())?,
+	onRecoverableError: ((error: any, errorInfo: ErrorInfo) -> ())?
 ): FiberRoot
-	local root: FiberRoot = FiberRootNode(containerInfo, tag, hydrate)
+	local root: FiberRoot = FiberRootNode(
+		containerInfo,
+		tag,
+		hydrate,
+		onUncaughtError or ReactFiberErrorLogger.defaultOnUncaughtError,
+		onCaughtError or ReactFiberErrorLogger.defaultOnCaughtError,
+		onRecoverableError or ReactFiberErrorLogger.defaultOnRecoverableError
+	)
 	if enableSuspenseCallback then
 		root.hydrationCallbacks = hydrationCallbacks
 	end

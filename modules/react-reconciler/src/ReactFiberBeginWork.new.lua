@@ -1220,6 +1220,7 @@ local function updateHostRoot(current, workInProgress, renderLanes)
 	end
 	cloneUpdateQueue(current, workInProgress)
 	processUpdateQueue(workInProgress, nextProps, nil, renderLanes)
+	ReactUpdateQueue.suspendIfUpdateReadFromEntangledAsyncAction()
 	local nextState = workInProgress.memoizedState
 	-- Caution: React DevTools currently depends on this property
 	-- being called "element".

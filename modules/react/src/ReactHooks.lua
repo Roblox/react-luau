@@ -31,6 +31,7 @@ type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscr
 >
 type ReactProviderType<T> = ReactTypes.ReactProviderType<T>
 type ReactContext<T> = ReactTypes.ReactContext<T>
+type Usable<T> = ReactTypes.Usable<T>
 local ReactFiberHostConfig = require(Packages.Shared)
 type OpaqueIDType = ReactFiberHostConfig.OpaqueIDType
 
@@ -41,6 +42,8 @@ local ReactCurrentDispatcher =
 
 type BasicStateAction<S> = ((S) -> S) | S
 type Dispatch<A> = (A) -> ()
+type StartTransition = ReactTypes.StartTransition
+type Thenable<T> = ReactTypes.Thenable<T>
 
 -- ROBLOX FIXME Luau: we shouldn't need to explicitly annotate this
 local function resolveDispatcher(): Dispatcher
@@ -65,6 +68,13 @@ local function resolveDispatcher(): Dispatcher
 end
 
 local exports = {}
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react/src/ReactHooks.js#L207-L211
+local function use<T>(usable: Usable<T>): T
+	local dispatcher = resolveDispatcher()
+	return dispatcher.use(usable)
+end
+exports.use = use
 
 --[[
 	Accepts a context object (the value returned from `React.createContext`)
@@ -289,17 +299,35 @@ exports.useDebugValue = useDebugValue
 
 exports.emptyObject = {}
 
--- ROBLOX TODO: enable useTransition later
--- exports.useTransition = function(): ((() -> ()) -> (), boolean)
--- 	local dispatcher = resolveDispatcher()
--- 	return dispatcher.useTransition()
--- end
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react/src/ReactHooks.js#L164-L176
+-- ROBLOX deviation: Luau represents the tuple as multiple return values.
+exports.useTransition = function(): (boolean, StartTransition)
+	local dispatcher = resolveDispatcher()
+	return dispatcher.useTransition()
+end
 
--- ROBLOX TODO: enable useDeferredValue later
--- exports.useDeferredValue = function<T>(value: T): T
--- 	local dispatcher = resolveDispatcher()
--- 	return dispatcher.useDeferredValue(value)
--- end
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react/src/ReactHooks.js#L226-L241
+exports.useOptimistic = function<S, A>(
+	passthrough: S,
+	reducer: ((S, A) -> S)?
+): (S, Dispatch<A>)
+	local dispatcher = resolveDispatcher()
+	return dispatcher.useOptimistic(passthrough, reducer)
+end
+
+exports.useActionState = function<S, P>(
+	action: (S, P) -> S | Thenable<S>,
+	initialState: S,
+	permalink: string?
+): (S, Dispatch<P>, boolean)
+	local dispatcher = resolveDispatcher()
+	return dispatcher.useActionState(action, initialState, permalink)
+end
+
+exports.useDeferredValue = function<T>(value: T): T
+	local dispatcher = resolveDispatcher()
+	return dispatcher.useDeferredValue(value)
+end
 
 exports.useOpaqueIdentifier = function(): OpaqueIDType | nil
 	local dispatcher = resolveDispatcher()

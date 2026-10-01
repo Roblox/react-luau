@@ -162,7 +162,6 @@ local SyncLane = ReactFiberLane.SyncLane
 local SyncBatchedLane = ReactFiberLane.SyncBatchedLane
 local NoTimestamp = ReactFiberLane.NoTimestamp
 local findUpdateLane = ReactFiberLane.findUpdateLane
-local findTransitionLane = ReactFiberLane.findTransitionLane
 local findRetryLane = ReactFiberLane.findRetryLane
 local includesSomeLane = ReactFiberLane.includesSomeLane
 local isSubsetOfLanes = ReactFiberLane.isSubsetOfLanes
@@ -188,9 +187,12 @@ local markRootFinished = ReactFiberLane.markRootFinished
 local schedulerPriorityToLanePriority = ReactFiberLane.schedulerPriorityToLanePriority
 local lanePriorityToSchedulerPriority = ReactFiberLane.lanePriorityToSchedulerPriority
 local ReactFiberTransition = require(script.Parent.ReactFiberTransition)
+local ReactFiberAsyncAction = require(script.Parent.ReactFiberAsyncAction)
+local requestTransitionLane = ReactFiberAsyncAction.requestTransitionLane
+local resetCurrentEventTransitionLane =
+	ReactFiberAsyncAction.resetCurrentEventTransitionLane
 -- deviation: Use properties directly instead of localizing to avoid 200 limit
 -- local requestCurrentTransition = ReactFiberTransition.requestCurrentTransition
--- local NoTransition = ReactFiberTransition.NoTransition
 
 local ReactFiberUnwindWork = require(script.Parent["ReactFiberUnwindWork.new"]) :: any
 local unwindWork = ReactFiberUnwindWork.unwindWork
@@ -301,6 +303,13 @@ local getIsUpdatingOpaqueValueInRenderPhaseInDEV = function(): boolean?
 	return lazyInitRefs.getIsUpdatingOpaqueValueInRenderPhaseInDEVRef()
 end
 
+-- ROBLOX DEVIATION: Repeat this erased type shape instead of retaining another
+-- module local because this file is at Luau's top-level local limit.
+type CapturedValue<T> = {
+	value: T,
+	source: Fiber | nil,
+	stack: string | nil,
+}
 local createCapturedValue = require(script.Parent.ReactCapturedValue).createCapturedValue
 local pushToStack = ReactFiberStack.push
 local popFromStack = ReactFiberStack.pop
@@ -413,8 +422,6 @@ local workInProgressRootUpdatedLanes: Lanes = ReactFiberLane.NoLanes
 -- Lanes that were pinged (in an interleaved event) during this render.
 local workInProgressRootPingedLanes: Lanes = ReactFiberLane.NoLanes
 
-local mostRecentlyUpdatedRoot: FiberRoot | nil = nil
-
 -- The most recent time we committed a fallback. This lets us ensure a train
 -- model where we don't commit new loading states in too quick succession.
 local globalMostRecentFallbackTime: number = 0
@@ -440,6 +447,10 @@ end
 
 local hasUncaughtError = false
 local firstUncaughtError = nil
+-- ROBLOX DEVIATION: Store new React 19 recovery state on the predeclared module
+-- table because this file is at Luau's top-level local limit.
+mod.workInProgressRootConcurrentErrors = nil :: Array<CapturedValue<any>>?
+mod.workInProgressRootRecoverableErrors = nil :: Array<CapturedValue<any>>?
 local legacyErrorBoundariesThatAlreadyFailed: Set<any> | nil = nil
 
 local rootDoesHavePassiveEffects: boolean = false
@@ -469,7 +480,6 @@ local spawnedWorkDuringRender: nil | Array<Lane | Lanes> = nil
 -- between the first and second call.
 local currentEventTime: number = NoTimestamp
 local currentEventWipLanes: Lanes = ReactFiberLane.NoLanes
-local currentEventPendingLanes: Lanes = ReactFiberLane.NoLanes
 
 local focusedInstanceHandle: nil | Fiber = nil
 local shouldFireAfterActiveInstanceBlur: boolean = false
@@ -539,22 +549,20 @@ exports.requestUpdateLane = function(fiber: Fiber): Lane
 	-- event. Then reset the cached values once we can be sure the event is over.
 	-- Our heuristic for that is whenever we enter a concurrent work loop.
 	--
-	-- We'll do the same for `currentEventPendingLanes` below.
 	if currentEventWipLanes == ReactFiberLane.NoLanes then
 		currentEventWipLanes = workInProgressRootIncludedLanes
 	end
 
-	local isTransition = ReactFiberTransition.requestCurrentTransition()
-		~= ReactFiberTransition.NoTransition
-	if isTransition then
-		if currentEventPendingLanes ~= ReactFiberLane.NoLanes then
-			if mostRecentlyUpdatedRoot ~= nil then
-				currentEventPendingLanes = mostRecentlyUpdatedRoot.pendingLanes
-			else
-				currentEventPendingLanes = ReactFiberLane.NoLanes
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberWorkLoop.new.js#L453-L476
+	local transition = ReactFiberTransition.requestCurrentTransition()
+	if transition ~= nil then
+		if __DEV__ then
+			if transition._updatedFibers == nil then
+				transition._updatedFibers = Set.new()
 			end
+			transition._updatedFibers:add(fiber)
 		end
-		return findTransitionLane(currentEventWipLanes, currentEventPendingLanes)
+		return requestTransitionLane(transition)
 	end
 
 	-- TODO: Remove this dependency on the Scheduler priority.
@@ -723,12 +731,6 @@ exports.scheduleUpdateOnFiber = function(
 		mod.schedulePendingInteractions(root, lane)
 	end
 
-	-- We use this when assigning a lane for a transition inside
-	-- `requestUpdateLane`. We assume it's the same as the root being updated,
-	-- since in the common case of a single root app it probably is. If it's not
-	-- the same root, then it's not a huge deal, we just might batch more stuff
-	-- together more than necessary.
-	mostRecentlyUpdatedRoot = root
 	return root
 end
 
@@ -867,6 +869,23 @@ ensureRootIsScheduled = function(root: FiberRoot, currentTime: number)
 	root.callbackNode = newCallbackNode
 end
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1256-L1328
+local function recoverFromConcurrentError(root: FiberRoot, errorRetryLanes: Lanes)
+	local errorsFromFirstAttempt = mod.workInProgressRootConcurrentErrors
+	mod.workInProgressRootConcurrentErrors = nil
+	mod.workInProgressRootRecoverableErrors = nil
+
+	-- ROBLOX DEVIATION: React 17 callers perform hydration fallback before this
+	-- helper and have no uncached-thenable ping-listener state to handle here.
+	local exitStatus = mod.renderRootSync(root, errorRetryLanes)
+	if exitStatus ~= RootExitStatus.Errored then
+		-- ROBLOX DEVIATION: Only this recovery path populates recoverable errors
+		-- in React 17, so there is no second-attempt recoverable queue to merge.
+		mod.workInProgressRootRecoverableErrors = errorsFromFirstAttempt
+	end
+	return exitStatus
+end
+
 -- This is the entry point for every concurrent task, i.e. anything that
 -- goes through Scheduler.
 -- ROBLOX Luau FIXME: Luau needs explicit annotation with nil-able returns
@@ -875,7 +894,7 @@ mod.performConcurrentWorkOnRoot = function(root): (() -> ...any) | nil
 	-- event time. The next update will compute a new event time.
 	currentEventTime = NoTimestamp
 	currentEventWipLanes = ReactFiberLane.NoLanes
-	currentEventPendingLanes = ReactFiberLane.NoLanes
+	resetCurrentEventTransitionLane()
 
 	invariant(
 		bit32.band(executionContext, bit32.bor(RenderContext, CommitContext)) == NoContext,
@@ -941,7 +960,7 @@ mod.performConcurrentWorkOnRoot = function(root): (() -> ...any) | nil
 			-- attempt, we'll give up and commit the resulting tree.
 			lanes = getLanesToRetrySynchronouslyOnError(root)
 			if lanes ~= ReactFiberLane.NoLanes then
-				exitStatus = mod.renderRootSync(root, lanes)
+				exitStatus = recoverFromConcurrentError(root, lanes)
 			end
 		end
 
@@ -988,6 +1007,7 @@ function shouldForceFlushFallbacksInDEV()
 end
 
 mod.finishConcurrentRender = function(root, exitStatus, lanes)
+	local recoverableErrors = mod.workInProgressRootRecoverableErrors
 	if
 		exitStatus == RootExitStatus.Incomplete
 		or exitStatus == RootExitStatus.FatalErrored
@@ -999,7 +1019,7 @@ mod.finishConcurrentRender = function(root, exitStatus, lanes)
 	elseif exitStatus == RootExitStatus.Errored then
 		-- We should have already attempted to retry this tree. If we reached
 		-- this point, it errored again. Commit it.
-		mod.commitRoot(root)
+		mod.commitRoot(root, recoverableErrors)
 	elseif exitStatus == RootExitStatus.Suspended then
 		mod.markRootSuspended(root, lanes)
 
@@ -1037,13 +1057,13 @@ mod.finishConcurrentRender = function(root, exitStatus, lanes)
 				-- lower priority work to do. Instead of committing the fallback
 				-- immediately, wait for more data to arrive.
 				root.timeoutHandle = ReactFiberHostConfig.scheduleTimeout(function()
-					return mod.commitRoot(root)
+					return mod.commitRoot(root, recoverableErrors)
 				end, msUntilTimeout)
 				return
 			end
 		end
 		-- The work expired. Commit immediately.
-		mod.commitRoot(root)
+		mod.commitRoot(root, recoverableErrors)
 	elseif exitStatus == RootExitStatus.SuspendedWithDelay then
 		mod.markRootSuspended(root, lanes)
 
@@ -1072,16 +1092,16 @@ mod.finishConcurrentRender = function(root, exitStatus, lanes)
 				-- Instead of committing the fallback immediately, wait for more data
 				-- to arrive.
 				root.timeoutHandle = ReactFiberHostConfig.scheduleTimeout(function()
-					return mod.commitRoot(root)
+					return mod.commitRoot(root, recoverableErrors)
 				end, msUntilTimeout)
 				return
 			end
 		end
 		-- Commit the placeholder.
-		mod.commitRoot(root)
+		mod.commitRoot(root, recoverableErrors)
 	elseif exitStatus == RootExitStatus.Completed then
 		-- The work completed. Ready to commit.
-		mod.commitRoot(root)
+		mod.commitRoot(root, recoverableErrors)
 	else
 		invariant(false, "Unknown root exit status.")
 	end
@@ -1155,7 +1175,7 @@ mod.performSyncWorkOnRoot = function(root)
 		-- attempt, we'll give up and commit the resulting tree.
 		lanes = getLanesToRetrySynchronouslyOnError(root)
 		if lanes ~= ReactFiberLane.NoLanes then
-			exitStatus = mod.renderRootSync(root, lanes)
+			exitStatus = recoverFromConcurrentError(root, lanes)
 		end
 	end
 
@@ -1172,7 +1192,7 @@ mod.performSyncWorkOnRoot = function(root)
 	local finishedWork: Fiber = root.current.alternate :: any
 	root.finishedWork = finishedWork
 	root.finishedLanes = lanes
-	mod.commitRoot(root)
+	mod.commitRoot(root, mod.workInProgressRootRecoverableErrors)
 
 	-- Before exiting, make sure there's a callback scheduled for the next
 	-- pending level.
@@ -1599,6 +1619,8 @@ mod.prepareFreshStack = function(root: FiberRoot, lanes: Lanes)
 	workInProgressRootSkippedLanes(ReactFiberLane.NoLanes)
 	workInProgressRootUpdatedLanes = ReactFiberLane.NoLanes
 	workInProgressRootPingedLanes = ReactFiberLane.NoLanes
+	mod.workInProgressRootConcurrentErrors = nil
+	mod.workInProgressRootRecoverableErrors = nil
 
 	if ReactFeatureFlags.enableSchedulerTracing then
 		spawnedWorkDuringRender = nil
@@ -1610,6 +1632,17 @@ mod.prepareFreshStack = function(root: FiberRoot, lanes: Lanes)
 end
 
 mod.handleError = function(root, thrownValue): ()
+	-- ROBLOX DEVIATION: Keep this require off the module scope because this file
+	-- is at Luau's top-level local limit.
+	local ReactFiberThenable = require(script.Parent.ReactFiberThenable)
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L2230-L2245
+	-- ROBLOX DEVIATION: React 17 has no immediate replay state machine. Convert
+	-- the opaque exception before the existing unwind, Suspense capture, and
+	-- ping path; cached Promise status carries the result into the retry.
+	if thrownValue == ReactFiberThenable.SuspenseException then
+		thrownValue = ReactFiberThenable.getSuspendedThenable()
+	end
+
 	while true do
 		local erroredWork = workInProgress
 		-- ROBLOX FIXME Luau: CLI-49835, "Function only returns 1 value, 2 are required"
@@ -1622,7 +1655,17 @@ mod.handleError = function(root, thrownValue): ()
 			-- separate issue. Write a regression test using string refs.
 			ReactCurrentOwner.current = nil
 
-			if erroredWork == nil or erroredWork.return_ == nil then
+			-- ROBLOX DEVIATION: React 17 treats every HostRoot throw as fatal before
+			-- `throwException`. An entangled Action can suspend while HostRoot processes
+			-- its update queue, so non-legacy HostRoot wakeables use the suspension path.
+			local isRootWakeable = erroredWork ~= nil
+				and erroredWork.return_ == nil
+				and root.tag ~= LegacyRoot
+				and typeof(thrownValue) == "table"
+				and typeof(thrownValue.andThen) == "function"
+			if
+				erroredWork == nil or (erroredWork.return_ == nil and not isRootWakeable)
+			then
 				-- Expected to be working on a non-root fiber. This is a fatal error
 				-- because there's no ancestor that can handle it; the root is
 				-- supposed to capture all errors that weren't caught by an error
@@ -1658,15 +1701,15 @@ mod.handleError = function(root, thrownValue): ()
 				)
 			end
 
-			-- ROBLOX deviation, we pass in onUncaughtError and renderDidError here since throwException can't call them due to a require cycle
+			-- ROBLOX deviation: pass Work Loop callbacks to avoid the dependency cycle.
 			throwException(
 				root,
 				(erroredWork :: Fiber).return_,
 				erroredWork :: Fiber,
 				thrownValue,
 				workInProgressRootRenderLanes,
-				exports.onUncaughtError,
-				exports.renderDidError
+				exports.renderDidError,
+				exports.renderDidSuspendDelayIfPossible
 			)
 			mod.completeUnitOfWork(erroredWork)
 		end)
@@ -1766,9 +1809,14 @@ exports.renderDidSuspendDelayIfPossible = function(): ()
 	end
 end
 
-exports.renderDidError = function()
+exports.renderDidError = function(errorInfo: CapturedValue<any>)
 	if workInProgressRootExitStatus ~= RootExitStatus.Completed then
 		workInProgressRootExitStatus = RootExitStatus.Errored
+	end
+	if mod.workInProgressRootConcurrentErrors == nil then
+		mod.workInProgressRootConcurrentErrors = { errorInfo }
+	else
+		table.insert(mod.workInProgressRootConcurrentErrors, errorInfo)
 	end
 end
 
@@ -2100,12 +2148,12 @@ mod.completeUnitOfWork = function(unitOfWork: Fiber)
 	end
 end
 
-mod.commitRoot = function(root)
+mod.commitRoot = function(root, recoverableErrors: Array<CapturedValue<any>>?)
 	local renderPriorityLevel = getCurrentPriorityLevel()
 	runWithPriority(ImmediateSchedulerPriority, function()
 		-- ROBLOX deviation: RobloxReactProfiling
 		RobloxReactProfiling.profileCommitBefore()
-		local ret = mod.commitRootImpl(root, renderPriorityLevel)
+		local ret = mod.commitRootImpl(root, recoverableErrors, renderPriorityLevel)
 		RobloxReactProfiling.profileCommitAfter()
 		return ret
 	end)
@@ -2113,7 +2161,11 @@ mod.commitRoot = function(root)
 end
 
 -- ROBLOX Luau FIXME: Luau doesn't infer root as FiberRoot via the callgraph from ensureRootIsScheduled(root: FiberRoot)
-mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
+mod.commitRootImpl = function(
+	root: FiberRoot,
+	recoverableErrors: Array<CapturedValue<any>>?,
+	renderPriorityLevel
+)
 	repeat
 		-- `flushPassiveEffects` will call `flushSyncUpdateQueue` at the end, which
 		-- means `flushPassiveEffects` will sometimes result in additional
@@ -2456,11 +2508,19 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
 	-- additional work on this root is scheduled.
 	ensureRootIsScheduled(root, now())
 
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L4089-L4108
+	if recoverableErrors ~= nil then
+		for _, recoverableError in recoverableErrors do
+			root.onRecoverableError(recoverableError.value, {
+				componentStack = recoverableError.stack,
+			})
+		end
+	end
+
 	if hasUncaughtError then
 		hasUncaughtError = false
 		local error_ = firstUncaughtError
 		firstUncaughtError = nil
-		-- ROBLOX FIXME: we lose the original stack trace when we re-throw this way
 		error(error_)
 	end
 
@@ -3081,20 +3141,19 @@ exports.markLegacyErrorBoundaryAsFailed = function(instance)
 	end
 end
 
--- ROBLOX TODO: this function and the related fields should be extracted/relocated to break a cycle
-local function prepareToThrowUncaughtError(error_)
+-- ROBLOX DEVIATION: Internal React 17 renderers retain their synchronous throw
+-- and component-stack logging contracts while public roots use React 19 global reporting.
+exports.legacyDefaultOnUncaughtError = function(error_, errorInfo)
 	if not hasUncaughtError then
 		hasUncaughtError = true
 		firstUncaughtError = error_
 	end
+	require(script.Parent.ReactFiberErrorLogger).defaultOnCaughtError(error_, errorInfo)
 end
-exports.onUncaughtError = prepareToThrowUncaughtError
 
 captureCommitPhaseErrorOnRoot = function(rootFiber: Fiber, sourceFiber: Fiber, error_)
 	local errorInfo = createCapturedValue(error_, sourceFiber)
-	-- ROBLOX deviation: parameterize method onUncaughtError to avoid circular dependency
-	local update =
-		createRootErrorUpdate(rootFiber, errorInfo, SyncLane, exports.onUncaughtError)
+	local update = createRootErrorUpdate(rootFiber.stateNode, errorInfo, SyncLane)
 	enqueueUpdate(rootFiber, update)
 	local eventTime = exports.requestEventTime()
 	local root = mod.markUpdateLaneFromFiberToRoot(rootFiber, SyncLane)
@@ -3145,11 +3204,17 @@ exports.captureCommitPhaseError = function(
 					)
 				then
 					local errorInfo = createCapturedValue(error_, sourceFiber)
-					local update = createClassErrorUpdate(fiber, errorInfo, SyncLane)
+					local update = createClassErrorUpdate(SyncLane)
 					enqueueUpdate(fiber, update)
 					local eventTime = exports.requestEventTime()
 					local root = mod.markUpdateLaneFromFiberToRoot(fiber, SyncLane)
 					if root ~= nil then
+						ReactFiberThrow.initializeClassErrorUpdate(
+							update,
+							root,
+							fiber,
+							errorInfo
+						)
 						markRootUpdated(root, SyncLane, eventTime)
 						ensureRootIsScheduled(root, eventTime)
 						mod.schedulePendingInteractions(root, SyncLane)
@@ -3477,13 +3542,19 @@ if __DEV__ and ReactFeatureFlags.replayFailedUnitOfWorkWithInvokeGuardedCallback
 			xpcall(originalBeginWork, describeError, current, unitOfWork, lanes)
 		if not ok then
 			local originalError = result
+			-- ROBLOX DEVIATION: Keep this require off the module scope because this
+			-- file is at Luau's top-level local limit.
+			local ReactFiberThenable = require(script.Parent.ReactFiberThenable)
 
 			if
 				originalError ~= nil
 				and typeof(originalError) == "table"
-				and typeof(originalError.andThen) == "function"
+				and (
+					typeof(originalError.andThen) == "function"
+					or originalError == ReactFiberThenable.SuspenseException
+				)
 			then
-				-- Don't replay promises. Treat everything else like an error.
+				-- Don't replay promises or use's opaque suspension exception.
 				error(originalError)
 			end
 

@@ -81,6 +81,12 @@ export type RootType = {
 }
 
 export type RootOptions = {
+	onUncaughtError: ((error: any, errorInfo: { componentStack: string? }) -> ())?,
+	onCaughtError: ((
+		error: any,
+		errorInfo: { componentStack: string?, errorBoundary: any? }
+	) -> ())?,
+	onRecoverableError: ((error: any, errorInfo: { componentStack: string? }) -> ())?,
 	hydrate: boolean?,
 	hydrationOptions: {
 		onHydrated: (suspenseNode: any) -> ()?,

@@ -21,6 +21,7 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
 local Error = LuauPolyfill.Error
 local Object = LuauPolyfill.Object
+local Set = LuauPolyfill.Set
 
 local __DEV__ = ReactGlobals.__DEV__ :: boolean
 
@@ -33,6 +34,8 @@ local console = require(Packages.Shared).console
 
 local ReactTypes = require(Packages.Shared)
 type ReactContext<T> = ReactTypes.ReactContext<T>
+type Thenable<T> = ReactTypes.Thenable<T>
+type Usable<T> = ReactTypes.Usable<T>
 type ReactBinding<T> = ReactTypes.ReactBinding<T>
 type ReactBindingUpdater<T> = ReactTypes.ReactBindingUpdater<T>
 type MutableSource<T> = ReactTypes.MutableSource<T>
@@ -44,6 +47,8 @@ type MutableSourceSubscribeFn<Source, Snapshot> = ReactTypes.MutableSourceSubscr
 	Source,
 	Snapshot
 >
+type StartTransition = ReactTypes.StartTransition
+type StartTransitionOptions = ReactTypes.StartTransitionOptions
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
@@ -65,22 +70,23 @@ local ReactFeatureFlags = require(Packages.Shared).ReactFeatureFlags
 local enableDebugTracing: boolean? = ReactFeatureFlags.enableDebugTracing
 local enableSchedulingProfiler: boolean? = ReactFeatureFlags.enableSchedulingProfiler
 local enableNewReconciler: boolean? = ReactFeatureFlags.enableNewReconciler
--- local decoupleUpdatePriorityFromScheduler = ReactFeatureFlags.decoupleUpdatePriorityFromScheduler
+local enableTransitionTracing: boolean = ReactFeatureFlags.enableTransitionTracing
 local enableDoubleInvokingEffects = ReactFeatureFlags.enableDoubleInvokingEffects
 
 -- local ReactTypeOfMode = require(script.Parent.ReactTypeOfMode)
 local DebugTracingMode = require(script.Parent.ReactTypeOfMode).DebugTracingMode
 local NoLane = ReactFiberLane.NoLane
 local NoLanes = ReactFiberLane.NoLanes
--- local InputContinuousLanePriority = ReactFiberLane.InputContinuousLanePriority
+local SyncLane = ReactFiberLane.SyncLane
 local isSubsetOfLanes = ReactFiberLane.isSubsetOfLanes
 local mergeLanes = ReactFiberLane.mergeLanes
+local intersectLanes = ReactFiberLane.intersectLanes
 local removeLanes = ReactFiberLane.removeLanes
 local markRootEntangled = ReactFiberLane.markRootEntangled
 local markRootMutableRead = ReactFiberLane.markRootMutableRead
--- local getCurrentUpdateLanePriority = ReactFiberLane.getCurrentUpdateLanePriority
--- local setCurrentUpdateLanePriority = ReactFiberLane.setCurrentUpdateLanePriority
--- local higherLanePriority = ReactFiberLane.higherLanePriority
+local includesOnlyNonUrgentLanes = ReactFiberLane.includesOnlyNonUrgentLanes
+local claimNextTransitionLane = ReactFiberLane.claimNextTransitionLane
+local isTransitionLane = ReactFiberLane.isTransitionLane
 -- local DefaultLanePriority = ReactFiberLane.DefaultLanePriority
 local ReactFiberNewContext = require(script.Parent["ReactFiberNewContext.new"])
 local readContext = ReactFiberNewContext.readContext
@@ -119,12 +125,6 @@ local function is(x: any, y: any)
 end
 local markWorkInProgressReceivedUpdate =
 	require(script.Parent["ReactFiberBeginWork.new"]).markWorkInProgressReceivedUpdate :: any
--- local {
---   UserBlockingPriority,
---   NormalPriority,
---   runWithPriority,
---   getCurrentPriorityLevel,
--- } = require(script.Parent.SchedulerWithReactIntegration.new)
 local getIsHydrating =
 	require(script.Parent["ReactFiberHydrationContext.new"]).getIsHydrating
 -- local {
@@ -149,7 +149,15 @@ local markStateUpdateScheduled =
 	require(script.Parent.SchedulingProfiler).markStateUpdateScheduled
 
 local ReactCurrentDispatcher = ReactSharedInternals.ReactCurrentDispatcher
--- local ReactCurrentBatchConfig = ReactSharedInternals.ReactCurrentBatchConfig
+local ReactCurrentBatchConfig = ReactSharedInternals.ReactCurrentBatchConfig
+local ReactFiberAsyncAction = require(script.Parent.ReactFiberAsyncAction)
+local chainThenableValue = ReactFiberAsyncAction.chainThenableValue
+local peekEntangledActionLane = ReactFiberAsyncAction.peekEntangledActionLane
+local peekEntangledActionThenable = ReactFiberAsyncAction.peekEntangledActionThenable
+local requestTransitionLane = ReactFiberAsyncAction.requestTransitionLane
+
+local REACT_CONTEXT_TYPE = require(Packages.Shared).ReactSymbols.REACT_CONTEXT_TYPE
+local ReactFiberThenable = require(script.Parent.ReactFiberThenable)
 
 local FFlagReactCleanQueueOnUpdateBailout =
 	require(Packages.SafeFlags).createGetFFlag("ReactCleanQueueOnUpdateBailout")()
@@ -159,6 +167,7 @@ type Array<T> = { [number]: T }
 
 type Update<S, A> = {
 	lane: Lane,
+	revertLane: Lane,
 	action: A,
 	eagerReducer: ((S, A) -> S) | nil,
 	eagerState: S | nil,
@@ -168,16 +177,19 @@ type Update<S, A> = {
 
 type UpdateQueue<S, A> = {
 	pending: Update<S, A> | nil,
+	lanes: Lanes,
 	dispatch: ((A) -> ...any) | nil,
 	lastRenderedReducer: ((S, A) -> S) | nil,
 	lastRenderedState: S | nil,
 }
 
 local didWarnAboutMismatchedHooksForComponent
+local didWarnAboutUseWrappedInTryCatch
 local _didWarnAboutUseOpaqueIdentifier
 if __DEV__ then
 	_didWarnAboutUseOpaqueIdentifier = {}
 	didWarnAboutMismatchedHooksForComponent = {}
+	didWarnAboutUseWrappedInTryCatch = {}
 end
 
 export type Hook = {
@@ -206,6 +218,7 @@ type BasicStateAction<S> = ((S) -> S) | S
 type Dispatch<A> = (A) -> ()
 
 local exports: any = {}
+local dispatchOptimisticSetState
 
 -- These are set right before calling the component.
 local renderLanes: Lanes = NoLanes
@@ -525,6 +538,11 @@ exports.resetHooksAfterThrow = function(): ()
 	end
 
 	didScheduleRenderPhaseUpdateDuringThisPass = false
+	-- ROBLOX DEVIATION: React 17's work loop always unwinds a suspended
+	-- component instead of replaying it in place. Clear positional thenable
+	-- state on unwind; callers must pass a stable cached Promise so its
+	-- instrumented status survives the retry.
+	ReactFiberThenable.resetThenableState()
 end
 
 local function mountWorkInProgressHook(): Hook
@@ -651,6 +669,7 @@ function mountReducer<S, I, A>(
 
 	local queue: UpdateQueue<S, A> = {
 		pending = nil,
+		lanes = NoLanes,
 		dispatch = nil,
 		lastRenderedReducer = reducer,
 		lastRenderedState = initialState :: any,
@@ -677,6 +696,14 @@ function updateReducer<S, I, A>(
 	init: ((I) -> S)?
 ): (S, Dispatch<A>)
 	local hook = updateWorkInProgressHook()
+	return updateReducerImpl(hook, currentHook, reducer)
+end
+
+function updateReducerImpl<S, A>(
+	hook: Hook,
+	current: Hook,
+	reducer: (S, A) -> S
+): (S, Dispatch<A>)
 	local queue = hook.queue
 	-- ROBLOX deviation: change from invariant to avoid funtion call in hot path
 	assert(
@@ -685,8 +712,6 @@ function updateReducer<S, I, A>(
 	)
 
 	queue.lastRenderedReducer = reducer
-
-	local current: Hook = currentHook
 
 	-- The last rebase update that is NOT part of the base state.
 	local baseQueue = current.baseQueue
@@ -719,14 +744,20 @@ function updateReducer<S, I, A>(
 		queue.pending = nil
 	end
 
+	if baseQueue == nil then
+		hook.memoizedState = hook.baseState
+		queue.lanes = NoLanes
+	end
+
 	if baseQueue ~= nil then
 		-- We have a queue to process.
 		local first = baseQueue.next
-		local newState = current.baseState
+		local newState = hook.baseState
 
 		local newBaseState = nil
 		local newBaseQueueFirst = nil
 		local newBaseQueueLast = nil
+		local didReadFromEntangledAsyncAction = false
 		local update = first
 		repeat
 			local updateLane = update.lane
@@ -738,6 +769,7 @@ function updateReducer<S, I, A>(
 				-- update/state.
 				local clone: Update<S, A> = {
 					lane = updateLane,
+					revertLane = update.revertLane,
 					action = update.action,
 					eagerReducer = update.eagerReducer,
 					eagerState = update.eagerState,
@@ -759,20 +791,50 @@ function updateReducer<S, I, A>(
 				markSkippedUpdateLanes(updateLane)
 			else
 				-- This update does have sufficient priority.
+				local revertLane = update.revertLane
+				if revertLane == NoLane then
+					if newBaseQueueLast ~= nil then
+						local clone: Update<S, A> = {
+							lane = NoLane,
+							revertLane = NoLane,
+							action = update.action,
+							eagerReducer = update.eagerReducer,
+							eagerState = update.eagerState,
+							next = nil :: any,
+						}
+						newBaseQueueLast.next = clone
+						newBaseQueueLast = newBaseQueueLast.next
+					end
 
-				if newBaseQueueLast ~= nil then
+					if updateLane == peekEntangledActionLane() then
+						didReadFromEntangledAsyncAction = true
+					end
+				elseif isSubsetOfLanes(renderLanes, revertLane) then
+					update = update.next
+					if revertLane == peekEntangledActionLane() then
+						didReadFromEntangledAsyncAction = true
+					end
+					continue
+				else
 					local clone: Update<S, A> = {
-						-- This update is going to be committed so we never want uncommit
-						-- it. Using NoLane works because 0 is a subset of all bitmasks, so
-						-- this will never be skipped by the check above.
 						lane = NoLane,
+						revertLane = revertLane,
 						action = update.action,
 						eagerReducer = update.eagerReducer,
 						eagerState = update.eagerState,
 						next = nil :: any,
 					}
-					newBaseQueueLast.next = clone
-					newBaseQueueLast = newBaseQueueLast.next
+					if newBaseQueueLast == nil then
+						newBaseQueueLast = clone
+						newBaseQueueFirst = newBaseQueueLast
+						newBaseState = newState
+					else
+						newBaseQueueLast.next = clone
+						newBaseQueueLast = newBaseQueueLast.next
+					end
+					currentlyRenderingFiber.lanes =
+						mergeLanes(currentlyRenderingFiber.lanes, revertLane)
+					markSkippedUpdateLanes(revertLane)
 				end
 
 				-- Process this update.
@@ -798,6 +860,12 @@ function updateReducer<S, I, A>(
 		-- different from the current state.
 		if not is(newState, hook.memoizedState) then
 			markWorkInProgressReceivedUpdate()
+			if didReadFromEntangledAsyncAction then
+				local entangledActionThenable = peekEntangledActionThenable()
+				if entangledActionThenable ~= nil then
+					error(entangledActionThenable)
+				end
+			end
 		end
 
 		hook.memoizedState = newState
@@ -1113,6 +1181,7 @@ function useMutableSource<Source, Snapshot>(
 		-- including any interleaving updates that occur.
 		local newQueue = {
 			pending = nil,
+			lanes = NoLanes,
 			dispatch = nil,
 			lastRenderedReducer = basicStateReducer,
 			lastRenderedState = snapshot,
@@ -1185,6 +1254,7 @@ function mountState<S>(initialState: (() -> S) | S): (S, Dispatch<BasicStateActi
 	hook.memoizedState = hook.baseState
 	local queue: UpdateQueue<S, BasicStateAction<S>> = {
 		pending = nil,
+		lanes = NoLanes,
 		dispatch = nil,
 		lastRenderedReducer = nil, --basicStateReducer,
 		lastRenderedState = initialState :: any,
@@ -1210,6 +1280,58 @@ end
 
 function rerenderState<S>(initialState: (() -> S) | S): (S, Dispatch<BasicStateAction<S>>)
 	return rerenderReducer(basicStateReducer, initialState)
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L1949-L2042
+local function mountOptimistic<S, A>(passthrough: S, reducer: ((S, A) -> S)?): (S, Dispatch<A>)
+	local hook = mountWorkInProgressHook()
+	hook.memoizedState = passthrough
+	hook.baseState = passthrough
+
+	local queue: UpdateQueue<S, A> = {
+		pending = nil,
+		lanes = NoLanes,
+		dispatch = nil,
+		lastRenderedReducer = nil,
+		lastRenderedState = nil,
+	}
+	hook.queue = queue
+
+	local fiber = currentlyRenderingFiber
+	local dispatch: Dispatch<A> = function(action)
+		dispatchOptimisticSetState(fiber, true, queue, action)
+	end
+	queue.dispatch = dispatch
+	return passthrough, dispatch
+end
+
+local function updateOptimisticImpl<S, A>(
+	hook: Hook,
+	current: Hook,
+	passthrough: S,
+	reducer: ((S, A) -> S)?
+): (S, Dispatch<A>)
+	hook.baseState = passthrough
+	local resolvedReducer = reducer or basicStateReducer :: any
+	return updateReducerImpl(hook, current, resolvedReducer :: any)
+end
+
+local function updateOptimistic<S, A>(passthrough: S, reducer: ((S, A) -> S)?): (S, Dispatch<A>)
+	local hook = updateWorkInProgressHook()
+	return updateOptimisticImpl(hook, currentHook, passthrough, reducer)
+end
+
+local function rerenderOptimistic<S, A>(
+	passthrough: S,
+	reducer: ((S, A) -> S)?
+): (S, Dispatch<A>)
+	local hook = updateWorkInProgressHook()
+	if currentHook ~= nil then
+		return updateOptimisticImpl(hook, currentHook, passthrough, reducer)
+	end
+
+	hook.baseState = passthrough
+	return passthrough, hook.queue.dispatch
 end
 
 local function pushEffect(tag, create, destroy, deps)
@@ -1245,6 +1367,289 @@ local function pushEffect(tag, create, destroy, deps)
 		end
 	end
 	return effect
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L2041-L2561
+local runActionStateAction
+
+local function notifyActionListeners(actionNode)
+	for _, listener in actionNode.listeners do
+		listener()
+	end
+end
+
+local function onActionError(actionQueue, actionNode, error_)
+	local last = actionQueue.pending
+	actionQueue.pending = nil
+	if last ~= nil then
+		local first = last.next
+		repeat
+			actionNode.status = "rejected"
+			actionNode.reason = error_
+			notifyActionListeners(actionNode)
+			actionNode = actionNode.next
+		until actionNode == first
+	end
+	actionQueue.action = nil
+end
+
+local function onActionSuccess(actionQueue, actionNode, nextState)
+	actionNode.status = "fulfilled"
+	actionNode.value = nextState
+	notifyActionListeners(actionNode)
+	actionQueue.state = nextState
+
+	local last = actionQueue.pending
+	if last ~= nil then
+		local first = last.next
+		if first == last then
+			actionQueue.pending = nil
+		else
+			local nextNode = first.next
+			last.next = nextNode
+			runActionStateAction(actionQueue, nextNode)
+		end
+	end
+end
+
+local function handleActionReturnValue(actionQueue, node, returnValue)
+	if typeof(returnValue) == "table" and typeof(returnValue.andThen) == "function" then
+		returnValue:andThen(function(nextState)
+			onActionSuccess(actionQueue, node, nextState)
+		end, function(error_)
+			onActionError(actionQueue, node, error_)
+		end)
+
+		if __DEV__ and not node.isTransition then
+			console.error(
+				"An async function with useActionState was called outside of a transition. "
+					.. "This is likely not what you intended (for example, isPending will not update "
+					.. "correctly). Either call the returned function inside startTransition, or pass it "
+					.. "to an `action` or `formAction` prop."
+			)
+		end
+	else
+		onActionSuccess(actionQueue, node, returnValue)
+	end
+end
+
+runActionStateAction = function(actionQueue, node)
+	local action = node.action
+	local payload = node.payload
+	local prevState = actionQueue.state
+
+	if node.isTransition then
+		local prevTransition = ReactCurrentBatchConfig.transition
+		local currentTransition = {}
+		if __DEV__ then
+			currentTransition._updatedFibers = Set.new()
+		end
+		ReactCurrentBatchConfig.transition = currentTransition
+
+		local ok, error_ = pcall(function()
+			local returnValue = action(prevState, payload)
+			local onStartTransitionFinish = ReactSharedInternals.onStartTransitionFinish
+			if onStartTransitionFinish ~= nil then
+				onStartTransitionFinish(currentTransition, returnValue)
+			end
+			handleActionReturnValue(actionQueue, node, returnValue)
+		end)
+
+		ReactCurrentBatchConfig.transition = prevTransition
+		if __DEV__ and currentTransition._updatedFibers ~= nil then
+			if prevTransition == nil and currentTransition._updatedFibers.size > 10 then
+				console.warn(
+					"Detected a large number of updates inside startTransition. "
+						.. "If this is due to a subscription please re-write it to use React provided hooks. "
+						.. "Otherwise concurrent mode guarantees are off the table."
+				)
+			end
+			currentTransition._updatedFibers:clear()
+		end
+		if not ok then
+			onActionError(actionQueue, node, error_)
+		end
+	else
+		local ok, error_ = pcall(function()
+			local returnValue = action(prevState, payload)
+			handleActionReturnValue(actionQueue, node, returnValue)
+		end)
+		if not ok then
+			onActionError(actionQueue, node, error_)
+		end
+	end
+end
+
+local function dispatchActionState(
+	fiber: Fiber,
+	actionQueue: any,
+	setPendingState: (boolean) -> (),
+	setState: (any) -> (),
+	payload: any
+)
+	local alternate = fiber.alternate
+	if
+		fiber == currentlyRenderingFiber
+		or (alternate ~= nil and alternate == currentlyRenderingFiber)
+	then
+		error("Cannot update form state while rendering.")
+	end
+
+	local currentAction = actionQueue.action
+	if currentAction == nil then
+		return
+	end
+
+	local actionNode = {
+		payload = payload,
+		action = currentAction,
+		next = nil,
+		isTransition = ReactCurrentBatchConfig.transition ~= nil,
+		status = "pending",
+		value = nil,
+		reason = nil,
+		listeners = {},
+	}
+	actionNode.andThen = function(_self, listener)
+		table.insert(actionNode.listeners, listener)
+	end
+
+	if actionNode.isTransition then
+		setPendingState(true)
+	end
+	setState(actionNode)
+
+	local last = actionQueue.pending
+	if last == nil then
+		actionNode.next = actionNode
+		actionQueue.pending = actionNode
+		runActionStateAction(actionQueue, actionNode)
+	else
+		local first = last.next
+		actionNode.next = first
+		last.next = actionNode
+		actionQueue.pending = actionNode
+	end
+end
+
+local function actionStateReducer(_oldState, newState)
+	return newState
+end
+
+local function mountActionState<S, P>(
+	action: (S, P) -> any,
+	initialState: S,
+	_permalink: string?
+): (S, (P) -> (), boolean)
+	local _, setState = mountReducer(actionStateReducer, initialState)
+	local pendingStateHook = mountWorkInProgressHook()
+	pendingStateHook.memoizedState = false
+	pendingStateHook.baseState = false
+	local pendingStateQueue: UpdateQueue<boolean, BasicStateAction<boolean>> = {
+		pending = nil,
+		lanes = NoLanes,
+		dispatch = nil,
+		lastRenderedReducer = basicStateReducer,
+		lastRenderedState = false,
+	}
+	pendingStateHook.queue = pendingStateQueue
+
+	local fiber = currentlyRenderingFiber
+	local setPendingState = function(pendingState: boolean)
+		dispatchOptimisticSetState(fiber, false, pendingStateQueue, pendingState)
+	end
+
+	local actionQueueHook = mountWorkInProgressHook()
+	local actionQueue = {
+		state = initialState,
+		dispatch = nil,
+		action = action,
+		pending = nil,
+	}
+	local dispatch = function(payload: P)
+		dispatchActionState(fiber, actionQueue, setPendingState, setState, payload)
+	end
+	actionQueue.dispatch = dispatch
+	actionQueueHook.queue = actionQueue
+	actionQueueHook.memoizedState = action
+
+	return initialState, dispatch, false
+end
+
+local function updateActionStateImpl<S, P>(
+	stateHook: Hook,
+	currentStateHook: Hook,
+	action: (S, P) -> any,
+	_initialState: S,
+	_permalink: string?
+): (S, (P) -> (), boolean)
+	local actionResult =
+		updateReducerImpl(stateHook, currentStateHook, actionStateReducer)
+	local isPending = updateState(false)
+	-- ROBLOX DEVIATION: React 17 has no suspended-component replay dispatcher,
+	-- so traverse the queue hook before the action result can suspend.
+	local actionQueueHook = updateWorkInProgressHook()
+	local state = if typeof(actionResult) == "table"
+			and typeof(actionResult.andThen) == "function"
+		then ReactFiberThenable.useThenable(actionResult)
+		else actionResult
+
+	local actionQueue = actionQueueHook.queue
+	local dispatch = actionQueue.dispatch
+
+	local prevAction = actionQueueHook.memoizedState
+	if action ~= prevAction then
+		currentlyRenderingFiber.flags =
+			bit32.bor(currentlyRenderingFiber.flags, PassiveEffect)
+		pushEffect(bit32.bor(HookHasEffect, HookPassive), function()
+			actionQueue.action = action
+		end, nil, nil)
+	end
+
+	return state, dispatch, isPending
+end
+
+local function updateActionState<S, P>(
+	action: (S, P) -> any,
+	initialState: S,
+	permalink: string?
+): (S, (P) -> (), boolean)
+	local stateHook = updateWorkInProgressHook()
+	local currentStateHook = currentHook
+	return updateActionStateImpl(
+		stateHook,
+		currentStateHook,
+		action,
+		initialState,
+		permalink
+	)
+end
+
+local function rerenderActionState<S, P>(
+	action: (S, P) -> any,
+	initialState: S,
+	permalink: string?
+): (S, (P) -> (), boolean)
+	local stateHook = updateWorkInProgressHook()
+	local currentStateHook = currentHook
+
+	if currentStateHook ~= nil then
+		return updateActionStateImpl(
+			stateHook,
+			currentStateHook,
+			action,
+			initialState,
+			permalink
+		)
+	end
+
+	updateWorkInProgressHook()
+	local state = stateHook.memoizedState
+	local actionQueueHook = updateWorkInProgressHook()
+	local actionQueue = actionQueueHook.queue
+	local dispatch = actionQueue.dispatch
+	actionQueueHook.memoizedState = action
+	return state, dispatch, false
 end
 
 -- ROBLOX deviation: Bindings are a feature unique to Roact
@@ -1564,134 +1969,220 @@ function updateMemo<T...>(nextCreate: () -> T..., deps: Array<any> | nil): ...an
 	return unpack(nextValue)
 end
 
--- function mountDeferredValue<T>(value: T): T {
---   local [prevValue, setValue] = mountState(value)
---   mountEffect(() => {
---     local prevTransition = ReactCurrentBatchConfig.transition
---     ReactCurrentBatchConfig.transition = 1
---     try {
---       setValue(value)
---     } finally {
---       ReactCurrentBatchConfig.transition = prevTransition
---     end
---   }, [value])
---   return prevValue
--- end
+-- ROBLOX upstream: https://github.com/facebook/react/blob/22edb9f777d27369fd2c1fad378f74e237b6dfd3/packages/react-reconciler/src/ReactFiberHooks.new.js#L1933-L2001
+local function mountDeferredValue<T>(value: T): T
+	local hook = mountWorkInProgressHook()
+	hook.memoizedState = value
+	return value
+end
 
--- function updateDeferredValue<T>(value: T): T {
---   local [prevValue, setValue] = updateState(value)
---   updateEffect(() => {
---     local prevTransition = ReactCurrentBatchConfig.transition
---     ReactCurrentBatchConfig.transition = 1
---     try {
---       setValue(value)
---     } finally {
---       ReactCurrentBatchConfig.transition = prevTransition
---     end
---   }, [value])
---   return prevValue
--- end
+local updateDeferredValueImpl
 
--- function rerenderDeferredValue<T>(value: T): T {
---   local [prevValue, setValue] = rerenderState(value)
---   updateEffect(() => {
---     local prevTransition = ReactCurrentBatchConfig.transition
---     ReactCurrentBatchConfig.transition = 1
---     try {
---       setValue(value)
---     } finally {
---       ReactCurrentBatchConfig.transition = prevTransition
---     end
---   }, [value])
---   return prevValue
--- end
+local function updateDeferredValue<T>(value: T): T
+	local hook = updateWorkInProgressHook()
+	local prevValue: T = currentHook.memoizedState
+	return updateDeferredValueImpl(hook, prevValue, value)
+end
 
--- function startTransition(setPending, callback)
---   local priorityLevel = getCurrentPriorityLevel()
---   if decoupleUpdatePriorityFromScheduler)
---     local previousLanePriority = getCurrentUpdateLanePriority()
---     setCurrentUpdateLanePriority(
---       higherLanePriority(previousLanePriority, InputContinuousLanePriority),
---     )
+local function rerenderDeferredValue<T>(value: T): T
+	local hook = updateWorkInProgressHook()
+	if currentHook == nil then
+		hook.memoizedState = value
+		return value
+	else
+		local prevValue: T = currentHook.memoizedState
+		return updateDeferredValueImpl(hook, prevValue, value)
+	end
+end
 
---     runWithPriority(
---       priorityLevel < UserBlockingPriority
---         ? UserBlockingPriority
---         : priorityLevel,
---       () => {
---         setPending(true)
---       },
---     )
+updateDeferredValueImpl = function<T>(hook: Hook, prevValue: T, value: T): T
+	local shouldDeferValue = not includesOnlyNonUrgentLanes(renderLanes)
+	if shouldDeferValue then
+		if not is(value, prevValue) then
+			local deferredLane = claimNextTransitionLane()
+			currentlyRenderingFiber.lanes =
+				mergeLanes(currentlyRenderingFiber.lanes, deferredLane)
+			markSkippedUpdateLanes(deferredLane)
+			hook.baseState = true
+		end
+		return prevValue
+	else
+		if hook.baseState then
+			hook.baseState = false
+			markWorkInProgressReceivedUpdate()
+		end
+		hook.memoizedState = value
+		return value
+	end
+end
 
---     -- TODO: Can remove this. Was only necessary because we used to give
---     -- different behavior to transitions without a config object. Now they are
---     -- all treated the same.
---     setCurrentUpdateLanePriority(DefaultLanePriority)
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L3701-L3802
+dispatchOptimisticSetState = function<S, A>(
+	fiber: Fiber,
+	throwIfDuringRender: boolean,
+	queue: UpdateQueue<S, A>,
+	action: A
+): ()
+	local transition = ReactCurrentBatchConfig.transition
+	if __DEV__ and transition == nil and peekEntangledActionLane() == NoLane then
+		console.error(
+			"An optimistic state update occurred outside a transition or "
+				.. "action. To fix, move the update to an action, or wrap "
+				.. "with startTransition."
+		)
+	end
 
---     runWithPriority(
---       priorityLevel > NormalPriority ? NormalPriority : priorityLevel,
---       () => {
---         local prevTransition = ReactCurrentBatchConfig.transition
---         ReactCurrentBatchConfig.transition = 1
---         try {
---           setPending(false)
---           callback()
---         } finally {
---           if decoupleUpdatePriorityFromScheduler)
---             setCurrentUpdateLanePriority(previousLanePriority)
---           end
---           ReactCurrentBatchConfig.transition = prevTransition
---         end
---       },
---     )
---   } else {
---     runWithPriority(
---       priorityLevel < UserBlockingPriority
---         ? UserBlockingPriority
---         : priorityLevel,
---       () => {
---         setPending(true)
---       },
---     )
+	local entangledActionLane = peekEntangledActionLane()
+	local revertLane
+	if transition ~= nil then
+		revertLane = requestTransitionLane(transition)
+	elseif entangledActionLane ~= NoLane then
+		revertLane = entangledActionLane
+	else
+		revertLane = requestTransitionLane(nil)
+	end
 
---     runWithPriority(
---       priorityLevel > NormalPriority ? NormalPriority : priorityLevel,
---       () => {
---         local prevTransition = ReactCurrentBatchConfig.transition
---         ReactCurrentBatchConfig.transition = 1
---         try {
---           setPending(false)
---           callback()
---         } finally {
---           ReactCurrentBatchConfig.transition = prevTransition
---         end
---       },
---     )
---   end
--- end
+	local update: Update<S, A> = {
+		lane = SyncLane,
+		revertLane = revertLane,
+		action = action,
+		eagerReducer = nil,
+		eagerState = nil,
+		next = nil :: any,
+	}
 
--- function mountTransition(): [(() => void) => void, boolean] {
---   local [isPending, setPending] = mountState(false)
---   -- The `start` method can be stored on a ref, since `setPending`
---   -- never changes.
---   local start = startTransition.bind(null, setPending)
---   mountRef(start)
---   return [start, isPending]
--- end
+	local alternate = fiber.alternate
+	if
+		fiber == currentlyRenderingFiber
+		or (alternate ~= nil and alternate == currentlyRenderingFiber)
+	then
+		if throwIfDuringRender then
+			error("Cannot update optimistic state while rendering.")
+		elseif __DEV__ then
+			console.error("Cannot call startTransition while rendering.")
+		end
+		return
+	end
 
--- function updateTransition(): [(() => void) => void, boolean] {
---   local [isPending] = updateState(false)
---   local startRef = updateRef()
---   local start: (() => void) => void = (startRef.current: any)
---   return [start, isPending]
--- end
+	local pending = queue.pending
+	if pending == nil then
+		update.next = update
+	else
+		update.next = pending.next
+		pending.next = update
+	end
+	queue.pending = update
 
--- function rerenderTransition(): [(() => void) => void, boolean] {
---   local [isPending] = rerenderState(false)
---   local startRef = updateRef()
---   local start: (() => void) => void = (startRef.current: any)
---   return [start, isPending]
--- end
+	local eventTime = requestEventTime()
+	scheduleUpdateOnFiber(fiber, SyncLane, eventTime)
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L3090-L3235
+local function startTransition(
+	fiber: Fiber,
+	queue: UpdateQueue<any, BasicStateAction<any>>,
+	callback: () -> any,
+	options: StartTransitionOptions?
+): ()
+	local prevTransition = ReactCurrentBatchConfig.transition
+	local currentTransition = {}
+	ReactCurrentBatchConfig.transition = currentTransition
+
+	if enableTransitionTracing and options ~= nil and options.name ~= nil then
+		currentTransition.name = options.name
+		-- ROBLOX deviation: Transition tracing clocks are not available in React Lua.
+		currentTransition.startTime = -1
+	end
+
+	if __DEV__ then
+		currentTransition._updatedFibers = Set.new()
+	end
+
+	dispatchOptimisticSetState(fiber, false, queue, true)
+
+	-- ROBLOX DEVIATION: The outer protected call is Luau's `finally`: callback,
+	-- thenable chaining, and both dispatch paths finish before transition restore,
+	-- while a failure from any of them is rethrown only after restoration.
+	local ok, result = pcall(function()
+		local transitionOk, transitionResult = pcall(function()
+			local returnValue = callback()
+			local onStartTransitionFinish = ReactSharedInternals.onStartTransitionFinish
+			if onStartTransitionFinish ~= nil then
+				onStartTransitionFinish(currentTransition, returnValue)
+			end
+
+			local finishedState = if typeof(returnValue) == "table"
+					and typeof(returnValue.andThen) == "function"
+				then chainThenableValue(returnValue, false)
+				else false
+			local dispatch = queue.dispatch
+			assert(dispatch ~= nil, "Expected a transition state queue dispatch")
+			dispatch(finishedState)
+		end)
+
+		if not transitionOk then
+			local rejectedThenable = {
+				status = "rejected",
+				reason = transitionResult,
+				andThen = function() end,
+			}
+			local dispatch = queue.dispatch
+			assert(dispatch ~= nil, "Expected a transition state queue dispatch")
+			dispatch(rejectedThenable)
+		end
+	end)
+
+	ReactCurrentBatchConfig.transition = prevTransition
+
+	if __DEV__ and currentTransition._updatedFibers ~= nil then
+		if prevTransition == nil and currentTransition._updatedFibers.size > 10 then
+			console.warn(
+				"Detected a large number of updates inside startTransition. "
+					.. "If this is due to a subscription please re-write it to use React provided hooks. "
+					.. "Otherwise concurrent mode guarantees are off the table."
+			)
+		end
+		currentTransition._updatedFibers:clear()
+	end
+
+	if not ok then
+		error(result, 0)
+	end
+end
+
+local function mountTransition(): (boolean, StartTransition)
+	local isPending = mountState(false)
+	local stateHook = workInProgressHook
+	local fiber = currentlyRenderingFiber
+	local start: StartTransition = function(callback, options)
+		startTransition(fiber, stateHook.queue, callback, options)
+	end
+	local hook = mountWorkInProgressHook()
+	hook.memoizedState = start
+	return isPending, start
+end
+
+local function updateTransition(): (boolean, StartTransition)
+	local booleanOrThenable = updateState(false)
+	local hook = updateWorkInProgressHook()
+	local start: StartTransition = hook.memoizedState
+	local isPending = if typeof(booleanOrThenable) == "table"
+			and typeof(booleanOrThenable.andThen) == "function"
+		then ReactFiberThenable.useThenable(booleanOrThenable)
+		else booleanOrThenable
+	return isPending, start
+end
+
+local function rerenderTransition(): (boolean, StartTransition)
+	local booleanOrThenable = rerenderState(false)
+	local hook = updateWorkInProgressHook()
+	local start: StartTransition = hook.memoizedState
+	local isPending = if typeof(booleanOrThenable) == "table"
+			and typeof(booleanOrThenable.andThen) == "function"
+		then ReactFiberThenable.useThenable(booleanOrThenable)
+		else booleanOrThenable
+	return isPending, start
+end
 
 local isUpdatingOpaqueValueInRenderPhase = false
 exports.getIsUpdatingOpaqueValueInRenderPhaseInDEV = function(): boolean?
@@ -1793,6 +2284,20 @@ function rerenderOpaqueIdentifier(): OpaqueIDType
 	return id
 end
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberHooks.new.js#L2338-L2361
+local function entangleTransitionUpdate<S, A>(
+	root: FiberRoot,
+	queue: UpdateQueue<S, A>,
+	lane: Lane
+): ()
+	if isTransitionLane(lane) then
+		local queueLanes = intersectLanes(queue.lanes, root.pendingLanes)
+		local newQueueLanes = mergeLanes(queueLanes, lane)
+		queue.lanes = newQueueLanes
+		markRootEntangled(root, newQueueLanes)
+	end
+end
+
 function dispatchAction<S, A>(fiber: Fiber, queue: UpdateQueue<S, A>, action: A, ...): ()
 	if __DEV__ then
 		local childrenLength = select("#", ...)
@@ -1814,6 +2319,7 @@ function dispatchAction<S, A>(fiber: Fiber, queue: UpdateQueue<S, A>, action: A,
 
 	local update: Update<S, A> = {
 		lane = lane,
+		revertLane = NoLane,
 		action = action,
 		eagerReducer = nil,
 		eagerState = nil,
@@ -1906,7 +2412,10 @@ function dispatchAction<S, A>(fiber: Fiber, queue: UpdateQueue<S, A>, action: A,
 				warnIfNotCurrentlyActingUpdatesInDEV(fiber)
 			end
 		end
-		scheduleUpdateOnFiber(fiber, lane, eventTime)
+		local root = scheduleUpdateOnFiber(fiber, lane, eventTime)
+		if root ~= nil then
+			entangleTransitionUpdate(root, queue, lane)
+		end
 	end
 
 	if __DEV__ then
@@ -1925,10 +2434,24 @@ function dispatchAction<S, A>(fiber: Fiber, queue: UpdateQueue<S, A>, action: A,
 	return
 end
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L1151-L1166
+local function use<T>(usable: Usable<T>): T
+	if usable ~= nil and typeof(usable) == "table" then
+		if typeof((usable :: any).andThen) == "function" then
+			return ReactFiberThenable.useThenable(usable :: Thenable<T>)
+		elseif (usable :: any)["$$typeof"] == REACT_CONTEXT_TYPE then
+			return readContext(usable :: ReactContext<T>, nil)
+		end
+	end
+
+	error(Error.new("An unsupported type was passed to use(): " .. tostring(usable)))
+end
+
 -- deviation: Move these to the top so they're in scope for above functions
 local ContextOnlyDispatcher: Dispatcher = {
 	readContext = readContext,
 
+	use = use,
 	useCallback = throwInvalidHookError :: any,
 	useContext = throwInvalidHookError :: any,
 	useEffect = throwInvalidHookError :: any,
@@ -1940,8 +2463,10 @@ local ContextOnlyDispatcher: Dispatcher = {
 	useBinding = throwInvalidHookError :: any,
 	useState = throwInvalidHookError :: any,
 	useDebugValue = throwInvalidHookError :: any,
-	-- useDeferredValue = throwInvalidHookError,
-	-- useTransition = throwInvalidHookError,
+	useDeferredValue = throwInvalidHookError :: any,
+	useTransition = throwInvalidHookError :: any,
+	useOptimistic = throwInvalidHookError :: any,
+	useActionState = throwInvalidHookError :: any,
 	useMutableSource = throwInvalidHookError :: any,
 	useOpaqueIdentifier = throwInvalidHookError :: any,
 
@@ -1952,6 +2477,7 @@ exports.ContextOnlyDispatcher = ContextOnlyDispatcher
 local HooksDispatcherOnMount: Dispatcher = {
 	readContext = readContext,
 
+	use = use,
 	useCallback = mountCallback,
 	useContext = readContext,
 	useEffect = mountEffect,
@@ -1964,8 +2490,10 @@ local HooksDispatcherOnMount: Dispatcher = {
 	useBinding = mountBinding,
 	useState = mountState,
 	useDebugValue = mountDebugValue,
-	-- useDeferredValue = mountDeferredValue,
-	-- useTransition = mountTransition,
+	useDeferredValue = mountDeferredValue,
+	useTransition = mountTransition,
+	useOptimistic = mountOptimistic,
+	useActionState = mountActionState,
 	useMutableSource = mountMutableSource,
 	useOpaqueIdentifier = mountOpaqueIdentifier,
 
@@ -1975,6 +2503,7 @@ local HooksDispatcherOnMount: Dispatcher = {
 local HooksDispatcherOnUpdate: Dispatcher = {
 	readContext = readContext,
 
+	use = use,
 	useCallback = updateCallback,
 	useContext = readContext,
 	useEffect = updateEffect,
@@ -1987,8 +2516,10 @@ local HooksDispatcherOnUpdate: Dispatcher = {
 	useBinding = updateBinding,
 	useState = updateState,
 	useDebugValue = updateDebugValue,
-	-- useDeferredValue = updateDeferredValue,
-	-- useTransition = updateTransition,
+	useDeferredValue = updateDeferredValue,
+	useTransition = updateTransition,
+	useOptimistic = updateOptimistic,
+	useActionState = updateActionState,
 	useMutableSource = updateMutableSource,
 	useOpaqueIdentifier = updateOpaqueIdentifier,
 
@@ -1998,6 +2529,7 @@ local HooksDispatcherOnUpdate: Dispatcher = {
 local HooksDispatcherOnRerender: Dispatcher = {
 	readContext = readContext,
 
+	use = use,
 	useCallback = updateCallback,
 	useContext = readContext,
 	useEffect = updateEffect,
@@ -2010,8 +2542,10 @@ local HooksDispatcherOnRerender: Dispatcher = {
 	useBinding = updateBinding,
 	useState = rerenderState,
 	useDebugValue = updateDebugValue,
-	-- useDeferredValue = rerenderDeferredValue,
-	-- useTransition = rerenderTransition,
+	useDeferredValue = rerenderDeferredValue,
+	useTransition = rerenderTransition,
+	useOptimistic = rerenderOptimistic,
+	useActionState = rerenderActionState,
 	useMutableSource = updateMutableSource,
 	useOpaqueIdentifier = rerenderOpaqueIdentifier,
 
@@ -2044,6 +2578,7 @@ if __DEV__ then
 		): T
 			return readContext(context, observedBits)
 		end,
+		use = use,
 		useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 			currentHookNameInDev = "useCallback"
 			mountHookTypesDev()
@@ -2157,16 +2692,33 @@ if __DEV__ then
 			mountHookTypesDev()
 			return mountDebugValue(value, formatterFn)
 		end,
-		--     useDeferredValue<T>(value: T): T {
-		--       currentHookNameInDev = 'useDeferredValue'
-		--       mountHookTypesDev()
-		--       return mountDeferredValue(value)
-		--     },
-		--     useTransition(): [(() => void) => void, boolean] {
-		--       currentHookNameInDev = 'useTransition'
-		--       mountHookTypesDev()
-		--       return mountTransition()
-		--     },
+		useDeferredValue = function<T>(value: T): T
+			currentHookNameInDev = "useDeferredValue"
+			mountHookTypesDev()
+			return mountDeferredValue(value)
+		end,
+		useTransition = function(): (boolean, StartTransition)
+			currentHookNameInDev = "useTransition"
+			mountHookTypesDev()
+			return mountTransition()
+		end,
+		useOptimistic = function<S, A>(
+			passthrough: S,
+			reducer: ((S, A) -> S)?
+		): (S, Dispatch<A>)
+			currentHookNameInDev = "useOptimistic"
+			mountHookTypesDev()
+			return mountOptimistic(passthrough, reducer)
+		end,
+		useActionState = function<S, P>(
+			action: (S, P) -> any,
+			initialState: S,
+			permalink: string?
+		): (S, Dispatch<P>, boolean)
+			currentHookNameInDev = "useActionState"
+			mountHookTypesDev()
+			return mountActionState(action, initialState, permalink)
+		end,
 		useMutableSource = function<Source, Snapshot>(
 			source: MutableSource<Source>,
 			getSnapshot: MutableSourceGetSnapshotFn<
@@ -2198,6 +2750,7 @@ if __DEV__ then
 		): T
 			return readContext(context, observedBits)
 		end,
+		use = use,
 		useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 			currentHookNameInDev = "useCallback"
 			updateHookTypesDev()
@@ -2306,16 +2859,33 @@ if __DEV__ then
 			updateHookTypesDev()
 			return mountDebugValue(value, formatterFn)
 		end,
-		--     useDeferredValue<T>(value: T): T {
-		--       currentHookNameInDev = 'useDeferredValue'
-		--       updateHookTypesDev()
-		--       return mountDeferredValue(value)
-		--     },
-		--     useTransition(): [(() => void) => void, boolean] {
-		--       currentHookNameInDev = 'useTransition'
-		--       updateHookTypesDev()
-		--       return mountTransition()
-		--     },
+		useDeferredValue = function<T>(value: T): T
+			currentHookNameInDev = "useDeferredValue"
+			updateHookTypesDev()
+			return mountDeferredValue(value)
+		end,
+		useTransition = function(): (boolean, StartTransition)
+			currentHookNameInDev = "useTransition"
+			updateHookTypesDev()
+			return mountTransition()
+		end,
+		useOptimistic = function<S, A>(
+			passthrough: S,
+			reducer: ((S, A) -> S)?
+		): (S, Dispatch<A>)
+			currentHookNameInDev = "useOptimistic"
+			updateHookTypesDev()
+			return mountOptimistic(passthrough, reducer)
+		end,
+		useActionState = function<S, P>(
+			action: (S, P) -> any,
+			initialState: S,
+			permalink: string?
+		): (S, Dispatch<P>, boolean)
+			currentHookNameInDev = "useActionState"
+			updateHookTypesDev()
+			return mountActionState(action, initialState, permalink)
+		end,
 		useMutableSource = function<Source, Snapshot>(
 			source: MutableSource<Source>,
 			getSnapshot: MutableSourceGetSnapshotFn<
@@ -2347,6 +2917,7 @@ if __DEV__ then
 		): T
 			return readContext(context, observedBits)
 		end,
+		use = use,
 		useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 			currentHookNameInDev = "useCallback"
 			updateHookTypesDev()
@@ -2454,16 +3025,33 @@ if __DEV__ then
 			updateHookTypesDev()
 			return updateDebugValue(value, formatterFn)
 		end,
-		--     useDeferredValue<T>(value: T): T {
-		--       currentHookNameInDev = 'useDeferredValue'
-		--       updateHookTypesDev()
-		--       return updateDeferredValue(value)
-		--     },
-		--     useTransition(): [(() => void) => void, boolean] {
-		--       currentHookNameInDev = 'useTransition'
-		--       updateHookTypesDev()
-		--       return updateTransition()
-		--     },
+		useDeferredValue = function<T>(value: T): T
+			currentHookNameInDev = "useDeferredValue"
+			updateHookTypesDev()
+			return updateDeferredValue(value)
+		end,
+		useTransition = function(): (boolean, StartTransition)
+			currentHookNameInDev = "useTransition"
+			updateHookTypesDev()
+			return updateTransition()
+		end,
+		useOptimistic = function<S, A>(
+			passthrough: S,
+			reducer: ((S, A) -> S)?
+		): (S, Dispatch<A>)
+			currentHookNameInDev = "useOptimistic"
+			updateHookTypesDev()
+			return updateOptimistic(passthrough, reducer)
+		end,
+		useActionState = function<S, P>(
+			action: (S, P) -> any,
+			initialState: S,
+			permalink: string?
+		): (S, Dispatch<P>, boolean)
+			currentHookNameInDev = "useActionState"
+			updateHookTypesDev()
+			return updateActionState(action, initialState, permalink)
+		end,
 		useMutableSource = function<Source, Snapshot>(
 			source: MutableSource<Source>,
 			getSnapshot: MutableSourceGetSnapshotFn<
@@ -2495,6 +3083,7 @@ if __DEV__ then
 		): T
 			return readContext(context, observedBits)
 		end,
+		use = use,
 		useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 			currentHookNameInDev = "useCallback"
 			updateHookTypesDev()
@@ -2603,16 +3192,33 @@ if __DEV__ then
 			updateHookTypesDev()
 			return updateDebugValue(value, formatterFn)
 		end,
-		--     useDeferredValue<T>(value: T): T {
-		--       currentHookNameInDev = 'useDeferredValue'
-		--       updateHookTypesDev()
-		--       return rerenderDeferredValue(value)
-		--     },
-		--     useTransition(): [(() => void) => void, boolean] {
-		--       currentHookNameInDev = 'useTransition'
-		--       updateHookTypesDev()
-		--       return rerenderTransition()
-		--     },
+		useDeferredValue = function<T>(value: T): T
+			currentHookNameInDev = "useDeferredValue"
+			updateHookTypesDev()
+			return rerenderDeferredValue(value)
+		end,
+		useTransition = function(): (boolean, StartTransition)
+			currentHookNameInDev = "useTransition"
+			updateHookTypesDev()
+			return rerenderTransition()
+		end,
+		useOptimistic = function<S, A>(
+			passthrough: S,
+			reducer: ((S, A) -> S)?
+		): (S, Dispatch<A>)
+			currentHookNameInDev = "useOptimistic"
+			updateHookTypesDev()
+			return rerenderOptimistic(passthrough, reducer)
+		end,
+		useActionState = function<S, P>(
+			action: (S, P) -> any,
+			initialState: S,
+			permalink: string?
+		): (S, Dispatch<P>, boolean)
+			currentHookNameInDev = "useActionState"
+			updateHookTypesDev()
+			return rerenderActionState(action, initialState, permalink)
+		end,
 		useMutableSource = function<Source, Snapshot>(
 			source: MutableSource<Source>,
 			getSnapshot: MutableSourceGetSnapshotFn<
@@ -2644,6 +3250,10 @@ if __DEV__ then
 		): T
 			warnInvalidContextAccess()
 			return readContext(context, observedBits)
+		end,
+		use = function<T>(usable: Usable<T>): T
+			warnInvalidHookAccess()
+			return use(usable)
 		end,
 		useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 			currentHookNameInDev = "useCallback"
@@ -2763,18 +3373,37 @@ if __DEV__ then
 			mountHookTypesDev()
 			return mountDebugValue(value, formatterFn)
 		end,
-		-- useDeferredValue<T>(value: T): T {
-		--   currentHookNameInDev = 'useDeferredValue'
-		--   warnInvalidHookAccess()
-		--   mountHookTypesDev()
-		--   return mountDeferredValue(value)
-		-- },
-		-- useTransition(): [(() => void) => void, boolean] {
-		--   currentHookNameInDev = 'useTransition'
-		--   warnInvalidHookAccess()
-		--   mountHookTypesDev()
-		--   return mountTransition()
-		-- },
+		useDeferredValue = function<T>(value: T): T
+			currentHookNameInDev = "useDeferredValue"
+			warnInvalidHookAccess()
+			mountHookTypesDev()
+			return mountDeferredValue(value)
+		end,
+		useTransition = function(): (boolean, StartTransition)
+			currentHookNameInDev = "useTransition"
+			warnInvalidHookAccess()
+			mountHookTypesDev()
+			return mountTransition()
+		end,
+		useOptimistic = function<S, A>(
+			passthrough: S,
+			reducer: ((S, A) -> S)?
+		): (S, Dispatch<A>)
+			currentHookNameInDev = "useOptimistic"
+			warnInvalidHookAccess()
+			mountHookTypesDev()
+			return mountOptimistic(passthrough, reducer)
+		end,
+		useActionState = function<S, P>(
+			action: (S, P) -> any,
+			initialState: S,
+			permalink: string?
+		): (S, Dispatch<P>, boolean)
+			currentHookNameInDev = "useActionState"
+			warnInvalidHookAccess()
+			mountHookTypesDev()
+			return mountActionState(action, initialState, permalink)
+		end,
 		useMutableSource = function<Source, Snapshot>(
 			source: MutableSource<Source>,
 			getSnapshot: MutableSourceGetSnapshotFn<
@@ -2808,6 +3437,10 @@ if __DEV__ then
 		): T
 			warnInvalidContextAccess()
 			return readContext(context, observedBits)
+		end,
+		use = function<T>(usable: Usable<T>): T
+			warnInvalidHookAccess()
+			return use(usable)
 		end,
 		useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 			currentHookNameInDev = "useCallback"
@@ -2928,18 +3561,37 @@ if __DEV__ then
 			updateHookTypesDev()
 			return updateDebugValue(value, formatterFn)
 		end,
-		--     useDeferredValue<T>(value: T): T {
-		--       currentHookNameInDev = 'useDeferredValue'
-		--       warnInvalidHookAccess()
-		--       updateHookTypesDev()
-		--       return updateDeferredValue(value)
-		--     },
-		--     useTransition(): [(() => void) => void, boolean] {
-		--       currentHookNameInDev = 'useTransition'
-		--       warnInvalidHookAccess()
-		--       updateHookTypesDev()
-		--       return updateTransition()
-		--     },
+		useDeferredValue = function<T>(value: T): T
+			currentHookNameInDev = "useDeferredValue"
+			warnInvalidHookAccess()
+			updateHookTypesDev()
+			return updateDeferredValue(value)
+		end,
+		useTransition = function(): (boolean, StartTransition)
+			currentHookNameInDev = "useTransition"
+			warnInvalidHookAccess()
+			updateHookTypesDev()
+			return updateTransition()
+		end,
+		useOptimistic = function<S, A>(
+			passthrough: S,
+			reducer: ((S, A) -> S)?
+		): (S, Dispatch<A>)
+			currentHookNameInDev = "useOptimistic"
+			warnInvalidHookAccess()
+			updateHookTypesDev()
+			return updateOptimistic(passthrough, reducer)
+		end,
+		useActionState = function<S, P>(
+			action: (S, P) -> any,
+			initialState: S,
+			permalink: string?
+		): (S, Dispatch<P>, boolean)
+			currentHookNameInDev = "useActionState"
+			warnInvalidHookAccess()
+			updateHookTypesDev()
+			return updateActionState(action, initialState, permalink)
+		end,
 		useMutableSource = function<Source, Snapshot>(
 			source: MutableSource<Source>,
 			getSnapshot: MutableSourceGetSnapshotFn<
@@ -2973,6 +3625,10 @@ if __DEV__ then
 		): T
 			warnInvalidContextAccess()
 			return readContext(context, observedBits)
+		end,
+		use = function<T>(usable: Usable<T>): T
+			warnInvalidHookAccess()
+			return use(usable)
 		end,
 		useCallback = function<T>(callback: T, deps: Array<any> | nil): T
 			currentHookNameInDev = "useCallback"
@@ -3093,18 +3749,37 @@ if __DEV__ then
 			updateHookTypesDev()
 			return updateDebugValue(value, formatterFn)
 		end,
-		--     useDeferredValue<T>(value: T): T {
-		--       currentHookNameInDev = 'useDeferredValue'
-		--       warnInvalidHookAccess()
-		--       updateHookTypesDev()
-		--       return rerenderDeferredValue(value)
-		--     },
-		--     useTransition(): [(() => void) => void, boolean] {
-		--       currentHookNameInDev = 'useTransition'
-		--       warnInvalidHookAccess()
-		--       updateHookTypesDev()
-		--       return rerenderTransition()
-		--     },
+		useDeferredValue = function<T>(value: T): T
+			currentHookNameInDev = "useDeferredValue"
+			warnInvalidHookAccess()
+			updateHookTypesDev()
+			return rerenderDeferredValue(value)
+		end,
+		useTransition = function(): (boolean, StartTransition)
+			currentHookNameInDev = "useTransition"
+			warnInvalidHookAccess()
+			updateHookTypesDev()
+			return rerenderTransition()
+		end,
+		useOptimistic = function<S, A>(
+			passthrough: S,
+			reducer: ((S, A) -> S)?
+		): (S, Dispatch<A>)
+			currentHookNameInDev = "useOptimistic"
+			warnInvalidHookAccess()
+			updateHookTypesDev()
+			return rerenderOptimistic(passthrough, reducer)
+		end,
+		useActionState = function<S, P>(
+			action: (S, P) -> any,
+			initialState: S,
+			permalink: string?
+		): (S, Dispatch<P>, boolean)
+			currentHookNameInDev = "useActionState"
+			warnInvalidHookAccess()
+			updateHookTypesDev()
+			return rerenderActionState(action, initialState, permalink)
+		end,
 		useMutableSource = function<Source, Snapshot>(
 			source: MutableSource<Source>,
 			getSnapshot: MutableSourceGetSnapshotFn<
@@ -3202,6 +3877,7 @@ local function renderWithHooks<Props, SecondArg>(
 		local numberOfReRenders: number = 0
 		repeat
 			didScheduleRenderPhaseUpdateDuringThisPass = false
+			ReactFiberThenable.resetThenableState()
 			-- ROBLOX performance: use React 18 approach to avoid invariant in hot path
 			if numberOfReRenders >= RE_RENDER_LIMIT then
 				error(
@@ -3264,6 +3940,19 @@ local function renderWithHooks<Props, SecondArg>(
 	end
 
 	didScheduleRenderPhaseUpdate = false
+	ReactFiberThenable.resetThenableState()
+
+	if __DEV__ and ReactFiberThenable.checkIfUseWrappedInTryCatch() then
+		local componentName = getComponentName(workInProgress.type) or "Unknown"
+		if not didWarnAboutUseWrappedInTryCatch[componentName] then
+			didWarnAboutUseWrappedInTryCatch[componentName] = true
+			console.error(
+				"`use` was called from inside a try/catch block. This is not allowed "
+					.. "and can lead to unexpected behavior. To handle errors triggered "
+					.. "by `use`, wrap your component in a error boundary."
+			)
+		end
+	end
 
 	-- ROBLOX performance: use React 18 approach that avoid invariant in hot paths
 	if didRenderTooFewHooks then
