@@ -46,6 +46,7 @@ local LuauPolyfill = require(Packages.LuauPolyfill)
 local Error = LuauPolyfill.Error
 local Set = LuauPolyfill.Set
 type Array<T> = { [number]: T }
+type Function = (...any) -> ...any
 
 local __DEV__ = ReactGlobals.__DEV__ :: boolean
 local __YOLO__ = ReactGlobals.__YOLO__ :: boolean
@@ -82,8 +83,13 @@ type Effect = {
 	deps: Array<any>?,
 	next: Effect,
 }
+type EventFunctionPayload = {
+	ref: { impl: Function },
+	nextImpl: Function,
+}
 type FunctionComponentUpdateQueue = {
 	lastEffect: Effect?,
+	events: Array<EventFunctionPayload>?,
 }
 
 local ReactTypes = require(Packages.Shared)
@@ -229,6 +235,7 @@ end
 
 local NoHookEffect = ReactHookEffectTags.NoFlags
 local HookHasEffect = ReactHookEffectTags.HasEffect
+local HookInsertion = ReactHookEffectTags.Insertion
 local HookLayout = ReactHookEffectTags.Layout
 local HookPassive = ReactHookEffectTags.Passive
 
@@ -336,8 +343,22 @@ local function commitBeforeMutationLifeCycles(
 		finishedWork.tag == FunctionComponent
 		or finishedWork.tag == ForwardRef
 		or finishedWork.tag == SimpleMemoComponent
-		or finishedWork.tag == Block
 	then
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/6bec011b407fe8a2d4babb363289ccce4bc8fcf3/packages/react-reconciler/src/ReactFiberCommitWork.js#L495-L513
+		if
+			ReactFeatureFlags.enableUseEffectEventHook
+			and bit32.band(finishedWork.flags, Update) ~= NoFlags
+		then
+			local updateQueue: FunctionComponentUpdateQueue? = finishedWork.updateQueue
+			local eventPayloads = if updateQueue ~= nil then updateQueue.events else nil
+			if eventPayloads ~= nil then
+				for _, eventPayload in eventPayloads do
+					eventPayload.ref.impl = eventPayload.nextImpl
+				end
+			end
+		end
+		return
+	elseif finishedWork.tag == Block then
 		return
 	elseif finishedWork.tag == ClassComponent then
 		if bit32.band(finishedWork.flags, Snapshot) ~= 0 then
@@ -414,11 +435,14 @@ local function commitBeforeMutationLifeCycles(
 		-- Nothing to do for these component types
 		return
 	end
-	invariant(
-		false,
-		"This unit of work tag should not have side-effects. This error is "
-			.. "likely caused by a bug in React. Please file an issue."
-	)
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/6bec011b407fe8a2d4babb363289ccce4bc8fcf3/packages/react-reconciler/src/ReactFiberCommitWork.js#L560-L567
+	if bit32.band(finishedWork.flags, Snapshot) ~= NoFlags then
+		invariant(
+			false,
+			"This unit of work tag should not have side-effects. This error is "
+				.. "likely caused by a bug in React. Please file an issue."
+		)
+	end
 end
 
 local function commitHookEffectListUnmount(
@@ -465,20 +489,34 @@ local function commitHookEffectListMount(flags: HookFlags, finishedWork: Fiber)
 				if __DEV__ then
 					local destroy = effect.destroy
 					if destroy ~= nil and typeof(destroy) ~= "function" then
+						-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberCommitWork.new.js#L583-L626
+						local hookName
+						if bit32.band(effect.tag, HookLayout) ~= NoHookEffect then
+							hookName = "useLayoutEffect"
+						elseif bit32.band(effect.tag, HookInsertion) ~= NoHookEffect then
+							hookName = "useInsertionEffect"
+						else
+							hookName = "useEffect"
+						end
+						-- ROBLOX DEVIATION: Luau nil represents both JavaScript undefined and
+						-- null, so nil bypasses this branch and the null-only addendum cannot run.
 						local addendum
-						if destroy == nil then
-							addendum = " You returned nil. If your effect does not require clean "
-								.. "up, return nil (or nothing)."
-						elseif typeof(destroy.andThen) == "function" then
+						if
+							typeof(destroy) == "table"
+							and typeof(destroy.andThen) == "function"
+						then
+							-- ROBLOX DEVIATION: Luau Promises expose andThen rather than JavaScript
+							-- then, and the diagnostic example uses the corresponding Promise syntax.
 							addendum =
 								-- ROBLOX FIXME: write a real program that does the equivalent and update this example, LUAFDN-754
-								"\n\nIt looks like you wrote useEffect(Promise.new(function() --[[...]] end) or returned a Promise. " .. "Instead, write the async function inside your effect " .. "and call it immediately:\n\n" .. "useEffect(function()\n" .. "  function fetchData()\n" .. "    -- You can await here\n" .. "    local response = MyAPI.getData(someId):await()\n" .. "    -- ...\n" .. "  end\n" .. "  fetchData()\n" .. "end, {someId}) -- Or {} if effect doesn't need props or state\n\n" .. "Learn more about data fetching with Hooks: https://reactjs.org/link/hooks-data-fetching"
+								"\n\nIt looks like you wrote " .. hookName .. "(Promise.new(function() --[[...]] end) or returned a Promise. " .. "Instead, write the async function inside your effect " .. "and call it immediately:\n\n" .. hookName .. "(function()\n" .. "  function fetchData()\n" .. "    -- You can await here\n" .. "    local response = MyAPI.getData(someId):await()\n" .. "    -- ...\n" .. "  end\n" .. "  fetchData()\n" .. "end, {someId}) -- Or {} if effect doesn't need props or state\n\n" .. "Learn more about data fetching with Hooks: https://reactjs.org/link/hooks-data-fetching"
 						else
-							addendum = " You returned: " .. destroy
+							addendum = " You returned: " .. tostring(destroy)
 						end
 						console.error(
-							"An effect function must not return anything besides a function, "
+							"%s must not return anything besides a function, "
 								.. "which is used for clean-up.%s",
+							hookName,
 							addendum
 						)
 					end
@@ -1195,7 +1233,14 @@ function commitUnmount(
 				local effect = firstEffect
 				repeat
 					if effect.destroy ~= nil then
-						if bit32.band(effect.tag, HookLayout) ~= NoHookEffect then
+						-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberCommitWork.new.js#L1226-L1252
+						if bit32.band(effect.tag, HookInsertion) ~= NoHookEffect then
+							safelyCallDestroy(
+								current,
+								nearestMountedAncestor,
+								effect.destroy
+							)
+						elseif bit32.band(effect.tag, HookLayout) ~= NoHookEffect then
 							if
 								enableProfilerTimer
 								and enableProfilerCommitHooks
@@ -1865,6 +1910,14 @@ local function commitWork(current: Fiber | nil, finishedWork: Fiber)
 		or finishedWork.tag == SimpleMemoComponent
 		or finishedWork.tag == Block
 	then
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberCommitWork.new.js#L1893-L1903
+		commitHookEffectListUnmount(
+			bit32.bor(HookInsertion, HookHasEffect),
+			finishedWork,
+			finishedWork.return_
+		)
+		commitHookEffectListMount(bit32.bor(HookInsertion, HookHasEffect), finishedWork)
+
 		-- Layout effects are destroyed during the mutation phase so that all
 		-- destroy functions for all fibers are called before any create functions.
 		-- This prevents sibling component effects from interfering with each other,

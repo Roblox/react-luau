@@ -73,6 +73,7 @@ local NoMode = ReconcilerModule.ReactTypeOfMode.NoMode
 -- ROBLOX deviation END
 -- ROBLOX deviation START: add inline ErrorStackParser implementation
 -- local ErrorStackParser = require(Packages["error-stack-parser"]).default
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-debug-tools/src/ReactDebugHooks.js#L23
 type StackFrame = {
 	source: string?,
 	functionName: string?,
@@ -85,7 +86,10 @@ local ErrorStackParser = {
 		local filtered = Array.filter(
 			string.split(error_.stack :: string, "\n"),
 			function(line)
+				-- ROBLOX DEVIATION: Roblox emits both legacy LoadedCode frames and
+				-- current Luau [string "..."] frames, depending on the runtime.
 				return string.find(line, "^LoadedCode") ~= nil
+					or string.find(line, '^%[string "') ~= nil
 			end
 		)
 		return Array.map(filtered, function(stackTraceLine)
@@ -162,7 +166,15 @@ local function getPrimitiveStackCache(): Map<string, Array<any>>
 				-- Dispatcher:useImperativeHandle(nil, function()
 				Dispatcher.useRef(nil)
 				Dispatcher.useLayoutEffect(function() end)
+				-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-debug-tools/src/ReactDebugHooks.js#L76
+				local inspectInsertionEffect = Dispatcher.useInsertionEffect :: any
+				inspectInsertionEffect(function() end)
 				Dispatcher.useEffect(function() end)
+				-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/ReactDebugHooks.js#L131-L133
+				local inspectEffectEvent = Dispatcher.useEffectEvent
+				if inspectEffectEvent ~= nil then
+					inspectEffectEvent(function() end)
+				end
 				Dispatcher.useImperativeHandle(nil, function()
 					-- ROBLOX deviation END
 					return nil
@@ -335,6 +347,19 @@ local function useLayoutEffect(
 		{ primitive = "LayoutEffect", stackError = Error.new(), value = create }
 	) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
 end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-debug-tools/src/ReactDebugHooks.js#L190-L200
+local function useInsertionEffect(
+	create: (() -> ()) | (() -> () -> ()),
+	inputs: Array<unknown> | void | nil
+): ()
+	nextHook()
+	table.insert(
+		hookLog,
+		{ primitive = "InsertionEffect", stackError = Error.new(), value = create }
+	)
+end
+
 local function useEffect(
 	-- ROBLOX deviation START: Luau needs union type packs for this type to translate idiomatically
 	-- create: () -> () -> () | void,
@@ -348,6 +373,19 @@ local function useEffect(
 		{ primitive = "Effect", stackError = Error.new(), value = create }
 	) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
 end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/ReactDebugHooks.js#L748-L760
+local function useEffectEvent(callback)
+	nextHook()
+	-- ROBLOX DEVIATION: This React 17 HookLogEntry omits the v19 displayName,
+	-- debugInfo, and dispatcherHookName metadata that its consumers do not expose.
+	table.insert(
+		hookLog,
+		{ primitive = "EffectEvent", stackError = Error.new(), value = callback }
+	)
+	return callback
+end
+
 local function useImperativeHandle<T>(
 	ref: {
 		current: T | nil,--[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]]
@@ -413,7 +451,13 @@ local function useMemo<T...>(nextCreate: () -> T..., inputs: Array<any> | nil): 
 	local value = if hook ~= nil then hook.memoizedState[1] else { nextCreate() }
 	-- ROBLOX deviation END
 
-	table.insert(hookLog, { primitive = "Memo", stackError = Error.new(), value = value }) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
+	-- ROBLOX DEVIATION: DevTools displays a single Luau memo return as its value,
+	-- but preserves the packed table when useMemo returns multiple values.
+	local inspectedValue = if #value <= 1 then value[1] else value
+	table.insert(
+		hookLog,
+		{ primitive = "Memo", stackError = Error.new(), value = inspectedValue }
+	) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
 	-- ROBLOX deviation START: unwrap memoized values in a table
 	-- return value
 	return table.unpack(value)
@@ -512,12 +556,16 @@ Dispatcher = {
 	useCallback = useCallback,
 	useContext = useContext,
 	useEffect = useEffect,
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/ReactDebugHooks.js#L783-L788
+	useEffectEvent = useEffectEvent,
 	-- ROBLOX deviation START: needs cast
 	-- useImperativeHandle = useImperativeHandle,
 	useImperativeHandle = useImperativeHandle :: any,
 	-- ROBLOX deviation END
 	useDebugValue = useDebugValue,
 	useLayoutEffect = useLayoutEffect,
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-debug-tools/src/ReactDebugHooks.js#L343-L351
+	useInsertionEffect = useInsertionEffect,
 	-- ROBLOX deviation START: needs cast
 	-- useMemo = useMemo,
 	useMemo = useMemo :: any,
@@ -570,7 +618,12 @@ local function findSharedIndex(hookStack, rootStack, rootIndex: number)
 	-- ROBLOX deviation END
 	-- ROBLOX deviation START: don't use tostring
 	-- local source = rootStack[tostring(rootIndex)].source
-	local source = rootStack[rootIndex].source
+	-- ROBLOX DEVIATION: Roblox can omit the ancestor frame from a parsed stack.
+	local rootFrame = rootStack[rootIndex]
+	if rootFrame == nil then
+		return -1
+	end
+	local source = rootFrame.source
 	-- ROBLOX deviation END
 	-- ROBLOX deviation START: implement LabeledStatement
 	-- 	error("not implemented") --[[ ROBLOX TODO: Unhandled node for type: LabeledStatement ]] --[[ hookSearch: for (let i = 0; i < hookStack.length; i++) {

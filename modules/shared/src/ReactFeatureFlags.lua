@@ -99,6 +99,9 @@ exports.warnAboutSpreadingKeyToJSX = true
 
 exports.enableComponentStackLocations = true
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/shared/ReactFeatureFlags.js#L121
+exports.enableUseEffectEventHook = true
+
 exports.enableNewReconciler = true
 
 -- Errors that are thrown while unmounting (or after in the case of passive effects)

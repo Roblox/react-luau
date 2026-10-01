@@ -97,6 +97,10 @@ return {
 	useCallback = ReactHooks.useCallback,
 	useContext = ReactHooks.useContext,
 	useEffect = ReactHooks.useEffect,
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react/src/ReactClient.js#L91
+	useEffectEvent = ReactHooks.useEffectEvent,
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react/src/React.js#L99
+	useInsertionEffect = ReactHooks.useInsertionEffect,
 	useImperativeHandle = ReactHooks.useImperativeHandle,
 	useDebugValue = ReactHooks.useDebugValue,
 	useLayoutEffect = ReactHooks.useLayoutEffect,
