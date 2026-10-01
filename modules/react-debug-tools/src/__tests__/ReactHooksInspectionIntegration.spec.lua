@@ -538,14 +538,10 @@ describe("ReactHooksInspectionIntegration", function()
 			},
 		})
 	end) -- @gate experimental
-	-- ROBLOX deviation START: unstable_useTransition is not implemented
-	-- it("should support composite useTransition hook", function()
-	it.skip("should support composite useTransition hook", function()
-		-- ROBLOX deviation END
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js
+	it("should support composite useTransition hook", function()
 		local function Foo(props)
-			-- ROBLOX deviation START: not supported
-			-- React.unstable_useTransition()
-			-- ROBLOX deviation END
+			React.useTransition()
 			local memoizedValue = React.useMemo(function()
 				return "hello"
 			end, {})
@@ -585,23 +581,19 @@ describe("ReactHooksInspectionIntegration", function()
 			},
 		})
 	end) -- @gate experimental
-	-- ROBLOX deviation START: unstable_useDeferredValue not implemented
-	-- it("should support composite useDeferredValue hook", function()
-	it.skip("should support composite useDeferredValue hook", function()
-		-- ROBLOX deviation END
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/72ebc703ac8abacd44fdeb1e3d66eb28b75e5a5b/packages/react-debug-tools/src/__tests__/ReactHooksInspectionIntegration-test.js#L582-L626
+	it("should support composite useDeferredValue hook", function()
 		local function Foo(props)
-			-- ROBLOX deviation START: not implemented
-			-- React.unstable_useDeferredValue("abc", { timeoutMs = 500 })
-			-- ROBLOX deviation END
-			local state = React.useState(function()
+			React.useDeferredValue("abc")
+			local memoizedValue = React.useMemo(function()
 				return "hello"
-				-- ROBLOX deviation START: useState returns 2 values
-				-- end, {})[1]
 			end, {})
-			-- ROBLOX deviation END
+			React.useMemo(function()
+				return "world"
+			end, {})
 			-- ROBLOX deviation START: use Frame instead
-			-- return React.createElement("div", nil, state)
-			return React.createElement("Frame", nil, state)
+			-- return React.createElement("div", nil, memoizedValue)
+			return React.createElement("Frame", nil, memoizedValue)
 			-- ROBLOX deviation END
 		end
 		local renderer = ReactTestRenderer.create(React.createElement(Foo, nil))
@@ -626,9 +618,16 @@ describe("ReactHooksInspectionIntegration", function()
 				-- id = 1,
 				id = 2,
 				-- ROBLOX deviation END
-				isStateEditable = true,
-				name = "State",
+				isStateEditable = false,
+				name = "Memo",
 				value = "hello",
+				subHooks = {},
+			},
+			{
+				id = 3,
+				isStateEditable = false,
+				name = "Memo",
+				value = "world",
 				subHooks = {},
 			},
 		})

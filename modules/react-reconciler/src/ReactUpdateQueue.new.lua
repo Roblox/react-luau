@@ -99,14 +99,18 @@ local console = require(Packages.Shared).console
 
 local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
+type FiberRoot = ReactInternalTypes.FiberRoot
 type Lane = ReactInternalTypes.Lane
 type Lanes = ReactInternalTypes.Lanes
 
 local ReactFiberLane = require(script.Parent.ReactFiberLane)
+local intersectLanes = ReactFiberLane.intersectLanes
 local NoLane = ReactFiberLane.NoLane
 local NoLanes = ReactFiberLane.NoLanes
 local isSubsetOfLanes = ReactFiberLane.isSubsetOfLanes
 local mergeLanes = ReactFiberLane.mergeLanes
+local isTransitionLane = ReactFiberLane.isTransitionLane
+local markRootEntangled = ReactFiberLane.markRootEntangled
 
 -- ROBLOX deviation: lazy instantiate to avoid circular require
 local ReactFiberNewContext --= require(script.Parent["ReactFiberNewContext.new"])
@@ -206,6 +210,7 @@ local function initializeUpdateQueue<State>(fiber: Fiber): ()
 		lastBaseUpdate = nil,
 		shared = {
 			pending = nil,
+			lanes = NoLanes,
 		},
 		effects = nil,
 	}
@@ -308,6 +313,23 @@ local function enqueueUpdate<State>(fiber: Fiber, update: Update<State>)
 	end
 end
 exports.enqueueUpdate = enqueueUpdate
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactUpdateQueue.new.js#L566-L594
+local function entangleTransitions(root: FiberRoot, fiber: Fiber, lane: Lane): ()
+	local updateQueue = fiber.updateQueue
+	if updateQueue == nil then
+		return
+	end
+
+	local sharedQueue: SharedQueue<any> = (updateQueue :: any).shared
+	if isTransitionLane(lane) then
+		local queueLanes = intersectLanes(sharedQueue.lanes, root.pendingLanes)
+		local newQueueLanes = mergeLanes(queueLanes, lane)
+		sharedQueue.lanes = newQueueLanes
+		markRootEntangled(root, newQueueLanes)
+	end
+end
+exports.entangleTransitions = entangleTransitions
 
 local function enqueueCapturedUpdate<State>(workInProgress: Fiber, capturedUpdate: Update<State>)
 	-- Captured updates are updates that are thrown by a child during the render

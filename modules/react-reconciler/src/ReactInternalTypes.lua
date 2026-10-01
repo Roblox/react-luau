@@ -71,6 +71,7 @@ export type Update<State> = {
 
 export type SharedQueue<State> = {
 	pending: Update<State>?,
+	lanes: Lanes,
 }
 
 export type UpdateQueue<State> = {
