@@ -374,6 +374,35 @@ React.createElement(
 
 Hooks allow simple function components to introduce stateful behaviors without incurring the overhead or complexity of the full [Component](#reactcomponent) lifecycle.
 
+### React.use
+<a href='https://react.dev/reference/react/use' target="_blank"><img alt='React' src='../../images/reactjs.svg'/></a> <img alt='Deviation' src='../../images/deviation.svg'/>
+
+`use` reads a Context or the result of a Promise-compatible thenable. A pending
+Promise suspends the component until it settles; a rejected Promise is handled
+by the nearest error boundary. Unlike other Hooks, `use` may be called inside
+conditionals and loops.
+
+Promises passed to `use` must be created and cached outside render. React-Luau
+listens through `andThen` and stores the React `status`, `value`, and `reason`
+fields on the Promise. Roblox Promise cancellation does not notify these
+listeners, so a Promise passed to `use` must settle normally and must not be
+canceled.
+
+```lua
+local profilePromise = fetchProfile()
+
+local function Profile()
+	local profile = React.use(profilePromise)
+	return React.createElement("TextLabel", {
+		Text = profile.displayName,
+	})
+end
+```
+
+Wrap a Promise-reading component in [`React.Suspense`](#reactsuspense) and
+provide an error boundary for rejected Promises. `use` does not start requests
+or provide a data-fetching cache.
+
 ### React.useState
 <a href='https://beta.reactjs.org/reference/react/useState' target="_blank"><img alt='React' src='../../images/reactjs.svg'/></a> <img alt='API Change' src='../../images/apichange.svg'/>
 
@@ -865,4 +894,3 @@ local function Flex()
 	)
 end
 ```
-

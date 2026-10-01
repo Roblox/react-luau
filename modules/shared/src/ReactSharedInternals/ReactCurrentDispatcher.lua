@@ -22,6 +22,7 @@ type Source = ReactElementType.Source
 local ReactTypes = require(script.Parent.Parent.ReactTypes)
 type RefObject = ReactTypes.RefObject
 type ReactContext<T> = ReactTypes.ReactContext<T>
+type Usable<T> = ReactTypes.Usable<T>
 -- ROBLOX deviation START: binding support
 type ReactBinding<T> = ReactTypes.ReactBinding<T>
 type ReactBindingUpdater<T> = ReactTypes.ReactBindingUpdater<T>
@@ -41,6 +42,7 @@ type BasicStateAction<S> = ((S) -> S) | S
 type Dispatch<A> = (A) -> ()
 
 export type Dispatcher = {
+	use: <T>(usable: Usable<T>) -> T,
 	readContext: <T>(
 		context: ReactContext<T>,
 		observedBits: nil | number | boolean
