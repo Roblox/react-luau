@@ -1,0 +1,14 @@
+[package]
+name = "roblox/use-sync-external-store"
+description = "Selector companion for React Luau's useSyncExternalStore hook."
+version = "17.3.11"
+license = "MIT"
+authors = ["Roblox <no-reply@roblox.com>"]
+realm = "shared"
+registry = "https://github.com/UpliftGames/wally-index"
+repository = "https://github.com/Roblox/react-lua"
+exclude = ["rotriever.toml"]
+
+[dependencies]
+React = "roblox/react@^17"
+Shared = "roblox/react-shared@^17"

@@ -1,0 +1,8 @@
+{
+	"language": {
+		"mode": "nonstrict"
+	},
+	"lint": {
+		"*": "enabled"
+	}
+}

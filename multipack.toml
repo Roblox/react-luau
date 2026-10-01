@@ -15,7 +15,7 @@ asset_id   = 15621638430
 
 [wally]
 publish_to = true
-# Only the nine modules that ship a wally.toml are published to Wally.
+# Only the modules that ship a wally.toml are published to Wally.
 # The other directories under modules/* (devtools, the example app, etc.)
 # are intentionally not Wally packages.
 members = [
@@ -28,4 +28,5 @@ members = [
     "modules/roact-compat",
     "modules/scheduler",
     "modules/shared",
+    "modules/use-sync-external-store",
 ]

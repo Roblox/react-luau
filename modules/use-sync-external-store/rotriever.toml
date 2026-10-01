@@ -1,0 +1,16 @@
+[package]
+name = "UseSyncExternalStore"
+version = { workspace = true }
+authors = { workspace = true }
+publish = true
+content_root = "src"
+files = ["*", "!**/__tests__/**"]
+
+[dependencies]
+React = { path = "../react" }
+Shared = { path = "../shared" }
+
+[dev_dependencies]
+JestGlobals = { workspace = true }
+ReactNoopRenderer = { path = "../react-noop-renderer" }
+Scheduler = { path = "../scheduler" }

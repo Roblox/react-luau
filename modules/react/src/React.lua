@@ -102,6 +102,7 @@ return {
 	useLayoutEffect = ReactHooks.useLayoutEffect,
 	useMemo = ReactHooks.useMemo,
 	useMutableSource = ReactHooks.useMutableSource,
+	useSyncExternalStore = ReactHooks.useSyncExternalStore,
 	useReducer = ReactHooks.useReducer,
 	useRef = ReactHooks.useRef,
 	-- ROBLOX deviation: bindings support

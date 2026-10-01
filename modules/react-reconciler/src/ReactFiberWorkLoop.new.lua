@@ -31,6 +31,14 @@ local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
 type FiberRoot = ReactInternalTypes.FiberRoot
 type ReactPriorityLevel = ReactInternalTypes.ReactPriorityLevel
+-- ROBLOX deviation: duplicate these structural types to avoid a runtime require cycle.
+type StoreConsistencyCheck = {
+	getSnapshot: () -> any,
+	value: any,
+}
+type FunctionComponentUpdateQueue = {
+	stores: Array<StoreConsistencyCheck>?,
+}
 local ReactFiberLane = require(script.Parent.ReactFiberLane)
 type Lanes = ReactFiberLane.Lanes
 type Lane = ReactFiberLane.Lane
@@ -671,10 +679,14 @@ exports.scheduleUpdateOnFiber = function(
 	-- priority as an argument to that function and this one.
 	local priorityLevel = getCurrentPriorityLevel()
 
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberWorkLoop.new.js#L615-L628
+	-- ROBLOX deviation: React 17 has separate legacy-unbatched and ordinary SyncLane flush paths.
 	if lane == SyncLane then
 		if
+			bit32.band(fiber.mode, ReactTypeOfMode.ConcurrentMode)
+				== ReactTypeOfMode.NoMode
 			-- Check if we're inside unbatchedUpdates
-			bit32.band(executionContext, LegacyUnbatchedContext) ~= NoContext
+			and bit32.band(executionContext, LegacyUnbatchedContext) ~= NoContext
 			-- Check if we're not already rendering
 			and bit32.band(executionContext, bit32.bor(RenderContext, CommitContext))
 				== NoContext
@@ -689,7 +701,11 @@ exports.scheduleUpdateOnFiber = function(
 		else
 			ensureRootIsScheduled(root, eventTime)
 			mod.schedulePendingInteractions(root, lane)
-			if executionContext == NoContext then
+			if
+				executionContext == NoContext
+				and bit32.band(fiber.mode, ReactTypeOfMode.ConcurrentMode)
+					== ReactTypeOfMode.NoMode
+			then
 				-- Flush the synchronous work now, unless we're already working or inside
 				-- a batch. This is intentionally inside scheduleUpdateOnFiber instead of
 				-- scheduleCallbackForFiber to preserve the ability to schedule a callback
@@ -953,9 +969,40 @@ mod.performConcurrentWorkOnRoot = function(root): (() -> ...any) | nil
 			error(fatalError)
 		end
 
+		local finishedWork: Fiber = root.current.alternate :: any
+		if not mod.isRenderConsistentWithExternalStores(finishedWork) then
+			-- A store was mutated in an interleaved event. Render again,
+			-- synchronously, to block further mutations.
+			exitStatus = mod.renderRootSync(root, lanes)
+
+			-- We need to check again if something threw.
+			if exitStatus == RootExitStatus.Errored then
+				executionContext = bit32.bor(executionContext, RetryAfterError)
+
+				-- If an error occurred during hydration,
+				-- discard server response and fall back to client side render.
+				if root.hydrate then
+					root.hydrate = false
+					ReactFiberHostConfig.clearContainer(root.containerInfo)
+				end
+
+				lanes = getLanesToRetrySynchronouslyOnError(root)
+				if lanes ~= ReactFiberLane.NoLanes then
+					exitStatus = mod.renderRootSync(root, lanes)
+				end
+			end
+
+			if exitStatus == RootExitStatus.FatalErrored then
+				local fatalError = workInProgressRootFatalError
+				mod.prepareFreshStack(root, ReactFiberLane.NoLanes)
+				mod.markRootSuspended(root, lanes)
+				ensureRootIsScheduled(root, now())
+				error(fatalError)
+			end
+		end
+
 		-- We now have a consistent tree. The next step is either to commit it,
 		-- or, if something suspended, wait to commit it after a timeout.
-		local finishedWork: Fiber = root.current.alternate :: any
 		root.finishedWork = finishedWork
 		root.finishedLanes = lanes
 		mod.finishConcurrentRender(root, exitStatus, lanes)
@@ -1085,6 +1132,64 @@ mod.finishConcurrentRender = function(root, exitStatus, lanes)
 	else
 		invariant(false, "Unknown root exit status.")
 	end
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-reconciler/src/ReactFiberWorkLoop.new.js#L1160-L1203
+mod.isRenderConsistentWithExternalStores = function(finishedWork: Fiber): boolean
+	-- Search the rendered tree for external store reads, and check whether the
+	-- stores were mutated in a concurrent event. Intentionally using an iterative
+	-- loop instead of recursion so we can exit early.
+	local node: Fiber = finishedWork
+	while true do
+		if
+			bit32.band(node.flags, ReactFiberFlags.StoreConsistency)
+			~= ReactFiberFlags.NoFlags
+		then
+			local updateQueue: FunctionComponentUpdateQueue? = node.updateQueue
+			if updateQueue ~= nil then
+				local checks = updateQueue.stores
+				if checks ~= nil then
+					for _, check in checks do
+						local getSnapshot = check.getSnapshot
+						local renderedValue = check.value
+						local ok, currentValue = xpcall(getSnapshot, describeError)
+						if
+							not ok
+							or not ReactShared.objectIs(currentValue, renderedValue)
+						then
+							-- If `getSnapshot` threw, re-render so the error is
+							-- rethrown during render.
+							return false
+						end
+					end
+				end
+			end
+		end
+		local child = node.child
+		if
+			bit32.band(node.subtreeFlags, ReactFiberFlags.StoreConsistency)
+				~= ReactFiberFlags.NoFlags
+			and child ~= nil
+		then
+			child.return_ = node
+			node = child
+			continue
+		end
+		if node == finishedWork then
+			return true
+		end
+		while node.sibling == nil do
+			if node.return_ == nil or node.return_ == finishedWork then
+				return true
+			end
+			node = node.return_
+		end
+		-- ROBLOX FIXME Luau: Luau doesn't narrow based on the loop predicate above.
+		local sibling = node.sibling :: Fiber
+		sibling.return_ = node.return_
+		node = sibling
+	end
+	return true
 end
 
 mod.markRootSuspended = function(root, suspendedLanes)
@@ -2433,19 +2538,6 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
 		end
 	end
 
-	if remainingLanes == SyncLane then
-		-- Count the number of times the root synchronously re-renders without
-		-- finishing. If there are too many, it indicates an infinite update loop.
-		if root == rootWithNestedUpdates then
-			nestedUpdateCount += 1
-		else
-			nestedUpdateCount = 0
-			rootWithNestedUpdates = root
-		end
-	else
-		nestedUpdateCount = 0
-	end
-
 	onCommitRootDevTools(finishedWork.stateNode, renderPriorityLevel)
 
 	if __DEV__ then
@@ -2462,6 +2554,33 @@ mod.commitRootImpl = function(root: FiberRoot, renderPriorityLevel)
 		firstUncaughtError = nil
 		-- ROBLOX FIXME: we lose the original stack trace when we re-throw this way
 		error(error_)
+	end
+
+	-- If the passive effects are the result of a discrete render, flush them
+	-- synchronously at the end of the current task so that the result is
+	-- immediately observable. Otherwise, we assume that they are not
+	-- order-dependent and do not need to be observed by external systems, so we
+	-- can wait until after paint.
+	if
+		includesSomeLane(pendingPassiveEffectsLanes, SyncLane)
+		and root.tag ~= LegacyRoot
+	then
+		exports.flushPassiveEffects()
+	end
+
+	-- Read this again, since a passive effect might have updated it.
+	remainingLanes = root.pendingLanes
+	if includesSomeLane(remainingLanes, SyncLane) then
+		-- Count the number of times the root synchronously re-renders without
+		-- finishing. If there are too many, it indicates an infinite update loop.
+		if root == rootWithNestedUpdates then
+			nestedUpdateCount += 1
+		else
+			nestedUpdateCount = 0
+			rootWithNestedUpdates = root
+		end
+	else
+		nestedUpdateCount = 0
 	end
 
 	if bit32.band(executionContext, LegacyUnbatchedContext) ~= NoContext then
