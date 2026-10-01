@@ -38,6 +38,7 @@ local getComponentName = require(Packages.Shared).getComponentName
 -- ROBLOX deviation END
 local REACT_ELEMENT_TYPE = require(Packages.Shared).ReactSymbols.REACT_ELEMENT_TYPE
 local ReactCurrentOwner = require(Packages.Shared).ReactSharedInternals.ReactCurrentOwner
+local enableRefAsProp = require(Packages.Shared).ReactFeatureFlags.enableRefAsProp
 --local hasOwnProperty = Object.prototype.hasOwnProperty
 -- ROBLOX deviation START: upstream iterates over this table, but we manually unroll those loops for hot path performance
 -- IF THIS TABLE UPDATES, YOU MUST UPDATE THE UNROLLED LOOPS AS WELL
@@ -50,9 +51,11 @@ local RESERVED_PROPS = {
 -- ROBLOX deviation END
 
 local specialPropKeyWarningShown, specialPropRefWarningShown, didWarnAboutStringRefs
+local didWarnAboutElementRef
 
 if __DEV__ then
 	didWarnAboutStringRefs = {}
+	didWarnAboutElementRef = {}
 end
 
 local exports = {}
@@ -123,6 +126,10 @@ local function defineKeyPropWarningGetter(props, displayName: string)
 end
 
 local function defineRefPropWarningGetter(props, displayName: string)
+	if enableRefAsProp then
+		return
+	end
+
 	-- deviation: Use a __call metamethod here to make this function-like, but
 	-- still able to have the `isReactWarning` flag defined on it
 	local warnAboutAccessingRef = function()
@@ -154,6 +161,23 @@ local function defineRefPropWarningGetter(props, displayName: string)
 			return nil :: any
 		end,
 	})
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/v19.0.0/packages/react/src/jsx/ReactJSXElement.js#L113-L128
+local function elementRefGetterWithDeprecationWarning(element)
+	if __DEV__ then
+		local componentName = getComponentName(element.type) or "Unknown"
+		if not didWarnAboutElementRef[componentName] then
+			didWarnAboutElementRef[componentName] = true
+			console.error(
+				"Accessing element.ref was removed in React 19. ref is now a "
+					.. "regular prop. It will be removed from the JSX Element "
+					.. "type in a future release."
+			)
+		end
+
+		return element.props.ref
+	end
 end
 
 local function warnIfStringRefCannotBeAutoConverted(config)
@@ -217,15 +241,26 @@ local function ReactElement<P, T>(
 	props: P
 ): ReactElement<P, T>
 	-- ROBLOX deviation END
-	local element = {
-		-- Built-in properties that belong on the element
-		type = type_,
-		key = key,
-		ref = ref,
-		props = props,
-		-- Record the component responsible for creating this element.
-		_owner = owner,
-	}
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/v19.0.0/packages/react/src/jsx/ReactJSXElement.js#L150-L223
+	local resolvedRef = if enableRefAsProp then (props :: any).ref else ref
+	local element = if __DEV__ and enableRefAsProp
+		then {
+			-- Built-in properties that belong on the element
+			type = type_,
+			key = key,
+			props = props,
+			-- Record the component responsible for creating this element.
+			_owner = owner,
+		}
+		else {
+			-- Built-in properties that belong on the element
+			type = type_,
+			key = key,
+			ref = resolvedRef,
+			props = props,
+			-- Record the component responsible for creating this element.
+			_owner = owner,
+		}
 
 	-- This tag allows us to uniquely identify this as a React Element
 	element["$$typeof"] = REACT_ELEMENT_TYPE
@@ -253,13 +288,24 @@ local function ReactElement<P, T>(
 			end,
 		})
 		-- self and source are DEV only properties.
+		-- ROBLOX DEVIATION: Luau uses one __index metamethod for the non-enumerable
+		-- element.ref compatibility getter and the existing DEV-only fields.
 		setmetatable(element, {
-			__index = {
-				_self = self,
-				-- Two elements created in two different places should be considered
-				-- equal for testing purposes and therefore we hide it from enumeration.
-				_source = source,
-			},
+			__index = function(_, property)
+				if property == "ref" then
+					if resolvedRef ~= nil then
+						return elementRefGetterWithDeprecationWarning(element)
+					end
+					return nil
+				elseif property == "_self" then
+					return self
+				elseif property == "_source" then
+					-- Two elements created in two different places should be considered
+					-- equal for testing purposes and therefore we hide it from enumeration.
+					return source
+				end
+				return nil
+			end,
 		})
 	end
 
@@ -423,9 +469,14 @@ local function createElement<P, T>(
 		-- ROBLOX deviation START: inline hasValidRef and hasValidKey success in hot path, still call in error case for warning
 		-- ROBLOX FIXME Luau: needs normalization: Type 'P & React_ElementProps<T>' could not be converted into 'React_ElementProps<T>'; none of the intersection parts are compatible
 		if hasValidRef(config :: any) then
-			ref = ((config :: any) :: React_ElementProps<T>).ref
+			if not enableRefAsProp then
+				ref = ((config :: any) :: React_ElementProps<T>).ref
+			end
 
-			if __DEV__ then
+			-- ROBLOX DEVIATION: React-Luau's legacy string-ref warning is a hard
+			-- error. With ref-as-prop enabled, defer validation to the receiving
+			-- host/class component so function components can observe the prop.
+			if __DEV__ and not enableRefAsProp then
 				warnIfStringRefCannotBeAutoConverted(
 					(config :: any) :: React_ElementProps<T>
 				)
@@ -460,7 +511,7 @@ local function createElement<P, T>(
 		if props.key ~= nil then
 			props.key = nil
 		end
-		if props.ref ~= nil then
+		if not enableRefAsProp and props.ref ~= nil then
 			props.ref = nil
 		end
 		if props.__self ~= nil then
@@ -517,7 +568,7 @@ local function createElement<P, T>(
 	end
 
 	if __DEV__ then
-		if key or ref then
+		if key or (not enableRefAsProp and ref) then
 			-- ROBLOX deviation START: Lua can't store fields like displayName on functions
 			local displayName
 
@@ -539,7 +590,7 @@ local function createElement<P, T>(
 				defineKeyPropWarningGetter(props, displayName)
 			end
 
-			if ref then
+			if not enableRefAsProp and ref then
 				defineRefPropWarningGetter(props, displayName)
 			end
 		end
@@ -558,14 +609,14 @@ local function createElement<P, T>(
 
 	-- ROBLOX FIXME Luau: this cast is needed until normalization lands
 	return ReactElement(
-		type_,
-		key,
-		ref,
-		self,
-		source,
-		ReactCurrentOwner.current,
-		props
-	) :: any
+			type_,
+			key,
+			ref,
+			self,
+			source,
+			ReactCurrentOwner.current,
+			props
+		) :: any
 end
 exports.createElement = createElement
 
@@ -591,7 +642,7 @@ exports.cloneAndReplaceKey = function<P, T>(
 	local newElement = ReactElement(
 		oldElement.type,
 		newKey,
-		oldElement.ref,
+		if enableRefAsProp then nil else oldElement.ref,
 		oldElement._self,
 		oldElement._source,
 		oldElement._owner,
@@ -628,7 +679,7 @@ exports.cloneElement = function<P, T>(
 
 	-- Reserved names are extracted
 	local key = element.key
-	local ref = element.ref
+	local ref = if enableRefAsProp then nil else element.ref
 
 	-- Self is preserved since the owner is preserved.
 	-- ROBLOX deviation: _self field only used for string ref checking
@@ -646,8 +697,10 @@ exports.cloneElement = function<P, T>(
 		-- ROBLOX deviation START: inline hasValidRef and hasValidKey success in hot path, still call in error case for warning
 		local configRef = config.ref
 		if configRef ~= nil then
-			-- Silently steal the ref from the parent.
-			ref = configRef
+			if not enableRefAsProp then
+				-- Silently steal the ref from the parent.
+				ref = configRef
+			end
 			owner = ReactCurrentOwner.current
 		else
 			hasValidRef(config)
@@ -678,7 +731,13 @@ exports.cloneElement = function<P, T>(
 	-- on nil in JS, so we check for nil before iterating
 	if config ~= nil then
 		for propName, _ in config :: any do
-			if (config :: any)[propName] ~= nil and not RESERVED_PROPS[propName] then
+			if
+				(config :: any)[propName] ~= nil
+				and (
+					not RESERVED_PROPS[propName]
+					or (enableRefAsProp and propName == "ref")
+				)
+			then
 				if (config :: any)[propName] == nil and defaultProps ~= nil then
 					-- Resolve default props
 					-- ROBLOX FIXME Luau: force-cast required to avoid TypeError: Expected type table, got 'P' instead
