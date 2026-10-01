@@ -97,6 +97,7 @@ export type HookType =
 	| "useDeferredValue"
 	| "useTransition"
 	| "useMutableSource"
+	| "useSyncExternalStore"
 	| "useOpaqueIdentifier"
 local ReactRootTags = require(script.Parent.ReactRootTags)
 type RootTag = ReactRootTags.RootTag

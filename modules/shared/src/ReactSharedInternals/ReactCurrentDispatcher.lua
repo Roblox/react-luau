@@ -85,6 +85,11 @@ export type Dispatcher = {
 		getSnapshot: MutableSourceGetSnapshotFn<Source, Snapshot>,
 		subscribe: MutableSourceSubscribeFn<Source, Snapshot>
 	) -> Snapshot,
+	useSyncExternalStore: <T>(
+		subscribe: (() -> ()) -> () -> (),
+		getSnapshot: () -> T,
+		getServerSnapshot: (() -> T)?
+	) -> T,
 	useOpaqueIdentifier: () -> any,
 
 	unstable_isNewReconciler: boolean?,

@@ -1264,6 +1264,40 @@ describe("ReactHooksInspectionIntegration", function()
 			},
 		})
 	end)
+	it("should support composite useSyncExternalStore hook", function()
+		local useSyncExternalStore = React.useSyncExternalStore
+		local function Foo()
+			local value = useSyncExternalStore(function()
+				return function() end
+			end, function()
+				return "snapshot"
+			end)
+			React.useMemo(function()
+				return "memo"
+			end, {})
+			return value
+		end
+
+		local renderer = ReactTestRenderer.create(React.createElement(Foo, nil))
+		local childFiber = renderer.root:findByType(Foo):_currentFiber()
+		local tree = ReactDebugTools.inspectHooksOfFiber(childFiber)
+		expect(tree).toEqual({
+			{
+				id = 1,
+				isStateEditable = false,
+				name = "SyncExternalStore",
+				value = "snapshot",
+				subHooks = {},
+			},
+			{
+				id = 2,
+				isStateEditable = false,
+				name = "Memo",
+				value = "memo",
+				subHooks = {},
+			},
+		})
+	end)
 	-- ROBLOX deviation START: no experimental features
 	-- if Boolean.toJSBoolean(__EXPERIMENTAL__) then
 	-- 	it("should support composite useMutableSource hook", function()
