@@ -699,8 +699,20 @@ function ReactShallowRenderer:render(element, maybeContext)
 									)
 								)
 							end
+							-- ROBLOX upstream: https://github.com/facebook/react/blob/v19.0.0/packages/react-reconciler/src/ReactFiberBeginWork.js#L397-L422
+							-- ROBLOX DEVIATION: React 19 removes react-shallow-renderer. React-Luau
+							-- still ships it, so mirror the reconciler's forwardRef compatibility path.
+							local propsWithoutRef = element.props
+							if element.props.ref ~= nil then
+								propsWithoutRef = {}
+								for key, value in element.props do
+									if key ~= "ref" then
+										propsWithoutRef[key] = value
+									end
+								end
+							end
 							self._rendered =
-								elementType.render(element.props, element.ref)
+								elementType.render(propsWithoutRef, element.props.ref)
 						else
 							self._rendered = elementType(element.props, self._context)
 						end

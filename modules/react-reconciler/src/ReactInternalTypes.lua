@@ -190,7 +190,13 @@ export type Fiber = {
 	-- I'll avoid adding an owner field for prod and model that as functions.
 	-- ROBLOX deviation: Lua doesn't allow fields on functions
 	-- ref: (((any) -> ()) & {_stringRef: string?, [string]: any}) | RefObject,
-	ref: nil | ((handle: any) -> ()) | { _stringRef: string?, [string]: any } | RefObject,
+	ref: nil
+		| ((handle: any) -> (() -> ())?)
+		| { _stringRef: string?, [string]: any }
+		| RefObject,
+
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/e98225485a124e35abc4cea82e6da944472ce7c7/packages/react-reconciler/src/ReactInternalTypes.js#L118-L125
+	refCleanup: (() -> ())?,
 
 	-- Input is the data coming into process this fiber. Arguments. Props.
 	pendingProps: any, -- This type will be more specific once we overload the tag.

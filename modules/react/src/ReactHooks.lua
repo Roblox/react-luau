@@ -258,8 +258,10 @@ exports.useMemo = useMemo
 
 	See [API reference for `useImperativeHandle`](https://react.dev/reference/react/useImperativeHandle).
 ]]
+-- ROBLOX DEVIATION: Luau narrows upstream's mixed callback result to the
+-- supported cleanup function or nil.
 local function useImperativeHandle<T>(
-	ref: { current: T | nil } | ((inst: T | nil) -> any) | nil,
+	ref: { current: T | nil } | ((inst: T | nil) -> (() -> ())?) | nil,
 	create: () -> T,
 	deps: Array<any> | nil
 ): ()

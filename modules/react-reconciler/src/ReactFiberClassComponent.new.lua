@@ -43,6 +43,7 @@ local enableDebugTracing = ReactFeatureFlags.enableDebugTracing
 local enableSchedulingProfiler = ReactFeatureFlags.enableSchedulingProfiler
 local warnAboutDeprecatedLifecycles = ReactFeatureFlags.warnAboutDeprecatedLifecycles
 local enableDoubleInvokingEffects = ReactFeatureFlags.enableDoubleInvokingEffects
+local enableRefAsProp = ReactFeatureFlags.enableRefAsProp
 
 local ReactStrictModeWarnings = require(script.Parent["ReactStrictModeWarnings.new"])
 local isMounted = require(script.Parent.ReactFiberTreeReflection).isMounted
@@ -58,8 +59,7 @@ local ReactSymbols = require(Packages.Shared).ReactSymbols
 local REACT_CONTEXT_TYPE = ReactSymbols.REACT_CONTEXT_TYPE
 local REACT_PROVIDER_TYPE = ReactSymbols.REACT_PROVIDER_TYPE
 
-local resolveDefaultProps =
-	require(script.Parent["ReactFiberLazyComponent.new"]).resolveDefaultProps
+local resolveClassComponentProps
 local ReactTypeOfMode = require(script.Parent.ReactTypeOfMode)
 local DebugTracingMode = ReactTypeOfMode.DebugTracingMode
 local StrictMode = ReactTypeOfMode.StrictMode
@@ -110,10 +110,6 @@ local fakeInternalInstance = {}
 
 -- React.Component uses a shared frozen object by default.
 -- We'll use it to determine whether we need to initialize legacy refs.
--- ROBLOX deviation: Uses __refs instead of refs to avoid conflicts
--- local emptyRefsObject = React.Component:extend("").refs
-local emptyRefsObject = React.Component:extend("").__refs
-
 local didWarnAboutStateAssignmentForComponent
 local didWarnAboutUninitializedState
 local didWarnAboutGetSnapshotBeforeUpdateWithoutDidUpdate
@@ -958,9 +954,9 @@ local function mountClassInstance(
 	local instance = workInProgress.stateNode
 	instance.props = newProps
 	instance.state = workInProgress.memoizedState
-	-- ROBLOX deviation: Uses __refs instead of refs to avoid conflicts
-	-- instance.refs = emptyRefsObject
-	instance.__refs = emptyRefsObject
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/v19.0.0/packages/react-reconciler/src/ReactFiberClassComponent.js#L768-L783
+	-- ROBLOX DEVIATION: React-Luau uses __refs instead of refs to avoid conflicts.
+	instance.__refs = {}
 
 	initializeUpdateQueue(workInProgress)
 
@@ -1064,8 +1060,16 @@ function resumeMountClassInstance(
 ): boolean
 	local instance = workInProgress.stateNode
 
-	local oldProps = workInProgress.memoizedProps
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/bc1fac0e9da23990469d328e330aafdd364759b8/packages/react-reconciler/src/ReactFiberClassComponent.js#L904-L938
+	local unresolvedOldProps = workInProgress.memoizedProps
+	local oldProps = resolveClassComponentProps(
+		ctor,
+		unresolvedOldProps,
+		workInProgress.type == workInProgress.elementType
+	)
 	instance.props = oldProps
+	local unresolvedNewProps = workInProgress.pendingProps
+	local didReceiveNewProps = unresolvedNewProps ~= unresolvedOldProps
 
 	local oldContext = instance.context
 	local contextType = ctor.contextType
@@ -1096,7 +1100,7 @@ function resumeMountClassInstance(
 			or type(instance.componentWillReceiveProps) == "function"
 		)
 	then
-		if oldProps ~= newProps or oldContext ~= nextContext then
+		if didReceiveNewProps or oldContext ~= nextContext then
 			callComponentWillReceiveProps(workInProgress, instance, newProps, nextContext)
 		end
 	end
@@ -1109,7 +1113,7 @@ function resumeMountClassInstance(
 	processUpdateQueue(workInProgress, newProps, instance, renderLanes)
 	newState = workInProgress.memoizedState
 	if
-		oldProps == newProps
+		not didReceiveNewProps
 		and oldState == newState
 		and not hasContextChanged()
 		and not checkHasForceUpdateAfterProcessing()
@@ -1216,9 +1220,11 @@ local function updateClassInstance(
 	cloneUpdateQueue(current, workInProgress)
 
 	local unresolvedOldProps = workInProgress.memoizedProps
-	local oldProps = if workInProgress.type == workInProgress.elementType
-		then unresolvedOldProps
-		else resolveDefaultProps(workInProgress.type, unresolvedOldProps)
+	local oldProps = resolveClassComponentProps(
+		ctor,
+		unresolvedOldProps,
+		workInProgress.type == workInProgress.elementType
+	)
 	instance.props = oldProps
 	local unresolvedNewProps = workInProgress.pendingProps
 
@@ -1420,14 +1426,45 @@ local function updateClassInstance(
 	return shouldUpdate
 end
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/8a13ea0b7a4b161add410779e0abe2cd4cc230d2/packages/react-reconciler/src/ReactFiberClassComponent.js#L1229-L1265
+resolveClassComponentProps = function(
+	Component: any,
+	baseProps: { [any]: any },
+	alreadyResolvedDefaultProps: boolean
+): { [any]: any }
+	local newProps = baseProps
+	-- Resolve default props. Taken from old JSX runtime, where this used to live.
+	local defaultProps = Component.defaultProps
+	if defaultProps and not alreadyResolvedDefaultProps then
+		newProps = Object.assign({}, newProps, baseProps)
+		for propName, value in defaultProps do
+			if newProps[propName] == nil then
+				newProps[propName] = value
+			end
+		end
+	end
+
+	if enableRefAsProp then
+		-- Remove ref from the props object, if it exists.
+		-- ROBLOX DEVIATION: A Luau table cannot contain a key whose value is nil, so
+		-- checking the value is equivalent to JavaScript's `in` check here.
+		if newProps.ref ~= nil then
+			if newProps == baseProps then
+				newProps = Object.assign({}, newProps)
+			end
+			newProps.ref = nil
+		end
+	end
+	return newProps
+end
+
 return {
 	adoptClassInstance = adoptClassInstance,
 	constructClassInstance = constructClassInstance,
 	mountClassInstance = mountClassInstance,
 	resumeMountClassInstance = resumeMountClassInstance,
 	updateClassInstance = updateClassInstance,
+	resolveClassComponentProps = resolveClassComponentProps,
 
 	applyDerivedStateFromProps = applyDerivedStateFromProps,
-	-- deviation: this should be safe to export, since it gets assigned only once
-	emptyRefsObject = emptyRefsObject,
 }

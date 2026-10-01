@@ -12,7 +12,6 @@ local Packages = script.Parent.Parent
 local ReactGlobals = require(Packages.ReactGlobals)
 local LuauPolyfill = require(Packages.LuauPolyfill)
 local Array = LuauPolyfill.Array
-local Error = LuauPolyfill.Error
 type Array<T> = { [number]: T }
 type Set<T> = { [T]: boolean }
 type Object = { [any]: any }
@@ -147,156 +146,12 @@ end
 
 local isArray = Array.isArray
 
-function coerceRef(returnFiber: Fiber, current: Fiber | nil, element: ReactElement)
-	local mixedRef = element.ref
-	if mixedRef ~= nil and type(mixedRef) == "string" then
-		-- ROBLOX deviation: we do not support string refs, and will not coerce
-		if
-			not element._owner
-			or not element._self
-			or element._owner.stateNode == element._self
-		then
-			-- ROBLOX performance: don't get component name unless we have to use it
-			local componentName
-			if __DEV__ then
-				componentName = getComponentName(returnFiber.type) or "Component"
-			else
-				componentName = "<enable __DEV__ mode for component names>"
-			end
-			error(
-				Error.new(
-					string.format(
-						'Component "%s" contains the string ref "%s". Support for string refs '
-							-- ROBLOX deviation: we removed string ref support ahead of upstream schedule
-							.. "has been removed. We recommend using "
-							.. "useRef() or createRef() instead. "
-							.. "Learn more about using refs safely here: "
-							.. "https://reactjs.org/link/strict-mode-string-ref",
-						componentName,
-						tostring(mixedRef)
-					)
-				)
-			)
-		end
-
-		if not element._owner then
-			error(
-				"Expected ref to be a function or an object returned by React.createRef(), or nil."
-			)
-		end
-
-		-- if __DEV__ then
-		-- 	-- TODO: Clean this up once we turn on the string ref warning for
-		-- 	-- everyone, because the strict mode case will no longer be relevant
-		-- 	if
-		-- 		(bit32.band(returnFiber.mode, StrictMode) ~= 0 or warnAboutStringRefs)
-		-- 		-- We warn in ReactElement.js if owner and self are equal for string refs
-		-- 		-- because these cannot be automatically converted to an arrow function
-		-- 		-- using a codemod. Therefore, we don't have to warn about string refs again.
-		-- 		and not (
-		-- 			element._owner
-		-- 			and element._self
-		-- 			and element._owner.stateNode ~= element._self
-		-- 		)
-		-- 	then
-		-- 		local componentName = getComponentName(returnFiber.type) or "Component"
-		-- 		if not didWarnAboutStringRefs[componentName] then
-		-- 			if warnAboutStringRefs then
-		-- 				console.error(
-		-- 					'Component "%s" contains the string ref "%s". Support for string refs '
-		-- 						.. "will be removed in a future major release. We recommend using "
-		-- 						.. "useRef() or createRef() instead. "
-		-- 						.. "Learn more about using refs safely here: "
-		-- 						.. "https://reactjs.org/link/strict-mode-string-ref",
-		-- 					componentName,
-		-- 					mixedRef
-		-- 				)
-		-- 			else
-		-- 				console.error(
-		-- 					'A string ref, "%s", has been found within a strict mode tree. '
-		-- 						.. "String refs are a source of potential bugs and should be avoided. "
-		-- 						.. "We recommend using useRef() or createRef() instead. "
-		-- 						.. "Learn more about using refs safely here: "
-		-- 						.. "https://reactjs.org/link/strict-mode-string-ref",
-		-- 					mixedRef
-		-- 				)
-		-- 			end
-		-- 			didWarnAboutStringRefs[componentName] = true
-		-- 		end
-		-- 	end
-		-- end
-
-		-- if element._owner then
-		-- 	local owner: Fiber? = element._owner
-		-- 	local inst
-		-- 	if owner then
-		-- 		local ownerFiber = owner
-		-- 		invariant(
-		-- 			ownerFiber.tag == ClassComponent,
-		-- 			"Function components cannot have string refs. "
-		-- 				.. "We recommend using useRef() instead. "
-		-- 				.. "Learn more about using refs safely here: "
-		-- 				.. "https://reactjs.org/link/strict-mode-string-ref"
-		-- 		)
-		-- 		inst = ownerFiber.stateNode
-		-- 	end
-		-- 	invariant(
-		-- 		inst,
-		-- 		"Missing owner for string ref %s. This error is likely caused by a "
-		-- 			.. "bug in React. Please file an issue.",
-		-- 		mixedRef
-		-- 	)
-
-		-- 	-- ROBLOX deviation: explicitly convert to string
-		-- 	local stringRef = tostring(mixedRef)
-		-- 	-- Check if previous string ref matches new string ref
-		-- 	if
-		-- 		current ~= nil
-		-- 		and (current :: Fiber).ref ~= nil
-		-- 		-- ROBLOX deviation: Lua doesn't support fields on functions, so invert this check
-		-- 		-- typeof((current :: Fiber).ref) == 'function' and
-		-- 		and typeof((current :: Fiber).ref) ~= "function"
-		-- 		-- ROBLOX deviation: this partially inlines the ref type from Fiber to workaround Luau refinement issues
-		-- 		and ((current :: Fiber).ref :: { _stringRef: string? })._stringRef
-		-- 			== stringRef
-		-- 	then
-		-- 		return (current :: Fiber).ref
-		-- 	end
-		-- 	-- ROBLOX deviation: make ref a callable table rather than a function
-		-- 	local callableRef = function(value)
-		-- 		local refs = inst.__refs
-		-- 		if refs == emptyRefsObject then
-		-- 			-- This is a lazy pooled frozen object, so we need to initialize.
-		-- 			inst.__refs = {}
-		-- 			refs = inst.__refs
-		-- 		end
-		-- 		if value == nil then
-		-- 			refs[stringRef] = nil
-		-- 		else
-		-- 			refs[stringRef] = value
-		-- 		end
-		-- 	end
-		-- 	local ref = setmetatable({}, { __call = callableRef })
-		-- 	ref._stringRef = stringRef
-		-- 	return ref
-		-- else
-		-- 	invariant(
-		-- 		typeof(mixedRef) == "string",
-		-- 		"Expected ref to be a function, a string, an object returned by React.createRef(), or nil."
-		-- 	)
-		-- 	invariant(
-		-- 		element._owner,
-		-- 		"Element ref was specified as a string (%s) but no owner was set. This could happen for one of"
-		-- 			.. " the following reasons:\n"
-		-- 			.. "1. You may be adding a ref to a function component\n"
-		-- 			.. "2. You may be adding a ref to a component that was not created inside a component's render method\n"
-		-- 			.. "3. You have multiple copies of React loaded\n"
-		-- 			.. "See https://reactjs.org/link/refs-must-have-owner for more information.",
-		-- 		mixedRef
-		-- 	)
-		-- end
-	end
-	return mixedRef
+-- ROBLOX upstream: https://github.com/facebook/react/blob/v19.0.0/packages/react-reconciler/src/ReactChildFiber.js#L253-L262
+function coerceRef(_returnFiber: Fiber, _current: Fiber | nil, element: ReactElement)
+	-- TODO: This is a temporary, intermediate step. Now that enableRefAsProp is on,
+	-- we should resolve the `ref` prop during the begin phase of the component
+	-- it's attached to (HostComponent, ClassComponent, etc).
+	return element.props.ref
 end
 
 -- ROBLOX performance: all uses commented out
