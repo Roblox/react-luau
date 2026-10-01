@@ -21,6 +21,21 @@ type React_Node = flowtypes.React_Node
 type SimpleMap<K, V> = { [K]: V }
 type Iterable<T> = SimpleMap<string | number, T> | Array<T>
 
+export type BatchConfigTransition = {
+	_updatedFibers: any?,
+	name: string?,
+	startTime: number?,
+}
+
+export type StartTransitionOptions = {
+	name: string?,
+}
+
+export type StartTransition = (
+	callback: () -> (),
+	options: StartTransitionOptions?
+) -> ()
+
 export type ReactNode<T = any> =
 	React_Element<T>
 	| ReactPortal

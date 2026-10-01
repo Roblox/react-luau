@@ -86,7 +86,186 @@ describe("getHighestPriorityPendingLanes", function()
 	end)
 end)
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L61-L114
+-- ROBLOX DEVIATION: These local contracts verify the reserved 7/2 update and
+-- deferred split required by React 17's smaller transition-lane family.
+describe("transition lanes", function()
+	it("cycles through each transition update lane", function()
+		local firstLane = ReactFiberLane.claimNextTransitionLane()
+		local claimedLanes = { [firstLane] = true }
+
+		jestExpect(ReactFiberLane.isTransitionLane(firstLane)).toBe(true)
+		for _ = 2, 7 do
+			local lane = ReactFiberLane.claimNextTransitionLane()
+			jestExpect(ReactFiberLane.isTransitionLane(lane)).toBe(true)
+			jestExpect(claimedLanes[lane]).toBeNil()
+			claimedLanes[lane] = true
+		end
+
+		jestExpect(ReactFiberLane.claimNextTransitionLane()).toBe(firstLane)
+	end)
+
+	it("cycles through each reserved deferred lane", function()
+		local firstLane = ReactFiberLane.claimNextTransitionDeferredLane()
+		local claimedLanes = { [firstLane] = true }
+
+		jestExpect(ReactFiberLane.includesDeferredLane(firstLane)).toBe(true)
+		for _ = 2, 2 do
+			local lane = ReactFiberLane.claimNextTransitionDeferredLane()
+			jestExpect(ReactFiberLane.includesDeferredLane(lane)).toBe(true)
+			jestExpect(claimedLanes[lane]).toBeNil()
+			claimedLanes[lane] = true
+		end
+
+		jestExpect(ReactFiberLane.claimNextTransitionDeferredLane()).toBe(firstLane)
+	end)
+
+	it(
+		"retains transition lane values and rotates both families independently",
+		function()
+			local firstUpdateLane = ReactFiberLane.claimNextTransitionLane()
+			local firstDeferredLane = ReactFiberLane.claimNextTransitionDeferredLane()
+			local secondUpdateLane = ReactFiberLane.claimNextTransitionLane()
+			local secondDeferredLane = ReactFiberLane.claimNextTransitionDeferredLane()
+
+			jestExpect(firstUpdateLane).toBe(0b0000000000000000010000000000000)
+			jestExpect(secondUpdateLane).toBe(bit32.lshift(firstUpdateLane, 1))
+			jestExpect(firstDeferredLane).toBe(0b0000000000100000000000000000000)
+			jestExpect(secondDeferredLane).toBe(bit32.lshift(firstDeferredLane, 1))
+
+			for _ = 3, 7 do
+				ReactFiberLane.claimNextTransitionLane()
+			end
+		end
+	)
+
+	it("distinguishes urgent work from transition work", function()
+		local transitionLane = ReactFiberLane.claimNextTransitionLane()
+		jestExpect(ReactFiberLane.includesOnlyNonUrgentLanes(transitionLane)).toBe(true)
+		jestExpect(ReactFiberLane.includesOnlyNonUrgentLanes(ReactFiberLane.DefaultLanes)).toBe(
+			false
+		)
+	end)
+end)
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L423-L470
+-- ROBLOX DEVIATION: These local contracts reconstruct React 19's separate task
+-- lane selection when React 17 stores the spawned relationship as entanglement.
 describe("getNextLanes", function()
+	local function createRoot(pendingLanes, suspendedLanes, pingedLanes)
+		return {
+			pendingLanes = pendingLanes,
+			expiredLanes = ReactFiberLane.NoLanes,
+			suspendedLanes = suspendedLanes,
+			pingedLanes = pingedLanes,
+			entangledLanes = ReactFiberLane.NoLanes,
+			entanglements = ReactFiberLane.createLaneMap(ReactFiberLane.NoLanes),
+		}
+	end
+
+	local function entangleDeferredLane(root, deferredLane, parentLanes)
+		local index = 31 - bit32.countlz(deferredLane)
+		root.entangledLanes = ReactFiberLane.mergeLanes(root.entangledLanes, deferredLane)
+		root.entanglements[index] =
+			ReactFiberLane.mergeLanes(root.entanglements[index], parentLanes)
+	end
+
+	describe("pinged deferred tasks", function()
+		it("includes a related deferred task when its parent pings with it", function()
+			local parentLane = ReactFiberLane.SyncLane
+			local deferredLane = ReactFiberLane.claimNextTransitionDeferredLane()
+			local pingedLanes = ReactFiberLane.mergeLanes(parentLane, deferredLane)
+			local root = createRoot(pingedLanes, pingedLanes, pingedLanes)
+			entangleDeferredLane(root, deferredLane, parentLane)
+
+			jestExpect(ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)).toBe(
+				pingedLanes
+			)
+		end)
+
+		it("does not include a related deferred task before it pings", function()
+			local parentLane = ReactFiberLane.SyncLane
+			local deferredLane = ReactFiberLane.claimNextTransitionDeferredLane()
+			local pendingLanes = ReactFiberLane.mergeLanes(parentLane, deferredLane)
+			local root = createRoot(pendingLanes, pendingLanes, parentLane)
+			entangleDeferredLane(root, deferredLane, parentLane)
+
+			jestExpect(ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)).toBe(
+				parentLane
+			)
+		end)
+
+		it("does not include a deferred task related to another parent", function()
+			local selectedParentLane = ReactFiberLane.SyncLane
+			local otherParentLane =
+				bit32.band(ReactFiberLane.DefaultLanes, -ReactFiberLane.DefaultLanes)
+			local deferredLane = ReactFiberLane.claimNextTransitionDeferredLane()
+			local pendingLanes =
+				bit32.bor(selectedParentLane, otherParentLane, deferredLane)
+			local pingedLanes =
+				ReactFiberLane.mergeLanes(selectedParentLane, deferredLane)
+			local root = createRoot(pendingLanes, pendingLanes, pingedLanes)
+			entangleDeferredLane(root, deferredLane, otherParentLane)
+
+			jestExpect(ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)).toBe(
+				selectedParentLane
+			)
+		end)
+
+		it("preserves transition priority for a related deferred task", function()
+			local parentLane = ReactFiberLane.claimNextTransitionLane()
+			local deferredLane = ReactFiberLane.claimNextTransitionDeferredLane()
+			local pingedLanes = ReactFiberLane.mergeLanes(parentLane, deferredLane)
+			local root = createRoot(pingedLanes, pingedLanes, pingedLanes)
+			entangleDeferredLane(root, deferredLane, parentLane)
+
+			jestExpect(ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)).toBe(
+				pingedLanes
+			)
+			jestExpect(ReactFiberLane.returnNextLanesPriority()).toBe(
+				ReactFiberLane.TransitionPriority
+			)
+		end)
+
+		it("includes every pinged deferred task related to the parent", function()
+			local parentLane = ReactFiberLane.SyncLane
+			local firstDeferredLane = ReactFiberLane.claimNextTransitionDeferredLane()
+			local secondDeferredLane = ReactFiberLane.claimNextTransitionDeferredLane()
+			local pingedLanes =
+				bit32.bor(parentLane, firstDeferredLane, secondDeferredLane)
+			local root = createRoot(pingedLanes, pingedLanes, pingedLanes)
+			entangleDeferredLane(root, firstDeferredLane, parentLane)
+			entangleDeferredLane(root, secondDeferredLane, parentLane)
+
+			jestExpect(ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)).toBe(
+				pingedLanes
+			)
+		end)
+
+		it("excludes an unrelated pinged deferred task", function()
+			local selectedParentLane = ReactFiberLane.SyncLane
+			local otherParentLane =
+				bit32.band(ReactFiberLane.DefaultLanes, -ReactFiberLane.DefaultLanes)
+			local matchingDeferredLane = ReactFiberLane.claimNextTransitionDeferredLane()
+			local unrelatedDeferredLane = ReactFiberLane.claimNextTransitionDeferredLane()
+			local pendingLanes = bit32.bor(
+				selectedParentLane,
+				otherParentLane,
+				matchingDeferredLane,
+				unrelatedDeferredLane
+			)
+			local pingedLanes =
+				bit32.bor(selectedParentLane, matchingDeferredLane, unrelatedDeferredLane)
+			local root = createRoot(pendingLanes, pendingLanes, pingedLanes)
+			entangleDeferredLane(root, matchingDeferredLane, selectedParentLane)
+			entangleDeferredLane(root, unrelatedDeferredLane, otherParentLane)
+
+			jestExpect(ReactFiberLane.getNextLanes(root, ReactFiberLane.NoLanes)).toBe(
+				ReactFiberLane.mergeLanes(selectedParentLane, matchingDeferredLane)
+			)
+		end)
+	end)
+
 	describe("given no pending lanes", function()
 		local root
 

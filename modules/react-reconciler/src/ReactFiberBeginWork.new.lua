@@ -1867,9 +1867,23 @@ local function shouldRemainOnFallback(
 	return hasSuspenseContext(suspenseContext, ForceSuspenseFallback)
 end
 
-local function getRemainingWorkInPrimaryTree(current: Fiber, renderLanes)
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberBeginWork.js#L2324-L2342
+local function getRemainingWorkInPrimaryTree(
+	current: Fiber?,
+	primaryTreeDidDefer: boolean,
+	renderLanes
+)
 	-- TODO: Should not remove render lanes that were pinged during this render
-	return ReactFiberLane.removeLanes(current.childLanes, renderLanes)
+	local remainingLanes = if current == nil
+		then ReactFiberLane.NoLanes
+		else ReactFiberLane.removeLanes(current.childLanes, renderLanes)
+	if primaryTreeDidDefer then
+		remainingLanes = ReactFiberLane.mergeLanes(
+			remainingLanes,
+			ReactFiberWorkLoop.peekDeferredLane()
+		)
+	end
+	return remainingLanes
 end
 
 -- ROBLOX deviation: predeclare these methods to resolve method declaration ordering
@@ -1921,6 +1935,16 @@ local function updateSuspenseComponent(current, workInProgress, renderLanes)
 			end
 		end
 	end
+
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberBeginWork.js#L2368-L2371
+	-- ROBLOX DEVIATION: Use the module member directly because this file is at
+	-- Luau's local-register limit.
+	local didPrimaryChildrenDefer = bit32.band(
+		workInProgress.flags,
+		ReactFiberFlags.DidDefer
+	) ~= NoFlags
+	workInProgress.flags =
+		bit32.band(workInProgress.flags, bit32.bnot(ReactFiberFlags.DidDefer))
 
 	suspenseContext = setDefaultShallowSuspenseContext(suspenseContext)
 
@@ -1981,6 +2005,12 @@ local function updateSuspenseComponent(current, workInProgress, renderLanes)
 			)
 			local primaryChildFragment: Fiber = workInProgress.child :: any
 			primaryChildFragment.memoizedState = mountSuspenseOffscreenState(renderLanes)
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberBeginWork.js#L2430-L2438
+			primaryChildFragment.childLanes = getRemainingWorkInPrimaryTree(
+				current,
+				didPrimaryChildrenDefer,
+				renderLanes
+			)
 			workInProgress.memoizedState = SUSPENDED_MARKER
 			return fallbackFragment
 		elseif
@@ -1998,6 +2028,12 @@ local function updateSuspenseComponent(current, workInProgress, renderLanes)
 			)
 			local primaryChildFragment: Fiber = workInProgress.child :: any
 			primaryChildFragment.memoizedState = mountSuspenseOffscreenState(renderLanes)
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberBeginWork.js#L2474-L2482
+			primaryChildFragment.childLanes = getRemainingWorkInPrimaryTree(
+				current,
+				didPrimaryChildrenDefer,
+				renderLanes
+			)
 			workInProgress.memoizedState = SUSPENDED_MARKER
 
 			-- Since nothing actually suspended, there will nothing to ping this to
@@ -2067,6 +2103,12 @@ local function updateSuspenseComponent(current, workInProgress, renderLanes)
 						local primaryChildFragment: Fiber = workInProgress.child :: any
 						primaryChildFragment.memoizedState =
 							mountSuspenseOffscreenState(renderLanes)
+						-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberBeginWork.js#L3153-L3161
+						primaryChildFragment.childLanes = getRemainingWorkInPrimaryTree(
+							current,
+							didPrimaryChildrenDefer,
+							renderLanes
+						)
 						workInProgress.memoizedState = SUSPENDED_MARKER
 						return fallbackChildFragment
 					end
@@ -2098,8 +2140,12 @@ local function updateSuspenseComponent(current, workInProgress, renderLanes)
 					)
 				end
 
-				primaryChildFragment.childLanes =
-					getRemainingWorkInPrimaryTree(current, renderLanes)
+				-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberBeginWork.js#L2577-L2582
+				primaryChildFragment.childLanes = getRemainingWorkInPrimaryTree(
+					current,
+					didPrimaryChildrenDefer,
+					renderLanes
+				)
 				workInProgress.memoizedState = SUSPENDED_MARKER
 				return fallbackChildFragment
 			else
@@ -2141,8 +2187,12 @@ local function updateSuspenseComponent(current, workInProgress, renderLanes)
 					)
 				end
 
-				primaryChildFragment.childLanes =
-					getRemainingWorkInPrimaryTree(current, renderLanes)
+				-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberBeginWork.js#L2577-L2582
+				primaryChildFragment.childLanes = getRemainingWorkInPrimaryTree(
+					current,
+					didPrimaryChildrenDefer,
+					renderLanes
+				)
 				-- Skip the primary children, and continue working on the
 				-- fallback children.
 				workInProgress.memoizedState = SUSPENDED_MARKER

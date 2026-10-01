@@ -30,6 +30,10 @@ exports.Deletion = --[[                     ]]
 	0b000000000000001000
 exports.ContentReset = --[[                 ]]
 	0b000000000000010000
+-- ROBLOX upstream: https://github.com/facebook/react/blob/61cde7820e72fa6e922de2434988fcbdc971710b/packages/react-reconciler/src/ReactFiberFlags.js#L44
+-- ROBLOX DEVIATION: This reuses ContentReset because host and Suspense fibers
+-- cannot interpret the same flag during one begin-work path.
+exports.DidDefer = exports.ContentReset
 exports.Callback = --[[                     ]]
 	0b000000000000100000
 exports.DidCapture = --[[                   ]]
