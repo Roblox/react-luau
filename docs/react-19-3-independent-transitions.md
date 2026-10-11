@@ -45,3 +45,30 @@ Actions continue to share the pending combined scope.
 
 Complete translated test inventory is in
 `react-19-3-independent-transition-tests.md`.
+
+Verification uses the standalone module archive at
+`8c8757d7a2132738e727ee194e6c1196fbdfd5f1` through the installed Jest Roblox
+CLI with the `studio-cli` backend and original tests and matchers. The isolated
+archive records 458 source-file SHA256 hashes. Commands and results live in
+`.harness/final-verification.txt`; the harness mounts this fork's modules and
+uses installed Jest/polyfill dependencies.
+
+| Gate | Result | Evidence |
+| --- | --- | --- |
+| Transition, DeferredValue, AsyncActions and ActionState suites | 84 passed, no skips; exit 0 | `.harness/final-formatted-four-result.json` |
+| Global and hook transition error reporting | 3 passed | `ReactStartTransition.spec.lua` |
+| Hook inspection integration, including thenables and composite Actions/deferred hooks | 21 passed, 3 existing skips | `ReactHooksInspectionIntegration.spec.lua` |
+| Primitive/custom hook inspection | 8 passed, 3 inherited failures | `ReactHooksInspection.spec.lua`; custom-tree equality at lines 75, 118 and 213 |
+| Assembled-foundation hook inspection | Same 8 passed and 3 failures | Immutable `e895ddcda96881075609fec1c0981e17ee29fb06`; `.harness/bookends-foundation-result.json` |
+| Changed-file formatting and lint | Passed | Official StyLua 0.18.1 `--check` and Selene 0.28.0 `--config selene.toml` on every changed Lua file; `git diff --check` |
+
+The inherited inspection failures flatten custom-hook tree nodes while retaining
+primitive hook values. The foundation reproducer uses the same original tests
+and matchers. The relevant Actions/thenable integration cases pass.
+
+The native full-fork `bin/ci.sh` gate requires `rotrieve`, `roblox-cli` and
+`robloxdev-cli`, which are absent. The current authorized GitHub account receives
+HTTP 404 for `Roblox/rotriever` and `Roblox/safe-flags-internal`; the latter is
+required by `rotriever.toml`. Native static analysis and the native complete
+DEV/release test runs remain unavailable. These prerequisite failures are
+separate from the executed renderer results above.
