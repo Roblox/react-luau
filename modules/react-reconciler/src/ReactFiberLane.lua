@@ -419,7 +419,16 @@ local function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes
 	then
 		getHighestPriorityLanes(wipLanes)
 		local wipLanePriority = return_highestLanePriority
-		if nextLanePriority <= wipLanePriority then
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/ReactFiberLane.js#L351-L379
+		-- ROBLOX DEVIATION: React 17 lane-family priorities stand in for the
+		-- modern DefaultLane and transition-family bit checks.
+		if
+			nextLanePriority <= wipLanePriority
+			or (
+				nextLanePriority == DefaultLanePriority
+				and wipLanePriority == TransitionPriority
+			)
+		then
 			return wipLanes
 		else
 			return_highestLanePriority = nextLanePriority
@@ -720,7 +729,7 @@ exports.claimNextTransitionDeferredLane = claimNextTransitionDeferredLane
 -- // be pure function, so that it always returns the same lane for given inputs.
 local function findRetryLane(wipLanes: Lanes): Lane
 	-- // This is a fork of `findUpdateLane` designed specifically for Suspense
-	-- // "retries" â€” a special update that attempts to flip a Suspense boundary
+	-- // "retries" — a special update that attempts to flip a Suspense boundary
 	-- // from its placeholder state to its primary/resolved state.
 	local lane = pickArbitraryLane(bit32.band(RetryLanes, bit32.bnot(wipLanes)))
 	if lane == NoLane then

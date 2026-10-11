@@ -160,28 +160,12 @@ describe("ReactTransition", function()
 						return React.createElement(
 							React.Fragment,
 							nil,
-							React.createElement(
-								Suspense,
-								{
-									fallback = React.createElement(
-										"span",
-										nil,
-										"Loading A"
-									),
-								},
-								React.createElement(A)
-							),
-							React.createElement(
-								Suspense,
-								{
-									fallback = React.createElement(
-										"span",
-										nil,
-										"Loading B"
-									),
-								},
-								React.createElement(B)
-							)
+							React.createElement(Suspense, {
+								fallback = React.createElement("span", nil, "Loading A"),
+							}, React.createElement(A)),
+							React.createElement(Suspense, {
+								fallback = React.createElement("span", nil, "Loading B"),
+							}, React.createElement(B))
 						)
 					end
 					local root = ReactNoop.createRoot()
@@ -201,6 +185,186 @@ describe("ReactTransition", function()
 							React.createElement("span", nil, "Loading A"),
 							React.createElement("span", nil, "Loading B")
 						)
+					)
+					ReactNoop.act(function()
+						resolveText("A: 0")
+						resolveText("B: 0")
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "A: 0", "B: 0" })
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement(
+							React.Fragment,
+							nil,
+							React.createElement("span", nil, "A: 0"),
+							React.createElement("span", nil, "B: 0")
+						)
+					)
+					ReactNoop.act(function()
+						startTransitionA(function()
+							setA(1)
+						end)
+					end)
+					jestExpect(Scheduler).toHaveYielded({
+						"Pending A...",
+						"A: 0",
+						"Suspend! [A: 1]",
+					})
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement(
+							React.Fragment,
+							nil,
+							React.createElement(
+								"span",
+								nil,
+								React.createElement("span", nil, "Pending A..."),
+								"A: 0"
+							),
+							React.createElement("span", nil, "B: 0")
+						)
+					)
+					ReactNoop.act(function()
+						startTransitionB(function()
+							setB(1)
+						end)
+					end)
+					jestExpect(Scheduler).toHaveYielded({
+						"Pending B...",
+						"B: 0",
+						"Suspend! [A: 1]",
+						"Suspend! [B: 1]",
+					})
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement(
+							React.Fragment,
+							nil,
+							React.createElement(
+								"span",
+								nil,
+								React.createElement("span", nil, "Pending A..."),
+								"A: 0"
+							),
+							React.createElement(
+								"span",
+								nil,
+								React.createElement("span", nil, "Pending B..."),
+								"B: 0"
+							)
+						)
+					)
+					ReactNoop.act(function()
+						resolveText("B: 1")
+					end)
+					jestExpect(Scheduler).toHaveYielded(
+						if parallelTransitions
+							then { "B: 1", "Suspend! [A: 1]" }
+							else { "Suspend! [A: 1]", "B: 1" }
+					)
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement(
+							React.Fragment,
+							nil,
+							React.createElement(
+								"span",
+								nil,
+								React.createElement("span", nil, "Pending A..."),
+								"A: 0"
+							),
+							if parallelTransitions
+								then React.createElement("span", nil, "B: 1")
+								else React.createElement(
+									"span",
+									nil,
+									React.createElement("span", nil, "Pending B..."),
+									"B: 0"
+								)
+						)
+					)
+					ReactNoop.act(function()
+						resolveText("A: 1")
+					end)
+					jestExpect(Scheduler).toHaveYielded(
+						if parallelTransitions then { "A: 1" } else { "A: 1", "B: 1" }
+					)
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement(
+							React.Fragment,
+							nil,
+							React.createElement("span", nil, "A: 1"),
+							React.createElement("span", nil, "B: 1")
+						)
+					)
+				end
+			)
+
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactTransition-test.js#L368-L520
+			it(
+				"when multiple transitions update different queues, but suspend the same boundary, they do entangle",
+				function()
+					local setA, startTransitionA, setB, startTransitionB
+					local function A()
+						local a, updateA = useState(0)
+						local isPending, startA = useTransition()
+						setA, startTransitionA = updateA, startA
+						return React.createElement(
+							"span",
+							nil,
+							isPending
+									and React.createElement(
+										"span",
+										nil,
+										React.createElement(
+											Text,
+											{ text = "Pending A..." }
+										)
+									)
+								or nil,
+							React.createElement(
+								AsyncText,
+								{ text = "A: " .. tostring(a) }
+							)
+						)
+					end
+					local function B()
+						local b, updateB = useState(0)
+						local isPending, startB = useTransition()
+						setB, startTransitionB = updateB, startB
+						return React.createElement(
+							"span",
+							nil,
+							isPending
+									and React.createElement(
+										"span",
+										nil,
+										React.createElement(
+											Text,
+											{ text = "Pending B..." }
+										)
+									)
+								or nil,
+							React.createElement(
+								AsyncText,
+								{ text = "B: " .. tostring(b) }
+							)
+						)
+					end
+					local function App()
+						return React.createElement(Suspense, {
+							fallback = React.createElement("span", nil, "Loading..."),
+						}, React.createElement(A), React.createElement(B))
+					end
+					local root = ReactNoop.createRoot()
+					ReactNoop.act(function()
+						root.render(React.createElement(App))
+					end)
+					-- ROBLOX DEVIATION: React 17 renders both siblings on the initial
+					-- attempt. Upstream renders A, then prewarms A and B, adding a
+					-- second "Suspend! [A: 0]" before "Suspend! [B: 0]".
+					jestExpect(Scheduler).toHaveYielded({
+						"Suspend! [A: 0]",
+						"Suspend! [B: 0]",
+					})
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement("span", nil, "Loading...")
 					)
 					ReactNoop.act(function()
 						resolveText("A: 0")

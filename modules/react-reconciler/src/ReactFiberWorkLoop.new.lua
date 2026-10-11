@@ -1796,14 +1796,12 @@ mod.handleError = function(root, thrownValue): ()
 			end
 
 			-- ROBLOX deviation: pass Work Loop callbacks to avoid the dependency cycle.
-			-- ROBLOX deviation, pass Work Loop callbacks since throwException can't call them due to a require cycle
 			throwException(
 				root,
 				(erroredWork :: Fiber).return_,
 				erroredWork :: Fiber,
 				thrownValue,
 				workInProgressRootRenderLanes,
-				exports.onUncaughtError,
 				exports.renderDidError,
 				exports.renderDidSuspendDelayIfPossible
 			)
