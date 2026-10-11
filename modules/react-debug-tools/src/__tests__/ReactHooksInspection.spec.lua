@@ -342,6 +342,67 @@ describe("ReactHooksInspection", function()
 			},
 		})
 	end)
+	it("should inspect a fulfilled promise read with use", function()
+		local promise = {
+			andThen = function() end,
+			status = "fulfilled",
+			value = "resolved",
+		}
+		local function Foo()
+			React.use(promise)
+			return nil
+		end
+
+		local tree = ReactDebugTools.inspectHooks(Foo, {})
+
+		expect(tree).toEqual({
+			{
+				isStateEditable = false,
+				id = nil,
+				name = "Promise",
+				value = "resolved",
+				subHooks = {},
+			},
+		})
+	end)
+	it("should inspect a context read with use", function()
+		local MyContext = React.createContext("default")
+		local function Foo()
+			React.use(MyContext)
+			return nil
+		end
+
+		local tree = ReactDebugTools.inspectHooks(Foo, {})
+
+		expect(tree).toEqual({
+			{
+				isStateEditable = false,
+				id = nil,
+				name = "Context (use)",
+				value = "default",
+				subHooks = {},
+			},
+		})
+	end)
+	it("should report an unresolved promise read with use", function()
+		local promise = { andThen = function() end }
+		local function Foo()
+			React.use(promise)
+			return nil
+		end
+
+		local tree = ReactDebugTools.inspectHooks(Foo, {})
+
+		expect(tree).toEqual({
+			{
+				isStateEditable = false,
+				id = nil,
+				name = "Unresolved",
+				value = promise,
+				subHooks = {},
+			},
+		})
+	end)
 	it("should support an injected dispatcher", function()
 		local function Foo(props)
 			-- ROBLOX deviation START: useState returns 2 values

@@ -29,6 +29,9 @@ local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type Fiber = ReactInternalTypes.Fiber
 type SuspenseHydrationCallbacks = ReactInternalTypes.SuspenseHydrationCallbacks
 type FiberRoot = ReactInternalTypes.FiberRoot
+type ErrorInfo = ReactInternalTypes.ErrorInfo
+type CaughtErrorInfo = ReactInternalTypes.CaughtErrorInfo
+local ReactFiberErrorLogger = require(script.Parent.ReactFiberErrorLogger)
 
 local ReactRootTags = require(script.Parent.ReactRootTags)
 type RootTag = ReactRootTags.RootTag
@@ -101,6 +104,7 @@ local act = ReactFiberWorkLoop.act :: (() -> ()) -> ()
 local ReactUpdateQueue = require(script.Parent["ReactUpdateQueue.new"])
 local createUpdate = ReactUpdateQueue.createUpdate
 local enqueueUpdate = ReactUpdateQueue.enqueueUpdate
+local entangleTransitions = ReactUpdateQueue.entangleTransitions
 local ReactCurrentFiber = require(script.Parent.ReactCurrentFiber)
 local ReactCurrentFiberIsRendering = ReactCurrentFiber.isRendering
 -- deviation: this property would be captured as values instead of bound
@@ -294,9 +298,24 @@ exports.createContainer = function(
 	containerInfo: Container,
 	tag: RootTag,
 	hydrate: boolean,
-	hydrationCallbacks: nil | SuspenseHydrationCallbacks
+	hydrationCallbacks: nil | SuspenseHydrationCallbacks,
+	onUncaughtError: ((error: any, errorInfo: ErrorInfo) -> ())?,
+	onCaughtError: ((
+		error: any,
+		errorInfo: CaughtErrorInfo
+	) -> ())?,
+	onRecoverableError: ((error: any, errorInfo: ErrorInfo) -> ())?
 ): OpaqueRoot
-	return createFiberRoot(containerInfo, tag, hydrate, hydrationCallbacks)
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberReconciler.js#L238-L278
+	return createFiberRoot(
+		containerInfo,
+		tag,
+		hydrate,
+		hydrationCallbacks,
+		onUncaughtError or ReactFiberErrorLogger.defaultOnUncaughtError,
+		onCaughtError or ReactFiberErrorLogger.defaultOnCaughtError,
+		onRecoverableError or ReactFiberErrorLogger.defaultOnRecoverableError
+	)
 end
 
 exports.updateContainer = function(
@@ -376,7 +395,10 @@ exports.updateContainer = function(
 	end
 
 	enqueueUpdate(current, update)
-	scheduleUpdateOnFiber(current, lane, eventTime)
+	local root = scheduleUpdateOnFiber(current, lane, eventTime)
+	if root ~= nil then
+		entangleTransitions(root, current, lane)
+	end
 
 	return lane
 end
@@ -840,5 +862,10 @@ exports.schedulingProfiler = {
 	profilerEventTypes = SchedulingProfiler.profilerEventTypes,
 	registerProfilerEventCallback = SchedulingProfiler.registerProfilerEventCallback,
 }
+
+exports.defaultOnUncaughtError = ReactFiberErrorLogger.defaultOnUncaughtError
+exports.defaultOnCaughtError = ReactFiberErrorLogger.defaultOnCaughtError
+exports.defaultOnRecoverableError = ReactFiberErrorLogger.defaultOnRecoverableError
+exports.legacyDefaultOnUncaughtError = ReactFiberWorkLoop.legacyDefaultOnUncaughtError
 
 return exports

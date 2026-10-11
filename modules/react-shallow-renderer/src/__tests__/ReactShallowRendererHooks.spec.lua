@@ -34,6 +34,49 @@ local function validateElement(element)
 end
 
 describe("ReactShallowRenderer with hooks", function()
+	it("should read a fulfilled promise with use", function()
+		local promise = {
+			andThen = function() end,
+			status = "fulfilled",
+			value = "resolved",
+		}
+		local function SomeComponent()
+			return React.createElement("TextLabel", { Text = React.use(promise) })
+		end
+
+		local result = createRenderer():render(React.createElement(SomeComponent))
+
+		jestExpect(result).toEqual(
+			React.createElement("TextLabel", { Text = "resolved" })
+		)
+	end)
+
+	it("should read context with use", function()
+		local Context = React.createContext("context")
+		local function SomeComponent()
+			return React.createElement("TextLabel", { Text = React.use(Context) })
+		end
+
+		local result = createRenderer():render(React.createElement(SomeComponent))
+
+		jestExpect(result).toEqual(React.createElement("TextLabel", { Text = "context" }))
+	end)
+
+	it("should throw a rejected promise reason from use", function()
+		local rejected = {
+			andThen = function() end,
+			status = "rejected",
+			reason = "Oops!",
+		}
+		local function SomeComponent()
+			return React.use(rejected)
+		end
+
+		jestExpect(function()
+			createRenderer():render(React.createElement(SomeComponent))
+		end).toThrow("Oops!")
+	end)
+
 	it("should work with useState", function()
 		local function SomeComponent(props)
 			local name = React.useState(props.defaultName)

@@ -83,16 +83,20 @@ local function unwindWork(workInProgress: Fiber, renderLanes: Lanes): Fiber?
 		popTopLevelLegacyContextObject(workInProgress)
 		resetMutableSourceWorkInProgressVersions()
 		local flags = workInProgress.flags
-		invariant(
-			bit32.band(flags, ReactFiberFlags.DidCapture) == ReactFiberFlags.NoFlags,
-			"The root failed to unmount after an error. This is likely a bug in "
-				.. "React. Please file an issue."
-		)
-		workInProgress.flags = bit32.bor(
-			bit32.band(flags, bit32.bnot(ReactFiberFlags.ShouldCapture)),
-			ReactFiberFlags.DidCapture
-		)
-		return workInProgress
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberUnwindWork.js#L127-L144
+		if
+			bit32.band(flags, ReactFiberFlags.ShouldCapture)
+				~= ReactFiberFlags.NoFlags
+			and bit32.band(flags, ReactFiberFlags.DidCapture)
+				== ReactFiberFlags.NoFlags
+		then
+			workInProgress.flags = bit32.bor(
+				bit32.band(flags, bit32.bnot(ReactFiberFlags.ShouldCapture)),
+				ReactFiberFlags.DidCapture
+			)
+			return workInProgress
+		end
+		return nil
 	elseif workInProgress.tag == ReactWorkTags.HostComponent then
 		-- TODO: popHydrationState
 		popHostContext(workInProgress)
