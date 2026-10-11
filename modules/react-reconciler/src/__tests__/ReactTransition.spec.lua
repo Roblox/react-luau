@@ -101,6 +101,8 @@ describe("ReactTransition", function()
 				Suspense = React.Suspense
 				useState = React.useState
 				useTransition = React.useTransition
+				useLayoutEffect = React.useLayoutEffect
+				startTransition = React.startTransition
 			end)
 
 			-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactTransition-test.js#L173-L210
@@ -863,149 +865,448 @@ describe("ReactTransition", function()
 					jestExpect(root).toMatchRenderedOutput("C")
 				end
 			)
-		end)
-	end
-	it.skip(
-		"interrupt a refresh transition if a new transition is scheduled",
-		function() end
-	)
-	it.skip(
-		"interrupt a refresh transition when something suspends and we've already bailed out on another transition in a parent",
-		function() end
-	)
-	it.skip(
-		"interrupt a refresh transition when something suspends and a parent component received an interleaved update after its queue was processed",
-		function() end
-	)
 
-	it(
-		"should render normal pri updates scheduled after transitions before transitions",
-		function()
-			local updateTransitionPri
-			local updateNormalPri
-			local function App()
-				local normalPri, setNormalPri = useState(0)
-				local transitionPri, setTransitionPri = useState(0)
-				updateTransitionPri = function()
-					startTransition(function()
-						setTransitionPri(function(n)
-							return n + 1
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactTransition-test.js#L874-L926
+			it(
+				"interrupt a refresh transition if a new transition is scheduled",
+				function()
+					local root = ReactNoop.createRoot()
+					ReactNoop.act(function()
+						root.render(
+							React.createElement(
+								React.Fragment,
+								nil,
+								React.createElement(Suspense, {
+									fallback = React.createElement(
+										Text,
+										{ text = "Loading..." }
+									),
+								}),
+								React.createElement(Text, { text = "Initial" })
+							)
+						)
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "Initial" })
+					jestExpect(root).toMatchRenderedOutput("Initial")
+					ReactNoop.act(function()
+						React.startTransition(function()
+							root.render(
+								React.createElement(
+									React.Fragment,
+									nil,
+									React.createElement(Suspense, {
+										fallback = React.createElement(
+											Text,
+											{ text = "Loading..." }
+										),
+									}, React.createElement(
+										AsyncText,
+										{ text = "Async" }
+									)),
+									React.createElement(Text, { text = "After Suspense" }),
+									React.createElement(Text, { text = "Sibling" })
+								)
+							)
+						end)
+						jestExpect(Scheduler).toFlushAndYieldThrough({
+							"Suspend! [Async]",
+							"Loading...",
+							"After Suspense",
+						})
+						-- ROBLOX DEVIATION: This upstream async transition callback has
+						-- no await; its synchronous render body has the same scheduling.
+						React.startTransition(function()
+							root.render(
+								React.createElement(
+									React.Fragment,
+									nil,
+									React.createElement(Suspense, {
+										fallback = React.createElement(
+											Text,
+											{ text = "Loading..." }
+										),
+									}),
+									React.createElement(Text, { text = "Updated" })
+								)
+							)
 						end)
 					end)
+					jestExpect(Scheduler).toHaveYielded({ "Updated" })
+					jestExpect(root).toMatchRenderedOutput("Updated")
 				end
-				updateNormalPri = function()
-					setNormalPri(function(n)
-						return n + 1
-					end)
-				end
-				useLayoutEffect(function()
-					Scheduler.unstable_yieldValue("Commit")
-				end)
-
-				return React.createElement(
-					Suspense,
-					{ fallback = React.createElement(Text, { text = "Loading..." }) },
-					React.createElement(Text, {
-						text = "Transition pri: " .. tostring(transitionPri),
-					}),
-					", ",
-					React.createElement(Text, {
-						text = "Normal pri: " .. tostring(normalPri),
-					})
-				)
-			end
-
-			local root = ReactNoop.createRoot()
-			ReactNoop.act(function()
-				root.render(React.createElement(App))
-			end)
-			jestExpect(Scheduler).toHaveYielded({
-				"Transition pri: 0",
-				"Normal pri: 0",
-				"Commit",
-			})
-			jestExpect(root).toMatchRenderedOutput("Transition pri: 0, Normal pri: 0")
-
-			ReactNoop.act(function()
-				updateTransitionPri()
-				updateNormalPri()
-			end)
-			jestExpect(Scheduler).toHaveYielded({
-				"Transition pri: 0",
-				"Normal pri: 1",
-				"Commit",
-				"Transition pri: 1",
-				"Normal pri: 1",
-				"Commit",
-			})
-			jestExpect(root).toMatchRenderedOutput("Transition pri: 1, Normal pri: 1")
-		end
-	)
-
-	-- ROBLOX deviation: This upstream test requires the unimplemented cache API.
-	it.skip(
-		"should render normal pri updates before transition suspense retries",
-		function() end
-	)
-
-	it("should not interrupt transitions with normal pri updates", function()
-		local updateNormalPri
-		local updateTransitionPri
-		local function App()
-			local transitionPri, setTransitionPri = useState(0)
-			local normalPri, setNormalPri = useState(0)
-			updateTransitionPri = function()
-				startTransition(function()
-					setTransitionPri(function(n)
-						return n + 1
-					end)
-				end)
-			end
-			updateNormalPri = function()
-				setNormalPri(function(n)
-					return n + 1
-				end)
-			end
-			useLayoutEffect(function()
-				Scheduler.unstable_yieldValue("Commit")
-			end)
-
-			return React.createElement(
-				React.Fragment,
-				nil,
-				React.createElement(Text, {
-					text = "Transition pri: " .. tostring(transitionPri),
-				}),
-				", ",
-				React.createElement(Text, {
-					text = "Normal pri: " .. tostring(normalPri),
-				})
 			)
-		end
 
-		local root = ReactNoop.createRoot()
-		ReactNoop.act(function()
-			root.render(React.createElement(App))
-		end)
-		jestExpect(Scheduler).toHaveYielded({
-			"Transition pri: 0",
-			"Normal pri: 0",
-			"Commit",
-		})
-		jestExpect(root).toMatchRenderedOutput("Transition pri: 0, Normal pri: 0")
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactTransition-test.js#L928-L1020
+			it(
+				"interrupt a refresh transition when something suspends and we've already bailed out on another transition in a parent",
+				function()
+					local setShouldSuspend, setShouldHideInParent
+					local function Parent(props)
+						local shouldHideInParent, updateShouldHideInParent =
+							useState(false)
+						setShouldHideInParent = updateShouldHideInParent
+						Scheduler.unstable_yieldValue(
+							"shouldHideInParent: " .. tostring(shouldHideInParent)
+						)
+						if shouldHideInParent then
+							return React.createElement(Text, { text = "(empty)" })
+						end
+						return props.children
+					end
+					local function App()
+						local shouldSuspend, updateShouldSuspend = useState(false)
+						setShouldSuspend = updateShouldSuspend
+						return React.createElement(
+							React.Fragment,
+							nil,
+							React.createElement(Text, { text = "A" }),
+							React.createElement(
+								Parent,
+								nil,
+								React.createElement(
+									Suspense,
+									{
+										fallback = React.createElement(
+											Text,
+											{ text = "Loading..." }
+										),
+									},
+									shouldSuspend
+											and React.createElement(
+												AsyncText,
+												{ text = "Async" }
+											)
+										or nil
+								)
+							),
+							React.createElement(Text, { text = "B" }),
+							React.createElement(Text, { text = "C" })
+						)
+					end
+					local root = ReactNoop.createRoot()
+					ReactNoop.act(function()
+						root.render(React.createElement(App))
+						jestExpect(Scheduler).toFlushAndYield({
+							"A",
+							"shouldHideInParent: false",
+							"B",
+							"C",
+						})
+						jestExpect(root).toMatchRenderedOutput("ABC")
+						React.startTransition(function()
+							setShouldSuspend(true)
+						end)
+						jestExpect(Scheduler).toFlushAndYieldThrough({ "A" })
+						React.startTransition(function()
+							setShouldHideInParent(true)
+						end)
+						jestExpect(Scheduler).toFlushAndYieldThrough({
+							"shouldHideInParent: false",
+							"Suspend! [Async]",
+							"Loading...",
+							"B",
+						})
+						jestExpect(root).toMatchRenderedOutput("ABC")
+						jestExpect(Scheduler).toFlushUntilNextPaint({
+							"shouldHideInParent: true",
+							"(empty)",
+						})
+						jestExpect(root).toMatchRenderedOutput("A(empty)BC")
+						jestExpect(Scheduler).toFlushAndYield({
+							"A",
+							"shouldHideInParent: true",
+							"(empty)",
+							"B",
+							"C",
+						})
+						jestExpect(root).toMatchRenderedOutput("A(empty)BC")
+					end)
+				end
+			)
 
-		ReactNoop.act(function()
-			updateTransitionPri()
-			jestExpect(Scheduler).toFlushAndYieldThrough({ "Transition pri: 1" })
-			updateNormalPri()
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactTransition-test.js#L1022-L1093
+			it(
+				"interrupt a refresh transition when something suspends and a parent component received an interleaved update after its queue was processed",
+				function()
+					local function App(props)
+						return React.createElement(
+							React.Fragment,
+							nil,
+							React.createElement(
+								Text,
+								{ text = "A" .. tostring(props.step) }
+							),
+							React.createElement(
+								Suspense,
+								{
+									fallback = React.createElement(
+										Text,
+										{ text = "Loading..." }
+									),
+								},
+								props.shouldSuspend
+										and React.createElement(
+											AsyncText,
+											{ text = "Async" }
+										)
+									or nil
+							),
+							React.createElement(
+								Text,
+								{ text = "B" .. tostring(props.step) }
+							),
+							React.createElement(
+								Text,
+								{ text = "C" .. tostring(props.step) }
+							)
+						)
+					end
+					local root = ReactNoop.createRoot()
+					ReactNoop.act(function()
+						root.render(
+							React.createElement(App, { shouldSuspend = false, step = 0 })
+						)
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "A0", "B0", "C0" })
+					jestExpect(root).toMatchRenderedOutput("A0B0C0")
+					ReactNoop.act(function()
+						React.startTransition(function()
+							root.render(
+								React.createElement(
+									App,
+									{ shouldSuspend = true, step = 1 }
+								)
+							)
+						end)
+						jestExpect(Scheduler).toFlushAndYieldThrough({ "A1" })
+						React.startTransition(function()
+							root.render(
+								React.createElement(
+									App,
+									{ shouldSuspend = false, step = 2 }
+								)
+							)
+						end)
+						jestExpect(Scheduler).toFlushAndYieldThrough({
+							"Suspend! [Async]",
+							"Loading...",
+							"B1",
+						})
+						jestExpect(root).toMatchRenderedOutput("A0B0C0")
+						jestExpect(Scheduler).toFlushAndYield({ "A2", "B2", "C2" })
+						jestExpect(root).toMatchRenderedOutput("A2B2C2")
+					end)
+				end
+			)
+
+			it(
+				"should render normal pri updates scheduled after transitions before transitions",
+				function()
+					local updateTransitionPri
+					local updateNormalPri
+					local function App()
+						local normalPri, setNormalPri = useState(0)
+						local transitionPri, setTransitionPri = useState(0)
+						updateTransitionPri = function()
+							startTransition(function()
+								setTransitionPri(function(n)
+									return n + 1
+								end)
+							end)
+						end
+						updateNormalPri = function()
+							setNormalPri(function(n)
+								return n + 1
+							end)
+						end
+						useLayoutEffect(function()
+							Scheduler.unstable_yieldValue("Commit")
+						end)
+
+						return React.createElement(
+							Suspense,
+							{
+								fallback = React.createElement(
+									Text,
+									{ text = "Loading..." }
+								),
+							},
+							React.createElement(Text, {
+								text = "Transition pri: " .. tostring(transitionPri),
+							}),
+							", ",
+							React.createElement(Text, {
+								text = "Normal pri: " .. tostring(normalPri),
+							})
+						)
+					end
+
+					local root = ReactNoop.createRoot()
+					ReactNoop.act(function()
+						root.render(React.createElement(App))
+					end)
+					jestExpect(Scheduler).toHaveYielded({
+						"Transition pri: 0",
+						"Normal pri: 0",
+						"Commit",
+					})
+					jestExpect(root).toMatchRenderedOutput(
+						"Transition pri: 0, Normal pri: 0"
+					)
+
+					ReactNoop.act(function()
+						updateTransitionPri()
+						updateNormalPri()
+					end)
+					jestExpect(Scheduler).toHaveYielded({
+						"Transition pri: 0",
+						"Normal pri: 1",
+						"Commit",
+						"Transition pri: 1",
+						"Normal pri: 1",
+						"Commit",
+					})
+					jestExpect(root).toMatchRenderedOutput(
+						"Transition pri: 1, Normal pri: 1"
+					)
+				end
+			)
+
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactTransition-test.js#L1150-L1223
+			it(
+				"should render normal pri updates before transition suspense retries",
+				function()
+					local updateTransitionPri, updateNormalPri
+					local function App()
+						local transitionPri, setTransitionPri = useState(false)
+						local normalPri, setNormalPri = useState(0)
+						updateTransitionPri = function()
+							React.startTransition(function()
+								setTransitionPri(true)
+							end)
+						end
+						updateNormalPri = function()
+							setNormalPri(function(value)
+								return value + 1
+							end)
+						end
+						useLayoutEffect(function()
+							Scheduler.unstable_yieldValue("Commit")
+						end)
+						return React.createElement(
+							Suspense,
+							{
+								fallback = React.createElement(
+									Text,
+									{ text = "Loading..." }
+								),
+							},
+							if transitionPri
+								then React.createElement(AsyncText, { text = "Async" })
+								else React.createElement(Text, { text = "(empty)" }),
+							", ",
+							React.createElement(
+								Text,
+								{ text = "Normal pri: " .. tostring(normalPri) }
+							)
+						)
+					end
+					local root = ReactNoop.createRoot()
+					ReactNoop.act(function()
+						root.render(React.createElement(App))
+					end)
+					jestExpect(Scheduler).toHaveYielded({
+						"(empty)",
+						"Normal pri: 0",
+						"Commit",
+					})
+					jestExpect(root).toMatchRenderedOutput("(empty), Normal pri: 0")
+					ReactNoop.act(function()
+						updateTransitionPri()
+					end)
+					-- ROBLOX DEVIATION: React 17 visits the normal-priority sibling in
+					-- the original attempt; React 19 visits it during prewarming.
+					jestExpect(Scheduler).toHaveYielded({
+						"Suspend! [Async]",
+						"Normal pri: 0",
+						"Loading...",
+					})
+					jestExpect(root).toMatchRenderedOutput("(empty), Normal pri: 0")
+					ReactNoop.act(function()
+						resolveText("Async")
+						updateNormalPri()
+					end)
+					jestExpect(Scheduler).toHaveYielded({
+						"(empty)",
+						"Normal pri: 1",
+						"Commit",
+						"Async",
+						"Normal pri: 1",
+						"Commit",
+					})
+					jestExpect(root).toMatchRenderedOutput("Async, Normal pri: 1")
+				end
+			)
+			it("should not interrupt transitions with normal pri updates", function()
+				local updateNormalPri
+				local updateTransitionPri
+				local function App()
+					local transitionPri, setTransitionPri = useState(0)
+					local normalPri, setNormalPri = useState(0)
+					updateTransitionPri = function()
+						startTransition(function()
+							setTransitionPri(function(n)
+								return n + 1
+							end)
+						end)
+					end
+					updateNormalPri = function()
+						setNormalPri(function(n)
+							return n + 1
+						end)
+					end
+					useLayoutEffect(function()
+						Scheduler.unstable_yieldValue("Commit")
+					end)
+
+					return React.createElement(
+						React.Fragment,
+						nil,
+						React.createElement(Text, {
+							text = "Transition pri: " .. tostring(transitionPri),
+						}),
+						", ",
+						React.createElement(Text, {
+							text = "Normal pri: " .. tostring(normalPri),
+						})
+					)
+				end
+
+				local root = ReactNoop.createRoot()
+				ReactNoop.act(function()
+					root.render(React.createElement(App))
+				end)
+				jestExpect(Scheduler).toHaveYielded({
+					"Transition pri: 0",
+					"Normal pri: 0",
+					"Commit",
+				})
+				jestExpect(root).toMatchRenderedOutput("Transition pri: 0, Normal pri: 0")
+
+				ReactNoop.act(function()
+					updateTransitionPri()
+					jestExpect(Scheduler).toFlushAndYieldThrough({ "Transition pri: 1" })
+					updateNormalPri()
+				end)
+				jestExpect(Scheduler).toHaveYielded({
+					"Normal pri: 0",
+					"Commit",
+					"Transition pri: 1",
+					"Normal pri: 1",
+					"Commit",
+				})
+				jestExpect(root).toMatchRenderedOutput("Transition pri: 1, Normal pri: 1")
+			end)
 		end)
-		jestExpect(Scheduler).toHaveYielded({
-			"Normal pri: 0",
-			"Commit",
-			"Transition pri: 1",
-			"Normal pri: 1",
-			"Commit",
-		})
-		jestExpect(root).toMatchRenderedOutput("Transition pri: 1, Normal pri: 1")
-	end)
+	end
 end)
