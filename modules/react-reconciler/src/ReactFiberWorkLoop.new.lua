@@ -431,6 +431,10 @@ local workInProgressRootSkippedLanes: (value: Lanes?) -> Lanes =
 local workInProgressRootUpdatedLanes: Lanes = ReactFiberLane.NoLanes
 -- Lanes that were pinged (in an interleaved event) during this render.
 local workInProgressRootPingedLanes: Lanes = ReactFiberLane.NoLanes
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L484-L486
+-- ROBLOX DEVIATION: Store this on the predeclared module table because this
+-- file is at Luau's top-level local limit.
+mod.workInProgressDeferredLane = ReactFiberLane.NoLane
 
 -- The most recent time we committed a fallback. This lets us ensure a train
 -- model where we don't commit new loading states in too quick succession.
@@ -624,7 +628,7 @@ end
 
 function requestRetryLane(fiber: Fiber): Lane
 	-- This is a fork of `requestUpdateLane` designed specifically for Suspense
-	-- "retries" — a special update that attempts to flip a Suspense boundary
+	-- "retries" â€” a special update that attempts to flip a Suspense boundary
 	-- from its placeholder state to its primary/resolved state.
 
 	-- Special cases
@@ -642,6 +646,49 @@ function requestRetryLane(fiber: Fiber): Lane
 		currentEventWipLanes = workInProgressRootIncludedLanes
 	end
 	return findRetryLane(currentEventWipLanes)
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L852-L888
+exports.requestDeferredLane = function(): Lane
+	if mod.workInProgressDeferredLane == ReactFiberLane.NoLane then
+		-- Multiple useDeferredValue hooks rendered together should share a task.
+		-- ROBLOX DEVIATION: React 17 has no hydration path or dedicated Offscreen
+		-- prerender lane selection, so all deferred work uses the reserved family.
+		mod.workInProgressDeferredLane = ReactFiberLane.claimNextTransitionDeferredLane()
+	end
+
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberSuspenseContext.js#L20-L106
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/16654436039dd8f16a63928e71081c7745872e8f/packages/react-reconciler/src/ReactFiberThrow.new.js#L224-L235
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/1faf9e3dd5d6492f3607d5c721055819e4106bc6/packages/react-reconciler/src/ReactFiberSuspenseComponent.new.js#L65-L95
+	-- ROBLOX DEVIATION: React 17 has no identity-valued Suspense handler stack,
+	-- so reuse its throw-path capture selector on the current fiber's return path.
+	local suspenseContext = require(script.Parent["ReactFiberSuspenseContext.new"])
+	local hasInvisibleParentBoundary = suspenseContext.hasSuspenseContext(
+		suspenseContext.suspenseStackCursor.current,
+		suspenseContext.InvisibleParentSuspenseContext
+	)
+	local suspenseHandler = if workInProgress == nil then nil else workInProgress.return_
+	while suspenseHandler ~= nil do
+		if
+			suspenseHandler.tag == ReactWorkTags.SuspenseComponent
+			and ReactFiberSuspenseComponent.shouldCaptureSuspense(
+				suspenseHandler,
+				hasInvisibleParentBoundary
+			)
+		then
+			suspenseHandler.flags =
+				bit32.bor(suspenseHandler.flags, ReactFiberFlags.DidDefer)
+			break
+		end
+		suspenseHandler = suspenseHandler.return_
+	end
+
+	return mod.workInProgressDeferredLane
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L912-L914
+exports.peekDeferredLane = function(): Lane
+	return mod.workInProgressDeferredLane
 end
 
 exports.scheduleUpdateOnFiber = function(
@@ -681,7 +728,12 @@ exports.scheduleUpdateOnFiber = function(
 			-- effect of interrupting the current render and switching to the update.
 			-- TODO: Make sure this doesn't override pings that happen while we've
 			-- already started rendering.
-			mod.markRootSuspended(root, workInProgressRootRenderLanes)
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1005-L1018
+			mod.markRootSuspended(
+				root,
+				workInProgressRootRenderLanes,
+				mod.workInProgressDeferredLane
+			)
 		end
 	end
 
@@ -977,7 +1029,8 @@ mod.performConcurrentWorkOnRoot = function(root): (() -> ...any) | nil
 		if exitStatus == RootExitStatus.FatalErrored then
 			local fatalError = workInProgressRootFatalError
 			mod.prepareFreshStack(root, ReactFiberLane.NoLanes)
-			mod.markRootSuspended(root, lanes)
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1232-L1237
+			mod.markRootSuspended(root, lanes, ReactFiberLane.NoLane)
 			ensureRootIsScheduled(root, now())
 			error(fatalError)
 		end
@@ -987,7 +1040,15 @@ mod.performConcurrentWorkOnRoot = function(root): (() -> ...any) | nil
 		local finishedWork: Fiber = root.current.alternate :: any
 		root.finishedWork = finishedWork
 		root.finishedLanes = lanes
-		mod.finishConcurrentRender(root, exitStatus, lanes)
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1240-L1248
+		-- ROBLOX DEVIATION: React 17 explicitly threads the spawned lane into its
+		-- folded finish helper; modern React reads module state later.
+		mod.finishConcurrentRender(
+			root,
+			exitStatus,
+			lanes,
+			mod.workInProgressDeferredLane
+		)
 	end
 
 	ensureRootIsScheduled(root, now())
@@ -1016,7 +1077,11 @@ function shouldForceFlushFallbacksInDEV()
 	return __DEV__ and actingUpdatesScopeDepth > 0
 end
 
-mod.finishConcurrentRender = function(root, exitStatus, lanes)
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1342-L1497
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1499-L1615
+-- ROBLOX DEVIATION: This React 17 helper folds finishConcurrentRender and
+-- commitRootWhenReady together and receives spawnedLane explicitly.
+mod.finishConcurrentRender = function(root, exitStatus, lanes, spawnedLane)
 	local recoverableErrors = mod.workInProgressRootRecoverableErrors
 	if
 		exitStatus == RootExitStatus.Incomplete
@@ -1029,9 +1094,9 @@ mod.finishConcurrentRender = function(root, exitStatus, lanes)
 	elseif exitStatus == RootExitStatus.Errored then
 		-- We should have already attempted to retry this tree. If we reached
 		-- this point, it errored again. Commit it.
-		mod.commitRoot(root, recoverableErrors)
+		mod.commitRoot(root, recoverableErrors, spawnedLane)
 	elseif exitStatus == RootExitStatus.Suspended then
-		mod.markRootSuspended(root, lanes)
+		mod.markRootSuspended(root, lanes, spawnedLane)
 
 		-- We have an acceptable loading state. We need to figure out if we
 		-- should immediately commit it or wait a bit.
@@ -1067,15 +1132,15 @@ mod.finishConcurrentRender = function(root, exitStatus, lanes)
 				-- lower priority work to do. Instead of committing the fallback
 				-- immediately, wait for more data to arrive.
 				root.timeoutHandle = ReactFiberHostConfig.scheduleTimeout(function()
-					return mod.commitRoot(root, recoverableErrors)
+					return mod.commitRoot(root, recoverableErrors, spawnedLane)
 				end, msUntilTimeout)
 				return
 			end
 		end
 		-- The work expired. Commit immediately.
-		mod.commitRoot(root, recoverableErrors)
+		mod.commitRoot(root, recoverableErrors, spawnedLane)
 	elseif exitStatus == RootExitStatus.SuspendedWithDelay then
-		mod.markRootSuspended(root, lanes)
+		mod.markRootSuspended(root, lanes, spawnedLane)
 
 		if includesOnlyTransitions(lanes) then
 			-- This is a transition, so we should exit without committing a
@@ -1102,29 +1167,30 @@ mod.finishConcurrentRender = function(root, exitStatus, lanes)
 				-- Instead of committing the fallback immediately, wait for more data
 				-- to arrive.
 				root.timeoutHandle = ReactFiberHostConfig.scheduleTimeout(function()
-					return mod.commitRoot(root, recoverableErrors)
+					return mod.commitRoot(root, recoverableErrors, spawnedLane)
 				end, msUntilTimeout)
 				return
 			end
 		end
 		-- Commit the placeholder.
-		mod.commitRoot(root, recoverableErrors)
+		mod.commitRoot(root, recoverableErrors, spawnedLane)
 	elseif exitStatus == RootExitStatus.Completed then
 		-- The work completed. Ready to commit.
-		mod.commitRoot(root, recoverableErrors)
+		mod.commitRoot(root, recoverableErrors, spawnedLane)
 	else
 		invariant(false, "Unknown root exit status.")
 	end
 end
 
-mod.markRootSuspended = function(root, suspendedLanes)
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1719-L1729
+mod.markRootSuspended = function(root, suspendedLanes, spawnedLane)
 	-- When suspending, we should always exclude lanes that were pinged or (more
 	-- rarely, since we try to avoid it) updated during the render phase.
 	-- TODO: Lol maybe there's a better way to factor this besides this
 	-- obnoxiously named function :)
 	suspendedLanes = removeLanes(suspendedLanes, workInProgressRootPingedLanes)
 	suspendedLanes = removeLanes(suspendedLanes, workInProgressRootUpdatedLanes)
-	ReactFiberLane.markRootSuspended(root, suspendedLanes)
+	ReactFiberLane.markRootSuspended(root, suspendedLanes, spawnedLane)
 end
 
 -- This is the entry point for synchronous tasks that don't go
@@ -1189,10 +1255,13 @@ mod.performSyncWorkOnRoot = function(root)
 		end
 	end
 
+	-- ROBLOX DEVIATION: React 17 retains a separate sync path that repeats the
+	-- shared spawned-lane finalization performed by modern React's work loop.
 	if exitStatus == RootExitStatus.FatalErrored then
 		local fatalError = workInProgressRootFatalError
 		mod.prepareFreshStack(root, ReactFiberLane.NoLanes)
-		mod.markRootSuspended(root, lanes)
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1232-L1237
+		mod.markRootSuspended(root, lanes, ReactFiberLane.NoLane)
 		ensureRootIsScheduled(root, now())
 		error(fatalError)
 	end
@@ -1202,7 +1271,11 @@ mod.performSyncWorkOnRoot = function(root)
 	local finishedWork: Fiber = root.current.alternate :: any
 	root.finishedWork = finishedWork
 	root.finishedLanes = lanes
-	mod.commitRoot(root, mod.workInProgressRootRecoverableErrors)
+	mod.commitRoot(
+		root,
+		mod.workInProgressRootRecoverableErrors,
+		mod.workInProgressDeferredLane
+	)
 
 	-- Before exiting, make sure there's a callback scheduled for the next
 	-- pending level.
@@ -1631,6 +1704,8 @@ mod.prepareFreshStack = function(root: FiberRoot, lanes: Lanes)
 	workInProgressRootPingedLanes = ReactFiberLane.NoLanes
 	mod.workInProgressRootConcurrentErrors = nil
 	mod.workInProgressRootRecoverableErrors = nil
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L2170-L2180
+	mod.workInProgressDeferredLane = ReactFiberLane.NoLane
 
 	if ReactFeatureFlags.enableSchedulerTracing then
 		spawnedWorkDuringRender = nil
@@ -1712,12 +1787,14 @@ mod.handleError = function(root, thrownValue): ()
 			end
 
 			-- ROBLOX deviation: pass Work Loop callbacks to avoid the dependency cycle.
+			-- ROBLOX deviation, pass Work Loop callbacks since throwException can't call them due to a require cycle
 			throwException(
 				root,
 				(erroredWork :: Fiber).return_,
 				erroredWork :: Fiber,
 				thrownValue,
 				workInProgressRootRenderLanes,
+				exports.onUncaughtError,
 				exports.renderDidError,
 				exports.renderDidSuspendDelayIfPossible
 			)
@@ -1815,7 +1892,12 @@ exports.renderDidSuspendDelayIfPossible = function(): ()
 		-- (inside this function), since by suspending at the end of the render
 		-- phase introduces a potential mistake where we suspend lanes that were
 		-- pinged or updated while we were rendering.
-		mod.markRootSuspended(workInProgressRoot, workInProgressRootRenderLanes)
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1357-L1417
+		mod.markRootSuspended(
+			workInProgressRoot,
+			workInProgressRootRenderLanes,
+			mod.workInProgressDeferredLane
+		)
 	end
 end
 
@@ -2221,12 +2303,17 @@ mod.completeUnitOfWork = function(unitOfWork: Fiber)
 	end
 end
 
-mod.commitRoot = function(root, recoverableErrors: Array<CapturedValue<any>>?)
+mod.commitRoot = function(
+	root,
+	recoverableErrors: Array<CapturedValue<any>>?,
+	spawnedLane
+)
 	local renderPriorityLevel = getCurrentPriorityLevel()
 	runWithPriority(ImmediateSchedulerPriority, function()
 		-- ROBLOX deviation: RobloxReactProfiling
 		RobloxReactProfiling.profileCommitBefore()
-		local ret = mod.commitRootImpl(root, recoverableErrors, renderPriorityLevel)
+		local ret =
+			mod.commitRootImpl(root, recoverableErrors, renderPriorityLevel, spawnedLane)
 		RobloxReactProfiling.profileCommitAfter()
 		return ret
 	end)
@@ -2237,7 +2324,8 @@ end
 mod.commitRootImpl = function(
 	root: FiberRoot,
 	recoverableErrors: Array<CapturedValue<any>>?,
-	renderPriorityLevel
+	renderPriorityLevel,
+	spawnedLane
 )
 	repeat
 		-- `flushPassiveEffects` will call `flushSyncUpdateQueue` at the end, which
@@ -2299,7 +2387,7 @@ mod.commitRootImpl = function(
 	-- Update the first and last pending times on this root. The new first
 	-- pending time is whatever is left on the root fiber.
 	local remainingLanes = mergeLanes(finishedWork.lanes, finishedWork.childLanes)
-	markRootFinished(root, remainingLanes)
+	markRootFinished(root, remainingLanes, spawnedLane)
 
 	-- Clear already finished discrete updates in case that a later call of
 	-- `flushDiscreteUpdates` starts a useless render pass which may cancels
@@ -4274,7 +4362,7 @@ mod.finishPendingInteractions = function(root: FiberRoot, committedLanes)
 	-- ROBLOX finally
 	-- Clear completed interactions from the pending Map.
 	-- Unless the render was suspended or cascading work was scheduled,
-	-- In which case– leave pending interactions until the subsequent render.
+	-- In which caseâ€“ leave pending interactions until the subsequent render.
 	local pendingInteractionMap = root.pendingInteractionMap
 	pendingInteractionMap:forEach(function(scheduledInteractions, lane)
 		-- Only decrement the pending interaction count if we're done.
@@ -4572,7 +4660,7 @@ mod.detachFiberAfterEffects = function(fiber: Fiber)
 		-- I'm intentionally not clearing the `return` field in this level. We
 		-- already disconnect the `return` pointer at the root of the deleted
 		-- subtree (in `detachFiberMutation`). Besides, `return` by itself is not
-		-- cyclical — it's only cyclical when combined with `child`, `sibling`, and
+		-- cyclical â€” it's only cyclical when combined with `child`, `sibling`, and
 		-- `alternate`. But we'll clear it in the next level anyway, just in case.
 
 		if __DEV__ then

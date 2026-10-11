@@ -75,6 +75,7 @@ local NoMode = ReconcilerModule.ReactTypeOfMode.NoMode
 -- ROBLOX deviation END
 -- ROBLOX deviation START: add inline ErrorStackParser implementation
 -- local ErrorStackParser = require(Packages["error-stack-parser"]).default
+-- ROBLOX upstream: https://github.com/facebook/react/blob/34aa5cfe0d9b6ec4667e02bf46ab34d83dfb2d6d/packages/react-debug-tools/src/ReactDebugHooks.js#L23
 type StackFrame = {
 	source: string?,
 	functionName: string?,
@@ -87,7 +88,10 @@ local ErrorStackParser = {
 		local filtered = Array.filter(
 			string.split(error_.stack :: string, "\n"),
 			function(line)
+				-- ROBLOX DEVIATION: Roblox emits both legacy LoadedCode frames and
+				-- current Luau [string "..."] frames. Shared with PR #28.
 				return string.find(line, "^LoadedCode") ~= nil
+					or string.find(line, '^%[string "') ~= nil
 			end
 		)
 		return Array.map(filtered, function(stackTraceLine)
@@ -235,8 +239,7 @@ local function getPrimitiveStackCache(): Map<string, Array<any>>
 end
 local currentHook: nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]] | Hook =
 	nil
-local function nextHook(
-): nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]] | Hook
+local function nextHook(): nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]] | Hook
 	local hook = currentHook
 	if hook ~= nil then
 		currentHook = hook.next
@@ -467,6 +470,7 @@ end
 -- 	nextCreate: () -> T,
 -- 	inputs: Array<unknown> | void | nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]]
 -- ): T
+-- ROBLOX upstream: https://github.com/facebook/react/blob/12adaffef7105e2714f82651ea51936c563fe15c/packages/react-debug-tools/src/ReactDebugHooks.js#L229-L237
 local function useMemo<T...>(nextCreate: () -> T..., inputs: Array<any> | nil): ...any
 	-- ROBLOX deviation END
 	local hook = nextHook()
@@ -490,18 +494,18 @@ local function useMemo<T...>(nextCreate: () -> T..., inputs: Array<any> | nil): 
 		local value = if hook ~= nil then hook.memoizedState[1] else { nextCreate() }
 		-- ROBLOX deviation END
 
-	-- Roblox/react-luau#28 owns this normalization; remove this duplicate after that PR lands.
-	-- ROBLOX DEVIATION: DevTools displays a single Luau memo return as its value,
-	-- but preserves the packed table when useMemo returns multiple values.
-	local inspectedValue = if #value <= 1 then value[1] else value
-	table.insert(
-		hookLog,
-		{ primitive = "Memo", stackError = Error.new(), value = inspectedValue }
-	) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
-	-- ROBLOX deviation START: unwrap memoized values in a table
-	-- return value
-	return table.unpack(value)
-	-- ROBLOX deviation END
+		-- Roblox/react-luau#28 owns this normalization; remove this duplicate after that PR lands.
+		-- ROBLOX DEVIATION: DevTools displays a single Luau memo return as its value,
+		-- but preserves the packed table when useMemo returns multiple values.
+		local inspectedValue = if #value <= 1 then value[1] else value
+		table.insert(
+			hookLog,
+			{ primitive = "Memo", stackError = Error.new(), value = inspectedValue }
+		) --[[ ROBLOX CHECK: check if 'hookLog' is an Array ]]
+		-- ROBLOX deviation START: unwrap memoized values in a table
+		-- return value
+		return table.unpack(value)
+		-- ROBLOX deviation END
 	end
 end
 local function useMutableSource<Source, Snapshot>(
@@ -584,14 +588,17 @@ local function useActionState<T>(
 end
 
 -- ROBLOX upstream: https://github.com/facebook/react/blob/72ebc703ac8abacd44fdeb1e3d66eb28b75e5a5b/packages/react-debug-tools/src/ReactDebugHooks.js#L312-L322
-local function useDeferredValue<T>(value: T): T
+-- ROBLOX upstream: https://github.com/facebook/react/blob/7268dacf70cd6a7f5705a19053aad46b5289ab72/packages/react-debug-tools/src/ReactDebugHooks.js#L445-L456
+-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-debug-tools/src/ReactDebugHooks.js#L507-L518
+local function useDeferredValue<T>(value: T, _initialValue: T?): T
 	local hook = nextHook()
+	local prevValue = if hook ~= nil then hook.memoizedState else value
 	table.insert(hookLog, {
 		primitive = "DeferredValue",
 		stackError = Error.new(),
-		value = if hook ~= nil then hook.memoizedState else value,
+		value = prevValue,
 	})
-	return value
+	return prevValue
 end
 local function useOpaqueIdentifier(): OpaqueIDType | void
 	local hook = nextHook() -- State
@@ -687,6 +694,7 @@ local mostLikelyAncestorIndex = 1
 -- ROBLOX deviation END
 -- ROBLOX deviation START: explicit type
 -- local function findSharedIndex(hookStack, rootStack, rootIndex)
+-- ROBLOX upstream: https://github.com/facebook/react/blob/12adaffef7105e2714f82651ea51936c563fe15c/packages/react-debug-tools/src/ReactDebugHooks.js#L347-L365
 local function findSharedIndex(hookStack, rootStack, rootIndex: number)
 	-- ROBLOX deviation END
 	-- ROBLOX deviation START: don't use tostring
