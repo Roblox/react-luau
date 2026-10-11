@@ -213,4 +213,8 @@ exports.fixEagerReducerError =
 -- ROBLOX deviation: Transition tracing is not available in React Lua.
 exports.enableTransitionTracing = false
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/shared/ReactFeatureFlags.js#L227-L235
+-- ROBLOX DEVIATION: The supported Luau renderers share this client flag module.
+exports.enableParallelTransitions = true
+
 return exports

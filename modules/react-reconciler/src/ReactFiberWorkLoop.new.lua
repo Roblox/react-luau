@@ -181,7 +181,6 @@ local getLanesToRetrySynchronouslyOnError =
 	ReactFiberLane.getLanesToRetrySynchronouslyOnError
 local markRootUpdated = ReactFiberLane.markRootUpdated
 local markRootPinged = ReactFiberLane.markRootPinged
-local markRootExpired = ReactFiberLane.markRootExpired
 local markDiscreteUpdatesExpired = ReactFiberLane.markDiscreteUpdatesExpired
 local markRootFinished = ReactFiberLane.markRootFinished
 local schedulerPriorityToLanePriority = ReactFiberLane.schedulerPriorityToLanePriority
@@ -402,16 +401,10 @@ local workInProgress: Fiber? = nil
 -- The lanes we're rendering
 local workInProgressRootRenderLanes: Lanes = ReactFiberLane.NoLanes
 
--- Stack that allows components to change the render lanes for its subtree
--- This is a superset of the lanes we started working on at the root. The only
--- case where it's different from `workInProgressRootRenderLanes` is when we
--- enter a subtree that is hidden and needs to be unhidden: Suspense and
--- Offscreen component.
---
--- Most things in the work loop should deal with workInProgressRootRenderLanes.
--- Most things in begin/complete phases should deal with exports.subtreeRenderLanes.
-exports.subtreeRenderLanes = ReactFiberLane.NoLanes
-local subtreeRenderLanesCursor: StackCursor<Lanes> = createCursor(ReactFiberLane.NoLanes)
+-- Component rendering includes queue entanglements and hidden subtree base lanes.
+exports.entangledRenderLanes = ReactFiberLane.NoLanes
+local entangledRenderLanesCursor: StackCursor<Lanes> =
+	createCursor(ReactFiberLane.NoLanes)
 
 -- Whether to root completed, errored, suspended, etc.
 local workInProgressRootExitStatus: RootExitStatus = RootExitStatus.Incomplete
@@ -500,6 +493,11 @@ local shouldFireAfterActiveInstanceBlur: boolean = false
 
 exports.getWorkInProgressRoot = function(): FiberRoot?
 	return workInProgressRoot
+end
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/ReactFiberWorkLoop.js#L776-L778
+exports.getWorkInProgressRootRenderLanes = function(): Lanes
+	return workInProgressRootRenderLanes
 end
 
 exports.requestEventTime = function()
@@ -628,7 +626,7 @@ end
 
 function requestRetryLane(fiber: Fiber): Lane
 	-- This is a fork of `requestUpdateLane` designed specifically for Suspense
-	-- "retries" â€” a special update that attempts to flip a Suspense boundary
+	-- "retries" — a special update that attempts to flip a Suspense boundary
 	-- from its placeholder state to its primary/resolved state.
 
 	-- Special cases
@@ -1184,6 +1182,10 @@ end
 
 -- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1719-L1729
 mod.markRootSuspended = function(root, suspendedLanes, spawnedLane)
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1802-L1822
+	if ReactFeatureFlags.enableParallelTransitions then
+		suspendedLanes = ReactFiberLane.getEntangledLanes(root, suspendedLanes)
+	end
 	-- When suspending, we should always exclude lanes that were pinged or (more
 	-- rarely, since we try to avoid it) updated during the render phase.
 	-- TODO: Lol maybe there's a better way to factor this besides this
@@ -1284,8 +1286,12 @@ mod.performSyncWorkOnRoot = function(root)
 	return nil
 end
 
+-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/ReactFiberWorkLoop.js#L1824-L1859
 exports.flushRoot = function(root: FiberRoot, lanes: Lanes)
-	markRootExpired(root, lanes)
+	if lanes == ReactFiberLane.NoLanes then
+		return
+	end
+	ReactFiberLane.upgradePendingLanesToSync(root, lanes)
 	ensureRootIsScheduled(root, now())
 	if
 		bit32.band(executionContext, bit32.bor(RenderContext, CommitContext))
@@ -1662,14 +1668,14 @@ exports.flushControlled = function(fn: () -> any)
 end
 
 exports.pushRenderLanes = function(fiber: Fiber, lanes: Lanes)
-	pushToStack(subtreeRenderLanesCursor, exports.subtreeRenderLanes, fiber)
-	exports.subtreeRenderLanes = mergeLanes(exports.subtreeRenderLanes, lanes)
+	pushToStack(entangledRenderLanesCursor, exports.entangledRenderLanes, fiber)
+	exports.entangledRenderLanes = mergeLanes(exports.entangledRenderLanes, lanes)
 	workInProgressRootIncludedLanes = mergeLanes(workInProgressRootIncludedLanes, lanes)
 end
 
 exports.popRenderLanes = function(fiber: Fiber)
-	exports.subtreeRenderLanes = subtreeRenderLanesCursor.current
-	popFromStack(subtreeRenderLanesCursor, fiber)
+	exports.entangledRenderLanes = entangledRenderLanesCursor.current
+	popFromStack(entangledRenderLanesCursor, fiber)
 end
 
 mod.prepareFreshStack = function(root: FiberRoot, lanes: Lanes)
@@ -1695,8 +1701,11 @@ mod.prepareFreshStack = function(root: FiberRoot, lanes: Lanes)
 	workInProgressRoot = root
 	workInProgress = ReactFiber.createWorkInProgress(root.current, nil)
 	workInProgressRootRenderLanes = lanes
-	exports.subtreeRenderLanes = lanes
-	workInProgressRootIncludedLanes = lanes
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/ReactFiberWorkLoop.js#L2274-L2287
+	-- ROBLOX DEVIATION: The React 17 subtree stack replaces HiddenContext and
+	-- includes hidden base lanes while the root retains its scheduled task mask.
+	exports.entangledRenderLanes = ReactFiberLane.getEntangledLanes(root, lanes)
+	workInProgressRootIncludedLanes = exports.entangledRenderLanes
 	workInProgressRootExitStatus = RootExitStatus.Incomplete
 	workInProgressRootFatalError = nil
 	workInProgressRootSkippedLanes(ReactFiberLane.NoLanes)
@@ -2119,10 +2128,10 @@ if ReactFeatureFlags.enableWorkLoopTrims then
 				~= ReactTypeOfMode.NoMode
 		then
 			ReactProfilerTimer.startProfilerTimer(unitOfWork)
-			next_ = mod.beginWork(current, unitOfWork, exports.subtreeRenderLanes)
+			next_ = mod.beginWork(current, unitOfWork, exports.entangledRenderLanes)
 			ReactProfilerTimer.stopProfilerTimerIfRunningAndRecordDelta(unitOfWork, true)
 		else
-			next_ = mod.beginWork(current, unitOfWork, exports.subtreeRenderLanes)
+			next_ = mod.beginWork(current, unitOfWork, exports.entangledRenderLanes)
 		end
 
 		if __DEV__ then
@@ -2160,10 +2169,10 @@ else
 				~= ReactTypeOfMode.NoMode
 		then
 			ReactProfilerTimer.startProfilerTimer(unitOfWork)
-			next_ = mod.beginWork(current, unitOfWork, exports.subtreeRenderLanes)
+			next_ = mod.beginWork(current, unitOfWork, exports.entangledRenderLanes)
 			ReactProfilerTimer.stopProfilerTimerIfRunningAndRecordDelta(unitOfWork, true)
 		else
-			next_ = mod.beginWork(current, unitOfWork, exports.subtreeRenderLanes)
+			next_ = mod.beginWork(current, unitOfWork, exports.entangledRenderLanes)
 		end
 
 		resetCurrentDebugFiberInDEV()
@@ -2212,10 +2221,10 @@ mod.completeUnitOfWork = function(unitOfWork: Fiber)
 				or bit32.band(completedWork.mode, ReactTypeOfMode.ProfileMode)
 					== ReactTypeOfMode.NoMode
 			then
-				next_ = completeWork(current, completedWork, exports.subtreeRenderLanes)
+				next_ = completeWork(current, completedWork, exports.entangledRenderLanes)
 			else
 				ReactProfilerTimer.startProfilerTimer(completedWork)
-				next_ = completeWork(current, completedWork, exports.subtreeRenderLanes)
+				next_ = completeWork(current, completedWork, exports.entangledRenderLanes)
 				-- Update render duration assuming we didn't error.
 				ReactProfilerTimer.stopProfilerTimerIfRunningAndRecordDelta(
 					completedWork,
@@ -2239,7 +2248,7 @@ mod.completeUnitOfWork = function(unitOfWork: Fiber)
 			-- This fiber did not complete because something threw. Pop values off
 			-- the stack without entering the complete phase. If this is a boundary,
 			-- capture values if possible.
-			local next_ = unwindWork(completedWork, exports.subtreeRenderLanes)
+			local next_ = unwindWork(completedWork, exports.entangledRenderLanes)
 
 			-- Because this fiber did not complete, don't reset its expiration time.
 
@@ -4362,7 +4371,7 @@ mod.finishPendingInteractions = function(root: FiberRoot, committedLanes)
 	-- ROBLOX finally
 	-- Clear completed interactions from the pending Map.
 	-- Unless the render was suspended or cascading work was scheduled,
-	-- In which caseâ€“ leave pending interactions until the subsequent render.
+	-- In which case– leave pending interactions until the subsequent render.
 	local pendingInteractionMap = root.pendingInteractionMap
 	pendingInteractionMap:forEach(function(scheduledInteractions, lane)
 		-- Only decrement the pending interaction count if we're done.
@@ -4660,7 +4669,7 @@ mod.detachFiberAfterEffects = function(fiber: Fiber)
 		-- I'm intentionally not clearing the `return` field in this level. We
 		-- already disconnect the `return` pointer at the root of the deleted
 		-- subtree (in `detachFiberMutation`). Besides, `return` by itself is not
-		-- cyclical â€” it's only cyclical when combined with `child`, `sibling`, and
+		-- cyclical — it's only cyclical when combined with `child`, `sibling`, and
 		-- `alternate`. But we'll clear it in the next level anyway, just in case.
 
 		if __DEV__ then

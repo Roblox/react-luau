@@ -168,7 +168,7 @@ local ReactFiberWorkLoop = require(script.Parent["ReactFiberWorkLoop.new"]) :: a
 
 local popRenderLanes = ReactFiberWorkLoop.popRenderLanes
 -- ROBLOX deviation: this is a live value in WorkLoop's module state, so it must be accessed directly and not 'cached'
--- local subtreeRenderLanes = ReactFiberWorkLoop.subtreeRenderLanes
+-- local subtreeRenderLanes = ReactFiberWorkLoop.entangledRenderLanes
 local markSpawnedWork = ReactFiberWorkLoop.markSpawnedWork
 local renderDidSuspend = ReactFiberWorkLoop.renderDidSuspend
 local renderDidSuspendDelayIfPossible = ReactFiberWorkLoop.renderDidSuspendDelayIfPossible
@@ -1622,7 +1622,7 @@ local function completeWork(
 		if
 			not nextIsHidden
 			or includesSomeLane(
-				ReactFiberWorkLoop.subtreeRenderLanes,
+				ReactFiberWorkLoop.entangledRenderLanes,
 				OffscreenLane :: Lane
 			)
 			or bit32.band(workInProgress.mode, ConcurrentMode) == NoMode

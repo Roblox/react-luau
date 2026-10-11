@@ -14,6 +14,8 @@ local ReactInternalTypes = require(script.Parent.ReactInternalTypes)
 type FiberRoot = ReactInternalTypes.FiberRoot
 type ReactPriorityLevel = ReactInternalTypes.ReactPriorityLevel
 local console = require(Packages.Shared).console
+local enableParallelTransitions =
+	require(Packages.Shared).ReactFeatureFlags.enableParallelTransitions
 
 local ReactFiberSchedulerPriorities =
 	require(script.Parent["ReactFiberSchedulerPriorities.roblox"])
@@ -236,6 +238,10 @@ local function getHighestPriorityLanes(lanes: Lanes | Lane): Lanes
 	local transitionLanes = bit32.band(TransitionUpdateLanes, lanes)
 	if transitionLanes ~= NoLanes then
 		return_highestLanePriority = TransitionPriority
+		-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/ReactFiberLane.js#L192-L226
+		if enableParallelTransitions then
+			return bit32.band(transitionLanes, -transitionLanes)
+		end
 		return transitionLanes
 	end
 	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L199-L216
@@ -337,7 +343,7 @@ end
 exports.lanePriorityToSchedulerPriority = lanePriorityToSchedulerPriority
 
 -- deviation: pre-declare pickArbitraryLaneIndex to keep ordering
-local pickArbitraryLaneIndex, getLowestPriorityLane, getEqualOrHigherPriorityLanes
+local pickArbitraryLaneIndex
 
 local function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes
 	-- // Early bailout if there's no pending work left.
@@ -397,33 +403,9 @@ local function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes
 		return NoLanes
 	end
 
-	-- // If there are higher priority lanes, we'll include them even if they
-	-- // are suspended.
-	-- ROBLOX performance: inline getEqualOrHigherPriorityLanes to avoid function call overhead in hot path
-	-- nextLanes = bit32.band(pendingLanes, getEqualOrHigherPriorityLanes(nextLanes))
-	nextLanes =
-		bit32.band(pendingLanes, bit32.lshift(getLowestPriorityLane(nextLanes), 1) - 1)
-
-	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberLane.js#L423-L470
-	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberWorkLoop.js#L2164-L2192
-	-- ROBLOX DEVIATION: React 17 collapses task lanes and entangled render lanes.
-	-- When a boundaryless parent and its spawned task ping together, restore the
-	-- deferred task identity so a fresh mount does not replay the initial preview.
-	local entangledLanes = root.entangledLanes
-	local pingedDeferredLanes =
-		bit32.band(pingedLanes, TransitionDeferredLanes, entangledLanes)
-	local selectedPingedLanes = bit32.band(nextLanes, pingedLanes)
-	if pingedDeferredLanes ~= NoLanes and selectedPingedLanes ~= NoLanes then
-		local entanglements = root.entanglements
-		while pingedDeferredLanes > 0 do
-			local index = pickArbitraryLaneIndex(pingedDeferredLanes)
-			local lane = bit32.lshift(1, index)
-			if bit32.band(entanglements[index], selectedPingedLanes) ~= NoLanes then
-				nextLanes = bit32.bor(nextLanes, lane)
-			end
-			pingedDeferredLanes = bit32.band(pingedDeferredLanes, bit32.bnot(lane))
-		end
-	end
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/ReactFiberLane.js#L255-L355
+	-- ROBLOX DEVIATION: React 17 expiration still promotes expired tasks to
+	-- synchronous priority; ordinary task selection does not widen pending lanes.
 
 	-- // If we're already in the middle of a render, switching lanes will interrupt
 	-- // it and we'll lose our progress. We should only do this if the new lanes are
@@ -444,39 +426,29 @@ local function getNextLanes(root: FiberRoot, wipLanes: Lanes): Lanes
 		end
 	end
 
-	-- // Check for entangled lanes and add them to the batch.
-	-- //
-	-- // A lane is said to be entangled with another when it's not allowed to render
-	-- // in a batch that does not also include the other lane. Typically we do this
-	-- // when multiple updates have the same source, and we only want to respond to
-	-- // the most recent event from that source.
-	-- //
-	-- // Note that we apply entanglements *after* checking for partial work above.
-	-- // This means that if a lane is entangled during an interleaved event while
-	-- // it's already rendering, we won't interrupt it. This is intentional, since
-	-- // entanglement is usually "best effort": we'll try our best to render the
-	-- // lanes in the same batch, but it's not worth throwing out partially
-	-- // complocaled work in order to do it.
-	-- //
-	-- // For those exceptions where entanglement is semantically important, like
-	-- // useMutableSource, we should ensure that there is no partial work at the
-	-- // time we apply the entanglement.
-	if entangledLanes ~= NoLanes then
-		local entanglements = root.entanglements
-		local lanes = bit32.band(nextLanes, entangledLanes)
-		while lanes > 0 do
-			local index = pickArbitraryLaneIndex(lanes)
-			local lane = bit32.lshift(1, index)
-
-			nextLanes = bit32.bor(nextLanes, entanglements[index])
-
-			lanes = bit32.band(lanes, bit32.bnot(lane))
-		end
-	end
-
 	return nextLanes
 end
 exports.getNextLanes = getNextLanes
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/ReactFiberLane.js#L427-L476
+-- ROBLOX DEVIATION: React 17 retains its lane-priority result separately from
+-- the component render mask; queue relationships use its zero-based map.
+local function getEntangledLanes(root: FiberRoot, renderLanes: Lanes): Lanes
+	local entangledLanes = renderLanes
+	local allEntangledLanes = root.entangledLanes
+	if allEntangledLanes ~= NoLanes then
+		local entanglements = root.entanglements
+		local lanes = bit32.band(entangledLanes, allEntangledLanes)
+		while lanes > 0 do
+			local index = pickArbitraryLaneIndex(lanes)
+			local lane = bit32.lshift(1, index)
+			entangledLanes = bit32.bor(entangledLanes, entanglements[index])
+			lanes = bit32.band(lanes, bit32.bnot(lane))
+		end
+	end
+	return entangledLanes
+end
+exports.getEntangledLanes = getEntangledLanes
 
 local function getMostRecentEventTime(root: FiberRoot, lanes: Lanes): number
 	local eventTimes = root.eventTimes
@@ -748,7 +720,7 @@ exports.claimNextTransitionDeferredLane = claimNextTransitionDeferredLane
 -- // be pure function, so that it always returns the same lane for given inputs.
 local function findRetryLane(wipLanes: Lanes): Lane
 	-- // This is a fork of `findUpdateLane` designed specifically for Suspense
-	-- // "retries" — a special update that attempts to flip a Suspense boundary
+	-- // "retries" â€” a special update that attempts to flip a Suspense boundary
 	-- // from its placeholder state to its primary/resolved state.
 	local lane = pickArbitraryLane(bit32.band(RetryLanes, bit32.bnot(wipLanes)))
 	if lane == NoLane then
@@ -760,20 +732,6 @@ exports.findRetryLane = findRetryLane
 
 local function getHighestPriorityLane(lanes: Lanes)
 	return bit32.band(lanes, -lanes)
-end
-
-function getLowestPriorityLane(lanes: Lanes): Lane
-	-- // This finds the most significant non-zero bit.
-	local index = 31 - bit32.countlz(lanes)
-	if index < 0 then
-		return NoLanes
-	else
-		return bit32.lshift(1, index)
-	end
-end
-
-function getEqualOrHigherPriorityLanes(lanes: Lanes | Lane): Lanes
-	return bit32.lshift(getLowestPriorityLane(lanes), 1) - 1
 end
 
 function pickArbitraryLane(lanes: Lanes): Lane
@@ -1073,6 +1031,21 @@ local function markRootEntangled(root: FiberRoot, entangledLanes: Lanes)
 	end
 end
 exports.markRootEntangled = markRootEntangled
+
+-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/ReactFiberLane.js#L1048-L1077
+-- ROBLOX DEVIATION: SyncLane is bit zero in React 17's existing lane layout.
+local function upgradePendingLanesToSync(root: FiberRoot, lanesToUpgrade: Lanes)
+	root.pendingLanes = bit32.bor(root.pendingLanes, SyncLane)
+	root.entangledLanes = bit32.bor(root.entangledLanes, SyncLane)
+	local lanes = lanesToUpgrade
+	while lanes > 0 do
+		local index = pickArbitraryLaneIndex(lanes)
+		local lane = bit32.lshift(1, index)
+		root.entanglements[0] = bit32.bor(root.entanglements[0], lane)
+		lanes = bit32.band(lanes, bit32.bnot(lane))
+	end
+end
+exports.upgradePendingLanesToSync = upgradePendingLanesToSync
 
 local function getBumpedLaneForHydration(root: FiberRoot, renderLanes: Lanes): Lane
 	getHighestPriorityLanes(renderLanes)
