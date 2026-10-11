@@ -52,6 +52,22 @@ describe("ReactDeferredValue", function()
 		textCache = {}
 	end)
 
+	-- ROBLOX DEVIATION: Upstream feature gates become nested flag suites;
+	-- set the flag before loading React and the renderer after a module reset.
+	local function configureParallelTransitions(parallelTransitions)
+		jest.resetModules()
+		require(Packages.Shared).ReactFeatureFlags.enableParallelTransitions =
+			parallelTransitions
+		React = require(Packages.React)
+		ReactNoop = require(Packages.Dev.ReactNoopRenderer)
+		Scheduler = require(Packages.Scheduler)
+		startTransition = React.startTransition
+		useDeferredValue = React.useDeferredValue
+		useMemo = React.useMemo
+		useState = React.useState
+		Suspense = React.Suspense
+	end
+
 	-- ROBLOX DEVIATION: Handler regressions flush React 17's JND timer; always
 	-- restore real timers, including when an assertion fails.
 	afterEach(function()
@@ -276,54 +292,56 @@ describe("ReactDeferredValue", function()
 		end
 	)
 
-	it(
-		"if a suspended render spawns a deferred task, we can switch to the deferred task without finishing the original one (no Suspense boundary)",
-		function()
-			local function App()
-				local text = useDeferredValue("Final", "Loading...")
-				return React.createElement(AsyncText, { text = text })
-			end
-
-			local root = ReactNoop.createRoot()
-			ReactNoop.act(function()
-				root.render(React.createElement(App))
+	for _, parallelTransitions in { false, true } do
+		describe("enableParallelTransitions=" .. tostring(parallelTransitions), function()
+			beforeEach(function()
+				configureParallelTransitions(parallelTransitions)
 			end)
-			-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactDeferredValue-test.js
-			-- ROBLOX DEVIATION: Upstream repeats Loading... and Final suspension
-			-- yields only when enableParallelTransitions is disabled. React 17
-			-- has no sibling prewarming, so both flag settings retain these two.
-			jestExpect(Scheduler).toHaveYielded({
-				"Suspend! [Loading...]",
-				"Suspend! [Final]",
-			})
-			jestExpect(root).toMatchRenderedOutput(nil)
 
-			ReactNoop.act(function()
-				resolveText("Final")
-			end)
-			jestExpect(Scheduler).toHaveYielded({ "Final" })
-			jestExpect(root).toMatchRenderedOutput("Final")
+			it(
+				"if a suspended render spawns a deferred task, we can switch to the deferred task without finishing the original one (no Suspense boundary)",
+				function()
+					local function App()
+						local text = useDeferredValue("Final", "Loading...")
+						return React.createElement(AsyncText, { text = text })
+					end
 
-			ReactNoop.act(function()
-				resolveText("Loading...")
-			end)
-			jestExpect(Scheduler).toHaveYielded({})
-			jestExpect(root).toMatchRenderedOutput("Final")
-		end
-	)
+					local root = ReactNoop.createRoot()
+					ReactNoop.act(function()
+						root.render(React.createElement(App))
+					end)
+					-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactDeferredValue-test.js
+					-- ROBLOX DEVIATION: Upstream repeats Loading... and Final suspension
+					-- yields only when enableParallelTransitions is disabled. React 17
+					-- has no sibling prewarming, so both flag settings retain these two.
+					jestExpect(Scheduler).toHaveYielded({
+						"Suspend! [Loading...]",
+						"Suspend! [Final]",
+					})
+					jestExpect(root).toMatchRenderedOutput(nil)
+
+					ReactNoop.act(function()
+						resolveText("Final")
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "Final" })
+					jestExpect(root).toMatchRenderedOutput("Final")
+
+					ReactNoop.act(function()
+						resolveText("Loading...")
+					end)
+					jestExpect(Scheduler).toHaveYielded({})
+					jestExpect(root).toMatchRenderedOutput("Final")
+				end
+			)
+		end)
+	end
 
 	-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactDeferredValue-test.js#L446-L526
 	-- ROBLOX DEVIATION: Nested suites run both upstream gate settings.
 	for _, parallelTransitions in { false, true } do
 		describe("enableParallelTransitions=" .. tostring(parallelTransitions), function()
 			beforeEach(function()
-				jest.resetModules()
-				require(Packages.Shared).ReactFeatureFlags.enableParallelTransitions =
-					parallelTransitions
-				React = require(Packages.React)
-				ReactNoop = require(Packages.Dev.ReactNoopRenderer)
-				Scheduler = require(Packages.Scheduler)
-				useDeferredValue = React.useDeferredValue
+				configureParallelTransitions(parallelTransitions)
 			end)
 
 			it(
@@ -466,43 +484,51 @@ describe("ReactDeferredValue", function()
 		end)
 	end
 
-	it(
-		"if a suspended render spawns a deferred task, we can switch to the deferred task without finishing the original one (no Suspense boundary, synchronous parent update)",
-		function()
-			local function App()
-				local text = useDeferredValue("Final", "Loading...")
-				return React.createElement(AsyncText, { text = text })
-			end
-
-			local root = ReactNoop.createRoot()
-			ReactNoop.act(function()
-				ReactNoop.flushSync(function()
-					root.render(React.createElement(App))
-				end)
+	for _, parallelTransitions in { false, true } do
+		describe("enableParallelTransitions=" .. tostring(parallelTransitions), function()
+			beforeEach(function()
+				configureParallelTransitions(parallelTransitions)
 			end)
-			-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactDeferredValue-test.js
-			-- ROBLOX DEVIATION: Upstream repeats Loading... and Final suspension
-			-- yields only when enableParallelTransitions is disabled. React 17
-			-- has no sibling prewarming, so both flag settings retain these two.
-			jestExpect(Scheduler).toHaveYielded({
-				"Suspend! [Loading...]",
-				"Suspend! [Final]",
-			})
-			jestExpect(root).toMatchRenderedOutput(nil)
 
-			ReactNoop.act(function()
-				resolveText("Final")
-			end)
-			jestExpect(Scheduler).toHaveYielded({ "Final" })
-			jestExpect(root).toMatchRenderedOutput("Final")
+			it(
+				"if a suspended render spawns a deferred task, we can switch to the deferred task without finishing the original one (no Suspense boundary, synchronous parent update)",
+				function()
+					local function App()
+						local text = useDeferredValue("Final", "Loading...")
+						return React.createElement(AsyncText, { text = text })
+					end
 
-			ReactNoop.act(function()
-				resolveText("Loading...")
-			end)
-			jestExpect(Scheduler).toHaveYielded({})
-			jestExpect(root).toMatchRenderedOutput("Final")
-		end
-	)
+					local root = ReactNoop.createRoot()
+					ReactNoop.act(function()
+						ReactNoop.flushSync(function()
+							root.render(React.createElement(App))
+						end)
+					end)
+					-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactDeferredValue-test.js
+					-- ROBLOX DEVIATION: Upstream repeats Loading... and Final suspension
+					-- yields only when enableParallelTransitions is disabled. React 17
+					-- has no sibling prewarming, so both flag settings retain these two.
+					jestExpect(Scheduler).toHaveYielded({
+						"Suspend! [Loading...]",
+						"Suspend! [Final]",
+					})
+					jestExpect(root).toMatchRenderedOutput(nil)
+
+					ReactNoop.act(function()
+						resolveText("Final")
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "Final" })
+					jestExpect(root).toMatchRenderedOutput("Final")
+
+					ReactNoop.act(function()
+						resolveText("Loading...")
+					end)
+					jestExpect(Scheduler).toHaveYielded({})
+					jestExpect(root).toMatchRenderedOutput("Final")
+				end
+			)
+		end)
+	end
 
 	it(
 		"if a suspended render spawns a deferred task, we can switch to the deferred task without finishing the original one (Suspense boundary)",
@@ -646,44 +672,52 @@ describe("ReactDeferredValue", function()
 		end
 	)
 
-	it(
-		"if a suspended render spawns a deferred task that also suspends, we can finish the original task if that one loads first",
-		function()
-			local function App()
-				local text = useDeferredValue("Final", "Loading...")
-				return React.createElement(AsyncText, { text = text })
-			end
-
-			local root = ReactNoop.createRoot()
-			ReactNoop.act(function()
-				root.render(React.createElement(App))
+	for _, parallelTransitions in { false, true } do
+		describe("enableParallelTransitions=" .. tostring(parallelTransitions), function()
+			beforeEach(function()
+				configureParallelTransitions(parallelTransitions)
 			end)
-			-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactDeferredValue-test.js
-			-- ROBLOX DEVIATION: Upstream repeats Loading... and Final suspension
-			-- yields only when enableParallelTransitions is disabled. React 17
-			-- has no sibling prewarming, so both flag settings retain these two.
-			jestExpect(Scheduler).toHaveYielded({
-				"Suspend! [Loading...]",
-				"Suspend! [Final]",
-			})
-			jestExpect(root).toMatchRenderedOutput(nil)
 
-			ReactNoop.act(function()
-				resolveText("Loading...")
-			end)
-			jestExpect(Scheduler).toHaveYielded({
-				"Loading...",
-				"Suspend! [Final]",
-			})
-			jestExpect(root).toMatchRenderedOutput("Loading...")
+			it(
+				"if a suspended render spawns a deferred task that also suspends, we can finish the original task if that one loads first",
+				function()
+					local function App()
+						local text = useDeferredValue("Final", "Loading...")
+						return React.createElement(AsyncText, { text = text })
+					end
 
-			ReactNoop.act(function()
-				resolveText("Final")
-			end)
-			jestExpect(Scheduler).toHaveYielded({ "Final" })
-			jestExpect(root).toMatchRenderedOutput("Final")
-		end
-	)
+					local root = ReactNoop.createRoot()
+					ReactNoop.act(function()
+						root.render(React.createElement(App))
+					end)
+					-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactDeferredValue-test.js
+					-- ROBLOX DEVIATION: Upstream repeats Loading... and Final suspension
+					-- yields only when enableParallelTransitions is disabled. React 17
+					-- has no sibling prewarming, so both flag settings retain these two.
+					jestExpect(Scheduler).toHaveYielded({
+						"Suspend! [Loading...]",
+						"Suspend! [Final]",
+					})
+					jestExpect(root).toMatchRenderedOutput(nil)
+
+					ReactNoop.act(function()
+						resolveText("Loading...")
+					end)
+					jestExpect(Scheduler).toHaveYielded({
+						"Loading...",
+						"Suspend! [Final]",
+					})
+					jestExpect(root).toMatchRenderedOutput("Loading...")
+
+					ReactNoop.act(function()
+						resolveText("Final")
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "Final" })
+					jestExpect(root).toMatchRenderedOutput("Final")
+				end
+			)
+		end)
+	end
 
 	it(
 		"if there are multiple useDeferredValues in the same tree, only the first level defers; subsequent ones go straight to the final value, to avoid a waterfall",
