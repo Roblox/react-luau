@@ -239,7 +239,8 @@ local function getPrimitiveStackCache(): Map<string, Array<any>>
 end
 local currentHook: nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]] | Hook =
 	nil
-local function nextHook(): nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]] | Hook
+local function nextHook(
+): nil --[[ ROBLOX CHECK: verify if `null` wasn't used differently than `undefined` ]] | Hook
 	local hook = currentHook
 	if hook ~= nil then
 		currentHook = hook.next
