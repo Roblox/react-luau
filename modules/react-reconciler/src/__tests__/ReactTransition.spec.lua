@@ -86,9 +86,6 @@ describe("ReactTransition", function()
 		return text
 	end
 
-	-- ROBLOX deviation: These upstream tests require the unimplemented cache API.
-	it.skip("isPending works even if called from outside an input event", function() end)
-
 	-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactTransition-test.js#L212-L366
 	-- ROBLOX DEVIATION: Upstream gate variants become nested suites. React 17
 	-- synchronous act and Scheduler yield matchers replace async act/assertLog.
@@ -106,6 +103,47 @@ describe("ReactTransition", function()
 				useTransition = React.useTransition
 			end)
 
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactTransition-test.js#L173-L210
+			it("isPending works even if called from outside an input event", function()
+				local start
+				local function App()
+					local show, setShow = useState(false)
+					local isPending, startUpdate = useTransition()
+					start = function()
+						startUpdate(function()
+							setShow(true)
+						end)
+					end
+					return React.createElement(
+						Suspense,
+						{ fallback = React.createElement(Text, { text = "Loading..." }) },
+						isPending and React.createElement(Text, { text = "Pending..." })
+							or nil,
+						if show
+							then React.createElement(AsyncText, { text = "Async" })
+							else React.createElement(Text, { text = "(empty)" })
+					)
+				end
+				local root = ReactNoop.createRoot()
+				ReactNoop.act(function()
+					root.render(React.createElement(App))
+				end)
+				jestExpect(Scheduler).toHaveYielded({ "(empty)" })
+				jestExpect(root).toMatchRenderedOutput("(empty)")
+				ReactNoop.act(function()
+					start()
+					jestExpect(Scheduler).toFlushAndYield({
+						"Pending...",
+						"(empty)",
+						"Suspend! [Async]",
+						"Loading...",
+					})
+					jestExpect(root).toMatchRenderedOutput("Pending...(empty)")
+					resolveText("Async")
+				end)
+				jestExpect(Scheduler).toHaveYielded({ "Async" })
+				jestExpect(root).toMatchRenderedOutput("Async")
+			end)
 			it(
 				"when multiple transitions update different queues, they entangle",
 				function()
@@ -475,20 +513,358 @@ describe("ReactTransition", function()
 					)
 				end
 			)
+
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactTransition-test.js#L522-L643
+			it(
+				"when multiple transitions update the same queue, only the most recent one is allowed to finish (no intermediate states)",
+				function()
+					local update
+					local function App()
+						local isContentPending, startContentChange = useTransition()
+						local label, setLabel = useState("A")
+						local contents, setContents = useState("A")
+						update = function(value)
+							ReactNoop.discreteUpdates(function()
+								setLabel(value)
+								startContentChange(function()
+									setContents(value)
+								end)
+							end)
+						end
+						return React.createElement(
+							React.Fragment,
+							nil,
+							React.createElement(Text, {
+								text = label .. " label" .. (if isContentPending
+									then " (loading...)"
+									else ""),
+							}),
+							React.createElement(
+								"div",
+								nil,
+								React.createElement(
+									Suspense,
+									{
+										fallback = React.createElement(
+											Text,
+											{ text = "Loading..." }
+										),
+									},
+									React.createElement(
+										AsyncText,
+										{ text = contents .. " content" }
+									)
+								)
+							)
+						)
+					end
+					local root = ReactNoop.createRoot()
+					ReactNoop.act(function()
+						-- ROBLOX DEVIATION: Seeding the per-test cache substitutes upstream
+						-- seedNextTextCache; this case never refreshes a cache.
+						resolveText("A content")
+						root.render(React.createElement(App))
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "A label", "A content" })
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement(
+							React.Fragment,
+							nil,
+							"A label",
+							React.createElement("div", nil, "A content")
+						)
+					)
+					ReactNoop.act(function()
+						update("B")
+					end)
+					-- ROBLOX DEVIATION: discreteUpdates retains InputDiscreteLanePriority,
+					-- while optimistic pending uses SyncLane. The pending-only A render
+					-- finishes before the discrete B label update; modern React uses
+					-- SyncLane for both and combines these urgent renders.
+					jestExpect(Scheduler).toHaveYielded({
+						"A label (loading...)",
+						"A content",
+						"B label (loading...)",
+						"A content",
+						"B label",
+						"Suspend! [B content]",
+						"Loading...",
+					})
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement(
+							React.Fragment,
+							nil,
+							"B label (loading...)",
+							React.createElement("div", nil, "A content")
+						)
+					)
+					ReactNoop.act(function()
+						update("C")
+					end)
+					jestExpect(Scheduler).toHaveYielded({
+						"C label (loading...)",
+						"A content",
+						"C label",
+						"Suspend! [C content]",
+						"Loading...",
+					})
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement(
+							React.Fragment,
+							nil,
+							"C label (loading...)",
+							React.createElement("div", nil, "A content")
+						)
+					)
+					ReactNoop.act(function()
+						resolveText("B content")
+					end)
+					jestExpect(Scheduler).toHaveYielded({
+						"C label",
+						"Suspend! [C content]",
+						"Loading...",
+					})
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement(
+							React.Fragment,
+							nil,
+							"C label (loading...)",
+							React.createElement("div", nil, "A content")
+						)
+					)
+					ReactNoop.act(function()
+						resolveText("C content")
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "C label", "C content" })
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement(
+							React.Fragment,
+							nil,
+							"C label",
+							React.createElement("div", nil, "C content")
+						)
+					)
+				end
+			)
+
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactTransition-test.js#L645-L765
+			it(
+				"when multiple transitions update the same queue, only the most recent one is allowed to finish (no intermediate states) (classes)",
+				function()
+					local update
+					-- ROBLOX DEVIATION: Component:extend and init translate the
+					-- upstream JavaScript class and state field.
+					local App = React.Component:extend("App")
+					function App:init()
+						self.state = { label = "A", contents = "A" }
+					end
+					function App:render()
+						update = function(value)
+							ReactNoop.discreteUpdates(function()
+								self:setState({ label = value })
+								React.startTransition(function()
+									self:setState({ contents = value })
+								end)
+							end)
+						end
+						local label = self.state.label
+						local contents = self.state.contents
+						local isContentPending = label ~= contents
+						return React.createElement(
+							React.Fragment,
+							nil,
+							React.createElement(Text, {
+								text = label .. " label" .. (if isContentPending
+									then " (loading...)"
+									else ""),
+							}),
+							React.createElement(
+								"div",
+								nil,
+								React.createElement(
+									Suspense,
+									{
+										fallback = React.createElement(
+											Text,
+											{ text = "Loading..." }
+										),
+									},
+									React.createElement(
+										AsyncText,
+										{ text = contents .. " content" }
+									)
+								)
+							)
+						)
+					end
+					local root = ReactNoop.createRoot()
+					ReactNoop.act(function()
+						-- ROBLOX DEVIATION: Seeding the per-test cache substitutes upstream
+						-- seedNextTextCache; this case never refreshes a cache.
+						resolveText("A content")
+						root.render(React.createElement(App))
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "A label", "A content" })
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement(
+							React.Fragment,
+							nil,
+							"A label",
+							React.createElement("div", nil, "A content")
+						)
+					)
+					ReactNoop.act(function()
+						update("B")
+					end)
+					jestExpect(Scheduler).toHaveYielded({
+						"B label (loading...)",
+						"A content",
+						"B label",
+						"Suspend! [B content]",
+						"Loading...",
+					})
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement(
+							React.Fragment,
+							nil,
+							"B label (loading...)",
+							React.createElement("div", nil, "A content")
+						)
+					)
+					ReactNoop.act(function()
+						update("C")
+					end)
+					jestExpect(Scheduler).toHaveYielded({
+						"C label (loading...)",
+						"A content",
+						"C label",
+						"Suspend! [C content]",
+						"Loading...",
+					})
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement(
+							React.Fragment,
+							nil,
+							"C label (loading...)",
+							React.createElement("div", nil, "A content")
+						)
+					)
+					ReactNoop.act(function()
+						resolveText("B content")
+					end)
+					jestExpect(Scheduler).toHaveYielded({
+						"C label",
+						"Suspend! [C content]",
+						"Loading...",
+					})
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement(
+							React.Fragment,
+							nil,
+							"C label (loading...)",
+							React.createElement("div", nil, "A content")
+						)
+					)
+					ReactNoop.act(function()
+						resolveText("C content")
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "C label", "C content" })
+					jestExpect(root).toMatchRenderedOutput(
+						React.createElement(
+							React.Fragment,
+							nil,
+							"C label",
+							React.createElement("div", nil, "C content")
+						)
+					)
+				end
+			)
+
+			-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/__tests__/ReactTransition-test.js#L767-L872
+			it(
+				"when multiple transitions update overlapping queues, all the transitions across all the queues are entangled",
+				function()
+					local setShowA, setShowB, setShowC
+					local function App()
+						local showA, updateShowA = useState(false)
+						local showB, updateShowB = useState(false)
+						local showC, updateShowC = useState(false)
+						setShowA, setShowB, setShowC =
+							updateShowA, updateShowB, updateShowC
+						return React.createElement(
+							React.Fragment,
+							nil,
+							React.createElement(
+								Suspense,
+								{
+									fallback = React.createElement(
+										Text,
+										{ text = "Loading..." }
+									),
+								},
+								showA and React.createElement(AsyncText, { text = "A" })
+									or nil,
+								showB and React.createElement(AsyncText, { text = "B" })
+									or nil,
+								showC and React.createElement(AsyncText, { text = "C" })
+									or nil
+							)
+						)
+					end
+					local root = ReactNoop.createRoot()
+					ReactNoop.act(function()
+						root.render(React.createElement(App))
+					end)
+					jestExpect(Scheduler).toHaveYielded({})
+					jestExpect(root).toMatchRenderedOutput(nil)
+					ReactNoop.act(function()
+						React.startTransition(function()
+							setShowA(true)
+						end)
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "Suspend! [A]", "Loading..." })
+					jestExpect(root).toMatchRenderedOutput(nil)
+					ReactNoop.act(function()
+						React.startTransition(function()
+							setShowA(false)
+							setShowB(true)
+						end)
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "Suspend! [B]", "Loading..." })
+					jestExpect(root).toMatchRenderedOutput(nil)
+					ReactNoop.act(function()
+						React.startTransition(function()
+							setShowB(false)
+							setShowC(true)
+						end)
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "Suspend! [C]", "Loading..." })
+					jestExpect(root).toMatchRenderedOutput(nil)
+					ReactNoop.act(function()
+						React.startTransition(function()
+							resolveText("B")
+						end)
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "Suspend! [C]", "Loading..." })
+					jestExpect(root).toMatchRenderedOutput(nil)
+					ReactNoop.act(function()
+						React.startTransition(function()
+							resolveText("A")
+						end)
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "Suspend! [C]", "Loading..." })
+					jestExpect(root).toMatchRenderedOutput(nil)
+					ReactNoop.act(function()
+						React.startTransition(function()
+							resolveText("C")
+						end)
+					end)
+					jestExpect(Scheduler).toHaveYielded({ "C" })
+					jestExpect(root).toMatchRenderedOutput("C")
+				end
+			)
 		end)
 	end
-	it.skip(
-		"when multiple transitions update the same queue, only the most recent one is allowed to finish (no intermediate states)",
-		function() end
-	)
-	it.skip(
-		"when multiple transitions update the same queue, only the most recent one is allowed to finish (no intermediate states) (classes)",
-		function() end
-	)
-	it.skip(
-		"when multiple transitions update overlapping queues, all the transitions across all the queues are entangled",
-		function() end
-	)
 	it.skip(
 		"interrupt a refresh transition if a new transition is scheduled",
 		function() end
