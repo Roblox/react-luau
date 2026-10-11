@@ -2200,13 +2200,20 @@ end
 
 -- ROBLOX upstream: https://github.com/facebook/react/blob/22edb9f777d27369fd2c1fad378f74e237b6dfd3/packages/react-reconciler/src/ReactFiberHooks.new.js#L1933-L2001
 -- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactFiberHooks.js#L2963-L3080
--- ROBLOX DEVIATION: React 17 has no spare DeferredLane discriminator or
--- separate root and entangled render-lane sets. Reserved transition-deferred
--- lanes identify renders spawned by this hook without leaking that identity
--- through ordinary transition entanglement.
+-- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/ReactFiberHooks.js#L3014-L3028
+-- ROBLOX DEVIATION: Reserved transition-deferred lanes replace DeferredLane;
+-- root task lanes distinguish wholly deferred work from entangled updates.
+local function isRenderingDeferredWork(): boolean
+	if not includesDeferredLane(renderLanes) then
+		return false
+	end
+	local rootRenderLanes = ReactFiberWorkLoop.getWorkInProgressRootRenderLanes()
+	return bit32.band(rootRenderLanes, ReactFiberLane.UpdateLanes) == NoLanes
+end
+
 local function mountDeferredValueImpl<T>(hook: Hook, value: T, initialValue: T?): T
 	-- ROBLOX DEVIATION: Luau cannot distinguish an omitted argument from explicit nil.
-	if initialValue ~= nil and not includesDeferredLane(renderLanes) then
+	if initialValue ~= nil and not isRenderingDeferredWork() then
 		hook.memoizedState = initialValue
 
 		local deferredLane = requestDeferredLane()
@@ -2253,7 +2260,7 @@ updateDeferredValueImpl = function<T>(hook: Hook, prevValue: T, value: T): T
 	-- ROBLOX DEVIATION: Hidden-tree initial-value prerendering is omitted because
 	-- this branch has no React 19 hidden-context or Activity contract.
 	local shouldDeferValue = not includesOnlyNonUrgentLanes(renderLanes)
-		and not includesDeferredLane(renderLanes)
+		and not isRenderingDeferredWork()
 	if shouldDeferValue then
 		local deferredLane = requestDeferredLane()
 		currentlyRenderingFiber.lanes =

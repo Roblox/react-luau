@@ -152,6 +152,7 @@ local UpdateLanes: Lanes = bit32.bor(
 	DefaultLanes,
 	TransitionUpdateLanes
 )
+exports.UpdateLanes = UpdateLanes
 
 local RetryLanes: Lanes = --[[                          ]]
 	0b0000011110000000000000000000000
