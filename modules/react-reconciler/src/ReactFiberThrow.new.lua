@@ -233,9 +233,10 @@ local function attachPingListener(root: FiberRoot, wakeable: Wakeable, lanes: La
 		} :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>
 		pingCache = root.pingCache :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>
 	else
-		threadIDs = (
-			pingCache :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>
-		)[wakeable] :: Set<any>
+		threadIDs = (pingCache :: Map<
+				Wakeable,
+				(Set<any> | Map<Wakeable, Set<any>>)
+			>)[wakeable] :: Set<any>
 		if threadIDs == nil then
 			threadIDs = {} :: Set<any>;
 			(pingCache :: Map<Wakeable, (Set<any> | Map<Wakeable, Set<any>>)>)[wakeable] =

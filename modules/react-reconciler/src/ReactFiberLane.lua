@@ -441,9 +441,14 @@ exports.getNextLanes = getNextLanes
 
 -- ROBLOX upstream: https://github.com/facebook/react/blob/1d34f91dfde6bba84d08b683aaba164c7194dacb/packages/react-reconciler/src/ReactFiberLane.js#L427-L476
 -- ROBLOX DEVIATION: React 17 retains its lane-priority result separately from
--- the component render mask; queue relationships use its zero-based map.
+-- the component render mask; continuous/default families have several bits,
+-- and queue relationships use its zero-based map.
 local function getEntangledLanes(root: FiberRoot, renderLanes: Lanes): Lanes
 	local entangledLanes = renderLanes
+	if bit32.band(entangledLanes, InputContinuousLanes) ~= NoLanes then
+		entangledLanes =
+			bit32.bor(entangledLanes, bit32.band(entangledLanes, DefaultLanes))
+	end
 	local allEntangledLanes = root.entangledLanes
 	if allEntangledLanes ~= NoLanes then
 		local entanglements = root.entanglements
