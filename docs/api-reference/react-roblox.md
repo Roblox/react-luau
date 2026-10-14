@@ -13,6 +13,14 @@ Notable absences are:
 ## ReactRoblox.createRoot
 Adopted as part of the Concurrent Mode API. Refer to [`ReactDOM.createRoot` documentation](https://reactjs.org/docs/concurrent-mode-reference.html#createroot).
 
+The optional second argument accepts React 19 client error handlers:
+
+* `onCaughtError(error, errorInfo)` reports errors handled by an Error Boundary.
+* `onUncaughtError(error, errorInfo)` reports errors that reach and unmount the root.
+* `onRecoverableError(error, errorInfo)` reports concurrent render errors after a successful synchronous retry.
+
+Every `errorInfo` includes `componentStack`. Caught error information also includes the class Error Boundary instance as `errorBoundary`. ReactRoblox does not hydrate, so hydration mismatch and server-rendering recovery cases do not apply.
+
 ## ReactRoblox.createBlockingRoot
 Adopted as part of the Concurrent Mode API. "Blocking" roots represent a transitional step between synchronous rendering and full concurrent rendering. Refer to [`ReactDOM.createBlockingRoot` documentation](https://reactjs.org/docs/concurrent-mode-adoption.html#migration-step-blocking-mode).
 

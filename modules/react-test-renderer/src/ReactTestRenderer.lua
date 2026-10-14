@@ -574,7 +574,15 @@ local function create(
 	end
 
 	-- ROBLOX deviation: remove Fiber? type to silence analyze
-	local root = createContainer(container, rootArg, false, nil)
+	local root = createContainer(
+		container,
+		rootArg,
+		false,
+		nil,
+		-- ROBLOX DEVIATION: Preserve the React 17 test renderer's synchronous
+		-- throw and legacy console-reporting contract.
+		ReactFiberReconciler.legacyDefaultOnUncaughtError
+	)
 
 	invariant(root ~= nil, "something went wrong")
 	updateContainer(element, root, nil, nil)
