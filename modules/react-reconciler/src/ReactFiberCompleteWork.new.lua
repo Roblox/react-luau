@@ -1613,6 +1613,7 @@ local function completeWork(
 			if
 				prevIsHidden ~= nextIsHidden
 				and newProps.mode ~= "unstable-defer-without-hiding"
+				and current.memoizedProps.mode ~= "unstable-defer-without-hiding"
 			then
 				workInProgress.flags = bit32.bor(workInProgress.flags, Update)
 			end
