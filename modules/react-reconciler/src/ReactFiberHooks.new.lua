@@ -154,9 +154,6 @@ local markStateUpdateScheduled =
 local ReactCurrentDispatcher = ReactSharedInternals.ReactCurrentDispatcher
 -- local ReactCurrentBatchConfig = ReactSharedInternals.ReactCurrentBatchConfig
 
-local FFlagReactCleanQueueOnUpdateBailout =
-	require(Packages.SafeFlags).createGetFFlag("ReactCleanQueueOnUpdateBailout")()
-
 -- deviation: common types
 type Array<T> = { [number]: T }
 
@@ -2112,13 +2109,11 @@ function dispatchAction<S, A>(fiber: Fiber, queue: UpdateQueue<S, A>, action: A,
 						-- time the reducer has changed.
 
 						-- First remove the update just added to prevent unbounded queue growth.
-						if FFlagReactCleanQueueOnUpdateBailout then
-							if pending == nil then
-								queue.pending = nil
-							else
-								pending.next = update.next
-								queue.pending = pending
-							end
+						if pending == nil then
+							queue.pending = nil
+						else
+							pending.next = update.next
+							queue.pending = pending
 						end
 
 						return
@@ -2131,13 +2126,11 @@ function dispatchAction<S, A>(fiber: Fiber, queue: UpdateQueue<S, A>, action: A,
 						-- time the reducer has changed.
 
 						-- First remove the update just added to prevent unbounded queue growth.
-						if FFlagReactCleanQueueOnUpdateBailout then
-							if pending == nil then
-								queue.pending = nil
-							else
-								pending.next = update.next
-								queue.pending = pending
-							end
+						if pending == nil then
+							queue.pending = nil
+						else
+							pending.next = update.next
+							queue.pending = pending
 						end
 
 						return
