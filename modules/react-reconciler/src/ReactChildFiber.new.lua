@@ -23,10 +23,6 @@ local describeError = require(Packages.Shared).describeError
 
 local __DEV__ = ReactGlobals.__DEV__ :: boolean
 
-local SafeFlags = require(Packages.SafeFlags)
-local FFlagReactPreventAssigningKeyToChildren =
-	SafeFlags.createGetFFlag("ReactPreventAssigningKeyToChildren")()
-
 local ReactTypes = require(Packages.Shared)
 -- ROBLOX deviation: ReactElement is defined at the top level of Shared along
 -- with the rest of the ReactTypes
@@ -1078,12 +1074,9 @@ local function ChildReconciler(shouldTrackSideEffects)
 			-- ROBLOX performance: avoid repeated indexing of newChildren to newIdx
 			local newChildNewIdx = newChildren[newIdx]
 			if
-				not FFlagReactPreventAssigningKeyToChildren
-				or (
-					newChildNewIdx ~= nil
-					and type(newChildNewIdx) == "table"
-					and newChildNewIdx["$$typeof"] ~= nil
-				)
+				newChildNewIdx ~= nil
+				and type(newChildNewIdx) == "table"
+				and newChildNewIdx["$$typeof"] ~= nil
 			then
 				newFiber = updateFromMap(
 					existingChildren,
