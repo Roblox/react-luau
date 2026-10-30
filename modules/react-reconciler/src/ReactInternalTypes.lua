@@ -278,6 +278,15 @@ export type SuspenseHydrationCallbacks = {
 	-- ROBLOX deviation END
 }
 
+export type ErrorInfo = {
+	componentStack: string?,
+}
+
+export type CaughtErrorInfo = {
+	componentStack: string?,
+	errorBoundary: any?,
+}
+
 -- deviation: Instead of combining all these props after the fact, we define
 -- them all in one to allow Luau's syntax
 
@@ -315,6 +324,11 @@ export type FiberRoot = {
 	pendingContext: Object?,
 	-- Determines if we should attempt to hydrate on the initial mount
 	hydrate: boolean,
+
+	-- ROBLOX upstream: https://github.com/facebook/react/blob/ae74234eae6ebd62f19190731278e20bc1c37d51/packages/react-reconciler/src/ReactInternalTypes.js#L268-L283
+	onUncaughtError: (error: any, errorInfo: ErrorInfo) -> (),
+	onCaughtError: (error: any, errorInfo: CaughtErrorInfo) -> (),
+	onRecoverableError: (error: any, errorInfo: ErrorInfo) -> (),
 
 	-- Used by useMutableSource hook to avoid tearing during hydration.
 	mutableSourceEagerHydrationData: Array<MutableSource<any> | MutableSourceVersion>?,
