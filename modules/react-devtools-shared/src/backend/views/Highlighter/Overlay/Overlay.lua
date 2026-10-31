@@ -14,9 +14,9 @@ local OverlayRect = require(script.Parent.OverlayRect)
 local OverlayTip = require(script.Parent.OverlayTip)
 type OverlayRect = OverlayRect.OverlayRect
 
-local function getNestedBoundingClientRect(node: GuiBase2d): Rect
+local function getNestedBoundingClientRect(node: GuiBase2d, origin: Vector2): Rect
 	local bounds = node.AbsoluteSize
-	local position = node.AbsolutePosition
+	local position = node.AbsolutePosition - origin
 	return Rect.new(position, position + bounds)
 end
 
@@ -104,6 +104,8 @@ function Overlay.inspect(self: Overlay, nodes: { GuiBase2d }, name: string?)
 		table.insert(self.rects, OverlayRect.new(self.rectContainer))
 	end
 
+	local origin = self.containerFrame.AbsolutePosition
+
 	local outerBox = {
 		top = math.huge,
 		right = -math.huge,
@@ -111,7 +113,7 @@ function Overlay.inspect(self: Overlay, nodes: { GuiBase2d }, name: string?)
 		left = math.huge,
 	}
 	for index, element in elements do
-		local box = getNestedBoundingClientRect(element)
+		local box = getNestedBoundingClientRect(element, origin)
 
 		outerBox.top = math.min(outerBox.top, box.Min.Y)
 		outerBox.right = math.max(outerBox.right, box.Max.X)
@@ -119,7 +121,7 @@ function Overlay.inspect(self: Overlay, nodes: { GuiBase2d }, name: string?)
 		outerBox.left = math.min(outerBox.left, box.Min.X)
 
 		local rect = self.rects[index]
-		rect:update(element)
+		rect:update(element, origin)
 	end
 
 	if name == nil or name == "" then
@@ -149,13 +151,7 @@ function Overlay.inspect(self: Overlay, nodes: { GuiBase2d }, name: string?)
 		outerBox.bottom - outerBox.top
 	)
 
-	local tipBoundsWindow: GuiBase2d = if self.layerCollector
-		then self.layerCollector
-		elseif elements[1]:IsA("LayerCollector") then elements[1]
-		else nil
-	local tipBounds = if tipBoundsWindow
-		then getNestedBoundingClientRect(tipBoundsWindow)
-		else Rect.new(Vector2.new(0, 0), Vector2.new(math.huge, math.huge))
+	local containerSize = self.containerFrame.AbsoluteSize
 
 	self.tip:updatePosition({
 		top = outerBox.top,
@@ -163,10 +159,10 @@ function Overlay.inspect(self: Overlay, nodes: { GuiBase2d }, name: string?)
 		height = outerBox.bottom - outerBox.top,
 		width = outerBox.right - outerBox.left,
 	}, {
-		top = tipBounds.Min.Y,
-		left = tipBounds.Min.X,
-		height = tipBounds.Height,
-		width = tipBounds.Width,
+		top = 0,
+		left = 0,
+		height = containerSize.Y,
+		width = containerSize.X
 	})
 end
 

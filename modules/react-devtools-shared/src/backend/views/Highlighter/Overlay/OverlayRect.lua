@@ -38,9 +38,9 @@ function OverlayRect.remove(self: OverlayRect)
 	self.node:Destroy()
 end
 
-function OverlayRect.update(self: OverlayRect, element: GuiBase2d)
+function OverlayRect.update(self: OverlayRect, element: GuiBase2d, origin: Vector2?)
 	local size = element.AbsoluteSize
-	local position = element.AbsolutePosition
+	local position = element.AbsolutePosition - (origin or Vector2.zero)
 
 	local padding = element:FindFirstChildOfClass("UIPadding")
 	if padding then
